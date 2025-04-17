@@ -14,6 +14,11 @@ FetchContent_Declare(
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
 
-add_executable(runTests src/main.cpp)
+add_executable(runTests src/app/App.cpp 
+src/command/AddFilterCommand.cpp 
+src/command/QueryFilterCommand.cpp 
+src/filter/BloomFilter.cpp 
+src/main.cpp 
+src/menu/ConsoleMenu.cpp)
 
 target_link_libraries(runTests gtest_main)
