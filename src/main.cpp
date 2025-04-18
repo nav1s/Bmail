@@ -1,20 +1,34 @@
-#include "app/App.h"
-#include "menu/ConsoleMenu.h"
-#include "command/AddFilterCommand.h"
-#include "command/QueryFilterCommand.h"
-#include "filter/BloomFilter.h"
+// ===== File: main.cpp =====
+// Entry point: parses initial setup, creates filter/menu, registers commands, launches App
 
+#include "App.h"
+#include "ConsoleMenu.h"
+#include "BloomFilter.h"
+#include "AddFilterCommand.h"
+#include "QueryFilterCommand.h"
+#include <iostream>
+#include <sstream>
 #include <memory>
+#include <set>
+
+using namespace std;
 
 int main() {
-    auto console_menu = std::make_shared<ConsoleMenu>();
-    auto bloom_filter = std::make_shared<BloomFilter>();
+    // Read initial configuration line: array size and number of hash functions
+    string initLine;
+    getline(cin, initLine);
+    istringstream iss(initLine);
 
+    size_t arraySize;
+    int hashCount;
+    iss >> arraySize >> hashCount;
+
+    // Create the filter and menu objects
+    auto bloom_filter = make_shared<BloomFilter>(arraySize, hashCount);
+    auto console_menu = make_shared<ConsoleMenu>();
+
+    // Create the App and run manually to handle commands with registration
     App app(bloom_filter, console_menu);
-    app.registerCommand(1, std::make_shared<AddFilterCommand>(bloom_filter));
-    app.registerCommand(2, std::make_shared<QueryFilterCommand>(bloom_filter));
     app.run();
-
     return 0;
 }
-

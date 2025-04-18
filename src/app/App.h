@@ -1,14 +1,15 @@
 // App.h
+
 #ifndef APP_H
 #define APP_H
 
 #include <map>
-#include <string>
 #include <memory>
-
+#include <string>
 #include "ICommand.h"
 #include "IFilter.h"
 #include "IMenu.h"
+#include <set>
 
 using namespace std;
 
@@ -16,13 +17,16 @@ using namespace std;
 class App {
 private:
     // Maps menu options to corresponding commands
-    map<int, std::shared_ptr<ICommand>> commands;
+    map<int, shared_ptr<ICommand>> commands;
 
     // Which filter used for storing/querying URLs
     shared_ptr<IFilter> filter;
 
     // The menu interface (used for interaction with user)
     shared_ptr<IMenu> menu;
+
+    // Keep the list of correct urls in a blacklist
+    set<string> trueBlacklist;
 
 public:
     // Constructor initializing the app with a filter and menu implementation

@@ -10,7 +10,7 @@ public:
     virtual ~IMenu() = default;
 
     // Returns the user choice as an int
-    virtual int nextCommand() = 0;
+    virtual string nextCommand() = 0;
 
     // Displays an error message to the user
     virtual void displayError(const std::string& error) = 0;

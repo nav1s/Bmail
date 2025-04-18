@@ -1,16 +1,19 @@
+// QueryFilterCommand.cpp
+
 #include "QueryFilterCommand.h"
 #include <iostream>
 
-QueryFilterCommand::QueryFilterCommand(std::shared_ptr<IFilter> filter)
-    : filter(filter) {}
+using namespace std;
+
+QueryFilterCommand::QueryFilterCommand(shared_ptr<IFilter> filter, const string& url, const set<string>& trueBlacklist)
+    : filter(move(filter)), url(url), realBlacklist(trueBlacklist) {}
 
 void QueryFilterCommand::execute() {
-    std::cout << "Enter URL to query: ";
-    std::string url;
-    std::cin >> url;
-    if (filter->queryUrl(url)) {
-        std::cout << "URL might exist (possibly in filter).\n";
+    bool inFilter = filter->queryUrl(url);
+    if (!inFilter) {
+        cout << "false" << endl;
     } else {
-        std::cout << "URL does not exist in filter.\n";
+        bool inTrueSet = realBlacklist.count(url) > 0;
+        cout << "true " << (inTrueSet ? "true" : "false") << endl;
     }
 }

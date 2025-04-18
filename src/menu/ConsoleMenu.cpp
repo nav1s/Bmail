@@ -1,15 +1,18 @@
+// ConsoleMenu.cpp
+
 #include "ConsoleMenu.h"
 #include <iostream>
+#include <string>
 
-int ConsoleMenu::nextCommand() {
-    std::cout << "1 - Add URL\n";
-    std::cout << "2 - Query URL\n";
-    std::cout << "Choose option: ";
-    int choice;
-    std::cin >> choice;
-    return choice;
+using namespace std;
+
+// Reads a full line of input from std::cin and returns it
+string ConsoleMenu::nextCommand() {
+    string line;
+    getline(cin, line); // Read full input line silently
+    return line;
 }
 
-void ConsoleMenu::displayError(const std::string& error) {
-    std::cerr << "Error: " << error << std::endl;
+void ConsoleMenu::displayError(const string& error) {
+    cerr << "Error: " << error << endl;
 }
