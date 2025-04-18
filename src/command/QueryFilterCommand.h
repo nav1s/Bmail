@@ -18,6 +18,6 @@ private:
     set<string> realBlacklist;
 
 public:
-    QueryFilterCommand(shared_ptr<IFilter> filter);
+    QueryFilterCommand(shared_ptr<IFilter> filter, const string&, const set<string>&);
     void execute() override;
 };

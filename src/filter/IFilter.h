@@ -11,10 +11,10 @@ public:
     virtual ~IFilter() = default;
 
     // Add a URL to the filter
-    virtual bool addUrl(const std::string& url) = 0;
+    virtual bool add(const std::string& item) = 0;
 
     // Query if the URL exists in the filter
-    virtual bool queryUrl(const std::string& url) = 0;
+    virtual bool queryUrl(const std::string& item) = 0;
 };
 
 #endif // IFILTER_H

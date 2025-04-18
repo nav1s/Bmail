@@ -9,5 +9,5 @@ AddFilterCommand::AddFilterCommand(shared_ptr<IFilter> filter, const string& url
     : filter(move(filter)), url(url) {}
 
 void AddFilterCommand::execute() {
-    filter->addUrl(url);
+    filter->add(url);
 }
