@@ -1,8 +1,6 @@
 // App.cpp
 
 #include "App.h"
-#include "AddFilterCommand.h"
-#include "QueryFilterCommand.h"
 #include <sstream>
 
 using namespace std;

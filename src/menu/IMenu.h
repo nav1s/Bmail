@@ -5,6 +5,8 @@
 
 #include <string>
 
+using namespace std;
+
 class IMenu {
 public:
     virtual ~IMenu() = default;
@@ -13,7 +15,7 @@ public:
     virtual string nextCommand() = 0;
 
     // Displays an error message to the user
-    virtual void displayError(const std::string& error) = 0;
+    virtual void displayError(const string& error) = 0;
 };
 
 #endif // IMENU_H

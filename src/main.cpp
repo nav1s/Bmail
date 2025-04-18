@@ -1,11 +1,11 @@
 // ===== File: main.cpp =====
 // Entry point: parses initial setup, creates filter/menu, registers commands, launches App
 
-#include "App.h"
-#include "ConsoleMenu.h"
-#include "BloomFilter.h"
-#include "AddFilterCommand.h"
-#include "QueryFilterCommand.h"
+#include "app/App.h"
+//#include "ConsoleMenu.h"
+//#include "BloomFilter.h"
+//#include "AddFilterCommand.h"
+//#include "QueryFilterCommand.h"
 #include <iostream>
 #include <sstream>
 #include <memory>

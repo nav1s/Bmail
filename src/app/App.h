@@ -6,10 +6,15 @@
 #include <map>
 #include <memory>
 #include <string>
-#include "ICommand.h"
-#include "IFilter.h"
-#include "IMenu.h"
 #include <set>
+#include "../command/ICommand.h"
+#include "../filter/IFilter.h"
+#include "../menu/IMenu.h"
+#include "../command/AddFilterCommand.h"
+#include "../command/QueryFilterCommand.h"
+#include "../filter/BloomFilter.h"
+#include "../menu/ConsoleMenu.h"
+
 
 using namespace std;
 
