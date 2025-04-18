@@ -3,12 +3,12 @@
 #include <string>
 
 /**
- * @class InputValidator
+ * @class StringValidator
  * @brief Abstract base class for validating input strings.
  *
  * This interface allows for interchangeable text validation strategies.
  */
-class InputValidator {
+class StringValidator {
 public:
     /**
      * @brief Checks if the input string is valid.
@@ -20,5 +20,5 @@ public:
     /**
      * @brief Virtual destructor for safe polymorphic deletion.
      */
-    virtual ~InputValidator() = default;
+    virtual ~StringValidator() = default;
 };
