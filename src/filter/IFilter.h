@@ -10,11 +10,11 @@ public:
     // default destructor
     virtual ~IFilter() = default;
 
-    // Add a URL to the filter
-    virtual bool addUrl(const std::string& url) = 0;
+    // Add an item to the blackList
+    virtual void add(const string& item);
 
-    // Query if the URL exists in the filter
-    virtual bool queryUrl(const std::string& url) = 0;
+    // Query if the item is blacklisted
+    virtual bool isBlacklisted(const string& item) const;
 };
 
 #endif // IFILTER_H
