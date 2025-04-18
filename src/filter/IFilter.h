@@ -1,20 +1,26 @@
-// IFilter - Interface that defines the behavior for a filter
-
-#ifndef IFILTER_H
-#define IFILTER_H
-
+#pragma once
 #include <string>
 
+using namespace std;
+
+/**
+ * @class IFilter
+ * @brief Abstract interface for a blacklist filter.
+ */
 class IFilter {
 public:
-    // default destructor
     virtual ~IFilter() = default;
 
-    // Add an item to the blackList
-    virtual void add(const string& item);
+    /**
+     * @brief Adds an item to the blacklist.
+     * @param item The string to add.
+     */
+    virtual void add(const string& item) = 0;
 
-    // Query if the item is blacklisted
-    virtual bool isBlacklisted(const string& item) const;
+    /**
+     * @brief Checks if an item is blacklisted.
+     * @param item The string to check.
+     * @return True if item is blacklisted.
+     */
+    virtual bool isBlacklisted(const string& item) const = 0;
 };
-
-#endif // IFILTER_H

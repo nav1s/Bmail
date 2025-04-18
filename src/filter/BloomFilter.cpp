@@ -1,15 +1,17 @@
 #include "BloomFilter.h"
 #include <algorithm>
 #include <fstream>
+#include "hash/IHashFunction.h"
+#include "hash/StdHash.h"
+#include <memory>
 
 using namespace std;
 
-BloomFilter::BloomFilter(size_t size, const vector<HashFunction>& hashFuncs)
+BloomFilter::BloomFilter(size_t size, std::vector<std::shared_ptr<IHashFunction>> hashFuncs)
     : arraySize(size),
-      hashFunctions(hashFuncs) {
-    fill(bitArray.begin(), bitArray.end(), false);
-}
-
+      hashFunctions(hashFuncs),
+      bitArray(size, false)
+{}
 
 BloomFilter::BloomFilter(const BloomFilter& other)
     : arraySize(other.arraySize),
@@ -25,17 +27,18 @@ BloomFilter::BloomFilter(BloomFilter&& other) noexcept
 
 BloomFilter::~BloomFilter() = default;
 
-void BloomFilter::add(const string& item) {
+void BloomFilter::add(const std::string& item) {
     realBlacklist.insert(item);
-    //checks if size needs to be increased - currently disabled
-    /*if (checkArraySize()) {
-        resizeArray();
-    }*/
-    for (const HashFunction& hashFunc : hashFunctions) {
-        size_t i = getIndex(hashFunc, item);
+    // Optional: Enable if resizing is allowed later
+    // if (checkArraySize()) {
+    //     resizeArray();
+    // }
+    for (const auto& hashFunc : hashFunctions) {
+        size_t i = getIndex(*hashFunc, item); // dereference pointer to call hash
         bitArray[i] = true;
     }
 }
+
 
 bool BloomFilter::isBlacklisted(const string& item) const {
     if (possiblyContains(item)) {
@@ -52,18 +55,19 @@ void BloomFilter::saveToFile(const string& path) const {
 void BloomFilter::loadFromFile(const string& path) {
 }
 
-size_t BloomFilter::getIndex(const HashFunction& hashFunc, const string& item) const {
-    return hashFunc(item) % arraySize; 
+size_t BloomFilter::getIndex(const IHashFunction& hashFunc, const string& item) const {
+    return hashFunc.hash(item) % arraySize; 
 }
 
-bool BloomFilter::possiblyContains(const string& item) const {
-    for (const HashFunction& hashFunc : hashFunctions) {
-        if (bitArray[getIndex(hashFunc, item)]) {
+bool BloomFilter::possiblyContains(const std::string& item) const {
+    for (const auto& hashFunc : hashFunctions) {
+        if (bitArray[getIndex(*hashFunc, item)]) {
             return true;
         }
     }
     return false;
 }
+
 
 bool BloomFilter::isActuallyBlacklisted(const string& item) const {
     return realBlacklist.find(item) != realBlacklist.end();

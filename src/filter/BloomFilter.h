@@ -4,11 +4,13 @@
 #include <fstream>
 #include <string>
 #include <vector>
+#include <memory>
 #include <unordered_set>
 #include <functional>
+#include "hash/IHashFunction.h"
+#include "hash/StdHash.h"
 
 using namespace std;
-using HashFunction = function<size_t(const string&)>;
 
 /**
  * @class BloomFilter
@@ -24,7 +26,7 @@ public:
      * @param size The number of bits in the filter.
      * @param hashFuncs A vector of hash functions to use.
      */
-    BloomFilter(size_t size, const vector<HashFunction>& hashFuncs);
+    BloomFilter(size_t size, std::vector<std::shared_ptr<IHashFunction>> hashFuncs);
 
     /**
      * @brief Copy constructor.
@@ -97,7 +99,7 @@ private:
     /**
      * @brief A list of hash functions used in the filter.
      */
-    const vector<HashFunction> hashFunctions;
+    const std::vector<std::shared_ptr<IHashFunction>> hashFunctions;
 
     /**
      * @brief A real blacklist for confirming true membership.
@@ -110,7 +112,7 @@ private:
      * @param item The item to hash.
      * @return The index within the bit array.
      */
-    size_t getIndex(const HashFunction& hashFunc, const string& item) const;
+    size_t getIndex(const IHashFunction& hashFunc, const string& item) const;
 
     /**
      * @brief Checks if an item is possibly in the filter based on the bit array.
