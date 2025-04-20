@@ -4,8 +4,6 @@
 #include <regex>
 #include "StringValidator.h"
 
-using namespace std;
-
 /**
  * @class UrlValidator
  * @brief Concrete validator for checking if a string is a valid URL.
@@ -47,7 +45,7 @@ public:
      * @param input The string to validate.
      * @return True if it appears to be a valid URL, false otherwise.
      */
-    bool validate(const string& input) const override;
+    bool validate(const std::string& input) const override;
 
 private:
     const regex url;
