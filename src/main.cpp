@@ -2,6 +2,8 @@
 // Entry point: parses initial setup, creates filter/menu, registers commands, launches App
 
 #include "app/App.h"
+#include "StringValidator/UrlValidator.h"
+#include "input/CliReader.h"
 #include <iostream>
 #include <sstream>
 #include <memory>
@@ -11,15 +13,14 @@ using namespace std;
 
 int main() {
     // Read initialization line from user input (format: <arraySize> <hashCount>)
-    string initLine; // stores the full input line, e.g., "1000 3"
+    string initLine;
     getline(cin, initLine);
-
     // Use stringstream to extract initialization values from the input line
     istringstream iss(initLine);
 
-    size_t arraySize; // number of bits in the Bloom filter
-    int hashCount;    // number of different hash functions to use
-
+    size_t arraySize;
+    
+    int hashCount;
     // Parse array size and number of hash functions
     iss >> arraySize >> hashCount;
 
@@ -33,13 +34,19 @@ int main() {
     }
 
     // Create the filter and menu objects
-    // Create BloomFilter with specified size and the hash functions vector
-    auto bloom_filter = make_shared<BloomFilter>(arraySize, hashCount);
-    // Create menu for user interaction (reads from stdin silently)
+    auto bloom_filter = make_shared<BloomFilter>(arraySize, hashFunctions);
     auto console_menu = make_shared<ConsoleMenu>();
 
-    // Launch the app and Create the App and run manually to handle commands with registration
-    App app(bloom_filter, console_menu);
+    // Create the filter and menu objects
+    // Create a URL validator to be used for validation
+    auto url_validator = make_shared<UrlValidator>();
+
+    // Create input reader (using CliReader)
+    auto input_reader = make_shared<CliReader>();
+
+    // Launch the app
+    App app(bloom_filter, console_menu, input_reader, url_validator);
     app.run();
+
     return 0;
 }

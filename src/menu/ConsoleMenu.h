@@ -16,14 +16,44 @@
 class ConsoleMenu : public IMenu {
 public:
     /**
+     * @brief Default constructor.
+     */
+    ConsoleMenu() = default;
+
+    /**
+     * @brief Destructor.
+     */
+    ~ConsoleMenu() override = default;
+
+    /**
+     * @brief Copy constructor.
+     */
+    ConsoleMenu(const ConsoleMenu& other) = default;
+
+    /**
+     * @brief Copy assignment operator.
+     */
+    ConsoleMenu& operator=(const ConsoleMenu& other) = default;
+
+    /**
+     * @brief Move constructor.
+     */
+    ConsoleMenu(ConsoleMenu&& other) noexcept = default;
+
+    /**
+     * @brief Move assignment operator.
+     */
+    ConsoleMenu& operator=(ConsoleMenu&& other) noexcept = default;
+    
+    /**
      * @brief Retrieves the next command from user input.
      * @return A full line of text entered by the user.
      */
-    std::string nextCommand() override;
+    string nextCommand() override;
 
     /**
      * @brief Displays an error message to the user (currently suppressed).
      * @param error The error message string.
      */
-    void displayError(const std::string& error) override;
+    void displayError(const string& error) override;
 };
