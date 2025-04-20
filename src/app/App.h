@@ -1,4 +1,5 @@
-// App.h
+// ===== File: App.h =====
+// Main controller class that connects the filter, menu, and commands
 
 #ifndef APP_H
 #define APP_H
@@ -15,16 +16,16 @@
 #include "../filter/BloomFilter.h"
 #include "../menu/ConsoleMenu.h"
 
-
-using namespace std;
-
-// Represents the main application class that controls the flow of commands and menu
+/**
+ * @class App
+ * @brief Main application class managing the command flow.
+ */
 class App {
 private:
     // Maps menu options to corresponding commands
     map<int, shared_ptr<ICommand>> commands;
 
-    // Which filter used for storing/querying URLs
+    // The Filter which is used for storing/querying URLs
     shared_ptr<IFilter> filter;
 
     // The menu interface (used for interaction with user)
@@ -34,14 +35,20 @@ private:
     set<string> trueBlacklist;
 
 public:
-    // Constructor initializing the app with a filter and menu implementation
+    /**
+     * @brief Constructs the App.
+     * @param filter Shared pointer to the IFilter implementation.
+     * @param menu Shared pointer to the IMenu implementation.
+     */
     App(shared_ptr<IFilter> filter, shared_ptr<IMenu> menu);
+
+    /**
+     * @brief Starts the application run loop.
+     */
+    void run();
 
     // Registers a new command to a specific option in the menu
     void registerCommand(int option, shared_ptr<ICommand> command);
-
-    // Runs the main application loop
-    void run();
 };
 
 #endif // APP_H

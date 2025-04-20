@@ -1,14 +1,24 @@
-// Icommand - Interface for command pattern. Each command should implement execute()
+// ===== File: ICommand.h =====
+// Interface for command pattern. Each command should implement execute()
 
 #ifndef ICOMMAND_H
 #define ICOMMAND_H
 
+/**
+ * @class ICommand
+ * @brief Abstract interface for a command in the command pattern.
+ */
 class ICommand {
 public:
+    /*
+    * @brief Virtual destructor
+    */
     virtual ~ICommand() = default;
 
-    // Executes the command
+    /**
+     * @brief Executes the command.
+     */
     virtual void execute() = 0;
 };
 
-#endif // ICOMMAND_H
+#endif  // ICOMMAND_H

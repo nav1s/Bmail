@@ -1,4 +1,5 @@
-// ConsoleMenu.cpp
+// ===== File: ConsoleMenu.cpp =====
+// Implementation of IMenu that reads input silently from std::cin without printing
 
 #include "ConsoleMenu.h"
 #include <iostream>
@@ -13,6 +14,7 @@ string ConsoleMenu::nextCommand() {
     return line;
 }
 
+// only prints error in case of incorrect input
 void ConsoleMenu::displayError(const string& error) {
     cerr << "Error: " << error << endl;
 }
