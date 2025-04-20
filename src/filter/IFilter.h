@@ -10,7 +10,6 @@ using namespace std;
 class IFilter {
 public:
     virtual ~IFilter() = default;
-
     /**
      * @brief Adds an item to the blacklist.
      * @param item The string to add.

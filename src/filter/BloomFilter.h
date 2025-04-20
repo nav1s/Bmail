@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Ifilter.h"
+#include "IFilter.h"
 #include <fstream>
 #include <string>
 #include <vector>
@@ -83,7 +83,6 @@ public:
      * @param path The path of the file to read from.
      */
     void loadFromFile(const string& path);
-
 private:
     /**
      * @brief Size of the bit array.

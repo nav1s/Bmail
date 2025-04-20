@@ -6,9 +6,9 @@
 #include <string>
 #include <memory>
 
-#include "ICommand.h"
-#include "IFilter.h"
-#include "IMenu.h"
+#include "../command/ICommand.h"
+#include "../filter/IFilter.h"
+#include "../menu/IMenu.h"
 
 using namespace std;
 

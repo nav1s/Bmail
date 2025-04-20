@@ -8,7 +8,7 @@ void AddFilterCommand::execute() {
     std::cout << "Enter URL to add: ";
     std::string url;
     std::cin >> url;
-    if (filter->addUrl(url)) {
+    if (filter->add(url)) {
         std::cout << "URL added successfully.\n";
     } else {
         std::cout << "URL was already present.\n";
