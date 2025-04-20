@@ -1,8 +1,6 @@
 #pragma once
 #include <string>
 
-using namespace std;
-
 /**
  * @class IFilter
  * @brief Abstract interface for a blacklist filter.

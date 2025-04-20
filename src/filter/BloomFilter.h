@@ -10,8 +10,6 @@
 #include "hash/IHashFunction.h"
 #include "hash/StdHash.h"
 
-using namespace std;
-
 /**
  * @class BloomFilter
  * @brief A probabilistic data structure for efficiently testing set membership.
