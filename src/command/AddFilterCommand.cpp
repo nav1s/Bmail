@@ -5,12 +5,7 @@ AddFilterCommand::AddFilterCommand(std::shared_ptr<IFilter> filter)
     : filter(filter) {}
 
 void AddFilterCommand::execute() {
-    std::cout << "Enter URL to add: ";
     std::string url;
     std::cin >> url;
-    if (filter->add(url)) {
-        std::cout << "URL added successfully.\n";
-    } else {
-        std::cout << "URL was already present.\n";
-    }
+    filter->add(url);
 }

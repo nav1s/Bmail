@@ -7,8 +7,10 @@
 #include <memory>
 #include <unordered_set>
 #include <functional>
-#include "hash/IHashFunction.h"
-#include "hash/StdHash.h"
+#include "../hash/IHashFunction.h"
+#include "../hash/StdHash.h"
+
+using namespace std;
 
 /**
  * @class BloomFilter
