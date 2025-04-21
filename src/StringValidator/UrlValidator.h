@@ -48,5 +48,5 @@ public:
     bool validate(const std::string& input) const override;
 
 private:
-    const regex url;
+    const std::regex url;
 };
