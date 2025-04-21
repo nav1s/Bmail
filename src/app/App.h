@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 #include <set>
+#include <functional>
 #include "../command/ICommand.h"
 #include "../filter/IFilter.h"
 #include "../menu/IMenu.h"
@@ -25,16 +26,13 @@
 class App {
 private:
     // Maps menu options to corresponding commands
-    map<int, shared_ptr<ICommand>> commands;
+    map<int, function<void(const string&)>> commands;
 
     // The Filter which is used for storing/querying URLs
     shared_ptr<IFilter> filter;
 
     // The menu interface (used for interaction with user)
     shared_ptr<IMenu> menu;
-
-    // Keep the list of correct urls in a blacklist
-    set<string> trueBlacklist;
 
     // Reader for user input (e.g., from CLI or file)
     shared_ptr<InputReader> inputReader;
@@ -79,7 +77,7 @@ public:
      * @param option The menu option number.
      * @param command The command associated with the option.
      */
-    void registerCommand(int option, shared_ptr<ICommand> command);
+    void registerCommand(int type, function<void(const string&)> commandFactoryFunc);
 };
 
 #endif // APP_H

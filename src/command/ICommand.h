@@ -18,7 +18,7 @@ public:
     /**
      * @brief Executes the command.
      */
-    virtual void execute() = 0;
+    virtual bool execute() = 0;
 };
 
 #endif  // ICOMMAND_H

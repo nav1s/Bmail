@@ -9,8 +9,13 @@
 #include <string>
 #include <set>
 
-// QueryFilterCommand checks if a given URL exists in the filter
-// and compares the result against a known set of blacklisted URLs.
+/**
+ * @class QueryFilterCommand
+ * @brief Represents a command that queries a URL against a Bloom filter.
+ *
+ * This class uses the filter to determine if a URL is blacklisted,
+ * delegating all blacklist logic to the filter implementation.
+ */
 class QueryFilterCommand : public ICommand {
     private:
         // Shared pointer to the filter used for checking blacklist status
@@ -18,9 +23,6 @@ class QueryFilterCommand : public ICommand {
     
         // URL string to query within the filter
         string url;
-    
-        // A set of URLs known to be truly blacklisted (for accuracy validation)
-        set<string> realBlacklist;
 public:
     /*
      * @brief Constructs a QueryFilterCommand object.
@@ -28,7 +30,7 @@ public:
      * @param url The URL string to query.
      * @param trueBlacklist A reference set of URLs that are truly blacklisted (ground truth).
      */
-    QueryFilterCommand(shared_ptr<IFilter> filter, const string& url, const set<string>& trueBlacklist);
+    QueryFilterCommand(shared_ptr<IFilter> filter, const string& url);
 
     /*
      * @brief Destructor for the QueryFilterCommand object.
@@ -66,5 +68,5 @@ public:
     * @brief Executes the query operation.
     * Checks if the URL is blacklisted and prints the result based on the true blacklist.
     */
-    void execute() override;
+    bool execute() override;
 };

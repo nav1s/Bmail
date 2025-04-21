@@ -1,5 +1,5 @@
 // ===== File: App.cpp =====
-// Logic loop that reads lines, dispatches commands based on prefix (1 or 2)
+// Logic loop that reads lines, dispatches commands based on prefix (1, 2, etc.) using ICommand interface
 
 #include "App.h"
 #include <sstream>
@@ -22,8 +22,8 @@ App::App(const App& other)
  filter(other.filter),
  menu(other.menu),
  inputReader(other.inputReader),
- urlValidator(other.urlValidator),
- trueBlacklist(other.trueBlacklist) {}
+ urlValidator(other.urlValidator)
+ {}
 
 // Copy assignment
 App& App::operator=(const App& other) {
@@ -33,7 +33,6 @@ App& App::operator=(const App& other) {
     menu = other.menu;
     inputReader = other.inputReader;
     urlValidator = other.urlValidator;
-    trueBlacklist = other.trueBlacklist;
     }
     return *this;
 }
@@ -44,8 +43,8 @@ App::App(App&& other) noexcept
  filter(move(other.filter)),
  menu(move(other.menu)),
  inputReader(move(other.inputReader)),
- urlValidator(move(other.urlValidator)),
- trueBlacklist(move(other.trueBlacklist)) {}
+ urlValidator(move(other.urlValidator))
+{}
 
 // Move assignment
 App& App::operator=(App&& other) noexcept {
@@ -55,15 +54,14 @@ App& App::operator=(App&& other) noexcept {
     menu = move(other.menu);
     inputReader = move(other.inputReader);
     urlValidator = move(other.urlValidator);
-    trueBlacklist = move(other.trueBlacklist);
     }
     return *this;
 }
 
-// Registers a new command to be executed when the given option is chosen
-void App::registerCommand(int option, shared_ptr<ICommand> command) {
-    commands[option] = command;
+void App::registerCommand(int type, std::function<void(const std::string&)> commandFactoryFunc) {
+    commands[type] = std::move(commandFactoryFunc);
 }
+
 
 // Main loop for reading user commands and dispatching corresponding actions
 void App::run() {
@@ -84,19 +82,17 @@ void App::run() {
             continue; // Skip to next loop iteration
         }
 
-    if (!urlValidator->validate(url)) {
-        menu->displayError("Invalid URL format");
-        continue;
-    }
+        if (!urlValidator->validate(url)) {
+            menu->displayError("Invalid URL format");
+            continue;
+        }
 
-    // adding command
-    if (commandType == 1) {
-        trueBlacklist.insert(url);
-        AddFilterCommand(filter, url).execute();
-    } else if (commandType == 2) {
-        QueryFilterCommand(filter, url, trueBlacklist).execute();
-    } else {
-        menu->displayError("Invalid option");
-    }
+        // Dispatch based on command type using SOLID OCP principle
+        auto function = commands.find(commandType);
+        if (function != commands.end()) {
+            function->second(url); // send the URL to the relevant function
+        } else {
+            menu->displayError("Invalid option");
+        }
     }
 }

@@ -43,7 +43,7 @@ AddFilterCommand& AddFilterCommand::operator=(AddFilterCommand&& other) noexcept
     }
     return *this;
 }
-void AddFilterCommand::execute() {
-    // Add URL to the filter
+bool AddFilterCommand::execute() {
+    // add a URL to the blacklist, using Ifilter->add(url) 
     filter->add(url);
 }

@@ -46,6 +46,14 @@ int main() {
 
     // Launch the app
     App app(bloom_filter, console_menu, input_reader, url_validator);
+
+    app.registerCommand(1, [bloom_filter](const string& url) {
+        AddFilterCommand(bloom_filter, url).execute();
+    });
+    
+    app.registerCommand(2, [bloom_filter](const string& url) {
+        QueryFilterCommand(bloom_filter, url).execute();
+    });
     app.run();
 
     return 0;

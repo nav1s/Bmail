@@ -66,5 +66,5 @@ public:
     /*
     * @brief Executes the query operation.
     */
-    void execute() override;
+    bool execute() override;
 };
