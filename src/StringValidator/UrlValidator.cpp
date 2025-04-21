@@ -3,7 +3,9 @@
 using namespace std;
 
 UrlValidator::UrlValidator()
-    : url(R"(^(https?:\/\/)?(www\.)?[a-zA-Z0-9-]+(\.[a-zA-Z]{2,})(\/\S*)?$)") {}
+    : url(
+        R"(^(?:https?:\/\/)?(?:www\.)?[a-zA-Z]{2,}(?:\.[a-zA-Z]{2,}){1,2}(?:\/[a-zA-Z0-9]{2,})?|(?:https?:\/\/)?(?:www\.)?[a-zA-Z0-9]{2,}(?:\.[a-zA-Z0-9]{2,}){2,}(?:\/[a-zA-Z0-9]{2,})?$)"
+    ) {}
 
 UrlValidator::UrlValidator(const UrlValidator& other)
     : url(other.url) {}
@@ -16,11 +18,11 @@ UrlValidator& UrlValidator::operator=(const UrlValidator& other) {
 }
 
 UrlValidator::UrlValidator(UrlValidator&& other) noexcept
-    : url(move(other.url)) {}
+    : url(std::move(other.url)) {}
 
 UrlValidator& UrlValidator::operator=(UrlValidator&& other) noexcept {
     if (this != &other) {
-        const_cast<regex&>(url) = move(other.url);
+        const_cast<regex&>(url) = std::move(other.url);
     }
     return *this;
 }
