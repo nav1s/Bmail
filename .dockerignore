@@ -1,12 +1,9 @@
 # Ignore build artifacts
-build/
 bin/
 obj/
 out/
 
 # Ignore CMake and Makefiles outputs
-CMakeFiles/
-CMakeCache.txt
 Makefile
 cmake_install.cmake
 
