@@ -7,7 +7,7 @@
 
 using namespace std;
 
-BloomFilter::BloomFilter(size_t size, std::vector<std::shared_ptr<IHashFunction>> hashFuncs)
+BloomFilter::BloomFilter(size_t size, vector<shared_ptr<IHashFunction>> hashFuncs)
     : arraySize(size),
       hashFunctions(hashFuncs),
       bitArray(size, false)
@@ -27,7 +27,7 @@ BloomFilter::BloomFilter(BloomFilter&& other) noexcept
 
 BloomFilter::~BloomFilter() = default;
 
-void BloomFilter::add(const std::string& item) {
+void BloomFilter::add(const string& item) {
     realBlacklist.insert(item);
     // Optional: Enable if resizing is allowed later
     // if (checkArraySize()) {
@@ -59,7 +59,7 @@ size_t BloomFilter::getIndex(const IHashFunction& hashFunc, const string& item) 
     return hashFunc.hash(item) % arraySize; 
 }
 
-bool BloomFilter::possiblyContains(const std::string& item) const {
+bool BloomFilter::possiblyContains(const string& item) const {
     for (const auto& hashFunc : hashFunctions) {
         if (bitArray[getIndex(*hashFunc, item)]) {
             return true;
