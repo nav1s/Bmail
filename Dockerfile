@@ -19,4 +19,4 @@ WORKDIR /usr/src/mytest/build
 RUN cmake .. && make
 
 # Set default command to run tests
-CMD ["./runTests"]
+CMD ["./filter"]
