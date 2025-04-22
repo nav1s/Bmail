@@ -369,3 +369,4 @@ healthchecksdb
 MigrationBackup/
 
 **.out
+tests-build
