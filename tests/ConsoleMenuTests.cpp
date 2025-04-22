@@ -1,12 +1,18 @@
 #include "../src/menu/ConsoleMenu.h"
 #include <gtest/gtest.h>
 
+/**
+ * @class ConsoleMenuTest
+ * @brief Test fixture for ConsoleMenu unit tests.
+ */
 class ConsoleMenuTest : public ::testing::Test {
 protected:
   ConsoleMenu menu;
 };
 
-// Helper function to simulate user input
+/**
+ * @brief Helper function to simulate user input for testing.
+ */
 void simulateInput(const std::string &input) {
   // 1. Create an input string stream from the provided string
   std::istringstream *in = new std::istringstream(input);
@@ -15,6 +21,9 @@ void simulateInput(const std::string &input) {
   std::cin.rdbuf(in->rdbuf());
 }
 
+/**
+ * @brief Test case for valid menu command inputs.
+ */
 TEST_F(ConsoleMenuTest, ValidCommands) {
   simulateInput("2 www.example.com0\n");
   int command = menu.nextCommand();
@@ -37,6 +46,9 @@ TEST_F(ConsoleMenuTest, ValidCommands) {
   EXPECT_EQ(command, 2);
 }
 
+/**
+ * @brief Test case for invalid menu command inputs.
+ */
 TEST_F(ConsoleMenuTest, InvalidCommands) {
   // Test invalid command input (non-number start)
   simulateInput("x www.example.com\n");
