@@ -24,6 +24,9 @@ runTests
 
 ./UrlValidatorTests.cpp 
 ../src/StringValidator/UrlValidator.cpp
+
+./ConsoleMenuTests.cpp
+../src/menu/ConsoleMenu.cpp
 )
 
 target_link_libraries(runTests gtest_main)
