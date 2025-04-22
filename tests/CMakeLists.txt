@@ -27,6 +27,9 @@ runTests
 
 ./ConsoleMenuTests.cpp
 ../src/menu/ConsoleMenu.cpp
+
+./FileReaderTests.cpp
+../src/input/FileReader.cpp
 )
 
 target_link_libraries(runTests gtest_main)
