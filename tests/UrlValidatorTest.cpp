@@ -8,19 +8,29 @@ protected:
 
 // Test case for various valid URLs
 TEST_F(UrlValidatorTests, ValidUrls) {
-    // Basic HTTPS (from original)
+    // Tests from the exercise 
+    EXPECT_TRUE(validator.validate("http://www.example.com0"));
+    EXPECT_TRUE(validator.validate("http://www.example.com1"));
+    EXPECT_TRUE(validator.validate("http://www.example.com4"));
+    EXPECT_TRUE(validator.validate("http://www.example.com7"));
+    EXPECT_TRUE(validator.validate("http://www.example.com11"));
+
+    // https tests
     EXPECT_TRUE(validator.validate("https://www.google.com"));
     EXPECT_TRUE(validator.validate("https://mail.google.com"));
     EXPECT_TRUE(validator.validate("https://www.kanarit.com"));
 
-    // Basic HTTP
+    // http tests
     EXPECT_TRUE(validator.validate("http://example.com"));
+    EXPECT_TRUE(validator.validate("http://google.com"));
 
     // With path
     EXPECT_TRUE(validator.validate("https://www.google.com/search"));
+    EXPECT_TRUE(validator.validate("https://www.google.com/drive"));
 
     // Subdomains
     EXPECT_TRUE(validator.validate("https://sub.domain.example.com"));
+    EXPECT_TRUE(validator.validate("https://drive.google.com"));
 
     // Different TLDs
     EXPECT_TRUE(validator.validate("https://example.org"));
@@ -40,13 +50,13 @@ TEST_F(UrlValidatorTests, InvalidUrls) {
     // Non-URL strings
     EXPECT_FALSE(validator.validate("1234"));
     EXPECT_FALSE(validator.validate("just a string"));
-    EXPECT_FALSE(validator.validate("")); // Empty string
+    EXPECT_FALSE(validator.validate(""));
 
     // Invalid protocol scheme
     EXPECT_FALSE(validator.validate("htp://google.com"));
-    EXPECT_FALSE(validator.validate("https:// google.com")); // Space after scheme
-    EXPECT_FALSE(validator.validate("ftp:/example.com")); // Common mistake, needs ftp://
-    EXPECT_FALSE(validator.validate("javascript:alert('hi')")); // Not an HTTP/S URL
+    EXPECT_FALSE(validator.validate("https:// google.com"));
+    EXPECT_FALSE(validator.validate("ftp:/example.com"));
+    EXPECT_FALSE(validator.validate("javascript:alert('hi')"));
 
     // Malformed URLs
     EXPECT_FALSE(validator.validate("http:/google.com")); // Single slash after scheme
