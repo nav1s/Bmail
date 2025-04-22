@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.10)
 
-project(Bmail-tests)
+project(BmailTests)
 
 set(CMAKE_CXX_STANDARD 11)
 
@@ -14,6 +14,16 @@ FetchContent_Declare(
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
 
-add_executable(runTests ./UrlValidatorTest.cpp ../src/StringValidator/UrlValidator.cpp)
+add_executable(
+runTests 
+./main.cpp
+
+./BloomFilterTests.cpp
+../src/filter/BloomFilter.cpp
+../src/hash/StdHash.cpp
+
+./UrlValidatorTest.cpp 
+../src/StringValidator/UrlValidator.cpp
+)
 
 target_link_libraries(runTests gtest_main)
