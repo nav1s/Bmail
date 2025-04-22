@@ -1,12 +1,20 @@
 #include <gtest/gtest.h>
 #include "../src/StringValidator/UrlValidator.h"
 
+/**
+ * @class UrlValidatorTests
+ * @brief Test fixture for UrlValidator unit tests.
+ * 
+ * Provides a common UrlValidator instance for all test cases.
+ */
 class UrlValidatorTests : public ::testing::Test {
 protected:
-    UrlValidator validator;
+    UrlValidator validator; 
 };
 
-// Test case for various valid URLs
+/**
+ * @brief Test case for validating various correct URL formats.
+ */
 TEST_F(UrlValidatorTests, ValidUrls) {
     // Tests from the exercise 
     EXPECT_TRUE(validator.validate("http://www.example.com0"));
@@ -42,10 +50,11 @@ TEST_F(UrlValidatorTests, ValidUrls) {
     EXPECT_TRUE(validator.validate("www.google.com"));
     EXPECT_TRUE(validator.validate("google.com"));
     EXPECT_TRUE(validator.validate("example.com/path"));
-
 }
 
-// Test case for various invalid URLs
+/**
+ * @brief Test case for validating various incorrect URL formats.
+ */
 TEST_F(UrlValidatorTests, InvalidUrls) {
     // Non-URL strings
     EXPECT_FALSE(validator.validate("1234"));
