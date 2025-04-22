@@ -67,3 +67,20 @@ TEST_F(BloomFilterTests, EmptyFilterCheck) {
 
     EXPECT_FALSE(filter->isBlacklisted("anyitem"));
 }
+
+TEST_F(BloomFilterTests, OneArrayCell) {
+    hashFunctions.push_back(std::make_shared<StdHash>(1));
+    filter = std::make_shared<BloomFilter>(1, hashFunctions);
+
+    filter->add("parrot");
+    filter->add("tilde");
+    filter->add("apple");
+    filter->add("black");
+    EXPECT_TRUE(filter->isBlacklisted("parrot"));
+    EXPECT_TRUE(filter->isBlacklisted("tilde"));
+    EXPECT_TRUE(filter->isBlacklisted("apple"));
+    EXPECT_TRUE(filter->isBlacklisted("black"));
+
+    EXPECT_FALSE(filter->isBlacklisted("true"));
+    EXPECT_FALSE(filter->isBlacklisted("fly"));
+}
