@@ -22,7 +22,7 @@ runTests
 ../src/filter/BloomFilter.cpp
 ../src/hash/StdHash.cpp
 
-./UrlValidatorTest.cpp 
+./UrlValidatorTests.cpp 
 ../src/StringValidator/UrlValidator.cpp
 )
 
