@@ -78,9 +78,3 @@ TEST_F(UrlValidatorTests, InvalidUrls) {
     // Protocol-relative URLs 
     EXPECT_FALSE(validator.validate("//google.com"));
 }
-
-// Main function to run all tests
-int main(int argc, char **argv) {
-    ::testing::InitGoogleTest(&argc, argv);
-    return RUN_ALL_TESTS();
-}
