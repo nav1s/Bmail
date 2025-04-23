@@ -47,12 +47,12 @@ bool BloomFilter::isBlacklisted(const string& item) const {
     return false;
 }
 
-void BloomFilter::saveToFile(const std::string& path) const {
+void BloomFilter::saveToFile(const string& path) const {
     BloomFilterFileManager manager(path);
     manager.save((void*)this);  // safe here because BloomFilterFileManager expects void*
 }
 
-void BloomFilter::loadFromFile(const std::string& path) {
+void BloomFilter::loadFromFile(const string& path) {
     BloomFilterFileManager manager(path);
     manager.load((void*)this);
 }
