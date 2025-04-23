@@ -3,15 +3,10 @@
 #include <sstream>
 #include <stdexcept>
 #include <filesystem>
+#include <FileReader.h>
+#include <HashFactory.h>
 
-using string;
-using ifstream;
-using ofstream;
-using runtime_error;
-using istringstream;
-using getline;
-using move;
-using vector;
+using namespace std;
 using filesystem::path;
 using filesystem::create_directories;
 using filesystem::exists;
