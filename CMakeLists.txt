@@ -17,4 +17,5 @@ src/input/CliReader.cpp
 src/FileManager/BloomFilterFileManager.cpp
 src/hash/HashFactory.cpp
 src/input/FileReader.cpp
+src/Output/CliPrinter.cpp
 )
