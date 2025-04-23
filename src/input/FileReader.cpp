@@ -9,7 +9,7 @@ FileReader::FileReader(FileReader&& other) noexcept
 
 FileReader& FileReader::operator=(FileReader&& other) noexcept {
     if (this != &other) {
-        file = std::move(other.file);
+        file = move(other.file);
     }
     return *this;
 }
