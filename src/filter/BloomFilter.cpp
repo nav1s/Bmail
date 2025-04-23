@@ -1,6 +1,9 @@
 #include "BloomFilter.h"
 #include "../hash/IHashFunction.h"
 #include <memory>
+#include <vector>
+#include <string>
+#include "BloomFilterFileManager.h"
 
 using namespace std;
 
@@ -44,12 +47,14 @@ bool BloomFilter::isBlacklisted(const string& item) const {
     return false;
 }
 
-// needs implementation
 void BloomFilter::saveToFile(const string& path) const {
+    BloomFilterFileManager manager(path);
+    manager.save((void*)this);  // safe here because BloomFilterFileManager expects void*
 }
 
-// needs implementation
 void BloomFilter::loadFromFile(const string& path) {
+    BloomFilterFileManager manager(path);
+    manager.load((void*)this);
 }
 
 size_t BloomFilter::getIndex(const IHashFunction& hashFunc, const string& item) const {
@@ -69,6 +74,36 @@ bool BloomFilter::possiblyContains(const string& item) const {
 bool BloomFilter::isActuallyBlacklisted(const string& item) const {
     return realBlacklist.find(item) != realBlacklist.end();
 }
+
+const std::vector<bool>& BloomFilter::getBitArray() const {
+    return bitArray;
+}
+
+std::unordered_set<std::string> BloomFilter::getBlacklist() const {
+    return realBlacklist;
+}
+
+size_t BloomFilter::getArraySize() const {
+    return arraySize;
+}
+
+std::vector<std::shared_ptr<IHashFunction>> BloomFilter::getHashFunctions() const {
+    return hashFunctions;
+}
+
+void BloomFilter::reset(size_t size, const std::vector<bool>& bits, const std::vector<std::shared_ptr<IHashFunction>>& hashes, const std::unordered_set<std::string>& blacklist) {
+if (bits.size() != size) {
+throw std::invalid_argument("reset: Bit array size does not match filter size");
+}
+
+arraySize = size;
+bitArray = bits;
+hashFunctions = hashes;
+realBlacklist = blacklist;
+}
+
+
+
 
 //currently disabled
 /*

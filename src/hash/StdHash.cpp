@@ -18,3 +18,7 @@ size_t StdHash::hash(const std::string& input) const {
     }
     return result;
 }
+
+std::string StdHash::getSignature() const {
+    return "std:" + std::to_string(reps);
+}

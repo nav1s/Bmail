@@ -83,12 +83,52 @@ public:
      * @param path The path of the file to read from.
      */
     void loadFromFile(const string& path);
+
+    /**
+     * @brief Returns a const reference to the internal bit array.
+     * @return A const vector<bool>& representing the Bloom filter bit array.
+     */
+    const std::vector<bool>& getBitArray() const;
+
+    /**
+     * @brief Returns a copy of the blacklist.
+     */
+    std::unordered_set<std::string> getBlacklist() const;
+
+    /**
+     * @brief Returns the size of the internal bit array.
+     * @return The number of bits in the Bloom filter.
+     */
+    size_t getArraySize() const;
+
+    /**
+     * @brief Returns a copy of the hash functions used by the Bloom filter.
+     *
+     * This method is useful for inspecting or serializing the current hash strategy.
+     * It returns a vector of `shared_ptr<IHashFunction>` to preserve polymorphism.
+     *
+     * @return A vector of shared pointers to the hash functions.
+     */
+    std::vector<std::shared_ptr<IHashFunction>> getHashFunctions() const;
+
+    /**
+     * @brief Resets the entire Bloom filter state from provided data.
+     *
+     * This method is used to fully restore the internal state during loading.
+     * It clears and replaces all core data structures: bit array, hash functions, and blacklist.
+     *
+     * @param size Number of bits in the filter.
+     * @param bits The new bit array.
+     * @param hashes Hash functions to apply.
+     * @param blacklist Set of blacklisted input strings.
+     */
+    void reset(size_t size, const std::vector<bool>& bits, const std::vector<std::shared_ptr<IHashFunction>>& hashes, const std::unordered_set<std::string>& blacklist);
+
 private:
     /**
      * @brief Size of the bit array.
-     * may be changed later to not a const value if want to increase size
      */
-    const size_t arraySize;
+    size_t arraySize;
 
     /**
      * @brief The bit array used for the filter.
@@ -98,7 +138,7 @@ private:
     /**
      * @brief A list of hash functions used in the filter.
      */
-    const std::vector<std::shared_ptr<IHashFunction>> hashFunctions;
+    std::vector<std::shared_ptr<IHashFunction>> hashFunctions;
 
     /**
      * @brief A real blacklist for confirming true membership.
@@ -126,6 +166,9 @@ private:
      * @return True if the item is in the blacklist, false otherwise.
      */
     bool isActuallyBlacklisted(const string& item) const;
+
+    
+
 
     /**
      * @brief Checks if the bit array is more than 70% full.
