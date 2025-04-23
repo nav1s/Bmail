@@ -42,5 +42,5 @@ void QueryFilterCommand::execute(const string& arg) {
 
     bool contain = filter->possiblyContains(arg);
     bool result = filter->isBlacklisted(arg);
-    writer.putLine(string(contain ? "true" : "false") + string(result ? "true" : "false"));
+    writer.putLine(contain? "true " + string(result ? "true" : "false"): "false");
 }
