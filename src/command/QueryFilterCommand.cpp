@@ -5,25 +5,13 @@
 
 using namespace std;
 
-// Constructor: Initializes the QueryFilterCommand with a given filter, URL, and reference blacklist.
-QueryFilterCommand::QueryFilterCommand(shared_ptr<IFilter> filter, const string& url)
-    // This constructor stores the URL and ground truth set. It also moves ownership of the filter shared pointer.
-    : filter(std::move(filter)), url(url) {}
-
-// Destructor: Default implementation is sufficient as we rely on smart pointers for resource management.
-QueryFilterCommand::~QueryFilterCommand() = default;
-
-// Copy Constructor: Creates a deep copy of another QueryFilterCommand.
-QueryFilterCommand::QueryFilterCommand(const QueryFilterCommand& other)
-    : filter(other.filter),         // Copy shared_ptr (increases ref count).
-      url(other.url)               // Copy URL string.
-{}
-
-// Copy Assignment Operator: Handles assignment from another QueryFilterCommand.
-QueryFilterCommand& QueryFilterCommand::operator=(const QueryFilterCommand& other) {
-    if (this != &other) { // Prevent self-assignment
-        filter = other.filter;                 // Copy shared_ptr (increase ref count)
-        url = other.url;                       // Copy URL string
+void QueryFilterCommand::execute() {
+    std::string url;
+    std::cin >> url;
+    if (filter->isBlacklisted(url)) {
+        std::cout << "URL might exist (possibly in filter).\n";
+    } else {
+        std::cout << "URL does not exist in filter.\n";
     }
     return *this; // Return reference to allow chaining
 }
