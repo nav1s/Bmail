@@ -1,8 +1,7 @@
 // ===== File: IMenu.h =====
 // Interface that abstracts the user menu interaction (could be console, GUI, etc.)
 
-#ifndef IMENU_H
-#define IMENU_H
+#pragma once
 
 #include <string>
 
@@ -31,5 +30,3 @@ public:
      */
     virtual void displayError(const string& error) = 0;
 };
-
-#endif // IMENU_H

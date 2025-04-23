@@ -1,8 +1,7 @@
 // ===== File: App.h =====
 // Main controller class that connects the filter, menu, and commands
 
-#ifndef APP_H
-#define APP_H
+#pragma once
 
 #include <map>
 #include <memory>
@@ -79,5 +78,3 @@ public:
      */
     void registerCommand(int type, function<void(const string&)> commandFactoryFunc);
 };
-
-#endif // APP_H

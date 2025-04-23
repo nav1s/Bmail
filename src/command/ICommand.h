@@ -1,8 +1,7 @@
 // ===== File: ICommand.h =====
 // Interface for command pattern. Each command should implement execute()
 
-#ifndef ICOMMAND_H
-#define ICOMMAND_H
+#pragma once
 
 /**
  * @class ICommand
@@ -20,5 +19,3 @@ public:
      */
     virtual bool execute() = 0;
 };
-
-#endif  // ICOMMAND_H
