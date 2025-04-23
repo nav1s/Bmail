@@ -371,3 +371,4 @@ MigrationBackup/
 
 **.out
 tests-build
+.vscode
