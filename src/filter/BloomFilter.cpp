@@ -20,21 +20,21 @@ BloomFilter::BloomFilter(const BloomFilter& other)
       realBlacklist(other.realBlacklist) {}
 
 BloomFilter::BloomFilter(BloomFilter&& other) noexcept
-    : arraySize(std::move(other.arraySize)),
-      bitArray(std::move(other.bitArray)),
-      hashFunctions(std::move(other.hashFunctions)),
-      realBlacklist(std::move(other.realBlacklist)) {}
+    : arraySize(move(other.arraySize)),
+      bitArray(move(other.bitArray)),
+      hashFunctions(move(other.hashFunctions)),
+      realBlacklist(move(other.realBlacklist)) {}
 
 BloomFilter::~BloomFilter() = default;
 
 void BloomFilter::add(const string& item) {
     realBlacklist.insert(item);
-    // Optional: Enable if resizing is allowed later
+    // resizing array: disabled atm
     // if (checkArraySize()) {
     //     resizeArray();
     // }
     for (const auto& hashFunc : hashFunctions) {
-        size_t i = getIndex(*hashFunc, item); // dereference pointer to call hash
+        size_t i = getIndex(*hashFunc, item);
         bitArray[i] = true;
     }
 }
@@ -49,7 +49,7 @@ bool BloomFilter::isBlacklisted(const string& item) const {
 
 void BloomFilter::saveToFile(const string& path) const {
     BloomFilterFileManager manager(path);
-    manager.save((void*)this);  // safe here because BloomFilterFileManager expects void*
+    manager.save((void*)this);
 }
 
 void BloomFilter::loadFromFile(const string& path) {
@@ -75,11 +75,11 @@ bool BloomFilter::isActuallyBlacklisted(const string& item) const {
     return realBlacklist.find(item) != realBlacklist.end();
 }
 
-const std::vector<bool>& BloomFilter::getBitArray() const {
+const vector<bool>& BloomFilter::getBitArray() const {
     return bitArray;
 }
 
-std::unordered_set<std::string> BloomFilter::getBlacklist() const {
+unordered_set<string> BloomFilter::getBlacklist() const {
     return realBlacklist;
 }
 
@@ -87,15 +87,11 @@ size_t BloomFilter::getArraySize() const {
     return arraySize;
 }
 
-std::vector<std::shared_ptr<IHashFunction>> BloomFilter::getHashFunctions() const {
+vector<shared_ptr<IHashFunction>> BloomFilter::getHashFunctions() const {
     return hashFunctions;
 }
 
-void BloomFilter::reset(size_t size, const std::vector<bool>& bits, const std::vector<std::shared_ptr<IHashFunction>>& hashes, const std::unordered_set<std::string>& blacklist) {
-if (bits.size() != size) {
-throw std::invalid_argument("reset: Bit array size does not match filter size");
-}
-
+void BloomFilter::reset(size_t size, const vector<bool>& bits, const vector<shared_ptr<IHashFunction>>& hashes, const unordered_set<string>& blacklist) {
 arraySize = size;
 bitArray = bits;
 hashFunctions = hashes;
