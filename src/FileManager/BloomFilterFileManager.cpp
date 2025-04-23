@@ -3,17 +3,14 @@
 #include <sstream>
 #include <stdexcept>
 #include <filesystem>
-#include <FileReader.h>
-#include <HashFactory.h>
+#include "../input/FileReader.h"
+#include "../hash/HashFactory.h"
 
 using namespace std;
 using filesystem::path;
 using filesystem::create_directories;
 using filesystem::exists;
 
-/**
- * @brief Constructor: takes a directory path and appends "BloomFilter.txt"
- */
 BloomFilterFileManager::BloomFilterFileManager(const string& directory) {
     path dirPath(directory);
 
@@ -24,21 +21,12 @@ BloomFilterFileManager::BloomFilterFileManager(const string& directory) {
     filePath = (dirPath / "BloomFilter.txt").string();
 }
 
-/**
- * @brief Copy constructor
- */
 BloomFilterFileManager::BloomFilterFileManager(const BloomFilterFileManager& other)
     : filePath(other.filePath) {}
 
-/**
- * @brief Move constructor
- */
 BloomFilterFileManager::BloomFilterFileManager(BloomFilterFileManager&& other) noexcept
     : filePath(move(other.filePath)) {}
 
-/**
- * @brief Copy assignment
- */
 BloomFilterFileManager& BloomFilterFileManager::operator=(const BloomFilterFileManager& other) {
     if (this != &other) {
         filePath = other.filePath;
@@ -46,9 +34,6 @@ BloomFilterFileManager& BloomFilterFileManager::operator=(const BloomFilterFileM
     return *this;
 }
 
-/**
- * @brief Move assignment
- */
 BloomFilterFileManager& BloomFilterFileManager::operator=(BloomFilterFileManager&& other) noexcept {
     if (this != &other) {
         filePath = move(other.filePath);
@@ -56,9 +41,6 @@ BloomFilterFileManager& BloomFilterFileManager::operator=(BloomFilterFileManager
     return *this;
 }
 
-/**
- * @brief Destructor
- */
 BloomFilterFileManager::~BloomFilterFileManager() = default;
 
 /**
@@ -100,9 +82,6 @@ void BloomFilterFileManager::save(void* object) const {
     out << "\n";
     }
 
-/**
- * @brief Load BloomFilter object from file
- */
 void BloomFilterFileManager::load(void* object) const {
     // Validate object type
     BloomFilter* filter = static_cast<BloomFilter*>(object);
