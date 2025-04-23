@@ -3,12 +3,11 @@
 #include <sstream>
 #include <stdexcept>
 #include <filesystem>
-#include <FileReader.h>
-#include <HashFactory.h>
+#include "../input/FileReader.h"
+#include "../hash/HashFactory.h"
 
 using namespace std;
 using filesystem::path;
-using filesystem::create_directories;
 using filesystem::exists;
 
 /**
@@ -34,7 +33,7 @@ BloomFilterFileManager::BloomFilterFileManager(const BloomFilterFileManager& oth
  * @brief Move constructor
  */
 BloomFilterFileManager::BloomFilterFileManager(BloomFilterFileManager&& other) noexcept
-    : filePath(move(other.filePath)) {}
+    : filePath(std::move(other.filePath)) {}
 
 /**
  * @brief Copy assignment
@@ -51,7 +50,7 @@ BloomFilterFileManager& BloomFilterFileManager::operator=(const BloomFilterFileM
  */
 BloomFilterFileManager& BloomFilterFileManager::operator=(BloomFilterFileManager&& other) noexcept {
     if (this != &other) {
-        filePath = move(other.filePath);
+        filePath = std::move(other.filePath);
     }
     return *this;
 }
