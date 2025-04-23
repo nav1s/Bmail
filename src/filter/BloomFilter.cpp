@@ -4,6 +4,9 @@
 #include "hash/IHashFunction.h"
 #include "hash/StdHash.h"
 #include <memory>
+#include <vector>
+#include <string>
+
 
 using namespace std;
 
@@ -72,6 +75,36 @@ bool BloomFilter::possiblyContains(const string& item) const {
 bool BloomFilter::isActuallyBlacklisted(const string& item) const {
     return realBlacklist.find(item) != realBlacklist.end();
 }
+
+const std::vector<bool>& BloomFilter::getBitArray() const {
+    return bitArray;
+}
+
+std::unordered_set<std::string> BloomFilter::getBlacklist() const {
+    return realBlacklist;
+}
+
+size_t BloomFilter::getArraySize() const {
+    return arraySize;
+}
+
+std::vector<std::shared_ptr<IHashFunction>> BloomFilter::getHashFunctions() const {
+    return hashFunctions;
+}
+
+void BloomFilter::reset(size_t size, const std::vector<bool>& bits, const std::vector<std::shared_ptr<IHashFunction>>& hashes, const std::unordered_set<std::string>& blacklist) {
+if (bits.size() != size) {
+throw std::invalid_argument("reset: Bit array size does not match filter size");
+}
+
+arraySize = size;
+bitArray = bits;
+hashFunctions = hashes;
+realBlacklist = blacklist;
+}
+
+
+
 
 //currently disabled
 /*

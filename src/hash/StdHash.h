@@ -53,6 +53,13 @@ public:
      */
     size_t hash(const std::string& input) const override;
 
+    /**
+     * @brief Returns a string signature representing this hash function configuration.
+     * @return A string like "std:n"
+     */
+    std::string getSignature() const override;
+
+
 private:
     int reps; ///< Number of hash repetitions to apply
 };
