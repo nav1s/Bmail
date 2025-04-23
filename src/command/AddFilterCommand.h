@@ -16,10 +16,10 @@
 class AddFilterCommand : public ICommand {
 private:
     // Shared pointer to the IFilter object that will be modified
-    shared_ptr<IFilter> filter;
+    std::shared_ptr<IFilter> filter;
 
     // The URL that will be added to the filter
-    string url;
+    std::string url;
 public:
     /**
     * @brief Constructs an AddFilterCommand object.
@@ -30,7 +30,7 @@ public:
     * The constructor initializes the filter member by moving the passed-in shared pointer,
     * and stores the URL string as is.
     */
-    AddFilterCommand(shared_ptr<IFilter> filter, const string& url);
+    AddFilterCommand(std::shared_ptr<IFilter> filter, const std::string& url);
 
     /**
      * @brief Destructor for the AddFilterCommand object.

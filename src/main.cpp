@@ -7,13 +7,10 @@
 #include <iostream>
 #include <sstream>
 #include <memory>
-#include <set>
 
 using namespace std;
 
 int main() {
-    cout << "foobar\n";
-
     // Read initialization line from user input (format: <arraySize> <hashCount>)
     string initLine;
     getline(cin, initLine);

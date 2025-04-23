@@ -19,10 +19,10 @@
 class QueryFilterCommand : public ICommand {
     private:
         // Shared pointer to the filter used for checking blacklist status
-        shared_ptr<IFilter> filter;
+        std::shared_ptr<IFilter> filter;
     
         // URL string to query within the filter
-        string url;
+        std::string url;
 public:
     /*
      * @brief Constructs a QueryFilterCommand object.
@@ -30,7 +30,7 @@ public:
      * @param url The URL string to query.
      * @param trueBlacklist A reference set of URLs that are truly blacklisted (ground truth).
      */
-    QueryFilterCommand(shared_ptr<IFilter> filter, const string& url);
+    QueryFilterCommand(std::shared_ptr<IFilter> filter, const std::string& url);
 
     /*
      * @brief Destructor for the QueryFilterCommand object.

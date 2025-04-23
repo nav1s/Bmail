@@ -39,21 +39,21 @@ App& App::operator=(const App& other) {
 
 // Move constructor
 App::App(App&& other) noexcept
-: commands(move(other.commands)),
- filter(move(other.filter)),
- menu(move(other.menu)),
- inputReader(move(other.inputReader)),
- urlValidator(move(other.urlValidator))
+: commands(std::move(other.commands)),
+ filter(std::move(other.filter)),
+ menu(std::move(other.menu)),
+ inputReader(std::move(other.inputReader)),
+ urlValidator(std::move(other.urlValidator))
 {}
 
 // Move assignment
 App& App::operator=(App&& other) noexcept {
     if (this != &other) {
-    commands = move(other.commands);
-    filter = move(other.filter);
-    menu = move(other.menu);
-    inputReader = move(other.inputReader);
-    urlValidator = move(other.urlValidator);
+    commands = std::move(other.commands);
+    filter = std::move(other.filter);
+    menu = std::move(other.menu);
+    inputReader = std::move(other.inputReader);
+    urlValidator = std::move(other.urlValidator);
     }
     return *this;
 }

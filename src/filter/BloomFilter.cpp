@@ -1,8 +1,5 @@
 #include "BloomFilter.h"
-#include <algorithm>
-#include <fstream>
-#include "hash/IHashFunction.h"
-#include "hash/StdHash.h"
+#include "../hash/IHashFunction.h"
 #include <memory>
 
 using namespace std;
@@ -20,10 +17,10 @@ BloomFilter::BloomFilter(const BloomFilter& other)
       realBlacklist(other.realBlacklist) {}
 
 BloomFilter::BloomFilter(BloomFilter&& other) noexcept
-    : arraySize(move(other.arraySize)),
-      bitArray(move(other.bitArray)),
-      hashFunctions(move(other.hashFunctions)),
-      realBlacklist(move(other.realBlacklist)) {}
+    : arraySize(std::move(other.arraySize)),
+      bitArray(std::move(other.bitArray)),
+      hashFunctions(std::move(other.hashFunctions)),
+      realBlacklist(std::move(other.realBlacklist)) {}
 
 BloomFilter::~BloomFilter() = default;
 
@@ -47,11 +44,11 @@ bool BloomFilter::isBlacklisted(const string& item) const {
     return false;
 }
 
-// needs implemintation
+// needs implementation
 void BloomFilter::saveToFile(const string& path) const {
 }
 
-// needs implemintation
+// needs implementation
 void BloomFilter::loadFromFile(const string& path) {
 }
 

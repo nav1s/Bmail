@@ -3,6 +3,7 @@
 CMakeCache.*
 CMakeFiles/*
 [Tt]esting/*
+.cursor
 
 ### VisualStudioCode ###
 .vscode/*
@@ -10,6 +11,7 @@ CMakeFiles/*
 .vscode/tasks.json
 .vscode/launch.json
 .vscode/extensions.json
+.cursor
 
 ### VisualStudioCode Patch ###
 # Ignore all local history of files
@@ -368,3 +370,5 @@ healthchecksdb
 MigrationBackup/
 
 **.out
+tests-build
+.vscode
