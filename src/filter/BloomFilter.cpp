@@ -3,7 +3,7 @@
 #include <memory>
 #include <vector>
 #include <string>
-#include "BloomFilterFileManager.h"
+#include "../FileManager/BloomFilterFileManager.h"
 
 using namespace std;
 
