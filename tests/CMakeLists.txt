@@ -18,6 +18,9 @@ runTests
 ./tester.cpp
 
 ./BloomFilterTests.cpp
+../src/FileManager/BloomFilterFileManager.cpp
+../src/hash/HashFactory.cpp
+../src/input/FileReader.cpp
 ../src/filter/BloomFilter.cpp
 ../src/hash/StdHash.cpp
 
