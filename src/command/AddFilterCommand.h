@@ -52,5 +52,5 @@ public:
     void execute(const std::string& arg = "") override;
 
 private:
-    IFilter* filter;  ///< Pointer to the target filter (non-owning).
+    IFilter* filter;
 };
