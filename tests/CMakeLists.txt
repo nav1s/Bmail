@@ -30,6 +30,9 @@ runTests
 
 ./FileReaderTests.cpp
 ../src/input/FileReader.cpp
+
+./CliReaderTests.cpp
+../src/input/CliReader.cpp
 )
 
 target_link_libraries(runTests gtest_main)
