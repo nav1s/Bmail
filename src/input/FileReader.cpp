@@ -5,7 +5,7 @@ FileReader::FileReader(const string& filePath)
     : file(filePath) {}
 
 FileReader::FileReader(FileReader&& other) noexcept
-    : file(move(other.file)) {}
+    : file(std::move(other.file)) {}
 
 FileReader& FileReader::operator=(FileReader&& other) noexcept {
     if (this != &other) {
