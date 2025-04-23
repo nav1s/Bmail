@@ -1,38 +1,80 @@
-// App.h
-#ifndef APP_H
-#define APP_H
+// ===== File: App.h =====
+// Main controller class that connects the filter, menu, and commands
+
+#pragma once
 
 #include <map>
-#include <string>
 #include <memory>
-
+#include <string>
+#include <set>
+#include <functional>
 #include "../command/ICommand.h"
 #include "../filter/IFilter.h"
 #include "../menu/IMenu.h"
+#include "../command/AddFilterCommand.h"
+#include "../command/QueryFilterCommand.h"
+#include "../filter/BloomFilter.h"
+#include "../menu/ConsoleMenu.h"
+#include "../input/InputReader.h"
+#include "../StringValidator/UrlValidator.h"
 
-using namespace std;
-
-// Represents the main application class that controls the flow of commands and menu
+/**
+ * @class App
+ * @brief Main application class managing the command flow.
+ */
 class App {
 private:
     // Maps menu options to corresponding commands
-    map<int, std::shared_ptr<ICommand>> commands;
+    map<int, function<void(const string&)>> commands;
 
-    // Which filter used for storing/querying URLs
+    // The Filter which is used for storing/querying URLs
     shared_ptr<IFilter> filter;
 
     // The menu interface (used for interaction with user)
     shared_ptr<IMenu> menu;
 
+    // Reader for user input (e.g., from CLI or file)
+    shared_ptr<InputReader> inputReader;
+
+    // Validator for checking URL format and logic
+    shared_ptr<UrlValidator> urlValidator;
 public:
-    // Constructor initializing the app with a filter and menu implementation
-    App(shared_ptr<IFilter> filter, shared_ptr<IMenu> menu);
+     /**
+     * @brief Constructs the App with all dependencies.
+     * @param filter Shared pointer to the IFilter implementation.
+     * @param menu Shared pointer to the IMenu implementation.
+     * @param inputReader Shared pointer to the InputReader.
+     * @param urlValidator Shared pointer to the UrlValidator.
+     */
+    App(shared_ptr<IFilter> filter,
+        shared_ptr<IMenu> menu,
+        shared_ptr<InputReader> inputReader,
+        shared_ptr<UrlValidator> urlValidator);
 
-    // Registers a new command to a specific option in the menu
-    void registerCommand(int option, shared_ptr<ICommand> command);
+    /** @brief Destructor */
+    ~App();
 
-    // Runs the main application loop
+    /** @brief Copy constructor */
+    App(const App& other);
+
+    /** @brief Copy assignment operator */
+    App& operator=(const App& other);
+
+    /** @brief Move constructor */
+    App(App&& other) noexcept;
+
+    /** @brief Move assignment operator */
+    App& operator=(App&& other) noexcept;
+
+    /**
+     * @brief Starts the application run loop.
+     */
     void run();
-};
 
-#endif // APP_H
+    /**
+     * @brief Registers a new command to a specific option in the menu.
+     * @param option The menu option number.
+     * @param command The command associated with the option.
+     */
+    void registerCommand(int type, function<void(const string&)> commandFactoryFunc);
+};

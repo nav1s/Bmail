@@ -1,23 +1,98 @@
-// App.cpp
+// ===== File: App.cpp =====
+// Logic loop that reads lines, dispatches commands based on prefix (1, 2, etc.) using ICommand interface
+
 #include "App.h"
+#include <sstream>
 
-// Initializes the App with given filter and menu
-App::App(std::shared_ptr<IFilter> filter, std::shared_ptr<IMenu> menu)
-    : filter(filter), menu(menu) {}
+using namespace std;
 
-// Registers a new command to be executed when the given option is chosen
-void App::registerCommand(int option, std::shared_ptr<ICommand> command) {
-    commands[option] = command;
+// Constructor initializes shared pointers to filter, menu, inputReader, and urlValidator
+App::App(shared_ptr<IFilter> filter,
+    shared_ptr<IMenu> menu,
+    shared_ptr<InputReader> inputReader,
+    shared_ptr<UrlValidator> urlValidator)
+: filter(filter), menu(menu), inputReader(inputReader), urlValidator(urlValidator) {}
+
+// Destructor
+App::~App() = default;
+
+// Copy constructor
+App::App(const App& other)
+: commands(other.commands),
+ filter(other.filter),
+ menu(other.menu),
+ inputReader(other.inputReader),
+ urlValidator(other.urlValidator)
+ {}
+
+// Copy assignment
+App& App::operator=(const App& other) {
+    if (this != &other) {
+    commands = other.commands;
+    filter = other.filter;
+    menu = other.menu;
+    inputReader = other.inputReader;
+    urlValidator = other.urlValidator;
+    }
+    return *this;
 }
 
-// Runs the command selection loop
+// Move constructor
+App::App(App&& other) noexcept
+: commands(move(other.commands)),
+ filter(move(other.filter)),
+ menu(move(other.menu)),
+ inputReader(move(other.inputReader)),
+ urlValidator(move(other.urlValidator))
+{}
+
+// Move assignment
+App& App::operator=(App&& other) noexcept {
+    if (this != &other) {
+    commands = move(other.commands);
+    filter = move(other.filter);
+    menu = move(other.menu);
+    inputReader = move(other.inputReader);
+    urlValidator = move(other.urlValidator);
+    }
+    return *this;
+}
+
+void App::registerCommand(int type, std::function<void(const std::string&)> commandFactoryFunc) {
+    commands[type] = std::move(commandFactoryFunc);
+}
+
+
+// Main loop for reading user commands and dispatching corresponding actions
 void App::run() {
     while (true) {
-        int choice = menu->nextCommand(); // Get user input
-        if (commands.find(choice) != commands.end()) {
-            commands[choice]->execute(); // Execute valid command
+        string line; // To hold the current input line
+        // Try to read a line using the inputReader
+        if (!inputReader->getLine(line)) { // If failed or EOF
+            menu->displayError("No more input or failed to read."); // Show message
+            break; // Exit loop
+        }
+
+        istringstream iss(line); // Create stream to parse line
+        int commandType; // First token: 1 or 2
+        string url; // Second token: URL string
+
+        if (!(iss >> commandType >> url)) { // If line malformed
+            menu->displayError("Unknown command"); // Inform user
+            continue; // Skip to next loop iteration
+        }
+
+        if (!urlValidator->validate(url)) {
+            menu->displayError("Invalid URL format");
+            continue;
+        }
+
+        // Dispatch based on command type using SOLID OCP principle
+        auto function = commands.find(commandType);
+        if (function != commands.end()) {
+            function->second(url); // send the URL to the relevant function
         } else {
-            menu->displayError("Unknown command"); // Inform user of invalid choice
+            menu->displayError("Invalid option");
         }
     }
 }

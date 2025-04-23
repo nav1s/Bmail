@@ -1,3 +1,6 @@
+// ===== File: IFilter.h =====
+// Interface that defines the behavior for a filter
+
 #pragma once
 #include <string>
 
@@ -7,6 +10,9 @@
  */
 class IFilter {
 public:
+    /*
+    * @brief Virtual destructor
+    */
     virtual ~IFilter() = default;
     /**
      * @brief Adds an item to the blacklist.
