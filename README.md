@@ -1,7 +1,7 @@
 # Bmail
 
 This project implements a console application demonstrating the use of a Bloom filter.
-Users can add urls to the filter and query whether a url *might* be present in the filter.
+Users can add urls to the filter and query whether a url has been blocked.
 
 It utilizes Docker for building and running both the main application and the unit tests, ensuring a consistent environment.
 
