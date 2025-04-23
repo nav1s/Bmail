@@ -33,6 +33,9 @@ runTests
 
 ./CliReaderTests.cpp
 ../src/input/CliReader.cpp
+
+./StdHashTests.cpp
+../src/hash/StdHash.h
 )
 
 target_link_libraries(runTests gtest_main)
