@@ -2,14 +2,13 @@
 // Refactored for clarity and simplicity
 
 #include "QueryFilterCommand.h"
-#include <iostream>
 
 using namespace std;
 
 // Constructor: Initializes the QueryFilterCommand with a given filter, URL, and reference blacklist.
 QueryFilterCommand::QueryFilterCommand(shared_ptr<IFilter> filter, const string& url)
     // This constructor stores the URL and ground truth set. It also moves ownership of the filter shared pointer.
-    : filter(move(filter)), url(url) {}
+    : filter(std::move(filter)), url(url) {}
 
 // Destructor: Default implementation is sufficient as we rely on smart pointers for resource management.
 QueryFilterCommand::~QueryFilterCommand() = default;
@@ -31,15 +30,15 @@ QueryFilterCommand& QueryFilterCommand::operator=(const QueryFilterCommand& othe
 
 // Move Constructor: Transfers ownership from a temporary QueryFilterCommand.
 QueryFilterCommand::QueryFilterCommand(QueryFilterCommand&& other) noexcept
-    : filter(move(other.filter)),               // Move shared_ptr (no ref count increase)
-      url(move(other.url))                     // Move URL string (cheap)
+    : filter(std::move(other.filter)),               // Move shared_ptr (no ref count increase)
+      url(std::move(other.url))                     // Move URL string (cheap)
 {}
 
 // Move Assignment Operator: Transfers ownership during assignment from a temporary object.
 QueryFilterCommand& QueryFilterCommand::operator=(QueryFilterCommand&& other) noexcept {
     if (this != &other) { // Prevent self-assignment
-        filter = move(other.filter);                 // Move shared_ptr
-        url = move(other.url);                       // Move string
+        filter = std::move(other.filter);                 // Move shared_ptr
+        url = std::move(other.url);                       // Move string
 
     }
     return *this;
