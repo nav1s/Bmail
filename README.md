@@ -7,9 +7,8 @@ It utilizes Docker for building and running both the main application and the un
 
 ## Usage
 
-### Building and Running the Application
+### Running the Application
 
-2.  **Run the application:**
     ```bash
     docker build --tag bmail-app --file Dockerfile.build .
     docker run --rm --interactive --tty --volume "$PWD":/app --workdir /app bmail-app bash -c "
