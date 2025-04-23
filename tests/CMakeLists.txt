@@ -16,7 +16,7 @@ FetchContent_MakeAvailable(googletest)
 
 add_executable(
 runTests 
-./main.cpp
+./tester.cpp
 
 ./BloomFilterTests.cpp
 ../src/filter/BloomFilter.cpp
