@@ -5,7 +5,7 @@
  * @class ConsoleMenuTest
  * @brief Test fixture for ConsoleMenu unit tests.
  */
-class ConsoleMenuTest : public ::testing::Test {
+class ConsoleMenuTests : public ::testing::Test {
 protected:
   ConsoleMenu menu;
 };
@@ -24,7 +24,7 @@ void simulateInput(const std::string &input) {
 /**
  * @brief Test case for valid menu command inputs.
  */
-TEST_F(ConsoleMenuTest, ValidCommands) {
+TEST_F(ConsoleMenuTests, ValidCommands) {
   simulateInput("2 www.example.com0\n");
   int command = menu.nextCommand();
   EXPECT_EQ(command, 2);
@@ -49,7 +49,7 @@ TEST_F(ConsoleMenuTest, ValidCommands) {
 /**
  * @brief Test case for invalid menu command inputs.
  */
-TEST_F(ConsoleMenuTest, InvalidCommands) {
+TEST_F(ConsoleMenuTests, InvalidCommands) {
   // Test invalid command input (non-number start)
   simulateInput("x www.example.com\n");
   int command = menu.nextCommand();
