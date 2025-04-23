@@ -20,7 +20,7 @@ FileWriter& FileWriter::operator=(FileWriter&& other) noexcept {
     return *this;
 }
 
-bool FileWriter::writeLine(const string& line) {
+bool FileWriter::putLine(const string& line) {
     if (!out) return false;
     out << line << '\n';
     return true;

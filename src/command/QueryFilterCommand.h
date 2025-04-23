@@ -1,72 +1,66 @@
-// ===== File: QueryFilterCommand.h =====
-// Command for querying a URL in the filter and comparing with true blacklist
-
 #pragma once
 
-#include "../command/ICommand.h"
 #include "../filter/IFilter.h"
-#include <memory>
+#include "ICommand.h"
 #include <string>
-#include <set>
+#include "../Output/OutputWriter.h"
 
 /**
  * @class QueryFilterCommand
- * @brief Represents a command that queries a URL against a Bloom filter.
+ * @brief Command to check if a given item (e.g., URL) is blacklisted in the filter.
  *
- * This class uses the filter to determine if a URL is blacklisted,
- * delegating all blacklist logic to the filter implementation.
+ * This command queries an IFilter instance and checks whether the provided input
+ * is currently blacklisted. It outputs the result using the provided OutputWriter.
+ * Throws an exception if the input is empty or invalid.
  */
 class QueryFilterCommand : public ICommand {
-    private:
-        // Shared pointer to the filter used for checking blacklist status
-        std::shared_ptr<IFilter> filter;
-    
-        // URL string to query within the filter
-        std::string url;
 public:
-    /*
-     * @brief Constructs a QueryFilterCommand object.
-     * @param filter Shared pointer to the filter to query.
-     * @param url The URL string to query.
-     * @param trueBlacklist A reference set of URLs that are truly blacklisted (ground truth).
+    /**
+     * @brief Constructor.
+     * @param filter Reference to an IFilter object for querying.
+     * @param writer Reference to an OutputWriter used to print results.
      */
-    QueryFilterCommand(std::shared_ptr<IFilter> filter, const std::string& url);
+    explicit QueryFilterCommand(IFilter& filter, OutputWriter& writer);
 
-    /*
-     * @brief Destructor for the QueryFilterCommand object.
-     * Cleans up any resources if necessary.
-     */
-    ~QueryFilterCommand();
-
-    /*
-     * @brief Copy constructor for the QueryFilterCommand object.
-     * @param other Another QueryFilterCommand object to copy from.
+    /**
+     * @brief Copy constructor.
+     * @param other The other QueryFilterCommand to copy from.
      */
     QueryFilterCommand(const QueryFilterCommand& other);
 
-    /*
-     * @brief Copy assignment operator for the QueryFilterCommand object.
-     * @param other Another QueryFilterCommand object to assign from.
-     * @return Reference to this object after assignment.
+    /**
+     * @brief Copy assignment operator.
+     * @param other The other QueryFilterCommand to assign from.
+     * @return Reference to this object.
      */
     QueryFilterCommand& operator=(const QueryFilterCommand& other);
 
-    /*
-     * @brief Move constructor for the QueryFilterCommand object.
-     * @param other Another QueryFilterCommand object to move from.
+    /**
+     * @brief Move constructor.
+     * @param other The other QueryFilterCommand to move from.
      */
     QueryFilterCommand(QueryFilterCommand&& other) noexcept;
 
-    /*
-     * @brief Move assignment operator for the QueryFilterCommand object.
-     * @param other Another QueryFilterCommand object to move from.
-     * @return Reference to this object after move assignment.
+    /**
+     * @brief Move assignment operator.
+     * @param other The other QueryFilterCommand to assign from.
+     * @return Reference to this object.
      */
     QueryFilterCommand& operator=(QueryFilterCommand&& other) noexcept;
 
-    /*
-    * @brief Executes the query operation.
-    * Checks if the URL is blacklisted and prints the result based on the true blacklist.
-    */
-    bool execute() override;
+    /**
+     * @brief Destructor.
+     */
+    ~QueryFilterCommand() override;
+
+    /**
+     * @brief Executes the command with the given argument.
+     * @param arg The item (e.g., URL) to query in the filter.
+     * @throws std::invalid_argument if the argument is missing or invalid.
+     */
+    void execute(const std::string& arg = "") override;
+
+private:
+    IFilter* filter;
+    OutputWriter& writer;
 };

@@ -26,4 +26,13 @@ public:
      * @return True if item is blacklisted.
      */
     virtual bool isBlacklisted(const std::string& item) const = 0;
+
+    /**
+     * @brief Checks if an item is possibly in the filter based on the bit array.
+     * @param item The item to check.
+     * @return True if all relevant bits are set, false otherwise.
+     * 
+     * might be removed from Interface after this assignment since false positive is not required in other filters
+     */
+    virtual bool possiblyContains(const string& item) const = 0;
 };

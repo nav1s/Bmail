@@ -124,6 +124,13 @@ public:
      */
     void reset(size_t size, const std::vector<bool>& bits, const std::vector<std::shared_ptr<IHashFunction>>& hashes, const std::unordered_set<std::string>& blacklist);
 
+    /**
+     * @brief Checks if an item is possibly in the filter based on the bit array.
+     * @param item The item to check.
+     * @return True if all relevant bits are set, false otherwise.
+     */
+    bool possiblyContains(const string& item) const;
+
 private:
     /**
      * @brief Size of the bit array.
@@ -152,13 +159,6 @@ private:
      * @return The index within the bit array.
      */
     size_t getIndex(const IHashFunction& hashFunc, const string& item) const;
-
-    /**
-     * @brief Checks if an item is possibly in the filter based on the bit array.
-     * @param item The item to check.
-     * @return True if all relevant bits are set, false otherwise.
-     */
-    bool possiblyContains(const string& item) const;
 
     /**
      * @brief Confirms whether an item is actually in the real blacklist.

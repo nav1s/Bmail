@@ -15,7 +15,7 @@ public:
      * @param line The string to be written (without newline).
      * @return True if writing succeeded, false otherwise.
      */
-    virtual bool writeLine(const std::string& line) = 0;
+    virtual bool putLine(const std::string& line) = 0;
 
     /**
      * @brief Virtual destructor.
