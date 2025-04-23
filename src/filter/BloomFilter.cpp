@@ -3,7 +3,7 @@
 #include <memory>
 #include <vector>
 #include <string>
-
+#include "BloomFilterFileManager.h"
 
 using namespace std;
 
@@ -47,12 +47,14 @@ bool BloomFilter::isBlacklisted(const string& item) const {
     return false;
 }
 
-// needs implementation
-void BloomFilter::saveToFile(const string& path) const {
+void BloomFilter::saveToFile(const std::string& path) const {
+    BloomFilterFileManager manager(path);
+    manager.save((void*)this);  // safe here because BloomFilterFileManager expects void*
 }
 
-// needs implementation
-void BloomFilter::loadFromFile(const string& path) {
+void BloomFilter::loadFromFile(const std::string& path) {
+    BloomFilterFileManager manager(path);
+    manager.load((void*)this);
 }
 
 size_t BloomFilter::getIndex(const IHashFunction& hashFunc, const string& item) const {
