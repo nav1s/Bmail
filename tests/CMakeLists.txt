@@ -18,7 +18,6 @@ runTests
 ./tester.cpp
 
 ./BloomFilterTests.cpp
-../src/FileManager/BloomFilterFileManager.cpp
 ../src/hash/HashFactory.cpp
 ../src/input/FileReader.cpp
 ../src/filter/BloomFilter.cpp
@@ -38,6 +37,9 @@ runTests
 
 ./HashFactoryTests.cpp
 ../src/hash/HashFactory.cpp
+
+./BloomFilterFileManagerTests
+../src/FileManager/BloomFilterFileManager.cpp
 )
 
 target_link_libraries(runTests gtest_main)
