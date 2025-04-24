@@ -11,6 +11,8 @@
 #include "../input/InputReader.h"
 #include <string>
 #include "../menu/ConsoleMenu.h"
+#include "../StringValidator/Validator.h"
+#include <filesystem>
 
 using namespace std;
 
@@ -36,13 +38,14 @@ void App::run(InputReader& reader, OutputWriter &writer) {
 }
 
 void App::semiConstructor(InputReader& reader, OutputWriter &writer) {
-    //get input from user
+    //get init line from user
     string input;
     reader.getLine(input);
     vector<int> args;
     parseInput(input, args);
-    //need to add validate input
-
+    if (!Validator::validatePositiveIntegers(args)) {
+        throw std::invalid_argument("Incorrect filter init format.");
+    }
     size_t arraySize = args.front();
     args.erase(args.begin());
 
@@ -50,6 +53,11 @@ void App::semiConstructor(InputReader& reader, OutputWriter &writer) {
     vector<shared_ptr<IHashFunction>> hashFunctions;
     hashAssembler(args, hashFunctions);
     filter = make_shared<BloomFilter>(arraySize, hashFunctions);
+    //loading from file if optional
+    string bloomFilterLocation = "data/BloomFilter.txt";
+    if (filesystem::exists(bloomFilterLocation)){
+        filter->loadFromFile(bloomFilterLocation);
+    }
 
     //creating commands and menu
     registerCommands(writer);

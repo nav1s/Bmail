@@ -35,4 +35,16 @@ public:
      * might be removed from Interface after this assignment since false positive is not required in other filters
      */
     virtual bool possiblyContains(const std::string& item) const = 0;
+
+    /**
+     * @brief Saves the filter's bit array and blacklist to a file.
+     * @param path The path of the file to write to.
+     */
+    virtual void saveToFile(const string& path) const;
+
+    /**
+     * @brief Loads the filter's bit array and blacklist from a file.
+     * @param path The path of the file to read from.
+     */
+    virtual void loadFromFile(const string& path);
 };
