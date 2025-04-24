@@ -35,6 +35,9 @@ runTests
 
 ./StdHashTests.cpp
 ../src/hash/StdHash.h
+
+./HashFactoryTests.cpp
+../src/hash/HashFactory.cpp
 )
 
 target_link_libraries(runTests gtest_main)
