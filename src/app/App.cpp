@@ -19,6 +19,8 @@ using namespace std;
 App::App() {
 }
 
+string bloomFilterLocation = "data/BloomFilter.txt";
+
 void App::run(InputReader& reader, OutputWriter &writer) {
     //init app (bloom filter,hash functions, commands ect...)
     semiConstructor(reader, writer);
@@ -27,14 +29,21 @@ void App::run(InputReader& reader, OutputWriter &writer) {
         int commandId;
         string arg;
         menu->getCommand(commandId, arg);
-        try {
-            commands.at(commandId)->execute(arg);
-        }
-        catch (...) {
-            //need to implement what it should do
-            continue;
+        //fetch command and calls it
+        auto it = commands.find(commandId);
+        if (it != commands.end()) {
+            try {
+                it->second->execute(arg);
+                 // "add" command
+                if (commandId == 1) {
+                    filter->saveToFile(bloomFilterLocation);
+                }
+            } catch (const std::exception& ex) {
+                continue;
+            }
         }
     }
+    filter->saveToFile(bloomFilterLocation);
 }
 
 void App::semiConstructor(InputReader& reader, OutputWriter &writer) {
@@ -54,7 +63,6 @@ void App::semiConstructor(InputReader& reader, OutputWriter &writer) {
     hashAssembler(args, hashFunctions);
     filter = make_shared<BloomFilter>(arraySize, hashFunctions);
     //loading from file if optional
-    string bloomFilterLocation = "data/BloomFilter.txt";
     if (filesystem::exists(bloomFilterLocation)){
         filter->loadFromFile(bloomFilterLocation);
     }
