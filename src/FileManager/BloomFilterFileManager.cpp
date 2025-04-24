@@ -8,16 +8,14 @@
 #include "iostream"
 
 using namespace std;
-using filesystem::path;
-using filesystem::exists;
+using namespace filesystem;
 
 BloomFilterFileManager::BloomFilterFileManager(const string& directory) {
     path dirPath(directory);
 
     if (!filesystem::exists(dirPath)) {
-        throw runtime_error("Directory does not exist: " + dirPath.string());
+        filesystem::create_directories(dirPath);
     }
-
     filePath = (dirPath / "BloomFilter.txt").string();
 }
 
@@ -91,7 +89,7 @@ void BloomFilterFileManager::load(void* object) const {
 
     // Validate file existence and readability
     if (!exists(filePath)) {
-        throw runtime_error("BloomFilterFileManager::load -> File not found: " + filePath);
+        return;
     }
 
     FileReader reader(filePath);

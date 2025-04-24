@@ -18,7 +18,13 @@ cd bmail
 git clone git@github.com:binja12/bmail.git
 cd bmail
 ```
+
 ## Usage
+
+The application preserves the Bloom filter state between runs. If you want to start with a fresh Bloom filter, delete the data file:
+```bash
+rm data/bloomFilter.txt
+```
 
 ### Linux Instructions
 
