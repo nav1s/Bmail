@@ -76,13 +76,13 @@ public:
      * @brief Saves the filter's bit array and blacklist to a file.
      * @param path The path of the file to write to.
      */
-    void saveToFile(const string& path) const;
+    void saveToFile(const string& path) const override;
 
     /**
      * @brief Loads the filter's bit array and blacklist from a file.
      * @param path The path of the file to read from.
      */
-    void loadFromFile(const string& path);
+    void loadFromFile(const string& path) override;
 
     /**
      * @brief Returns a const reference to the internal bit array.
@@ -124,6 +124,13 @@ public:
      */
     void reset(size_t size, const std::vector<bool>& bits, const std::vector<std::shared_ptr<IHashFunction>>& hashes, const std::unordered_set<std::string>& blacklist);
 
+    /**
+     * @brief Checks if an item is possibly in the filter based on the bit array.
+     * @param item The item to check.
+     * @return True if all relevant bits are set, false otherwise.
+     */
+    bool possiblyContains(const string& item) const;
+
 private:
     /**
      * @brief Size of the bit array.
@@ -152,13 +159,6 @@ private:
      * @return The index within the bit array.
      */
     size_t getIndex(const IHashFunction& hashFunc, const string& item) const;
-
-    /**
-     * @brief Checks if an item is possibly in the filter based on the bit array.
-     * @param item The item to check.
-     * @return True if all relevant bits are set, false otherwise.
-     */
-    bool possiblyContains(const string& item) const;
 
     /**
      * @brief Confirms whether an item is actually in the real blacklist.

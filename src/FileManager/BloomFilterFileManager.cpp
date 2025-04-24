@@ -5,6 +5,7 @@
 #include <filesystem>
 #include "../input/FileReader.h"
 #include "../hash/HashFactory.h"
+#include "iostream"
 
 using namespace std;
 using filesystem::path;
