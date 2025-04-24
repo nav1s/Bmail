@@ -13,6 +13,7 @@
 #include "../menu/ConsoleMenu.h"
 #include "../StringValidator/Validator.h"
 #include <filesystem>
+#include <regex>
 
 using namespace std;
 
@@ -29,7 +30,6 @@ void App::run(InputReader& reader, OutputWriter &writer) {
         int commandId;
         string arg;
         menu->getCommand(commandId, arg);
-        
         //fetch command and calls it
         auto it = commands.find(commandId);
         if (it != commands.end()) {
@@ -50,7 +50,11 @@ void App::run(InputReader& reader, OutputWriter &writer) {
 void App::semiConstructor(InputReader& reader, OutputWriter &writer) {
     //get init line from user
     string input;
-    reader.getLine(input);
+    bool validInit = false;
+    do{
+        reader.getLine(input);
+    }while(isValidInit(input));
+    
     vector<int> args;
     parseInput(input, args);
     if (!Validator::validatePositiveIntegers(args)) {
@@ -91,4 +95,9 @@ void App::hashAssembler(vector<int>& args, vector<shared_ptr<IHashFunction>>& ou
         string signature = "std:" + to_string(num);
         out.push_back(HashFactory::fromSignature(signature));
     }
+}
+
+bool isValidInit(const string& input) {
+    static const regex pattern("^[1-9 ]+$");
+    return regex_match(input, pattern);
 }

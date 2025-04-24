@@ -76,4 +76,12 @@ private:
      */
     std::unique_ptr<IMenu> menu;
 
+    /**
+     * @brief Validates that a string contains only digits from 1 to 9 and whitespace.
+     *
+     * @param input The input string to validate.
+     * @return true if the string is a valid initialization input; false otherwise.
+     */
+    bool isValidInit(const std::string& input);
+
 };
