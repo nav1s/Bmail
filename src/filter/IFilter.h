@@ -1,6 +1,3 @@
-// ===== File: IFilter.h =====
-// Interface that defines the behavior for a filter
-
 #pragma once
 #include <string>
 
@@ -37,14 +34,12 @@ public:
     virtual bool possiblyContains(const std::string& item) const = 0;
 
     /**
-     * @brief Saves the filter's bit array and blacklist to a file.
-     * @param path The path of the file to write to.
+     * @brief Saves the filter to a file.
      */
-    virtual void saveToFile(const string& path) const;
+    virtual void saveToFile(const std::string& path) const = 0;
 
     /**
-     * @brief Loads the filter's bit array and blacklist from a file.
-     * @param path The path of the file to read from.
+     * @brief Loads the filter from a file.
      */
-    virtual void loadFromFile(const string& path);
+    virtual void loadFromFile(const std::string& path) = 0;
 };

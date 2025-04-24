@@ -76,13 +76,13 @@ public:
      * @brief Saves the filter's bit array and blacklist to a file.
      * @param path The path of the file to write to.
      */
-    void saveToFile(const string& path) const;
+    void saveToFile(const string& path) const override;
 
     /**
      * @brief Loads the filter's bit array and blacklist from a file.
      * @param path The path of the file to read from.
      */
-    void loadFromFile(const string& path);
+    void loadFromFile(const string& path) override;
 
     /**
      * @brief Returns a const reference to the internal bit array.
