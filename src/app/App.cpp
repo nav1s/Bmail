@@ -20,7 +20,7 @@ using namespace std;
 App::App() {
 }
 
-string bloomFilterLocation = "data/BloomFilter.txt";
+string bloomFilterLocation = "data";
 
 void App::run(InputReader& reader, OutputWriter &writer) {
     //init app (bloom filter,hash functions, commands ect...)
