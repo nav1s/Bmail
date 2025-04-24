@@ -29,6 +29,7 @@ void App::run(InputReader& reader, OutputWriter &writer) {
         int commandId;
         string arg;
         menu->getCommand(commandId, arg);
+        
         //fetch command and calls it
         auto it = commands.find(commandId);
         if (it != commands.end()) {

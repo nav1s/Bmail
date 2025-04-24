@@ -16,7 +16,9 @@ void ConsoleMenu::getCommand(int& commandId, std::string& argument) const {
     }
 
     istringstream iss(input);
-    iss >> commandId;
+    if (!(iss >> commandId)) {
+        throw std::invalid_argument("Invalid command ID format. Expected an integer.");
+    }
 
     getline(iss, argument);
     size_t start = argument.find_first_not_of(" \t");
