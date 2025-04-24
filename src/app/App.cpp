@@ -53,8 +53,8 @@ void App::semiConstructor(InputReader& reader, OutputWriter &writer) {
     bool validInit = false;
     do{
         reader.getLine(input);
-    }while(isValidInit(input));
-    
+    }while(!isValidInit(input));
+
     vector<int> args;
     parseInput(input, args);
     if (!Validator::validatePositiveIntegers(args)) {
@@ -97,7 +97,7 @@ void App::hashAssembler(vector<int>& args, vector<shared_ptr<IHashFunction>>& ou
     }
 }
 
-bool isValidInit(const string& input) {
+bool App::isValidInit(const string& input) {
     static const regex pattern("^[1-9 ]+$");
     return regex_match(input, pattern);
 }
