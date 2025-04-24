@@ -30,3 +30,26 @@ cmake ../../tests && \
 make && \
 ./runTests"
 ```
+
+## UML Diagram
+
+### Generate uml diagram
+```bash
+# Install PlantUML
+sudo apt install plantuml
+
+# Generate the diagram
+plantuml assets/bmail-uml-diagram.puml
+```
+
+### Project Structure
+
+The UML diagram shows the following components of the Bmail system:
+
+- **App**: Main application controller that connects all components
+- **Filter**: Implements the Bloom filter for URL blacklisting
+- **Hash**: Provides hash functions for the Bloom filter
+- **Command**: Implements the command pattern for operations
+- **Menu**: Provides user interface mechanisms
+- **Input**: Handles different input sources
+- **StringValidator**: Validates inputs like URLs
