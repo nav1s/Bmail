@@ -31,7 +31,7 @@ rm data/bloomFilter.txt
 #### Running the Application
 
 ```bash
-docker build --tag bmail-app --file Dockerfile.build .
+docker build --tag bmail-app --file Dockerfile.run .
 docker run --rm --interactive --tty --volume "$PWD":/app --workdir /app bmail-app bash -c "
 mkdir -p build/app && \
 cd build/app && \
@@ -57,7 +57,7 @@ make && \
 #### Running the Application
 
 ```powershell
-docker build --tag bmail-app --file Dockerfile.build .
+docker build --tag bmail-app --file Dockerfile.run .
 docker run --rm --interactive --tty --volume "${PWD}:/app" --workdir /app bmail-app bash -c "mkdir -p build/app && cd build/app && cmake ../.. && make && ./filter"
 ```
 
