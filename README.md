@@ -7,6 +7,8 @@ It utilizes Docker for building and running both the main application and the un
 
 ## Usage
 
+if want to run with a fresh bloom filter need to delete data/bloomFilter.txt
+
 ### Running the Application
 
     ```bash
