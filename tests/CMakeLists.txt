@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.24)
 
 project(BmailTests)
 
@@ -9,6 +9,7 @@ include(FetchContent)
 FetchContent_Declare(
     googletest
     URL https://github.com/google/googletest/archive/refs/tags/release-1.11.0.zip
+    DOWNLOAD_EXTRACT_TIMESTAMP TRUE
 )
 
 FetchContent_MakeAvailable(googletest)
@@ -18,9 +19,11 @@ runTests
 ./tester.cpp
 
 ./BloomFilterTests.cpp
+../src/FileManager/BloomFilterFileManager.cpp
+../src/filter/BloomFilter.cpp
+
 ../src/hash/HashFactory.cpp
 ../src/input/FileReader.cpp
-../src/filter/BloomFilter.cpp
 ../src/hash/StdHash.cpp
 
 ./UrlValidatorTests.cpp 
@@ -38,8 +41,6 @@ runTests
 ./HashFactoryTests.cpp
 ../src/hash/HashFactory.cpp
 
-./BloomFilterFileManagerTests
-../src/FileManager/BloomFilterFileManager.cpp
 )
 
 target_link_libraries(runTests gtest_main)
