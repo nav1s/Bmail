@@ -1,15 +1,10 @@
-// ===== File: IMenu.h =====
-// Interface that abstracts the user menu interaction (could be console, GUI, etc.)
-
 #pragma once
 
 #include <string>
 
-using namespace std;
-
 /**
- * @class IMenu
- * @brief Interface for menu-based input.
+ * @interface IMenu
+ * @brief Interface for a user-facing menu that prompts and receives command input.
  */
 class IMenu {
 public:
@@ -19,14 +14,10 @@ public:
     virtual ~IMenu() = default;
 
     /**
-     * @brief Reads the next full line of input from the user.
-     * @return Input line from the user.
+     * @brief retrieves their selected command and argument.
+     * 
+     * @param commandId Output parameter for the command number (e.g. 1, 2).
+     * @param argument Output parameter for the remainder of the input (e.g. a URL).
      */
-    virtual string nextCommand() = 0;
-
-    /**
-     * @brief Displays an error message to the user.
-     * @param error Error message to display.
-     */
-    virtual void displayError(const string& error) = 0;
+    virtual void getCommand(int& commandId, std::string& argument) const = 0;
 };

@@ -1,49 +1,38 @@
-// ===== File: AddFilterCommand.cpp =====
-// Refactored for simplicity and clarity
-
 #include "AddFilterCommand.h"
-#include <string>
+#include <stdexcept>
+#include "../StringValidator/UrlValidator.h"
 
 using namespace std;
 
-AddFilterCommand::AddFilterCommand(std::shared_ptr<IFilter> filter, const string& url)
-    // The constructor initializes the filter member by moving the passed-in shared pointer, and stores the URL string as is.
-    : filter(std::move(filter)), url(url) {}
+AddFilterCommand::AddFilterCommand(IFilter& filter) : filter(&filter) {}
 
-// Destructor: Default implementation is sufficient as we rely on smart pointers for resource management.
-AddFilterCommand::~AddFilterCommand() = default;
+AddFilterCommand::AddFilterCommand(const AddFilterCommand& other) : filter(other.filter) {}
 
-// Copy Constructor: Creates a deep copy of another AddFilterCommand.
-AddFilterCommand::AddFilterCommand(const AddFilterCommand& other)
-    : filter(other.filter), // Copy shared_ptr (increases ref count).
-      url(other.url)        // Copy URL string.
-{}
-
-// Copy Assignment Operator: Handles assignment from another AddFilterCommand.
 AddFilterCommand& AddFilterCommand::operator=(const AddFilterCommand& other) {
-    if (this != &other) { // Prevent self-assignment.
-        filter = other.filter; // Copy shared_ptr.
-        url = other.url;       // Copy URL string.
-    }
-    return *this; // Return reference to allow chaining.
-}
-
-// Move Constructor: Transfers ownership from a temporary AddFilterCommand.
-AddFilterCommand::AddFilterCommand(AddFilterCommand&& other) noexcept
-    : filter(std::move(other.filter)), // Move shared_ptr.
-      url(std::move(other.url))        // Move URL string.
-{}
-
-// Move Assignment Operator: Transfers ownership during assignment from a temporary object.
-AddFilterCommand& AddFilterCommand::operator=(AddFilterCommand&& other) noexcept {
-    if (this != &other) { // Prevent self-assignment.
-        filter = std::move(other.filter); // Move shared_ptr.
-        url = std::move(other.url);       // Move URL string.
+    if (this != &other) {
+        filter = other.filter;
     }
     return *this;
 }
-bool AddFilterCommand::execute() {
-    // add a URL to the blacklist, using Ifilter->add(url) 
-    filter->add(url);
-    return true;
+
+AddFilterCommand::AddFilterCommand(AddFilterCommand&& other) noexcept : filter(other.filter) {
+    other.filter = nullptr;
+}
+
+AddFilterCommand& AddFilterCommand::operator=(AddFilterCommand&& other) noexcept {
+    if (this != &other) {
+        filter = other.filter;
+        other.filter = nullptr;
+    }
+    return *this;
+}
+
+AddFilterCommand::~AddFilterCommand() = default;
+
+void AddFilterCommand::execute(const string& arg) {
+    UrlValidator validator;
+    if (!validator.validate(arg)) {
+        throw invalid_argument("AddFilterCommand: missing URL argument");
+    }
+    filter->add(arg);
 }

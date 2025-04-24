@@ -1,20 +1,26 @@
-// ===== File: ConsoleMenu.cpp =====
-// Implementation of IMenu that reads input silently from std::cin without printing
-
 #include "ConsoleMenu.h"
 #include <iostream>
-#include <string>
+#include <sstream>
+#include <stdexcept>
+#include "../Output/OutputWriter.h"
 
 using namespace std;
 
-// Reads a full line of input from std::cin and returns it
-string ConsoleMenu::nextCommand() {
-    string line;
-    getline(cin, line); // Read full input line silently
-    return line;
-}
+ConsoleMenu::ConsoleMenu(InputReader& reader, OutputWriter& writer)
+    : reader(reader), writer(writer) {}
 
-// only prints error in case of incorrect input
-void ConsoleMenu::displayError(const string& error) {
-    cerr << "Error: " << error << endl;
+void ConsoleMenu::getCommand(int& commandId, std::string& argument) const {
+    string input;
+    if (!reader.getLine(input)) {
+        throw runtime_error("Failed to read command input.");
+    }
+
+    istringstream iss(input);
+    if (!(iss >> commandId)) {
+        //throw std::invalid_argument("Invalid command ID format. Expected an integer.");
+    }
+
+    getline(iss, argument);
+    size_t start = argument.find_first_not_of(" \t");
+    argument = (start == string::npos) ? "" : argument.substr(start);
 }

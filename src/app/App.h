@@ -1,80 +1,87 @@
-// ===== File: App.h =====
-// Main controller class that connects the filter, menu, and commands
-
 #pragma once
 
-#include <map>
-#include <memory>
-#include <string>
-#include <set>
-#include <functional>
-#include "../command/ICommand.h"
-#include "../filter/IFilter.h"
 #include "../menu/IMenu.h"
-#include "../command/AddFilterCommand.h"
-#include "../command/QueryFilterCommand.h"
-#include "../filter/BloomFilter.h"
-#include "../menu/ConsoleMenu.h"
 #include "../input/InputReader.h"
-#include "../StringValidator/UrlValidator.h"
+#include "../Output/OutputWriter.h"
+#include "../filter/IFilter.h"
+#include "../hash/IHashFunction.h"
+#include "../command/ICommand.h"
+#include "../input/InputReader.h"
+
+#include <memory>
+#include <unordered_map>
+#include <string>
+#include <vector>
 
 /**
  * @class App
- * @brief Main application class managing the command flow.
+ * @brief Core application class responsible for initializing and running the command-driven filter system.
+ *
+ * This class manages the configuration of the filtering system, including parsing user input,
+ * constructing the filter and associated hash functions, and dispatching commands via a menu interface.
  */
 class App {
-private:
-    // Maps menu options to corresponding commands
-    map<int, function<void(const string&)>> commands;
-
-    // The Filter which is used for storing/querying URLs
-    shared_ptr<IFilter> filter;
-
-    // The menu interface (used for interaction with user)
-    shared_ptr<IMenu> menu;
-
-    // Reader for user input (e.g., from CLI or file)
-    shared_ptr<InputReader> inputReader;
-
-    // Validator for checking URL format and logic
-    shared_ptr<UrlValidator> urlValidator;
 public:
-     /**
-     * @brief Constructs the App with all dependencies.
-     * @param filter Shared pointer to the IFilter implementation.
-     * @param menu Shared pointer to the IMenu implementation.
-     * @param inputReader Shared pointer to the InputReader.
-     * @param urlValidator Shared pointer to the UrlValidator.
+    /**
+     * @brief Constructs the App object.
      */
-    App(shared_ptr<IFilter> filter,
-        shared_ptr<IMenu> menu,
-        shared_ptr<InputReader> inputReader,
-        shared_ptr<UrlValidator> urlValidator);
-
-    /** @brief Destructor */
-    ~App();
-
-    /** @brief Copy constructor */
-    App(const App& other);
-
-    /** @brief Copy assignment operator */
-    App& operator=(const App& other);
-
-    /** @brief Move constructor */
-    App(App&& other) noexcept;
-
-    /** @brief Move assignment operator */
-    App& operator=(App&& other) noexcept;
+    App();
 
     /**
-     * @brief Starts the application run loop.
+     * @brief Runs the main application loop, including configuration and command execution.
      */
-    void run();
+    void run(InputReader& reader, OutputWriter &writer);
+
+private:
+    /**
+     * @brief Performs the configuration of the filter based on user input.
+     * @param reader An input reader object used to obtain the initialization line.
+     *
+     * This function parses the initialization input line to extract filter parameters and
+     * construct the appropriate filter and hash functions.
+     */
+    void semiConstructor(InputReader& reader, OutputWriter &writer);
 
     /**
-     * @brief Registers a new command to a specific option in the menu.
-     * @param option The menu option number.
-     * @param command The command associated with the option.
+     * @brief Registers available commands into the command map.
      */
-    void registerCommand(int type, function<void(const string&)> commandFactoryFunc);
+    void registerCommands(OutputWriter& writer);
+
+    /**
+     * @brief Parses space-separated integers from a string into a vector.
+     * @param input The raw input string.
+     * @param args The output vector of parsed integers.
+     */
+    void parseInput(const std::string& input, std::vector<int>& args);
+
+    /**
+     * @brief Generates hash function instances based on integer signatures.
+     * @param args A vector of integer identifiers for hash function configuration.
+     * @param out The vector to store generated hash function instances.
+     */
+    void hashAssembler(std::vector<int>& args, std::vector<std::shared_ptr<IHashFunction>>& out);
+
+    /**
+     * @brief Map of integer command codes to command objects.
+     */
+    std::unordered_map<int, std::unique_ptr<ICommand>> commands;
+
+    /**
+     * @brief Pointer to the active filter used for command operations.
+     */
+    std::shared_ptr<IFilter> filter;
+
+    /**
+     * @brief Pointer to a menu that interacts with the user
+     */
+    std::unique_ptr<IMenu> menu;
+
+    /**
+     * @brief Validates that a string contains only digits from 1 to 9 and whitespace.
+     *
+     * @param input The input string to validate.
+     * @return true if the string is a valid initialization input; false otherwise.
+     */
+    bool isValidInit(const std::string& input);
+
 };

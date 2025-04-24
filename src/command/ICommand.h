@@ -1,21 +1,18 @@
-// ===== File: ICommand.h =====
-// Interface for command pattern. Each command should implement execute()
-
 #pragma once
 
+#include <string>
+
 /**
- * @class ICommand
- * @brief Abstract interface for a command in the command pattern.
+ * @interface ICommand
+ * @brief Base interface for all commands.
  */
 class ICommand {
 public:
-    /*
-    * @brief Virtual destructor
-    */
     virtual ~ICommand() = default;
 
     /**
-     * @brief Executes the command.
+     * @brief Executes the command with an optional string argument.
+     * @param arg Optional argument (e.g., a URL or filename).
      */
-    virtual bool execute() = 0;
+    virtual void execute(const std::string& arg = "") = 0;
 };

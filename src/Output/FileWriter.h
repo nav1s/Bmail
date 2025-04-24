@@ -18,7 +18,7 @@ public:
     FileWriter(FileWriter&&) noexcept;
     FileWriter& operator=(FileWriter&&) noexcept;
 
-    bool writeLine(const std::string& line) override;
+    bool putLine(const std::string& line) override;
     ~FileWriter() override;
 
 private:

@@ -1,98 +1,103 @@
-// ===== File: App.cpp =====
-// Logic loop that reads lines, dispatches commands based on prefix (1, 2, etc.) using ICommand interface
-
 #include "App.h"
+#include "../command/AddFilterCommand.h"
+#include "../command/QueryFilterCommand.h"
+#include "../filter/BloomFilter.h"
+#include "../hash/HashFactory.h"
+#include "../hash/IHashFunction.h"
+#include <iostream>
 #include <sstream>
+#include <stdexcept>
+#include "../input/CliReader.h"
+#include "../input/InputReader.h"
+#include <string>
+#include "../menu/ConsoleMenu.h"
+#include "../StringValidator/Validator.h"
+#include <filesystem>
+#include <regex>
 
 using namespace std;
 
-// Constructor initializes shared pointers to filter, menu, inputReader, and urlValidator
-App::App(shared_ptr<IFilter> filter,
-    shared_ptr<IMenu> menu,
-    shared_ptr<InputReader> inputReader,
-    shared_ptr<UrlValidator> urlValidator)
-: filter(filter), menu(menu), inputReader(inputReader), urlValidator(urlValidator) {}
-
-// Destructor
-App::~App() = default;
-
-// Copy constructor
-App::App(const App& other)
-: commands(other.commands),
- filter(other.filter),
- menu(other.menu),
- inputReader(other.inputReader),
- urlValidator(other.urlValidator)
- {}
-
-// Copy assignment
-App& App::operator=(const App& other) {
-    if (this != &other) {
-    commands = other.commands;
-    filter = other.filter;
-    menu = other.menu;
-    inputReader = other.inputReader;
-    urlValidator = other.urlValidator;
-    }
-    return *this;
+App::App() {
 }
 
-// Move constructor
-App::App(App&& other) noexcept
-: commands(std::move(other.commands)),
- filter(std::move(other.filter)),
- menu(std::move(other.menu)),
- inputReader(std::move(other.inputReader)),
- urlValidator(std::move(other.urlValidator))
-{}
+string bloomFilterLocation = "data/BloomFilter.txt";
 
-// Move assignment
-App& App::operator=(App&& other) noexcept {
-    if (this != &other) {
-    commands = std::move(other.commands);
-    filter = std::move(other.filter);
-    menu = std::move(other.menu);
-    inputReader = std::move(other.inputReader);
-    urlValidator = std::move(other.urlValidator);
-    }
-    return *this;
-}
+void App::run(InputReader& reader, OutputWriter &writer) {
+    //init app (bloom filter,hash functions, commands ect...)
+    semiConstructor(reader, writer);
 
-void App::registerCommand(int type, std::function<void(const std::string&)> commandFactoryFunc) {
-    commands[type] = std::move(commandFactoryFunc);
-}
-
-
-// Main loop for reading user commands and dispatching corresponding actions
-void App::run() {
     while (true) {
-        string line; // To hold the current input line
-        // Try to read a line using the inputReader
-        if (!inputReader->getLine(line)) { // If failed or EOF
-            menu->displayError("No more input or failed to read."); // Show message
-            break; // Exit loop
-        }
-
-        istringstream iss(line); // Create stream to parse line
-        int commandType; // First token: 1 or 2
-        string url; // Second token: URL string
-
-        if (!(iss >> commandType >> url)) { // If line malformed
-            menu->displayError("Unknown command"); // Inform user
-            continue; // Skip to next loop iteration
-        }
-
-        if (!urlValidator->validate(url)) {
-            menu->displayError("Invalid URL format");
-            continue;
-        }
-
-        // Dispatch based on command type using SOLID OCP principle
-        auto function = commands.find(commandType);
-        if (function != commands.end()) {
-            function->second(url); // send the URL to the relevant function
-        } else {
-            menu->displayError("Invalid option");
+        int commandId;
+        string arg;
+        menu->getCommand(commandId, arg);
+        //fetch command and calls it
+        auto it = commands.find(commandId);
+        if (it != commands.end()) {
+            try {
+                it->second->execute(arg);
+                 // "add" command
+                if (commandId == 1) {
+                    filter->saveToFile(bloomFilterLocation);
+                }
+            } catch (const std::exception& ex) {
+                continue;
+            }
         }
     }
+    filter->saveToFile(bloomFilterLocation);
+}
+
+void App::semiConstructor(InputReader& reader, OutputWriter &writer) {
+    //get init line from user
+    string input;
+    bool validInit = false;
+    do{
+        reader.getLine(input);
+    }while(!isValidInit(input));
+
+    vector<int> args;
+    parseInput(input, args);
+    if (!Validator::validatePositiveIntegers(args)) {
+        throw std::invalid_argument("Incorrect filter init format.");
+    }
+    size_t arraySize = args.front();
+    args.erase(args.begin());
+
+    //creating hash functions and filter
+    vector<shared_ptr<IHashFunction>> hashFunctions;
+    hashAssembler(args, hashFunctions);
+    filter = make_shared<BloomFilter>(arraySize, hashFunctions);
+    //loading from file if optional
+    if (filesystem::exists(bloomFilterLocation)){
+        filter->loadFromFile(bloomFilterLocation);
+    }
+
+    //creating commands and menu
+    registerCommands(writer);
+    menu = make_unique<ConsoleMenu>(reader, writer);
+}
+
+void App::registerCommands(OutputWriter& writer) {
+    commands[1] = make_unique<AddFilterCommand>(*filter);
+    commands[2] = make_unique<QueryFilterCommand>(*filter, writer);
+}
+
+void App::parseInput(const string& input, vector<int>& args) {
+    istringstream iss(input);
+    int val;
+    while (iss >> val) {
+        args.push_back(val);
+    }
+}
+
+void App::hashAssembler(vector<int>& args, vector<shared_ptr<IHashFunction>>& out) {
+    for (int num : args) {
+        string signature = "std:" + to_string(num);
+        out.push_back(HashFactory::fromSignature(signature));
+    }
+}
+
+bool App::isValidInit(const string& input) {
+    static const regex pattern("^[1-9 ]+$");
+    return regex_match(input, pattern);
 }

@@ -1,70 +1,56 @@
-// ===== File: AddFilterCommand.h =====
-// Command for adding a URL to the filter
-
 #pragma once
 
-#include "../command/ICommand.h"
 #include "../filter/IFilter.h"
-#include <memory>
+#include "ICommand.h"
 #include <string>
 
 /**
- * @brief Command that adds a URL to the filter.
- * AddFilterCommand is responsible for adding a given URL into the filter.
- * It stores a reference to the filter and the specific URL to operate on.
+ * @class AddFilterCommand
+ * @brief Command to add an item (e.g., URL) to a blacklist filter.
+ *
+ * This class implements ICommand and provides functionality to add an item
+ * to a given IFilter instance. It throws an exception if the input argument is empty.
  */
 class AddFilterCommand : public ICommand {
-private:
-    // Shared pointer to the IFilter object that will be modified
-    std::shared_ptr<IFilter> filter;
-
-    // The URL that will be added to the filter
-    std::string url;
 public:
     /**
-    * @brief Constructs an AddFilterCommand object.
-    * @param filter A shared pointer (high-level abstraction, Manages the lifetime of dynamically allocated memory.)
-    *  to an IFilter implementation used to store the URL.
-    * @param url The URL to be added to the filter.
-    *
-    * The constructor initializes the filter member by moving the passed-in shared pointer,
-    * and stores the URL string as is.
-    */
-    AddFilterCommand(std::shared_ptr<IFilter> filter, const std::string& url);
-
-    /**
-     * @brief Destructor for the AddFilterCommand object.
+     * @brief Constructs the command with a reference to an IFilter instance.
+     * @param filter A reference to a filter where items will be added.
      */
-    ~AddFilterCommand();
+    explicit AddFilterCommand(IFilter& filter);
 
     /**
-     * @brief Copy constructor for the AddFilterCommand object.
-     * @param other Another AddFilterCommand object to copy from.
+     * @brief Copy constructor.
      */
     AddFilterCommand(const AddFilterCommand& other);
 
     /**
-     * @brief Copy assignment operator for the AddFilterCommand object.
-     * @param other Another AddFilterCommand object to assign from.
-     * @return Reference to this object after assignment.
+     * @brief Copy assignment operator.
      */
     AddFilterCommand& operator=(const AddFilterCommand& other);
 
     /**
-     * @brief Move constructor for the AddFilterCommand object.
-     * @param other Another AddFilterCommand object to move from.
+     * @brief Move constructor.
      */
     AddFilterCommand(AddFilterCommand&& other) noexcept;
 
     /**
-     * @brief Move assignment operator for the AddFilterCommand object.
-     * @param other Another AddFilterCommand object to move from.
-     * @return Reference to this object after move assignment.
+     * @brief Move assignment operator.
      */
     AddFilterCommand& operator=(AddFilterCommand&& other) noexcept;
 
-    /*
-    * @brief Executes the query operation.
-    */
-    bool execute() override;
+    /**
+     * @brief Destructor.
+     */
+    ~AddFilterCommand() override;
+
+    /**
+     * @brief Executes the command with the given argument.
+     * @param arg The item to add to the filter.
+     * @throws std::invalid_argument if the argument is empty.
+     */
+    void execute(const std::string& arg = "") override;
+
+private:
+    IFilter* filter;
 };
