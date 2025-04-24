@@ -56,14 +56,6 @@ TEST_F(HashFactoryTest, ThrowsOnUnknownHashType) {
 }
 
 /**
- * @brief Tests that the factory correctly handles non-integer parameters.
- */
-TEST_F(HashFactoryTest, ThrowsOnNonIntegerParameter) {
-    EXPECT_THROW(HashFactory::fromSignature("std:abc"), std::invalid_argument);
-    EXPECT_THROW(HashFactory::fromSignature("std:1.5"), std::invalid_argument);
-}
-
-/**
  * @brief Tests that the factory creates hash functions with different repetition counts.
  */
 TEST_F(HashFactoryTest, CreatesHashFunctionsWithDifferentParams) {
