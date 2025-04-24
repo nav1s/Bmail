@@ -33,7 +33,16 @@ make && \
 
 ## UML Diagram
 
-### Generate uml diagram
+The UML diagram for the project structure:
+
+![Bmail UML Diagram](assets/bmail.png)
+
+The source PlantUML code for this diagram is available in [assets/bmail-uml-diagram.puml](assets/bmail-uml-diagram.puml).
+
+### Creating the UML Diagram
+
+To regenerate the diagram:
+
 ```bash
 # Install PlantUML
 sudo apt install plantuml
