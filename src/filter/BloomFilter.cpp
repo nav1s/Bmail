@@ -4,6 +4,7 @@
 #include <vector>
 #include <string>
 #include "../FileManager/BloomFilterFileManager.h"
+#include <iostream>
 
 using namespace std;
 
