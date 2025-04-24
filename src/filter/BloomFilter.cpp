@@ -64,11 +64,11 @@ size_t BloomFilter::getIndex(const IHashFunction& hashFunc, const string& item) 
 
 bool BloomFilter::possiblyContains(const string& item) const {
     for (const auto& hashFunc : hashFunctions) {
-        if (bitArray[getIndex(*hashFunc, item)]) {
-            return true;
+        if (!bitArray[getIndex(*hashFunc, item)]) {
+            return false;
         }
     }
-    return false;
+    return true;
 }
 
 
