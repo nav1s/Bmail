@@ -5,6 +5,19 @@ Users can add urls to the filter and query whether a url has been blocked.
 
 It utilizes Docker for building and running both the main application and the unit tests, ensuring a consistent environment.
 
+## Getting Started
+
+### Cloning the Repository
+
+```bash
+# Using HTTPS
+git clone https://github.com/binja12/bmail.git
+cd bmail
+
+# OR using SSH
+git clone git@github.com:binja12/bmail.git
+cd bmail
+```
 ## Usage
 
 ### Linux Instructions
