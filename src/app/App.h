@@ -1,11 +1,12 @@
 #pragma once
 
-#include "IMenu.h"
+#include "../menu/IMenu.h"
 #include "../input/InputReader.h"
 #include "../Output/OutputWriter.h"
 #include "../filter/IFilter.h"
 #include "../hash/IHashFunction.h"
-#include "ICommand.h"
+#include "../command/ICommand.h"
+#include "../input/InputReader.h"
 
 #include <memory>
 #include <unordered_map>
@@ -44,7 +45,7 @@ private:
     /**
      * @brief Registers available commands into the command map.
      */
-    void registerCommands();
+    void registerCommands(OutputWriter& writer);
 
     /**
      * @brief Parses space-separated integers from a string into a vector.

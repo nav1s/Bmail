@@ -34,5 +34,5 @@ public:
      * 
      * might be removed from Interface after this assignment since false positive is not required in other filters
      */
-    virtual bool possiblyContains(const string& item) const = 0;
+    virtual bool possiblyContains(const std::string& item) const = 0;
 };

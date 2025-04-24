@@ -1,7 +1,7 @@
 #include "App.h"
-#include "AddFilterCommand.h"
-#include "QueryFilterCommand.h"
-#include "BloomFilter.h"
+#include "../command/AddFilterCommand.h"
+#include "../command/QueryFilterCommand.h"
+#include "../filter/BloomFilter.h"
 #include "../hash/HashFactory.h"
 #include "../hash/IHashFunction.h"
 #include <iostream>
@@ -52,13 +52,13 @@ void App::semiConstructor(InputReader& reader, OutputWriter &writer) {
     filter = make_shared<BloomFilter>(arraySize, hashFunctions);
 
     //creating commands and menu
-    registerCommands();
+    registerCommands(writer);
     menu = make_unique<ConsoleMenu>(reader, writer);
 }
 
-void App::registerCommands() {
+void App::registerCommands(OutputWriter& writer) {
     commands[1] = make_unique<AddFilterCommand>(*filter);
-    commands[2] = make_unique<QueryFilterCommand>(*filter);
+    commands[2] = make_unique<QueryFilterCommand>(*filter, writer);
 }
 
 void App::parseInput(const string& input, vector<int>& args) {

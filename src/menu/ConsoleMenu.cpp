@@ -9,7 +9,7 @@ using namespace std;
 ConsoleMenu::ConsoleMenu(InputReader& reader, OutputWriter& writer)
     : reader(reader), writer(writer) {}
 
-void ConsoleMenu::getCommand(int& commandId, string& argument) const {
+void ConsoleMenu::getCommand(int& commandId, std::string& argument) const {
     string input;
     if (!reader.getLine(input)) {
         throw runtime_error("Failed to read command input.");
