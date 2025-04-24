@@ -1,6 +1,6 @@
 #include "app/App.h"
 #include "input/CliReader.h"
-#include "Output/CLIPrinter.h"
+#include "Output/CliPrinter.h"
 
 int main() {
     App app;
