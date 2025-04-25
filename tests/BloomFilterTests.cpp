@@ -27,7 +27,23 @@ protected:
     void TearDown() override {
         // Clean up test files after tests
         if (fs::exists(testDir + "/bloom_test.txt")) {
-            fs::remove(testDir + "/bloom_test.txt");
+            try {
+                fs::remove(testDir + "/bloom_test.txt");
+            } catch (const std::exception& e) {
+                // If it's a directory instead of a file, remove it recursively
+                if (fs::is_directory(testDir + "/bloom_test.txt")) {
+                    fs::remove_all(testDir + "/bloom_test.txt");
+                }
+            }
+        }
+        
+        // Try to remove the test directory itself if it's empty
+        try {
+            if (fs::exists(testDir) && fs::is_empty(testDir)) {
+                fs::remove(testDir);
+            }
+        } catch (const std::exception&) {
+            // Ignore errors when trying to remove the test directory
         }
     }
 };
@@ -67,7 +83,7 @@ TEST_F(BloomFilterTests, AddMultipleItems) {
  * 
  * Verifies that an item not added to the filter is correctly identified as not blacklisted.
  */
-TEST_F(BloomFilterTests, ItemNotAddedShouldNotBeBlacklisted) {
+TEST_F(BloomFilterTests, ItemNotAddedToFilterShouldNotBeBlacklisted) {
     hashFunctions.push_back(std::make_shared<StdHash>(3));
     filter = std::make_shared<BloomFilter>(10, hashFunctions);
 
