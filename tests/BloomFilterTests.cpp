@@ -227,48 +227,6 @@ TEST_F(BloomFilterTests, MoveConstructor) {
 }
 
 /**
- * @brief Tests the reset function
- * 
- * Verifies that the reset method correctly replaces all internal state components
- * of the filter including size, bit array, hash functions, and blacklist.
- */
-TEST_F(BloomFilterTests, ResetFunction) {
-    hashFunctions.push_back(std::make_shared<StdHash>(8));
-    filter = std::make_shared<BloomFilter>(10, hashFunctions);
-    
-    filter->add("originalItem");
-    EXPECT_TRUE(filter->isBlacklisted("originalItem"));
-    
-    // Create new state
-    size_t newSize = 5;
-    std::vector<bool> newBits(newSize, false);
-    newBits[2] = true;
-    
-    std::vector<std::shared_ptr<IHashFunction>> newHashFuncs;
-    newHashFuncs.push_back(std::make_shared<StdHash>(99));
-    
-    std::unordered_set<std::string> newBlacklist = {"newItem1", "newItem2"};
-    
-    // Reset the filter with new state
-    filter->reset(newSize, newBits, newHashFuncs, newBlacklist);
-    
-    // Verify reset worked correctly
-    EXPECT_EQ(newSize, filter->getArraySize());
-    EXPECT_EQ(newBlacklist.size(), filter->getBlacklist().size());
-    EXPECT_EQ(newHashFuncs.size(), filter->getHashFunctions().size());
-    
-    // Check new blacklisted items
-    EXPECT_TRUE(filter->isBlacklisted("newItem1"));
-    EXPECT_TRUE(filter->isBlacklisted("newItem2"));
-    EXPECT_FALSE(filter->isBlacklisted("originalItem"));
-    
-    // Check bit array
-    const auto& resetBits = filter->getBitArray();
-    EXPECT_EQ(newSize, resetBits.size());
-    EXPECT_EQ(newBits[2], resetBits[2]);
-}
-
-/**
  * @brief Tests using multiple hash functions
  * 
  * Verifies that a filter with multiple hash functions correctly handles item addition

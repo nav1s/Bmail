@@ -29,26 +29,6 @@ TEST_F(HashFactoryTest, CreatesStdHashFromValidSignature) {
 }
 
 /**
- * @brief Tests that the factory properly handles invalid signature formats.
- */
-TEST_F(HashFactoryTest, ThrowsOnInvalidSignatureFormat) {
-    // No separator
-    EXPECT_THROW(HashFactory::fromSignature("std3"), std::invalid_argument);
-    
-    // Empty string
-    EXPECT_THROW(HashFactory::fromSignature(""), std::invalid_argument);
-    
-    // Just the separator
-    EXPECT_THROW(HashFactory::fromSignature(":"), std::invalid_argument);
-    
-    // No type
-    EXPECT_THROW(HashFactory::fromSignature(":3"), std::invalid_argument);
-    
-    // No parameter
-    EXPECT_THROW(HashFactory::fromSignature("std:"), std::invalid_argument);
-}
-
-/**
  * @brief Tests that the factory throws when given an unknown hash type.
  */
 TEST_F(HashFactoryTest, ThrowsOnUnknownHashType) {

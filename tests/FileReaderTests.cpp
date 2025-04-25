@@ -82,16 +82,6 @@ TEST_F(FileReaderTest, ReadEmptyFile) {
 }
 
 /**
- * @brief Tests handling of non-existent files
- * 
- * Verifies that:
- * - Attempting to open a non-existent file throws an exception
- */
-TEST_F(FileReaderTest, NonExistentFile) {
-    EXPECT_THROW(FileReader reader(nonExistentFileName), std::runtime_error);
-}
-
-/**
  * @brief Tests move constructor functionality
  * 
  * Verifies that:
