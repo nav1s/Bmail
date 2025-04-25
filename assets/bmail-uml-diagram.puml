@@ -1,0 +1,137 @@
+@startuml bmail
+
+title Bmail Project - Class Diagram
+
+package App {
+  class App {
+    - commands: map<int, function<void(const string&)>>
+    - filter: shared_ptr<IFilter>
+    - menu: shared_ptr<IMenu>
+    - inputReader: shared_ptr<InputReader>
+    - urlValidator: shared_ptr<UrlValidator>
+    + App(filter, menu, inputReader, urlValidator)
+    + ~App()
+    + run()
+    + registerCommand(type, commandFactoryFunc)
+  }
+}
+
+package Filter {
+  interface IFilter {
+    + ~IFilter()
+    + add(item: string)
+    + isBlacklisted(item: string): bool
+  }
+  
+  class BloomFilter {
+    - bitArray: vector<bool>
+    - hashFunctions: vector<shared_ptr<IHashFunction>>
+    + BloomFilter(size, hashFunctions)
+    + add(item: string)
+    + isBlacklisted(item: string): bool
+  }
+}
+
+package Hash {
+  interface IHashFunction {
+    + ~IHashFunction()
+    + hash(key: string): size_t
+  }
+  
+  class StdHash {
+    - repetition: int
+    + StdHash(repetition)
+    + hash(key: string): size_t
+  }
+  
+  class HashFactory {
+    + {static} createHashFunction(type: string, param: int): shared_ptr<IHashFunction>
+  }
+}
+
+package Command {
+  interface ICommand {
+    + ~ICommand()
+    + execute(): bool
+  }
+  
+  class AddFilterCommand {
+    - filter: shared_ptr<IFilter>
+    - url: string
+    + AddFilterCommand(filter, url)
+    + execute(): bool
+  }
+  
+  class QueryFilterCommand {
+    - filter: shared_ptr<IFilter>
+    - url: string
+    + QueryFilterCommand(filter, url)
+    + execute(): bool
+  }
+}
+
+package Menu {
+  interface IMenu {
+    + ~IMenu()
+    + display()
+    + getUserChoice(): int
+  }
+  
+  class ConsoleMenu {
+    + display()
+    + getUserChoice(): int
+  }
+}
+
+package Input {
+  interface InputReader {
+    + ~InputReader()
+    + readLine(): string
+  }
+  
+  class CliReader {
+    + readLine(): string
+  }
+  
+  class FileReader {
+    - filePath: string
+    + FileReader(filePath)
+    + readLine(): string
+  }
+}
+
+package StringValidator {
+  interface StringValidator {
+    + ~StringValidator()
+    + validate(str: string): bool
+  }
+  
+  class UrlValidator {
+    + validate(url: string): bool
+    - isValidProtocol(protocol: string): bool
+    - isValidDomain(domain: string): bool
+  }
+}
+
+' Inheritance relationships
+IFilter <|.. BloomFilter
+IHashFunction <|.. StdHash
+ICommand <|.. AddFilterCommand
+ICommand <|.. QueryFilterCommand
+IMenu <|.. ConsoleMenu
+InputReader <|.. CliReader
+InputReader <|.. FileReader
+StringValidator <|.. UrlValidator
+
+' Composition & Dependency relationships
+App o-- "1" IFilter
+App o-- "1" IMenu
+App o-- "1" InputReader
+App o-- "1" UrlValidator
+App ..> ICommand : creates >
+BloomFilter o-- "*" IHashFunction
+AddFilterCommand --> IFilter : references >
+QueryFilterCommand --> IFilter : references >
+HashFactory ..> IHashFunction : creates >
+
+@enduml 
