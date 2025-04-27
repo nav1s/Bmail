@@ -5,7 +5,6 @@
 #include <string>
 #include <vector>
 
-// Mock classes for testing
 class MockInputReader : public InputReader {
 private:
   std::vector<std::string> lines;
@@ -56,7 +55,6 @@ protected:
 
     // Create clean test environment
     if (std::filesystem::exists("../../data")) {
-      std::cout << "Removing data directory" << std::endl;
       std::filesystem::remove_all("../../data");
     }
   }
@@ -156,6 +154,66 @@ TEST_F(AppTests, exampleRun3) {
   };
 
   mockReader = std::make_shared<MockInputReader>(exampleRun3);
+  mockWriter = std::make_shared<MockOutputWriter>();
+
+  // Run the app with the user sequence
+  ASSERT_NO_THROW(runAppBriefly(mockReader, mockWriter));
+
+  // Check that we got at exactly 2 outputs
+  ASSERT_EQ(mockWriter->outputLines.size(), 2);
+
+  // First query should be "true true" (URL in filter)
+  EXPECT_EQ(mockWriter->outputLines[0], "true true");
+
+  // Second query should be "true false" (URL not in filter)
+  EXPECT_EQ(mockWriter->outputLines[1], "true false");
+}
+
+/**
+ * @brief Tests the App with the invalid initialization
+ */
+TEST_F(AppTests, invalidInit) {
+  std::vector<std::string> exampleRun3 = {
+      "10 a",
+      "10 2 b",
+      "100",
+      "8 2",
+      "-5 3",
+      "-2 4",
+      "1 www.example.com0",
+      "2 www.example.com0",
+      "2 www.example.com4"
+  };
+
+  mockReader = std::make_shared<MockInputReader>(exampleRun3);
+  mockWriter = std::make_shared<MockOutputWriter>();
+
+  ASSERT_NO_THROW(runAppBriefly(mockReader, mockWriter));
+
+  // Check that we got at exactly 2 outputs
+  ASSERT_EQ(mockWriter->outputLines.size(), 2);
+
+  // First query should be "true true" (URL in filter)
+  EXPECT_EQ(mockWriter->outputLines[0], "true true");
+
+  // Second query should be "true false" (URL not in filter)
+  EXPECT_EQ(mockWriter->outputLines[1], "true false");
+}
+
+/**
+ * @brief Tests the App with invalid command
+ */
+TEST_F(AppTests, InvalidCommand) {
+  std::vector<std::string> invalidCommand = {
+      "8 2",
+      "3 www.hemi.com", // invalid command
+      "www.hemi.com", // invalid command
+      "1 www.example.com0", 
+      "2 www.example.com0",
+      "2 www.example.com4"
+  };
+
+  mockReader = std::make_shared<MockInputReader>(invalidCommand);
   mockWriter = std::make_shared<MockOutputWriter>();
 
   // Run the app with the user sequence
