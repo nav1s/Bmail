@@ -41,7 +41,7 @@ make && \
 
 The application preserves the Bloom filter state between runs. If you want to start with a fresh Bloom filter, delete the data file:
 ```bash
-rm build/app/data/bloomFilter.txt
+rm data/bloomFilter.txt
 ```
 
 #### Running the Unit Tests
@@ -66,7 +66,7 @@ docker run --rm --interactive --tty --volume "${PWD}:/app" --workdir /app bmail-
 ```
 The application preserves the Bloom filter state between runs. If you want to start with a fresh Bloom filter, delete the data file:
 ```bash
-rm build/app/data/bloomFilter.txt
+rm data/bloomFilter.txt
 ```
 
 #### Running the Unit Tests
