@@ -41,6 +41,13 @@ runTests
 ./HashFactoryTests.cpp
 ../src/hash/HashFactory.cpp
 
+./AppTests.cpp
+../src/app/App.cpp
+../src/command/AddFilterCommand.cpp
+../src/command/QueryFilterCommand.cpp
+../src/menu/ConsoleMenu.cpp
+../src/Output/CliPrinter.cpp
+../src/StringValidator/Validator.cpp
 )
 
 target_link_libraries(runTests gtest_main)
