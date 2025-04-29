@@ -12,11 +12,11 @@ src/filter/BloomFilter.cpp
 src/main.cpp 
 src/menu/ConsoleMenu.cpp
 src/hash/StdHash.cpp
-src/StringValidator/UrlValidator.cpp
+src/validator/UrlValidator.cpp
 src/input/CliReader.cpp
-src/FileManager/BloomFilterFileManager.cpp
+src/fileManager/BloomFilterFileManager.cpp
 src/hash/HashFactory.cpp
 src/input/FileReader.cpp
-src/Output/CliPrinter.cpp
-src/StringValidator/Validator.cpp
+src/output/CliPrinter.cpp
+src/validator/StringValidator.cpp
 )
