@@ -128,6 +128,21 @@ package Validator {
   }
 }
 
+package FileManager {
+  interface IFileManager {
+    + ~IFileManager()
+    + save(object: void*): void
+    + load(object: void*): void
+  }
+  
+  class BloomFilterFileManager {
+    - filePath: string
+    + BloomFilterFileManager(directory: string)
+    + save(object: void*): void
+    + load(object: void*): void
+  }
+}
+
 package Output {
   interface OutputWriter {
     + ~OutputWriter()
@@ -157,6 +172,7 @@ InputReader <|.. CliReader
 InputReader <|.. FileReader
 InputReader <|.. TCPReader
 Ivalidator <|.. UrlValidator
+IFileManager <|.. BloomFilterFileManager
 OutputWriter <|.. CLIPrinter
 OutputWriter <|.. FileWriter
 
@@ -171,6 +187,7 @@ BloomFilter o-- "*" IHashFunction
 PostItemCommand --> IFilter : references >
 GetItemCommand --> IFilter : references >
 DeleteItemCommand --> IFilter : references >
+BloomFilterFileManager --> BloomFilter : serializes >
 HashFactory ..> IHashFunction : creates >
 
 @enduml
