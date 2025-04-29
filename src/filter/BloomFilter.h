@@ -1,14 +1,11 @@
 #pragma once
 
 #include "IFilter.h"
-#include <fstream>
 #include <string>
 #include <vector>
 #include <memory>
 #include <unordered_set>
-#include <functional>
 #include "../hash/IHashFunction.h"
-#include "../hash/StdHash.h"
 
 using namespace std;
 
@@ -129,7 +126,7 @@ public:
      * @param item The item to check.
      * @return True if all relevant bits are set, false otherwise.
      */
-    bool possiblyContains(const string& item) const;
+    bool possiblyContains(const string& item) const override;
 
 private:
     /**
@@ -179,7 +176,7 @@ private:
 
     /**
      * @brief Resizes the bit array and rehashes existing items.
-     * currently disbaled
+     * currently disabled
      */
     //void resizeArray();
 };
