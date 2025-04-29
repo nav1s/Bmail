@@ -30,8 +30,8 @@ cd bmail
 #### Running the Application
 
 ```bash
-docker build --tag bmail-app --file Dockerfile.run .
-docker run --rm --interactive --tty --volume "$PWD":/app --workdir /app bmail-app bash -c "
+docker build --tag bmail-app --file Dockerfile.run . &&
+    docker run --rm --interactive --tty --volume "$PWD":/app --workdir /app bmail-app bash -c "
 mkdir -p build/app && \
 cd build/app && \
 cmake ../.. && \
@@ -47,8 +47,8 @@ rm data/bloomFilter.txt
 #### Running the Unit Tests
 
 ```bash
-docker build --tag bmail-tests --file Dockerfile.tests .
-docker run --rm --volume "$PWD":/app --workdir /app bmail-tests bash -c "
+docker build --tag bmail-tests --file Dockerfile.tests . &&
+    docker run --rm --volume "$PWD":/app --workdir /app bmail-tests bash -c "
 mkdir -p build/tests && \
 cd build/tests && \
 cmake ../../tests && \
