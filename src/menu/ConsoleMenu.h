@@ -39,7 +39,7 @@ public:
     /**
      * @brief Default move assignment operator.
      */
-    ConsoleMenu& operator=(ConsoleMenu&&) noexcept = default;
+    ConsoleMenu& operator=(ConsoleMenu&&) noexcept = delete;
 
     /**
      * @brief Virtual destructor.
