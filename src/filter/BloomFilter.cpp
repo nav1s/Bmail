@@ -3,8 +3,7 @@
 #include <memory>
 #include <vector>
 #include <string>
-#include "../FileManager/BloomFilterFileManager.h"
-#include <iostream>
+#include "../fileManager/BloomFilterFileManager.h"
 
 using namespace std;
 
@@ -21,10 +20,10 @@ BloomFilter::BloomFilter(const BloomFilter& other)
       realBlacklist(other.realBlacklist) {}
 
 BloomFilter::BloomFilter(BloomFilter&& other) noexcept
-    : arraySize(move(other.arraySize)),
-      bitArray(move(other.bitArray)),
-      hashFunctions(move(other.hashFunctions)),
-      realBlacklist(move(other.realBlacklist)) {}
+    : arraySize(std::move(other.arraySize)),
+      bitArray(std::move(other.bitArray)),
+      hashFunctions(std::move(other.hashFunctions)),
+      realBlacklist(std::move(other.realBlacklist)) {}
 
 BloomFilter::~BloomFilter() = default;
 

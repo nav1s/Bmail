@@ -10,7 +10,7 @@
 #include "../input/InputReader.h"
 #include <string>
 #include "../menu/ConsoleMenu.h"
-#include "../StringValidator/StringValidator.h"
+#include "../validator/StringValidator.h"
 #include <filesystem>
 #include <regex>
 

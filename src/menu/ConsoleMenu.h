@@ -2,7 +2,7 @@
 
 #include "IMenu.h"
 #include "../input/InputReader.h"
-#include "../Output/OutputWriter.h"
+#include "../output/OutputWriter.h"
 #include <string>
 
 /**

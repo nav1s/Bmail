@@ -2,7 +2,7 @@
 
 #include "../menu/IMenu.h"
 #include "../input/InputReader.h"
-#include "../Output/OutputWriter.h"
+#include "../output/OutputWriter.h"
 #include "../filter/IFilter.h"
 #include "../hash/IHashFunction.h"
 #include "../command/ICommand.h"
