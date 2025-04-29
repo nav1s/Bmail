@@ -19,7 +19,8 @@ package App {
 package Filter {
   interface IFilter {
     + ~IFilter()
-    + add(item: string)
+    + add(item: string): bool
+    + delete(item: string): bool
     + isBlacklisted(item: string): bool
   }
   
@@ -27,7 +28,8 @@ package Filter {
     - bitArray: vector<bool>
     - hashFunctions: vector<shared_ptr<IHashFunction>>
     + BloomFilter(size, hashFunctions)
-    + add(item: string)
+    + add(item: string): bool
+    + delete(item: string): bool
     + isBlacklisted(item: string): bool
   }
 }
@@ -55,17 +57,24 @@ package Command {
     + execute(): bool
   }
   
-  class AddFilterCommand {
+  class PostItemCommand {
     - filter: shared_ptr<IFilter>
-    - url: string
-    + AddFilterCommand(filter, url)
+    - item: string
+    + PostItemCommand(filter, url)
     + execute(): bool
   }
   
-  class QueryFilterCommand {
+  class GetItemCommand {
     - filter: shared_ptr<IFilter>
-    - url: string
-    + QueryFilterCommand(filter, url)
+    - item: string
+    + GetItemCommand(filter, url)
+    + execute(): bool
+  }
+  
+  class DeleteItemCommand {
+    - filter: shared_ptr<IFilter>
+    - item: string
+    + DeleteItemCommand(filter, url)
     + execute(): bool
   }
 }
@@ -93,6 +102,12 @@ package Input {
     + readLine(): string
   }
   
+  class TCPReader {
+    - ip: string
+    - port: string
+    + readLine(): string
+  }
+
   class FileReader {
     - filePath: string
     + FileReader(filePath)
@@ -100,9 +115,9 @@ package Input {
   }
 }
 
-package StringValidator {
-  interface StringValidator {
-    + ~StringValidator()
+package Validator {
+  interface Ivalidator {
+    + ~Ivalidator()
     + validate(str: string): bool
   }
   
@@ -116,12 +131,14 @@ package StringValidator {
 ' Inheritance relationships
 IFilter <|.. BloomFilter
 IHashFunction <|.. StdHash
-ICommand <|.. AddFilterCommand
-ICommand <|.. QueryFilterCommand
+ICommand <|.. PostItemCommand
+ICommand <|.. GetItemCommand
+ICommand <|.. DeleteItemCommand
 IMenu <|.. ConsoleMenu
 InputReader <|.. CliReader
 InputReader <|.. FileReader
-StringValidator <|.. UrlValidator
+InputReader <|.. TCPReader
+Ivalidator <|.. UrlValidator
 
 ' Composition & Dependency relationships
 App o-- "1" IFilter
@@ -130,8 +147,9 @@ App o-- "1" InputReader
 App o-- "1" UrlValidator
 App ..> ICommand : creates >
 BloomFilter o-- "*" IHashFunction
-AddFilterCommand --> IFilter : references >
-QueryFilterCommand --> IFilter : references >
+PostItemCommand --> IFilter : references >
+GetItemCommand --> IFilter : references >
+DeleteItemCommand --> IFilter : references >
 HashFactory ..> IHashFunction : creates >
 
 @enduml 
