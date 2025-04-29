@@ -22,14 +22,14 @@ App::App() {
 string bloomFilterLocation = "../../data";
 
 void App::run(InputReader& reader, OutputWriter &writer) {
-    //init app (bloom filter,hash functions, commands ect...)
+    // init app (bloom filter,hash functions, commands ect...)
     semiConstructor(reader, writer);
 
     while (true) {
         int commandId;
         string arg;
         menu->getCommand(commandId, arg);
-        //fetch command and calls it
+        // fetch command and calls it
         auto it = commands.find(commandId);
         if (it != commands.end()) {
             try {
@@ -46,6 +46,12 @@ void App::run(InputReader& reader, OutputWriter &writer) {
     filter->saveToFile(bloomFilterLocation);
 }
 
+// @brief semiConstructor
+// @param reader InputReader object
+// @param writer OutputWriter object
+// @details This function initializes the BloomFilter and its hash functions.
+// It reads the initialization line from the user, validates it, and creates the filter.
+// It also loads the filter from a file if it exists. The function then registers the commands and creates the menu.
 void App::semiConstructor(InputReader& reader, OutputWriter &writer) {
     //get init line from user
     string input;
@@ -62,16 +68,16 @@ void App::semiConstructor(InputReader& reader, OutputWriter &writer) {
     size_t arraySize = args.front();
     args.erase(args.begin());
 
-    //creating hash functions and filter
+    // creating hash functions and filter
     vector<shared_ptr<IHashFunction>> hashFunctions;
     hashAssembler(args, hashFunctions);
     filter = make_shared<BloomFilter>(arraySize, hashFunctions);
-    //loading from file if optional
+    // loading from file if optional
     if (filesystem::exists(bloomFilterLocation)){
         filter->loadFromFile(bloomFilterLocation);
     }
 
-    //creating commands and menu
+    // creating commands and menu
     registerCommands(writer);
     menu = make_unique<ConsoleMenu>(reader, writer);
 }
@@ -89,6 +95,14 @@ void App::parseInput(const string& input, vector<int>& args) {
     }
 }
 
+// @brief hashAssembler
+// @param args vector of integers
+// @param out vector of shared_ptr to IHashFunction
+// @details This function takes a vector of integers and creates hash functions based on them.
+// It uses the HashFactory to create the hash functions and stores them in the output vector.
+// The hash functions are created with the signature "std:<number>".
+// The function iterates through the input vector, creates a hash function for each integer,
+// and adds it to the output vector.
 void App::hashAssembler(vector<int>& args, vector<shared_ptr<IHashFunction>>& out) {
     for (int num : args) {
         string signature = "std:" + to_string(num);
