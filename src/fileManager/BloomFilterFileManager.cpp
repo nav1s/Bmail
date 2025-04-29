@@ -3,6 +3,9 @@
 #include <sstream>
 #include <stdexcept>
 #include <filesystem>
+#include <unordered_set>
+#include <vector>
+#include "../filter/BloomFilter.h"
 #include "../input/FileReader.h"
 #include "../hash/HashFactory.h"
 #include "iostream"
