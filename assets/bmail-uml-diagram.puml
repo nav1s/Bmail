@@ -128,6 +128,24 @@ package Validator {
   }
 }
 
+package Output {
+  interface OutputWriter {
+    + ~OutputWriter()
+    + putLine(line: string): bool
+  }
+  
+  class CLIPrinter {
+    + CLIPrinter()
+    + putLine(line: string): bool
+  }
+  
+  class FileWriter {
+    - out: ofstream
+    + FileWriter(filePath: string)
+    + putLine(line: string): bool
+  }
+}
+
 ' Inheritance relationships
 IFilter <|.. BloomFilter
 IHashFunction <|.. StdHash
@@ -139,11 +157,14 @@ InputReader <|.. CliReader
 InputReader <|.. FileReader
 InputReader <|.. TCPReader
 Ivalidator <|.. UrlValidator
+OutputWriter <|.. CLIPrinter
+OutputWriter <|.. FileWriter
 
 ' Composition & Dependency relationships
 App o-- "1" IFilter
 App o-- "1" IMenu
 App o-- "1" InputReader
+App o-- "1" OutputWriter
 App o-- "1" UrlValidator
 App ..> ICommand : creates >
 BloomFilter o-- "*" IHashFunction
@@ -152,4 +173,4 @@ GetItemCommand --> IFilter : references >
 DeleteItemCommand --> IFilter : references >
 HashFactory ..> IHashFunction : creates >
 
-@enduml 
+@enduml
