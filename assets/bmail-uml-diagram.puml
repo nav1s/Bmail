@@ -4,15 +4,16 @@ title Bmail Project - Class Diagram
 
 package App {
   class App {
-    - commands: map<int, function<void(const string&)>>
+    - commands: unordered_map<int, unique_ptr<ICommand>>
     - filter: shared_ptr<IFilter>
-    - menu: shared_ptr<IMenu>
-    - inputReader: shared_ptr<InputReader>
-    - urlValidator: shared_ptr<UrlValidator>
-    + App(filter, menu, inputReader, urlValidator)
-    + ~App()
-    + run()
-    + registerCommand(type, commandFactoryFunc)
+    - menu: unique_ptr<IMenu>
+    + App()
+    + run(reader: InputReader&, writer: OutputWriter&): void
+    - semiConstructor(reader: InputReader&, writer: OutputWriter&): void
+    - registerCommands(writer: OutputWriter&): void
+    - parseInput(input: string, args: vector<int>&): void
+    - hashAssembler(args: vector<int>&, out: vector<shared_ptr<IHashFunction>>&): void
+    - isValidInit(input: string): bool
   }
 }
 
@@ -26,11 +27,15 @@ package Filter {
   
   class BloomFilter {
     - bitArray: vector<bool>
+    - arraySize: size_t
     - hashFunctions: vector<shared_ptr<IHashFunction>>
+    - realBlacklist: unordered_set<string>
     + BloomFilter(size, hashFunctions)
     + add(item: string): bool
     + delete(item: string): bool
     + isBlacklisted(item: string): bool
+    + loadFromFile(directory: string): void
+    + saveToFile(directory: string): void
   }
 }
 
@@ -53,7 +58,7 @@ package Hash {
 
 package Command {
   interface ICommand {
-    + ~ICommand()
+    + ~ICommand(std::string& arg)
     + execute(): bool
   }
   
@@ -82,13 +87,14 @@ package Command {
 package Menu {
   interface IMenu {
     + ~IMenu()
-    + display()
-    + getUserChoice(): int
+    + getCommand(commandId: int&, arg: string&): void
   }
   
   class ConsoleMenu {
-    + display()
-    + getUserChoice(): int
+    - reader: InputReader&
+    - writer: OutputWriter&
+    + ConsoleMenu(reader: InputReader&, writer: OutputWriter&)
+    + getCommand(commandId: int&, arg: string&): void
   }
 }
 
@@ -125,6 +131,10 @@ package Validator {
     + validate(url: string): bool
     - isValidProtocol(protocol: string): bool
     - isValidDomain(domain: string): bool
+  }
+  
+  class StringValidator {
+    + {static} validatePositiveIntegers(args: vector<int>): bool
   }
 }
 
@@ -179,14 +189,17 @@ OutputWriter <|.. FileWriter
 ' Composition & Dependency relationships
 App o-- "1" IFilter
 App o-- "1" IMenu
-App o-- "1" InputReader
-App o-- "1" OutputWriter
-App o-- "1" UrlValidator
-App ..> ICommand : creates >
+App o-- "*" ICommand
+App ..> BloomFilter : creates >
+App ..> StringValidator : uses >
+App ..> HashFactory : uses >
 BloomFilter o-- "*" IHashFunction
+BloomFilter ..> FileManager : uses >
 PostItemCommand --> IFilter : references >
 GetItemCommand --> IFilter : references >
 DeleteItemCommand --> IFilter : references >
+ConsoleMenu --> InputReader : references >
+ConsoleMenu --> OutputWriter : references >
 BloomFilterFileManager --> BloomFilter : serializes >
 HashFactory ..> IHashFunction : creates >
 
