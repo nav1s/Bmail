@@ -1,24 +1,20 @@
 #pragma once
 
-#include <string>
+#include <vector>
 
 /**
- * @class StringValidator
- * @brief Abstract base class for validating input strings.
+ * @class Validator
+ * @brief Utility class for validating integer-based inputs.
  *
- * This interface allows for interchangeable text validation strategies.
+ * This class provides static utility methods to validate data such as filter initialization
+ * parameters. No instantiation is required.
  */
 class StringValidator {
 public:
     /**
-     * @brief Checks if the input string is valid.
-     * @param input The string to validate.
-     * @return True if the input is valid, false otherwise.
+     * @brief Validates that all integers in the vector are strictly positive.
+     * @param args Vector of integers to validate.
+     * @return true if all values are positive, false otherwise.
      */
-    virtual bool validate(const std::string& input) const = 0;
-
-    /**
-     * @brief Virtual destructor for safe polymorphic deletion.
-     */
-    virtual ~StringValidator() = default;
+    static bool validatePositiveIntegers(const std::vector<int>& args);
 };

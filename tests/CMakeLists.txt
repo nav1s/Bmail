@@ -47,7 +47,7 @@ runTests
 ../src/command/QueryFilterCommand.cpp
 ../src/menu/ConsoleMenu.cpp
 ../src/Output/CliPrinter.cpp
-../src/StringValidator/Validator.cpp
+../src/StringValidator/StringValidator.cpp
 )
 
 target_link_libraries(runTests gtest_main)

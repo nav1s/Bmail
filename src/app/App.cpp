@@ -7,11 +7,10 @@
 #include <iostream>
 #include <sstream>
 #include <stdexcept>
-#include "../input/CliReader.h"
 #include "../input/InputReader.h"
 #include <string>
 #include "../menu/ConsoleMenu.h"
-#include "../StringValidator/Validator.h"
+#include "../StringValidator/StringValidator.h"
 #include <filesystem>
 #include <regex>
 
@@ -57,7 +56,7 @@ void App::semiConstructor(InputReader& reader, OutputWriter &writer) {
 
     vector<int> args;
     parseInput(input, args);
-    if (!Validator::validatePositiveIntegers(args)) {
+    if (!StringValidator::validatePositiveIntegers(args)) {
         throw std::invalid_argument("Incorrect filter init format.");
     }
     size_t arraySize = args.front();
