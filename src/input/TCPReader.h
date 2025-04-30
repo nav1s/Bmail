@@ -15,6 +15,6 @@ public:
     bool getLine(std::string &line) override;
 
 private:
-    int socket_fd;
+    int clientSocket;
     char buffer[1024];
 };

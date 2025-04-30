@@ -109,8 +109,8 @@ package Input {
   }
   
   class TCPReader {
-    - ip: string
-    - port: string
+    - clientSocket: int
+    - buffer: string
     + readLine(): string
   }
 
@@ -168,6 +168,11 @@ package Output {
     - out: ofstream
     + FileWriter(filePath: string)
     + putLine(line: string): bool
+  }
+
+  class TCPWriter {
+    - clientSocket: int
+    + putLine(msg: string): string
   }
 }
 
