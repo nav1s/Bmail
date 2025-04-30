@@ -11,7 +11,6 @@ dest_port = 12345
 # connect to the ip and the port
 s.connect((dest_ip, dest_port))
 print("connected to server")
-exit()
 
 # ask for the user to type a message
 msg = input("Message to send: ")
