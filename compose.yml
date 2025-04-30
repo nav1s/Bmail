@@ -1,0 +1,27 @@
+
+services:
+  tcp-client:
+    image: python:3-alpine
+    container_name: tcp-client
+    restart: "no"
+    command: python /app/src/tcpClient.py
+    volumes:
+      - ./:/app/
+    depends_on:
+      - tcp-server
+  tcp-server:
+    build:
+      context: .
+      dockerfile: Dockerfile.server
+    container_name: tcp-server
+    restart: "no"
+    command: bash -c "
+              mkdir -p build/app && \
+              cd build/app && \
+              cmake ../.. && \
+              make && \
+              ./filter 0.0.0.0 12345"
+    volumes:
+      - ./:/app
+    ports:
+      - "12345:12345"
