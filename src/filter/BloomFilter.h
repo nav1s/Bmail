@@ -66,6 +66,12 @@ public:
     void add(const string& item) override;
 
     /**
+     * @brief removes an item from the Bloom filter.
+     * @param item The string to remove from the filter.
+     */
+    void remove(const string& item) override;
+
+    /**
      * @brief Checks if an item is blacklisted.
      * @param item The string to check.
      * @return True if the item is likely in the filter and confirmed in the blacklist.

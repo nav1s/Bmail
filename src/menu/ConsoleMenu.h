@@ -49,10 +49,10 @@ public:
     /**
      * @brief Prompts the user and retrieves their selected command and argument.
      * 
-     * @param commandId Output parameter for the command number (e.g., 1, 2).
+     * @param commandName Output parameter for the command name.
      * @param argument Output parameter for the remainder of the input (e.g. a URL).
      */
-    void getCommand(int& commandId, std::string& argument) const override;
+    void getCommand(string& commandName, std::string& argument) const override;
 
 private:
     InputReader& reader;

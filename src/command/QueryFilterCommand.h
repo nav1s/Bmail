@@ -62,5 +62,5 @@ public:
 
 private:
     IFilter* filter;
-    OutputWriter& writer;
+    OutputWriter* writer;
 };

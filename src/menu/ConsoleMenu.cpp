@@ -3,21 +3,23 @@
 #include <sstream>
 #include <stdexcept>
 #include "../Output/OutputWriter.h"
-
+#include "../input/InputReader.h"
+#include <string>
 using namespace std;
 
 ConsoleMenu::ConsoleMenu(InputReader& reader, OutputWriter& writer)
     : reader(reader), writer(writer) {}
 
-void ConsoleMenu::getCommand(int& commandId, std::string& argument) const {
+void ConsoleMenu::getCommand(string& commandName, std::string& argument) const {
     string input;
     if (!reader.getLine(input)) {
         throw runtime_error("Failed to read command input.");
     }
 
     istringstream iss(input);
-    if (!(iss >> commandId)) {
-        //throw std::invalid_argument("Invalid command ID format. Expected an integer.");
+    if (!(iss >> commandName)) {
+        cout << "400 Bad Request" << endl;
+        return;
     }
 
     getline(iss, argument);

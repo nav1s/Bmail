@@ -16,8 +16,8 @@ public:
     /**
      * @brief retrieves their selected command and argument.
      * 
-     * @param commandId Output parameter for the command number (e.g. 1, 2).
+     * @param commandName Output parameter for the command name.
      * @param argument Output parameter for the remainder of the input (e.g. a URL).
      */
-    virtual void getCommand(int& commandId, std::string& argument) const = 0;
+    virtual void getCommand(string& commandName, std::string& argument) const = 0;
 };

@@ -1,6 +1,8 @@
 #include "App.h"
 #include "../command/AddFilterCommand.h"
 #include "../command/QueryFilterCommand.h"
+#include "../command/DeleteFilterCommand.h"
+#include "../output/OutputWriter.h"
 #include "../filter/BloomFilter.h"
 #include "../hash/HashFactory.h"
 #include "../hash/IHashFunction.h"
@@ -27,21 +29,24 @@ void App::run(InputReader& reader, OutputWriter &writer) {
     semiConstructor(reader, writer);
 
     while (true) {
-        int commandId;
-        string arg;
-        menu->getCommand(commandId, arg);
+        string commandName, arg;
+        menu->getCommand(commandName, arg);
         //fetch command and calls it
-        auto it = commands.find(commandId);
+        auto it = commands.find(commandName);
         if (it != commands.end()) {
             try {
                 it->second->execute(arg);
                  // "add" command
-                if (commandId == 1) {
+                if (commandName == "POST") {
                     filter->saveToFile(bloomFilterLocation);
                 }
             } catch (const std::exception& ex) {
+                // Handle exceptions and print error messages
+                writer.putLine("500 Internal Server Error");
                 continue;
             }
+        } else {
+            //cout << "400 Bad Request" << endl;
         }
     }
     filter->saveToFile(bloomFilterLocation);
@@ -78,8 +83,9 @@ void App::semiConstructor(InputReader& reader, OutputWriter &writer) {
 }
 
 void App::registerCommands(OutputWriter& writer) {
-    commands[1] = make_unique<AddFilterCommand>(*filter);
-    commands[2] = make_unique<QueryFilterCommand>(*filter, writer);
+    commands["POST"] = make_unique<AddFilterCommand>(*filter, writer);
+    commands["GET"] = make_unique<QueryFilterCommand>(*filter, writer);
+    commands["DELETE"] = make_unique<DeleteFilterCommand>(*filter, writer);
 }
 
 void App::parseInput(const string& input, vector<int>& args) {

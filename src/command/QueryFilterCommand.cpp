@@ -1,11 +1,12 @@
 #include "QueryFilterCommand.h"
 #include <stdexcept>
 #include "../StringValidator/UrlValidator.h"
+#include <iostream>
 
 using namespace std;
 
 QueryFilterCommand::QueryFilterCommand(IFilter& filter, OutputWriter& writer)
-    : filter(&filter), writer(writer) {}
+    : filter(&filter), writer(&writer) {}
 
 QueryFilterCommand::QueryFilterCommand(const QueryFilterCommand& other)
     : filter(other.filter), writer(other.writer) {}
@@ -37,10 +38,14 @@ QueryFilterCommand::~QueryFilterCommand() = default;
 void QueryFilterCommand::execute(const string& arg) {
     UrlValidator validator;
     if (!validator.validate(arg)) {
-        throw invalid_argument("QueryFilterCommand: missing or invalid URL argument");
+        writer->putLine("400 Bad Request");
+        return;
     }
 
     bool contain = filter->possiblyContains(arg);
     bool result = filter->isBlacklisted(arg);
-    writer.putLine(contain? "true " + string(result ? "true" : "false"): "false");
+    // print to the client
+    writer->putLine(contain ? "200 Ok" : "404 Not Found");
+    writer->putLine("\n\n");
+    writer->putLine(contain? "true " + string(result ? "true" : "false"): "false");
 }
