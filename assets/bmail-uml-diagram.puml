@@ -172,6 +172,7 @@ package Output {
 
   class TCPWriter {
     - clientSocket: int
+    - buffer: string
     + putLine(msg: string): string
   }
 }
@@ -190,6 +191,7 @@ Ivalidator <|.. UrlValidator
 IFileManager <|.. BloomFilterFileManager
 OutputWriter <|.. CLIPrinter
 OutputWriter <|.. FileWriter
+OutputWriter <|.. TCPWriter
 
 ' Composition & Dependency relationships
 App o-- "1" IFilter
