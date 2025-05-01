@@ -9,6 +9,8 @@ services:
       - ./:/app/
     depends_on:
       - tcp-server
+    stdin_open: true # docker run -i
+    tty: true        # docker run -t
   tcp-server:
     build:
       context: .
