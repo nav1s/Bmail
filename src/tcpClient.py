@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
 import socket
+import sys
 
-print(1)
 # create a new socket
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 # setup the destination ip
-dest_ip = 'tcp-server'
+dest_ip = sys.argv[1]
 # setup the destination port
-dest_port = 12345
+dest_port = int(sys.argv[2])
+
 # connect to the ip and the port
 s.connect((dest_ip, dest_port))
 print("connected to server")
