@@ -20,7 +20,7 @@ while not msg == 'quit':
     # send the message to the server
     s.send(bytes(msg, 'utf-8'))
     # save the response the server gave us
-    data = s.recv(4096)
+    data = s.recv(1024)
     # print the response we got from the server
     print("Server sent: ", data.decode('utf-8'))
     # ask for the user to enter a new message
