@@ -7,7 +7,8 @@ services:
     volumes:
       - ./:/app/
     depends_on:
-      - tcp-server
+      tcp-server:
+        condition: service_healthy
     stdin_open: true # docker run -i
     tty: true        # docker run -t
   tcp-server:
@@ -21,8 +22,14 @@ services:
               cd build/app && \
               cmake ../.. && \
               make && \
-              ./filter 0.0.0.0 12345"
+              touch /tmp/tcp-server && \
+              ./tcp-server 0.0.0.0 12345"
     volumes:
       - ./:/app
     ports:
       - "12345:12345"
+    healthcheck:
+      test: ["CMD", "bash", "-c", "test -f /tmp/tcp-server"]
+      interval: 5s
+      timeout: 1s
+      retries: 5
