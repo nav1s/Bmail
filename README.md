@@ -1,5 +1,7 @@
 # Bmail
 
+> **Note:** The first part of this project can be found at https://github.com/Binja12/Bmail/tree/part1
+
 This project implements a console application demonstrating the use of a Bloom filter.
 Users can add urls to the filter and query whether a url has been blocked.
 
