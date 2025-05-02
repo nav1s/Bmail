@@ -59,8 +59,9 @@ make && \
 #### Running the Application
 
 ```powershell
-docker build --tag bmail-app --file Dockerfile.run .
-docker run --rm --interactive --tty --volume "${PWD}:/app" --workdir /app bmail-app bash -c "mkdir -p build/app && cd build/app && cmake ../.. && make && ./filter"
+docker compose up --detach --pull always --remove-orphans --build tcp-server
+docker compose run --pull always --remove-orphans --rm tcp-client
+docker compose down tcp-server
 ```
 The application preserves the Bloom filter state between runs. If you want to start with a fresh Bloom filter, delete the data file:
 ```bash
