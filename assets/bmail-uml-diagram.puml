@@ -248,8 +248,6 @@ HashFactory ..> IHashFunction : creates >
 ' Network relationships
 TCPServer ..> TCPReader : creates socket for >
 TCPServer ..> TCPWriter : creates socket for >
-TCPClient ..> TCPReader : uses >
-TCPClient ..> TCPWriter : uses >
 App ..> IServer : uses in main() >
 
 @enduml
