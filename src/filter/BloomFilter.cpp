@@ -27,16 +27,39 @@ BloomFilter::BloomFilter(BloomFilter&& other) noexcept
 
 BloomFilter::~BloomFilter() = default;
 
-void BloomFilter::add(const string& item) {
-    realBlacklist.insert(item);
+bool BloomFilter::add(const string& item) {
+    auto result = realBlacklist.insert(item);
     // resizing array: disabled atm
     // if (checkArraySize()) {
     //     resizeArray();
     // }
+    //if insertaion failed return false
+    if (!result.second){
+        return false;
+    }
     for (const auto& hashFunc : hashFunctions) {
         size_t i = getIndex(*hashFunc, item);
         bitArray[i] = true;
     }
+    return true;
+}
+
+bool BloomFilter::remove(const string& item) {
+    auto it = realBlacklist.find(item);
+    // checks if item was found
+    if (it == realBlacklist.end()) {
+        return false;
+    }
+    realBlacklist.erase(it);
+    // Rebuild bitArray from all items still in the set
+    fill(bitArray.begin(), bitArray.end(), false);
+    for (const auto& existingItem : realBlacklist) {
+        for (const auto& hashFunc : hashFunctions) {
+            size_t i = getIndex(*hashFunc, existingItem);
+            bitArray[i] = true;
+        }
+    }
+    return true;
 }
 
 

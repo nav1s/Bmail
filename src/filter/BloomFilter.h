@@ -60,7 +60,13 @@ public:
      * @brief Adds an item to the Bloom filter.
      * @param item The string to insert into the filter.
      */
-    void add(const string& item) override;
+    bool add(const string& item) override;
+
+    /**
+     * @brief removes an item from the Bloom filter.
+     * @param item The string to remove from the filter.
+     */
+    bool remove(const string& item) override;
 
     /**
      * @brief Checks if an item is blacklisted.
