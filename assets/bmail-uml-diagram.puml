@@ -111,12 +111,13 @@ package Input {
   class TCPReader {
     - clientSocket: int
     - buffer: string
+    + TCPReader(clientSocket: int)
     + readLine(): string
   }
 
   class FileReader {
     - filePath: string
-    + FileReader(filePath)
+    + FileReader(filePath: string)
     + readLine(): string
   }
 }
@@ -173,6 +174,7 @@ package Output {
   class TCPWriter {
     - clientSocket: int
     - buffer: string
+    + TCPWriter(clientSocket: int)
     + putLine(msg: string): string
   }
 }
