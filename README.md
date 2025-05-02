@@ -30,8 +30,9 @@ cd bmail
 #### Running the Application
 
 ```bash
-docker compose up --detach --pull always --remove-orphans --build
-docker compose run --rm tcp-client
+docker compose up --detach --pull always --remove-orphans --build tcp-server
+docker compose run --pull always --remove-orphans --rm tcp-client
+docker compose down tcp-server
 ```
 
 The application preserves the Bloom filter state between runs. If you want to start with a fresh Bloom filter, delete the data file:
