@@ -57,9 +57,11 @@ void App::semiConstructor(InputReader& reader, OutputWriter &writer) {
     // get init line from user
     string input;
     bool validInit = false;
-    do{
+    reader.getLine(input);
+    while(!isValidInit(input)){
+        writer.putLine("400 Bad Request");
         reader.getLine(input);
-    }while(!isValidInit(input));
+    }
 
     vector<int> args;
     parseInput(input, args);
@@ -81,6 +83,7 @@ void App::semiConstructor(InputReader& reader, OutputWriter &writer) {
     // creating commands and menu
     registerCommands(writer);
     menu = make_unique<ConsoleMenu>(reader, writer);
+    writer.putLine("201 Created");
 }
 
 void App::registerCommands(OutputWriter& writer) {
