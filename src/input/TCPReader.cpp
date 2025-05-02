@@ -18,10 +18,10 @@ bool TCPReader::getLine(std::string &line) {
     
     }
 
-    std::cout << "Received: " << buffer << std::endl;
     // Ensure null termination
     buffer[bytesRead] = '\0';
-    
+
+    std::cout << "Received: " << buffer << std::endl;
     // Convert to string and remove newline if present
     line = std::string(buffer);
     return true;

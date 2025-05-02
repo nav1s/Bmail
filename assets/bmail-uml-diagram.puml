@@ -175,7 +175,39 @@ package Output {
     - clientSocket: int
     - buffer: string
     + TCPWriter(clientSocket: int)
-    + putLine(msg: string): string
+    + putLine(msg: string): bool
+  }
+}
+
+package Network {
+  interface IServer {
+    + ~IServer()
+    + initialize(): void
+    + acceptConnection(): int
+    + closeConnection(): void
+  }
+
+  class TCPServer {
+    - serverSocket: int
+    - serverAddress: sockaddr_in
+    - ipAddress: string
+    - port: int
+    + TCPServer(ipAddress: string, port: int)
+    + ~TCPServer()
+    + initializeServer(): void
+    + acceptConnection(): int
+    + closeConnection(): void
+  }
+  
+  class TCPClient {
+    - clientSocket: int
+    - serverAddress: sockaddr_in
+    + TCPClient(ipAddress: string, port: int)
+    + ~TCPClient()
+    + connectToServer(): bool
+    + sendMessage(message: string): bool
+    + receiveMessage(): string
+    + closeConnection(): void
   }
 }
 
@@ -194,6 +226,7 @@ IFileManager <|.. BloomFilterFileManager
 OutputWriter <|.. CLIPrinter
 OutputWriter <|.. FileWriter
 OutputWriter <|.. TCPWriter
+IServer <|.. TCPServer
 
 ' Composition & Dependency relationships
 App o-- "1" IFilter
@@ -211,5 +244,12 @@ ConsoleMenu --> InputReader : references >
 ConsoleMenu --> OutputWriter : references >
 BloomFilterFileManager --> BloomFilter : serializes >
 HashFactory ..> IHashFunction : creates >
+
+' Network relationships
+TCPServer ..> TCPReader : creates socket for >
+TCPServer ..> TCPWriter : creates socket for >
+TCPClient ..> TCPReader : uses >
+TCPClient ..> TCPWriter : uses >
+App ..> IServer : uses in main() >
 
 @enduml
