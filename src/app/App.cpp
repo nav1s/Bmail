@@ -59,6 +59,7 @@ void App::semiConstructor(InputReader& reader, OutputWriter &writer) {
     bool validInit = false;
     reader.getLine(input);
     while(!isValidInit(input)){
+        // todo check if we can do it better
         writer.putLine("400 Bad Request");
         reader.getLine(input);
     }
@@ -83,6 +84,7 @@ void App::semiConstructor(InputReader& reader, OutputWriter &writer) {
     // creating commands and menu
     registerCommands(writer);
     menu = make_unique<ConsoleMenu>(reader, writer);
+    // todo check if we can do it better
     writer.putLine("201 Created");
 }
 

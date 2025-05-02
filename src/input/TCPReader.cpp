@@ -24,6 +24,11 @@ bool TCPReader::getLine(std::string &line) {
     std::cout << "Received: " << buffer << std::endl;
     // Convert to string and remove newline if present
     line = std::string(buffer);
+
+    // Remove the newline character if present
+    if (!line.empty() && line.back() == '\n') {
+        line.pop_back();
+    }
     return true;
 }
 
