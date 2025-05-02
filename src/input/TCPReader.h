@@ -1,7 +1,6 @@
 #pragma once
 
 #include "InputReader.h"
-#include <cstring>
 #include <sys/socket.h>
 
 class TCPReader : public InputReader {
@@ -33,9 +32,6 @@ public:
    */
   TCPReader &operator=(TCPReader &&other) = delete;
 
-  /**
-   * @brief Destructor
-   */
   ~TCPReader();
 
   /**
