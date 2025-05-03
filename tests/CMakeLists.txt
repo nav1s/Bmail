@@ -45,6 +45,7 @@ runTests
 ../src/app/App.cpp
 ../src/command/AddFilterCommand.cpp
 ../src/command/QueryFilterCommand.cpp
+../src/command/DeleteFilterCommand.cpp
 ../src/menu/ConsoleMenu.cpp
 ../src/Output/CliPrinter.cpp
 ../src/StringValidator/Validator.cpp
