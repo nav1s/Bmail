@@ -99,6 +99,13 @@ hashFunctions = hashes;
 realBlacklist = blacklist;
 }
 
+void BloomFilter::remove(const string& item) {
+    realBlacklist.erase(item);
+    for (const auto& hashFunc : hashFunctions) {
+        size_t i = getIndex(*hashFunc, item);
+        bitArray[i] = false;
+    }
+}
 
 
 

@@ -2,6 +2,8 @@
 #include "../command/AddFilterCommand.h"
 #include "../command/QueryFilterCommand.h"
 #include "../command/DeleteFilterCommand.h"
+#include "../command/ICommand.h"
+#include "../filter/IFilter.h"
 #include "../output/OutputWriter.h"
 #include "../filter/BloomFilter.h"
 #include "../hash/HashFactory.h"

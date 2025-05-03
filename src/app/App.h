@@ -13,6 +13,8 @@
 #include <string>
 #include <vector>
 
+using namespace std;
+
 /**
  * @class App
  * @brief Core application class responsible for initializing and running the command-driven filter system.

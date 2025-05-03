@@ -8,6 +8,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 add_executable(filter src/app/App.cpp 
 src/command/AddFilterCommand.cpp 
 src/command/QueryFilterCommand.cpp 
+src/command/DeleteFilterCommand.cpp
 src/filter/BloomFilter.cpp 
 src/main.cpp 
 src/menu/ConsoleMenu.cpp
