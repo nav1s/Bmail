@@ -27,10 +27,12 @@ App::App() {
 string bloomFilterLocation = "../../data";
 
 void App::run(InputReader& reader, OutputWriter &writer) {
+    // cout << "App::run" << endl;
     //init app (bloom filter,hash functions, commands ect...)
     semiConstructor(reader, writer);
 
     while (true) {
+        // cout << "App::run loop" << endl;
         string commandName, arg;
         menu->getCommand(commandName, arg);
         //fetch command and calls it
@@ -48,7 +50,7 @@ void App::run(InputReader& reader, OutputWriter &writer) {
                 continue;
             }
         } else {
-            //cout << "400 Bad Request" << endl;
+            cout << "400 Bad Request" << endl;
         }
     }
     filter->saveToFile(bloomFilterLocation);
@@ -69,6 +71,8 @@ void App::semiConstructor(InputReader& reader, OutputWriter &writer) {
     }
     size_t arraySize = args.front();
     args.erase(args.begin());
+
+    // cout << "App::semiConstructor" << endl;
 
     //creating hash functions and filter
     vector<shared_ptr<IHashFunction>> hashFunctions;

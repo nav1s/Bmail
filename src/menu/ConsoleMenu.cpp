@@ -11,6 +11,7 @@ ConsoleMenu::ConsoleMenu(InputReader& reader, OutputWriter& writer)
     : reader(reader), writer(writer) {}
 
 void ConsoleMenu::getCommand(string& commandName, std::string& argument) const {
+    // cout << "ConsoleMenu::getCommand" << endl;
     string input;
     if (!reader.getLine(input)) {
         throw runtime_error("Failed to read command input.");

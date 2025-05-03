@@ -37,6 +37,7 @@ AddFilterCommand& AddFilterCommand::operator=(AddFilterCommand&& other) noexcept
 AddFilterCommand::~AddFilterCommand() = default;
 
 void AddFilterCommand::execute(const string& arg) {
+    // writer->putLine("AddFilterCommand::execute() called with arg: " + arg);
     UrlValidator validator;
     if (!validator.validate(arg)) {
         writer->putLine("400 Bad Request");

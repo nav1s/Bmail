@@ -46,6 +46,6 @@ void QueryFilterCommand::execute(const string& arg) {
     bool result = filter->isBlacklisted(arg);
     // print to the client
     writer->putLine(contain ? "200 Ok" : "404 Not Found");
-    writer->putLine("\n\n");
+    writer->putLine("\n");
     writer->putLine(contain? "true " + string(result ? "true" : "false"): "false");
 }

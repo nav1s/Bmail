@@ -35,6 +35,7 @@ DeleteFilterCommand& DeleteFilterCommand::operator=(DeleteFilterCommand&& other)
 DeleteFilterCommand::~DeleteFilterCommand() = default;
 
 void DeleteFilterCommand::execute(const string& arg) {
+    // writer->putLine("DeleteFilterCommand::execute() called with arg: " + arg);
     UrlValidator validator;
     if (!validator.validate(arg)) {
         writer->putLine("400 Bad Request");
