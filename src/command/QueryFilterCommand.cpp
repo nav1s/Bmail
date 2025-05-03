@@ -35,11 +35,10 @@ QueryFilterCommand& QueryFilterCommand::operator=(QueryFilterCommand&& other) no
 
 QueryFilterCommand::~QueryFilterCommand() = default;
 
-void QueryFilterCommand::execute(const string& arg) {
+CommandResult QueryFilterCommand::execute(const string& arg) {
     UrlValidator validator;
     if (!validator.validate(arg)) {
-        writer->putLine("400 Bad Request");
-        return;
+        throw invalid_argument("QueryFilterCommand: missing URL argument");
     }
 
     bool contain = filter->possiblyContains(arg);
@@ -48,4 +47,6 @@ void QueryFilterCommand::execute(const string& arg) {
     writer->putLine(contain ? "200 Ok" : "404 Not Found");
     writer->putLine("\n");
     writer->putLine(contain? "true " + string(result ? "true" : "false"): "false");
+
+    return contain ? CommandResult::OK_200 : CommandResult::NOT_FOUND_404;
 }

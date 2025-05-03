@@ -36,14 +36,13 @@ AddFilterCommand& AddFilterCommand::operator=(AddFilterCommand&& other) noexcept
 
 AddFilterCommand::~AddFilterCommand() = default;
 
-void AddFilterCommand::execute(const string& arg) {
+CommandResult AddFilterCommand::execute(const string& arg) {
     // writer->putLine("AddFilterCommand::execute() called with arg: " + arg);
     UrlValidator validator;
     if (!validator.validate(arg)) {
-        writer->putLine("400 Bad Request");
-        return;
+        throw invalid_argument("AddFilterCommand: missing URL argument");
     }
 
     filter->add(arg);
-    writer->putLine("201 Created");
+    return CommandResult::CREATED_201;
 }

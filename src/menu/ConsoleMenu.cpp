@@ -19,7 +19,7 @@ void ConsoleMenu::getCommand(string& commandName, std::string& argument) const {
 
     istringstream iss(input);
     if (!(iss >> commandName)) {
-        cout << "400 Bad Request" << endl;
+        throw invalid_argument("Invalid command format: missing command name.");
         return;
     }
 

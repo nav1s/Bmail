@@ -41,7 +41,7 @@ public:
      * @param arg The item to remove from the filter.
      * @throws std::invalid_argument if the argument is empty or invalid.
      */
-    void execute(const std::string& arg = "") override;
+    CommandResult execute(const std::string& arg = "") override;
 
 private:
     IFilter* filter;

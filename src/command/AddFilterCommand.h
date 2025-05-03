@@ -51,7 +51,7 @@ public:
      * @param arg The item to add to the filter.
      * @throws std::invalid_argument if the argument is empty.
      */
-    void execute(const std::string& arg = "") override;
+    CommandResult execute(const std::string& arg = "") override;
 
 private:
     IFilter* filter;

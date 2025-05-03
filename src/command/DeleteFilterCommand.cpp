@@ -34,21 +34,19 @@ DeleteFilterCommand& DeleteFilterCommand::operator=(DeleteFilterCommand&& other)
 
 DeleteFilterCommand::~DeleteFilterCommand() = default;
 
-void DeleteFilterCommand::execute(const string& arg) {
+CommandResult DeleteFilterCommand::execute(const string& arg) {
     // writer->putLine("DeleteFilterCommand::execute() called with arg: " + arg);
     UrlValidator validator;
     if (!validator.validate(arg)) {
-        writer->putLine("400 Bad Request");
-        return;
+        throw invalid_argument("DeleteFilterCommand: missing URL argument");
     }
 
     // Check if URL is actually blacklisted
     if (!filter->isBlacklisted(arg)) {
-        writer->putLine("404 Not Found");
-        return;
+        throw runtime_error("DeleteFilterCommand: URL not found in blacklist");
     }
 
     // Remove the URL from the filter
     filter->remove(arg);
-    writer->putLine("204 No Content");
+    return CommandResult::NO_CONTENT_204;
 }

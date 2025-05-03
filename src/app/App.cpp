@@ -26,31 +26,54 @@ App::App() {
 
 string bloomFilterLocation = "../../data";
 
-void App::run(InputReader& reader, OutputWriter &writer) {
+void App::run(InputReader& reader, OutputWriter& writer) {
     // cout << "App::run" << endl;
     //init app (bloom filter,hash functions, commands ect...)
     semiConstructor(reader, writer);
 
     while (true) {
-        // cout << "App::run loop" << endl;
         string commandName, arg;
-        menu->getCommand(commandName, arg);
-        //fetch command and calls it
-        auto it = commands.find(commandName);
-        if (it != commands.end()) {
-            try {
-                it->second->execute(arg);
-                 // "add" command
-                if (commandName == "POST") {
+
+        try {
+            // gets the command and argument from the user
+            menu->getCommand(commandName, arg);
+            // find the command in the map
+            auto it = commands.find(commandName);
+            if (it != commands.end()) {
+                CommandResult result = it->second->execute(arg);
+
+                switch (result) {
+                    case CommandResult::CREATED_201:
+                        writer.putLine("201 Created");
+                        break;
+                    case CommandResult::NO_CONTENT_204:
+                        writer.putLine("204 No Content");
+                        break;
+                    case CommandResult::OK_200:
+                        writer.putLine("200 OK");
+                        break;
+                    case CommandResult::NOT_FOUND_404:
+                        writer.putLine("404 Not Found");
+                        break;
+                    case CommandResult::BAD_REQUEST_400:
+                        writer.putLine("400 Bad Request");
+                        break;
+                }
+                if (commandName == "POST" || commandName == "DELETE") {
                     filter->saveToFile(bloomFilterLocation);
                 }
-            } catch (const std::exception& ex) {
-                // Handle exceptions and print error messages
-                writer.putLine("500 Internal Server Error");
-                continue;
+            } else {
+                writer.putLine("400 Bad Request");
             }
-        } else {
-            cout << "400 Bad Request" << endl;
+        } catch (const invalid_argument& e) {
+            writer.putLine("400 Bad Request");
+            continue;
+        } catch (const runtime_error& e) {
+            writer.putLine("404 Not Found");
+            continue;
+        } catch (const std::exception& e) {
+            writer.putLine("500 Internal Server Error");
+            continue;
         }
     }
     filter->saveToFile(bloomFilterLocation);
@@ -71,8 +94,6 @@ void App::semiConstructor(InputReader& reader, OutputWriter &writer) {
     }
     size_t arraySize = args.front();
     args.erase(args.begin());
-
-    // cout << "App::semiConstructor" << endl;
 
     //creating hash functions and filter
     vector<shared_ptr<IHashFunction>> hashFunctions;
