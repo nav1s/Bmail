@@ -37,11 +37,17 @@ void App::run(InputReader& reader, OutputWriter& writer) {
         try {
             // gets the command and argument from the user
             menu->getCommand(commandName, arg);
+
+            if (commandName.empty()) {
+                break;
+            }
+            
             // find the command in the map
             auto it = commands.find(commandName);
+            cout << "[DEBUG] Executing command: " << commandName << " with arg: " << arg << endl;
             if (it != commands.end()) {
                 CommandResult result = it->second->execute(arg);
-
+                // cout << "[DEBUG] Command executed successfully." << endl;
                 switch (result) {
                     case CommandResult::CREATED_201:
                         writer.putLine("201 Created");
@@ -50,7 +56,7 @@ void App::run(InputReader& reader, OutputWriter& writer) {
                         writer.putLine("204 No Content");
                         break;
                     case CommandResult::OK_200:
-                        writer.putLine("200 OK");
+                        // writer.putLine("200 OK");
                         break;
                     case CommandResult::NOT_FOUND_404:
                         writer.putLine("404 Not Found");
@@ -61,6 +67,8 @@ void App::run(InputReader& reader, OutputWriter& writer) {
                 }
                 if (commandName == "POST" || commandName == "DELETE") {
                     filter->saveToFile(bloomFilterLocation);
+                } if (commandName == "EXIT") {
+                    break;
                 }
             } else {
                 writer.putLine("400 Bad Request");
