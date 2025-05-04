@@ -3,7 +3,7 @@
 #include "../filter/IFilter.h"
 #include "ICommand.h"
 #include <string>
-#include "../Output/OutputWriter.h"
+#include "../output/OutputWriter.h"
 
 /**
  * @class QueryFilterCommand

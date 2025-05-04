@@ -1,14 +1,11 @@
 #pragma once
 
 #include "IFilter.h"
-#include <fstream>
 #include <string>
 #include <vector>
 #include <memory>
 #include <unordered_set>
-#include <functional>
 #include "../hash/IHashFunction.h"
-#include "../hash/StdHash.h"
 
 using namespace std;
 
@@ -63,7 +60,13 @@ public:
      * @brief Adds an item to the Bloom filter.
      * @param item The string to insert into the filter.
      */
-    void add(const string& item) override;
+    bool add(const string& item) override;
+
+    /**
+     * @brief removes an item from the Bloom filter.
+     * @param item The string to remove from the filter.
+     */
+    bool remove(const string& item) override;
 
     /**
      * @brief removes an item from the Bloom filter.
@@ -185,7 +188,7 @@ private:
 
     /**
      * @brief Resizes the bit array and rehashes existing items.
-     * currently disbaled
+     * currently disabled
      */
     //void resizeArray();
 };

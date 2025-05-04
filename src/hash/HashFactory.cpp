@@ -3,7 +3,6 @@
 // #include "MurmurHash.h"  // if/when needed
 
 #include <stdexcept>
-#include <sstream>
 
 using namespace std;
 

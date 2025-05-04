@@ -4,31 +4,38 @@ title Bmail Project - Class Diagram
 
 package App {
   class App {
-    - commands: map<int, function<void(const string&)>>
+    - commands: unordered_map<int, unique_ptr<ICommand>>
     - filter: shared_ptr<IFilter>
-    - menu: shared_ptr<IMenu>
-    - inputReader: shared_ptr<InputReader>
-    - urlValidator: shared_ptr<UrlValidator>
-    + App(filter, menu, inputReader, urlValidator)
-    + ~App()
-    + run()
-    + registerCommand(type, commandFactoryFunc)
+    - menu: unique_ptr<IMenu>
+    + App()
+    + run(reader: InputReader&, writer: OutputWriter&): void
+    - semiConstructor(reader: InputReader&, writer: OutputWriter&): void
+    - registerCommands(writer: OutputWriter&): void
+    - parseInput(input: string, args: vector<int>&): void
+    - hashAssembler(args: vector<int>&, out: vector<shared_ptr<IHashFunction>>&): void
+    - isValidInit(input: string): bool
   }
 }
 
 package Filter {
   interface IFilter {
     + ~IFilter()
-    + add(item: string)
+    + add(item: string): bool
+    + delete(item: string): bool
     + isBlacklisted(item: string): bool
   }
   
   class BloomFilter {
     - bitArray: vector<bool>
+    - arraySize: size_t
     - hashFunctions: vector<shared_ptr<IHashFunction>>
+    - realBlacklist: unordered_set<string>
     + BloomFilter(size, hashFunctions)
-    + add(item: string)
+    + add(item: string): bool
+    + delete(item: string): bool
     + isBlacklisted(item: string): bool
+    + loadFromFile(directory: string): void
+    + saveToFile(directory: string): void
   }
 }
 
@@ -51,21 +58,28 @@ package Hash {
 
 package Command {
   interface ICommand {
-    + ~ICommand()
+    + ~ICommand(std::string& arg)
     + execute(): bool
   }
   
-  class AddFilterCommand {
+  class PostItemCommand {
     - filter: shared_ptr<IFilter>
-    - url: string
-    + AddFilterCommand(filter, url)
+    - item: string
+    + PostItemCommand(filter, url)
     + execute(): bool
   }
   
-  class QueryFilterCommand {
+  class GetItemCommand {
     - filter: shared_ptr<IFilter>
-    - url: string
-    + QueryFilterCommand(filter, url)
+    - item: string
+    + GetItemCommand(filter, url)
+    + execute(): bool
+  }
+  
+  class DeleteItemCommand {
+    - filter: shared_ptr<IFilter>
+    - item: string
+    + DeleteItemCommand(filter, url)
     + execute(): bool
   }
 }
@@ -73,13 +87,14 @@ package Command {
 package Menu {
   interface IMenu {
     + ~IMenu()
-    + display()
-    + getUserChoice(): int
+    + getCommand(commandId: int&, arg: string&): void
   }
   
   class ConsoleMenu {
-    + display()
-    + getUserChoice(): int
+    - reader: InputReader&
+    - writer: OutputWriter&
+    + ConsoleMenu(reader: InputReader&, writer: OutputWriter&)
+    + getCommand(commandId: int&, arg: string&): void
   }
 }
 
@@ -93,16 +108,23 @@ package Input {
     + readLine(): string
   }
   
+  class TCPReader {
+    - clientSocket: int
+    - buffer: string
+    + TCPReader(clientSocket: int)
+    + readLine(): string
+  }
+
   class FileReader {
     - filePath: string
-    + FileReader(filePath)
+    + FileReader(filePath: string)
     + readLine(): string
   }
 }
 
-package StringValidator {
-  interface StringValidator {
-    + ~StringValidator()
+package Validator {
+  interface Ivalidator {
+    + ~Ivalidator()
     + validate(str: string): bool
   }
   
@@ -111,27 +133,120 @@ package StringValidator {
     - isValidProtocol(protocol: string): bool
     - isValidDomain(domain: string): bool
   }
+  
+  class StringValidator {
+    + {static} validatePositiveIntegers(args: vector<int>): bool
+  }
+}
+
+package FileManager {
+  interface IFileManager {
+    + ~IFileManager()
+    + save(object: void*): void
+    + load(object: void*): void
+  }
+  
+  class BloomFilterFileManager {
+    - filePath: string
+    + BloomFilterFileManager(directory: string)
+    + save(object: void*): void
+    + load(object: void*): void
+  }
+}
+
+package Output {
+  interface OutputWriter {
+    + ~OutputWriter()
+    + putLine(line: string): bool
+  }
+  
+  class CLIPrinter {
+    + CLIPrinter()
+    + putLine(line: string): bool
+  }
+  
+  class FileWriter {
+    - out: ofstream
+    + FileWriter(filePath: string)
+    + putLine(line: string): bool
+  }
+
+  class TCPWriter {
+    - clientSocket: int
+    - buffer: string
+    + TCPWriter(clientSocket: int)
+    + putLine(msg: string): bool
+  }
+}
+
+package Network {
+  interface IServer {
+    + ~IServer()
+    + initializeServer(): bool
+    + acceptConnection(): int
+    + isConnected(): bool
+  }
+
+  class TCPServer {
+    - serverSocket: int
+    - serverAddress: sockaddr_in
+    - ipAddress: string
+    - port: int
+    + TCPServer(ipAddress: string, port: int)
+    + ~TCPServer()
+    + initializeServer(): void
+    + acceptConnection(): int
+    + closeConnection(): void
+  }
+  
+  class TCPClient {
+    - clientSocket: int
+    - serverAddress: sockaddr_in
+    + TCPClient(ipAddress: string, port: int)
+    + ~TCPClient()
+    + connectToServer(): bool
+    + sendMessage(message: string): bool
+    + receiveMessage(): string
+    + closeConnection(): void
+  }
 }
 
 ' Inheritance relationships
 IFilter <|.. BloomFilter
 IHashFunction <|.. StdHash
-ICommand <|.. AddFilterCommand
-ICommand <|.. QueryFilterCommand
+ICommand <|.. PostItemCommand
+ICommand <|.. GetItemCommand
+ICommand <|.. DeleteItemCommand
 IMenu <|.. ConsoleMenu
 InputReader <|.. CliReader
 InputReader <|.. FileReader
-StringValidator <|.. UrlValidator
+InputReader <|.. TCPReader
+Ivalidator <|.. UrlValidator
+IFileManager <|.. BloomFilterFileManager
+OutputWriter <|.. CLIPrinter
+OutputWriter <|.. FileWriter
+OutputWriter <|.. TCPWriter
+IServer <|.. TCPServer
 
 ' Composition & Dependency relationships
 App o-- "1" IFilter
 App o-- "1" IMenu
-App o-- "1" InputReader
-App o-- "1" UrlValidator
-App ..> ICommand : creates >
+App o-- "*" ICommand
+App ..> BloomFilter : creates >
+App ..> StringValidator : uses >
+App ..> HashFactory : uses >
 BloomFilter o-- "*" IHashFunction
-AddFilterCommand --> IFilter : references >
-QueryFilterCommand --> IFilter : references >
+BloomFilter ..> FileManager : uses >
+PostItemCommand --> IFilter : references >
+GetItemCommand --> IFilter : references >
+DeleteItemCommand --> IFilter : references >
+ConsoleMenu --> InputReader : references >
+ConsoleMenu --> OutputWriter : references >
+BloomFilterFileManager --> BloomFilter : serializes >
 HashFactory ..> IHashFunction : creates >
 
-@enduml 
+' Network relationships
+TCPServer ..> TCPReader : creates socket for >
+TCPServer ..> TCPWriter : creates socket for >
+
+@enduml

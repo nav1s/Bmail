@@ -1,5 +1,7 @@
 # Bmail
 
+> **Note:** The first part of this project can be found at https://github.com/Binja12/Bmail/tree/part1
+
 This project implements a console application demonstrating the use of a Bloom filter.
 Users can add urls to the filter and query whether a url has been blocked.
 
@@ -30,13 +32,9 @@ cd bmail
 #### Running the Application
 
 ```bash
-docker build --tag bmail-app --file Dockerfile.run .
-docker run --rm --interactive --tty --volume "$PWD":/app --workdir /app bmail-app bash -c "
-mkdir -p build/app && \
-cd build/app && \
-cmake ../.. && \
-make && \
-./filter"
+docker compose down tcp-server
+docker compose up --detach --pull always --remove-orphans --build tcp-server
+docker compose run --pull always --remove-orphans --rm tcp-client
 ```
 
 The application preserves the Bloom filter state between runs. If you want to start with a fresh Bloom filter, delete the data file:
@@ -44,25 +42,33 @@ The application preserves the Bloom filter state between runs. If you want to st
 rm data/bloomFilter.txt
 ```
 
-#### Running the Unit Tests
+#### Running the Unit Tests including server running, deleting bloomfilter data from previous runs
 
 ```bash
-docker build --tag bmail-tests --file Dockerfile.tests .
-docker run --rm --volume "$PWD":/app --workdir /app bmail-tests bash -c "
+docker compose up --detach --pull always --remove-orphans --build tcp-server &&
+docker build --tag bmail-tests --file Dockerfile.tests . && \
+rm data/bloomFilter.txt
+docker run --rm \
+--network bmail_default \
+--volume "$PWD":/app --workdir /app bmail-tests bash -c "
 mkdir -p build/tests && \
 cd build/tests && \
 cmake ../../tests && \
 make && \
-./runTests"
+./runTests" &&
+docker compose down tcp-server
 ```
+
+
 
 ### Windows Instructions
 
 #### Running the Application
 
 ```powershell
-docker build --tag bmail-app --file Dockerfile.run .
-docker run --rm --interactive --tty --volume "${PWD}:/app" --workdir /app bmail-app bash -c "mkdir -p build/app && cd build/app && cmake ../.. && make && ./filter"
+docker compose down tcp-server
+docker compose up --detach --pull always --remove-orphans --build tcp-server
+docker compose run --pull always --remove-orphans --rm tcp-client
 ```
 The application preserves the Bloom filter state between runs. If you want to start with a fresh Bloom filter, delete the data file:
 ```bash
@@ -95,15 +101,3 @@ sudo apt install plantuml
 # Generate the diagram
 plantuml assets/bmail-uml-diagram.puml
 ```
-
-### Project Structure
-
-The UML diagram shows the following components of the Bmail system:
-
-- **App**: Main application controller that connects all components
-- **Filter**: Implements the Bloom filter for URL blacklisting
-- **Hash**: Provides hash functions for the Bloom filter
-- **Command**: Implements the command pattern for operations
-- **Menu**: Provides user interface mechanisms
-- **Input**: Handles different input sources
-- **StringValidator**: Validates inputs like URLs

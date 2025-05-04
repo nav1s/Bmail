@@ -5,7 +5,7 @@ project(Bmail)
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-add_executable(filter src/app/App.cpp 
+add_executable(tcp-server src/app/App.cpp 
 src/command/AddFilterCommand.cpp 
 src/command/QueryFilterCommand.cpp 
 src/command/DeleteFilterCommand.cpp
@@ -13,11 +13,14 @@ src/filter/BloomFilter.cpp
 src/main.cpp 
 src/menu/ConsoleMenu.cpp
 src/hash/StdHash.cpp
-src/StringValidator/UrlValidator.cpp
+src/validator/UrlValidator.cpp
 src/input/CliReader.cpp
-src/FileManager/BloomFilterFileManager.cpp
+src/fileManager/BloomFilterFileManager.cpp
 src/hash/HashFactory.cpp
 src/input/FileReader.cpp
-src/Output/CliPrinter.cpp
-src/StringValidator/Validator.cpp
+src/output/CliPrinter.cpp
+src/validator/StringValidator.cpp
+src/network/TCPServer.cpp
+src/output/TCPWriter.cpp
+src/input/TCPReader.cpp
 )

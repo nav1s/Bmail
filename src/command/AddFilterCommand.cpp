@@ -1,6 +1,6 @@
 #include "AddFilterCommand.h"
 #include <stdexcept>
-#include "../StringValidator/UrlValidator.h"
+#include "../validator/UrlValidator.h"
 
 using namespace std;
 

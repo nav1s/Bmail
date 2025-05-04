@@ -1,9 +1,7 @@
 #pragma once
 
 #include "IFileManager.h"
-#include "../filter/BloomFilter.h"
 #include <string>
-#include <vector>
 
 /**
  * @class BloomFilterFileManager

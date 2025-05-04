@@ -2,7 +2,7 @@
 #include <iostream>
 #include <sstream>
 #include <stdexcept>
-#include "../Output/OutputWriter.h"
+#include "../output/OutputWriter.h"
 #include "../input/InputReader.h"
 #include <string>
 using namespace std;

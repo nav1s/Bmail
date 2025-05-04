@@ -1,4 +1,5 @@
 #include "CliPrinter.h"
+#include <iostream>
 
 using namespace std;
 

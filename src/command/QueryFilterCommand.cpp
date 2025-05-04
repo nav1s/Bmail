@@ -1,7 +1,6 @@
 #include "QueryFilterCommand.h"
 #include <stdexcept>
-#include "../StringValidator/UrlValidator.h"
-#include <iostream>
+#include "../validator/UrlValidator.h"
 
 using namespace std;
 
