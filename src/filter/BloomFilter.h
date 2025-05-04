@@ -135,7 +135,7 @@ public:
      * @param item The item to check.
      * @return True if all relevant bits are set, false otherwise.
      */
-    bool possiblyContains(const string& item) const;
+    bool possiblyContains(const string& item) const override;
 
 private:
     /**

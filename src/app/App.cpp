@@ -3,15 +3,13 @@
 #include "../command/QueryFilterCommand.h"
 #include "../command/DeleteFilterCommand.h"
 #include "../command/ICommand.h"
-#include "../filter/IFilter.h"
-#include "../output/OutputWriter.h"
+#include "../Output/OutputWriter.h"
 #include "../filter/BloomFilter.h"
 #include "../hash/HashFactory.h"
 #include "../hash/IHashFunction.h"
 #include <iostream>
 #include <sstream>
 #include <stdexcept>
-#include "../input/CliReader.h"
 #include "../input/InputReader.h"
 #include <string>
 #include "../menu/ConsoleMenu.h"
