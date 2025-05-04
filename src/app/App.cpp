@@ -41,11 +41,11 @@ void App::run(InputReader& reader, OutputWriter& writer) {
             if (commandName.empty()) {
                 break;
             }
-            
+
             // find the command in the map
             auto it = commands.find(commandName);
             cout << "[DEBUG] Executing command: " << commandName << " with arg: " << arg << endl;
-            if (it != commands.end()) {
+            if (it != commands.end() && !arg.empty()) {
                 CommandResult result = it->second->execute(arg);
                 // cout << "[DEBUG] Command executed successfully." << endl;
                 switch (result) {
@@ -67,8 +67,6 @@ void App::run(InputReader& reader, OutputWriter& writer) {
                 }
                 if (commandName == "POST" || commandName == "DELETE") {
                     filter->saveToFile(bloomFilterLocation);
-                } if (commandName == "EXIT") {
-                    break;
                 }
             } else {
                 writer.putLine("400 Bad Request");

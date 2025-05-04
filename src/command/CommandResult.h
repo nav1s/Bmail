@@ -1,5 +1,4 @@
-#ifndef COMMAND_RESULT_H
-#define COMMAND_RESULT_H
+#pragma once
 
 enum class CommandResult {
     OK_200,
@@ -8,5 +7,3 @@ enum class CommandResult {
     BAD_REQUEST_400,
     NOT_FOUND_404
 };
-
-#endif
