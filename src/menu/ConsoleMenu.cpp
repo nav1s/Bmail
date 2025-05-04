@@ -20,7 +20,6 @@ bool ConsoleMenu::getCommand(string& commandName, std::string& argument) const {
     istringstream iss(input);
     if (!(iss >> commandName)) {
         throw invalid_argument("Invalid command format: missing command name.");
-        return;
     }
 
     getline(iss, argument);

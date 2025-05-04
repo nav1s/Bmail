@@ -20,5 +20,5 @@ public:
      * @param commandName Output parameter for the command name.
      * @param argument Output parameter for the remainder of the input (e.g. a URL).
      */
-    virtual bool getCommand(string& commandName, std::string& argument) const = 0;
+    virtual bool getCommand(std::string& commandName, std::string& argument) const = 0;
 };
