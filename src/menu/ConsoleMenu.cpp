@@ -10,11 +10,11 @@ using namespace std;
 ConsoleMenu::ConsoleMenu(InputReader& reader, OutputWriter& writer)
     : reader(reader), writer(writer) {}
 
-void ConsoleMenu::getCommand(string& commandName, std::string& argument) const {
+bool ConsoleMenu::getCommand(string& commandName, std::string& argument) const {
     // cout << "ConsoleMenu::getCommand" << endl;
     string input;
     if (!reader.getLine(input)) {
-        throw runtime_error("Failed to read command input.");
+        return false; // Input reading failed
     }
 
     istringstream iss(input);
@@ -26,4 +26,5 @@ void ConsoleMenu::getCommand(string& commandName, std::string& argument) const {
     getline(iss, argument);
     size_t start = argument.find_first_not_of(" \t");
     argument = (start == string::npos) ? "" : argument.substr(start);
+    return true; // Successfully read command and argument
 }

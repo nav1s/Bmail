@@ -25,61 +25,54 @@ App::App() {
 string bloomFilterLocation = "../../data";
 
 void App::run(InputReader& reader, OutputWriter& writer) {
-    // cout << "App::run" << endl;
-    //init app (bloom filter,hash functions, commands ect...)
     semiConstructor(reader, writer);
 
+    const unordered_map<CommandResult, string> resultMessages = {
+        {CommandResult::CREATED_201, "201 Created"},
+        {CommandResult::NO_CONTENT_204, "204 No Content"},
+        {CommandResult::OK_200, "200 OK"},
+        {CommandResult::NOT_FOUND_404, "404 Not Found"},
+        {CommandResult::BAD_REQUEST_400, "400 Bad Request"}
+    };
+
     while (true) {
+        // Get command and argument from the menu
         string commandName, arg;
-
         try {
-            // gets the command and argument from the user
-            menu->getCommand(commandName, arg);
+            bool commandsuccess = menu->getCommand(commandName, arg);
 
-            if (commandName.empty()) {
+            // If the command is empty or "EXIT", break the loop
+            if (commandName.empty() || !commandsuccess) {
                 break;
             }
 
-            // find the command in the map
+            // Check if the command exists in the map and execute it
             auto it = commands.find(commandName);
-            cout << "[DEBUG] Executing command: " << commandName << " with arg: " << arg << endl;
             if (it != commands.end() && !arg.empty()) {
                 CommandResult result = it->second->execute(arg);
-                // cout << "[DEBUG] Command executed successfully." << endl;
-                switch (result) {
-                    case CommandResult::CREATED_201:
-                        writer.putLine("201 Created");
-                        break;
-                    case CommandResult::NO_CONTENT_204:
-                        writer.putLine("204 No Content");
-                        break;
-                    case CommandResult::OK_200:
-                        // writer.putLine("200 OK");
-                        break;
-                    case CommandResult::NOT_FOUND_404:
-                        writer.putLine("404 Not Found");
-                        break;
-                    case CommandResult::BAD_REQUEST_400:
-                        writer.putLine("400 Bad Request");
-                        break;
+
+                // Print the result message to the client
+                auto msgIt = resultMessages.find(result);
+                if (msgIt != resultMessages.end()) {
+                    writer.putLine(msgIt->second);
                 }
+
                 if (commandName == "POST" || commandName == "DELETE") {
                     filter->saveToFile(bloomFilterLocation);
                 }
             } else {
                 writer.putLine("400 Bad Request");
             }
+
         } catch (const invalid_argument& e) {
             writer.putLine("400 Bad Request");
-            continue;
         } catch (const runtime_error& e) {
             writer.putLine("404 Not Found");
-            continue;
         } catch (const std::exception& e) {
             writer.putLine("500 Internal Server Error");
-            continue;
         }
     }
+
     filter->saveToFile(bloomFilterLocation);
 }
 
