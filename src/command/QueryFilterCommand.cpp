@@ -43,10 +43,16 @@ CommandResult QueryFilterCommand::execute(const string& arg) {
 
     bool contain = filter->possiblyContains(arg);
     bool result = filter->isBlacklisted(arg);
-    // print to the client
-    writer->putLine(contain ? "200 Ok" : " 404 Not Found");
-    writer->putLine("\n");
-    writer->putLine(contain? "true " + string(result ? "true" : "false"): "false");
 
-    return contain ? CommandResult::OK_200 : CommandResult::NOT_FOUND_404;
+    writer->putLine("200 OK");
+    writer->putLine("");  // Empty line for separation
+
+    if (contain) {
+        writer->putLine("true " + string(result ? "true" : "false"));
+    } else {
+        writer->putLine("false");
+    }
+
+    return CommandResult::OK_200;
 }
+
