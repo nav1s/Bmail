@@ -1,6 +1,5 @@
 #pragma once
 #include "InputReader.h"
-#include <iostream>
 #include <string>
 
 /**

@@ -3,8 +3,7 @@
 #include <memory>
 #include <vector>
 #include <string>
-#include "../FileManager/BloomFilterFileManager.h"
-#include <iostream>
+#include "../fileManager/BloomFilterFileManager.h"
 
 using namespace std;
 
@@ -21,23 +20,46 @@ BloomFilter::BloomFilter(const BloomFilter& other)
       realBlacklist(other.realBlacklist) {}
 
 BloomFilter::BloomFilter(BloomFilter&& other) noexcept
-    : arraySize(move(other.arraySize)),
-      bitArray(move(other.bitArray)),
-      hashFunctions(move(other.hashFunctions)),
-      realBlacklist(move(other.realBlacklist)) {}
+    : arraySize(std::move(other.arraySize)),
+      bitArray(std::move(other.bitArray)),
+      hashFunctions(std::move(other.hashFunctions)),
+      realBlacklist(std::move(other.realBlacklist)) {}
 
 BloomFilter::~BloomFilter() = default;
 
-void BloomFilter::add(const string& item) {
-    realBlacklist.insert(item);
+bool BloomFilter::add(const string& item) {
+    auto result = realBlacklist.insert(item);
     // resizing array: disabled atm
     // if (checkArraySize()) {
     //     resizeArray();
     // }
+    //if insertaion failed return false
+    if (!result.second){
+        return false;
+    }
     for (const auto& hashFunc : hashFunctions) {
         size_t i = getIndex(*hashFunc, item);
         bitArray[i] = true;
     }
+    return true;
+}
+
+bool BloomFilter::remove(const string& item) {
+    auto it = realBlacklist.find(item);
+    // checks if item was found
+    if (it == realBlacklist.end()) {
+        return false;
+    }
+    realBlacklist.erase(it);
+    // Rebuild bitArray from all items still in the set
+    fill(bitArray.begin(), bitArray.end(), false);
+    for (const auto& existingItem : realBlacklist) {
+        for (const auto& hashFunc : hashFunctions) {
+            size_t i = getIndex(*hashFunc, existingItem);
+            bitArray[i] = true;
+        }
+    }
+    return true;
 }
 
 

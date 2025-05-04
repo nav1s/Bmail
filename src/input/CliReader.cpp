@@ -1,4 +1,6 @@
 #include "CliReader.h"
+#include <iostream>
+
 using namespace std;
 
 CliReader::CliReader() = default;

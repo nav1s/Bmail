@@ -15,7 +15,14 @@ public:
      * @brief Adds an item to the blacklist.
      * @param item The string to add.
      */
-    virtual void add(const std::string& item) = 0;
+    virtual bool add(const std::string& item) = 0;
+
+    /**
+     * @brief removes an item from the Bloom filter.
+     * @param item The string to remove from the filter.
+     */
+    virtual bool remove(const std::string& item) = 0;
+
 
     /**
      * @brief Checks if an item is blacklisted.

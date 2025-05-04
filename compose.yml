@@ -1,0 +1,35 @@
+services:
+  tcp-client:
+    image: python:3-alpine
+    container_name: tcp-client
+    restart: "no"
+    command: python /app/src/tcpClient.py tcp-server 12345
+    volumes:
+      - ./:/app/
+    depends_on:
+      tcp-server:
+        condition: service_healthy
+    stdin_open: true # docker run -i
+    tty: true        # docker run -t
+  tcp-server:
+    build:
+      context: .
+      dockerfile: Dockerfile.server
+    container_name: tcp-server
+    restart: "no"
+    command: bash -c "
+              mkdir -p build/app && \
+              cd build/app && \
+              cmake ../.. && \
+              make && \
+              touch /tmp/tcp-server && \
+              ./tcp-server 0.0.0.0 12345"
+    volumes:
+      - ./:/app
+    ports:
+      - "12345:12345"
+    healthcheck:
+      test: ["CMD", "bash", "-c", "test -f /tmp/tcp-server"]
+      interval: 5s
+      timeout: 1s
+      retries: 5

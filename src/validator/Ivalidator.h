@@ -8,7 +8,7 @@
  *
  * This interface allows for interchangeable text validation strategies.
  */
-class StringValidator {
+class IValidator {
 public:
     /**
      * @brief Checks if the input string is valid.
@@ -20,5 +20,5 @@ public:
     /**
      * @brief Virtual destructor for safe polymorphic deletion.
      */
-    virtual ~StringValidator() = default;
+    virtual ~IValidator() = default;
 };

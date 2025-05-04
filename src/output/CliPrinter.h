@@ -1,6 +1,5 @@
 #pragma once
 #include "OutputWriter.h"
-#include <iostream>
 
 /**
  * @class CLIPrinter

@@ -7,11 +7,10 @@
 #include <iostream>
 #include <sstream>
 #include <stdexcept>
-#include "../input/CliReader.h"
 #include "../input/InputReader.h"
 #include <string>
 #include "../menu/ConsoleMenu.h"
-#include "../StringValidator/Validator.h"
+#include "../validator/StringValidator.h"
 #include <filesystem>
 #include <regex>
 
@@ -23,14 +22,14 @@ App::App() {
 string bloomFilterLocation = "../../data";
 
 void App::run(InputReader& reader, OutputWriter &writer) {
-    //init app (bloom filter,hash functions, commands ect...)
+    // init app (bloom filter,hash functions, commands etc...)
     semiConstructor(reader, writer);
 
     while (true) {
         int commandId;
         string arg;
         menu->getCommand(commandId, arg);
-        //fetch command and calls it
+        // fetch command and calls it
         auto it = commands.find(commandId);
         if (it != commands.end()) {
             try {
@@ -47,34 +46,44 @@ void App::run(InputReader& reader, OutputWriter &writer) {
     filter->saveToFile(bloomFilterLocation);
 }
 
+/* @brief semiConstructor
+ * @param reader InputReader& reader
+ * @param writer OutputWriter& writer
+ * @details This function initializes the BloomFilter and its hash functions.
+ * It also loads the filter from a file if it exists.
+ * The function takes an InputReader and an OutputWriter as parameters.
+ */
 void App::semiConstructor(InputReader& reader, OutputWriter &writer) {
-    //get init line from user
+    // get init line from user
     string input;
     bool validInit = false;
-    do{
+    reader.getLine(input);
+    while(!isValidInit(input)){
+        writer.putLine("400 Bad Request");
         reader.getLine(input);
-    }while(!isValidInit(input));
+    }
 
     vector<int> args;
     parseInput(input, args);
-    if (!Validator::validatePositiveIntegers(args)) {
+    if (!StringValidator::validatePositiveIntegers(args)) {
         throw std::invalid_argument("Incorrect filter init format.");
     }
     size_t arraySize = args.front();
     args.erase(args.begin());
 
-    //creating hash functions and filter
+    // creating hash functions and filter
     vector<shared_ptr<IHashFunction>> hashFunctions;
     hashAssembler(args, hashFunctions);
     filter = make_shared<BloomFilter>(arraySize, hashFunctions);
-    //loading from file if optional
+    // loading from file if optional
     if (filesystem::exists(bloomFilterLocation)){
         filter->loadFromFile(bloomFilterLocation);
     }
 
-    //creating commands and menu
+    // creating commands and menu
     registerCommands(writer);
     menu = make_unique<ConsoleMenu>(reader, writer);
+    writer.putLine("201 Created");
 }
 
 void App::registerCommands(OutputWriter& writer) {
@@ -90,6 +99,12 @@ void App::parseInput(const string& input, vector<int>& args) {
     }
 }
 
+/* @brief hashAssembler
+ * @param args vector<int>& args
+ * @param out vector<shared_ptr<IHashFunction>>& out
+ * @details This function creates hash functions based on the provided arguments.
+ * The arguments are expected to be integers representing the hash function types.
+ */
 void App::hashAssembler(vector<int>& args, vector<shared_ptr<IHashFunction>>& out) {
     for (int num : args) {
         string signature = "std:" + to_string(num);
@@ -97,6 +112,12 @@ void App::hashAssembler(vector<int>& args, vector<shared_ptr<IHashFunction>>& ou
     }
 }
 
+/* @brief isValidInit
+ * @param input string& input
+ * @return bool
+ * @details This function checks if the input string is a valid initialization string.
+ * A valid initialization string consists of positive integers separated by spaces.
+ */
 bool App::isValidInit(const string& input) {
     static const regex pattern("^[1-9 ]+$");
     return regex_match(input, pattern);

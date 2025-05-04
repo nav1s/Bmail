@@ -2,7 +2,7 @@
 
 #include "IMenu.h"
 #include "../input/InputReader.h"
-#include "../Output/OutputWriter.h"
+#include "../output/OutputWriter.h"
 #include <string>
 
 /**
@@ -39,7 +39,7 @@ public:
     /**
      * @brief Default move assignment operator.
      */
-    ConsoleMenu& operator=(ConsoleMenu&&) noexcept = default;
+    ConsoleMenu& operator=(ConsoleMenu&&) noexcept = delete;
 
     /**
      * @brief Virtual destructor.

@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include "../src/StringValidator/UrlValidator.h"
+#include "../src/validator/UrlValidator.h"
 
 /**
  * @class UrlValidatorTests
