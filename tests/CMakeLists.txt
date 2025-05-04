@@ -29,6 +29,9 @@ runTests
 ./UrlValidatorTests.cpp 
 ../src/validator/UrlValidator.cpp
 
+./CommandValidatorTests.cpp
+../src/validator/CommandValidator.cpp
+
 ./FileReaderTests.cpp
 ../src/input/FileReader.cpp
 
