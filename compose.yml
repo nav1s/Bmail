@@ -22,7 +22,6 @@ services:
               cd build/app && \
               cmake ../.. && \
               make && \
-              touch /tmp/tcp-server && \
               ./tcp-server 0.0.0.0 12345"
     volumes:
       - ./:/app
