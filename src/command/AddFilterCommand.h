@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../filter/IFilter.h"
-#include "../Output/OutputWriter.h"
+#include "../output/OutputWriter.h"
 #include "ICommand.h"
 #include <string>
 

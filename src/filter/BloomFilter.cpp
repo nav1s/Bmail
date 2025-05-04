@@ -33,7 +33,7 @@ bool BloomFilter::add(const string& item) {
     // if (checkArraySize()) {
     //     resizeArray();
     // }
-    //if insertaion failed return false
+    //if insertion failed return false
     if (!result.second){
         return false;
     }
@@ -120,11 +120,6 @@ bitArray = bits;
 hashFunctions = hashes;
 realBlacklist = blacklist;
 }
-
-void BloomFilter::remove(const string& item) {
-    realBlacklist.erase(item);
-}
-
 
 
 //currently disabled

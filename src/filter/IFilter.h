@@ -26,12 +26,6 @@ public:
 
 
     /**
-     * @brief removes an item from the Bloom filter.
-     * @param item The string to remove from the filter.
-     */
-    virtual void remove(const std::string& item) = 0;
-
-    /**
      * @brief Checks if an item is blacklisted.
      * @param item The string to check.
      * @return True if item is blacklisted.
