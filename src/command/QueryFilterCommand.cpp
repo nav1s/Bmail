@@ -54,6 +54,6 @@ CommandResult QueryFilterCommand::execute(const string& arg) {
         writer->putLine("false");
     }
 
-    // return CommandResult::OK_200;
+    return CommandResult::OK_200;
 }
 
