@@ -3,10 +3,9 @@ services:
     image: python:3-alpine
     container_name: tcp-client
     restart: "no"
-    command: bash -c "sleep 5 && python /app/src/tcpClient.py tcp-server 12345"
+    command: sh -c "sleep 5 && python /app/src/tcpClient.py tcp-server 12345"
     volumes:
       - ./:/app/
-    depends_on:
     stdin_open: true # docker run -i
     tty: true        # docker run -t
   tcp-server:
