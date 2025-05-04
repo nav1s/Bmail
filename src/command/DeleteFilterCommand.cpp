@@ -1,5 +1,5 @@
 #include "DeleteFilterCommand.h"
-#include "../StringValidator/UrlValidator.h"
+#include "../validator/UrlValidator.h"
 #include <stdexcept>
 
 using namespace std;
