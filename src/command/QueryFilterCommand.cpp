@@ -44,8 +44,9 @@ CommandResult QueryFilterCommand::execute(const string& arg) {
     bool result = filter->isBlacklisted(arg);
 
     writer->putLine("200 OK");
-    writer->putLine("");  // Empty line for separation
-    writer->putLine("");  // Empty line for separation
+    writer->putLine("");    // Empty line for separation
+    writer->putLine("");    // Empty line for separation
+    writer->putLine("");    // Empty line for separation
 
     if (contain) {
         writer->putLine("true " + string(result ? "true" : "false"));

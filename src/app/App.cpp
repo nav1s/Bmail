@@ -52,7 +52,7 @@ void App::run(InputReader& reader, OutputWriter& writer) {
 
                 // Print the result message to the client
                 auto msgIt = resultMessages.find(result);
-                if (msgIt != resultMessages.end()) {
+                if (msgIt != resultMessages.end() && commandName != "GET") {
                     writer.putLine(msgIt->second);
                 }
 
@@ -114,7 +114,7 @@ void App::semiConstructor(InputReader& reader, OutputWriter &writer) {
     registerCommands(writer);
     menu = make_unique<ConsoleMenu>(reader, writer);
     // todo check if we can do it better
-    writer.putLine("201 Created");
+    // writer.putLine("201 Created");
 }
 
 void App::registerCommands(OutputWriter& writer) {
