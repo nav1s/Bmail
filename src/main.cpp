@@ -18,7 +18,9 @@ int main(int argc, char* argv[]) {
     std::cout << "Port: " << port << std::endl;
     TCPServer server(ip_address, std::stoi(port));
     server.initializeServer();
+
     int clientSocket = server.acceptConnection();
+    std::cout << "Got client" << std::endl;
 
     TCPReader reader(clientSocket);
     TCPWriter writer(clientSocket);
