@@ -34,6 +34,7 @@ void App::run(InputReader& reader, OutputWriter &writer) {
         if (it != commands.end()) {
             try {
                 it->second->execute(arg);
+                writer.putLine("Not implemented yet");
                  // "add" command
                 if (commandId == 1) {
                     filter->saveToFile(bloomFilterLocation);
