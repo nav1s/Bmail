@@ -13,7 +13,7 @@ def main(dest_ip, dest_port):
             s.connect((dest_ip, dest_port))
             break
         except ConnectionRefusedError:
-            sleep(1)
+            sleep(0.5)
 
     # ask for the user to type a message
     msg = input()
