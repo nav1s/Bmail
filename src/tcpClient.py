@@ -13,8 +13,7 @@ def main(dest_ip, dest_port):
             s.connect((dest_ip, dest_port))
             break
         except ConnectionRefusedError:
-            print("[+] Waiting for the server to finish building .....")
-            sleep(0.5)
+            sleep(1)
 
     # ask for the user to type a message
     msg = input()
