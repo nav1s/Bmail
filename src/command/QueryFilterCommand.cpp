@@ -1,59 +1,56 @@
 #include "QueryFilterCommand.h"
-#include <stdexcept>
 #include "../validator/UrlValidator.h"
+#include <stdexcept>
 
 using namespace std;
 
-QueryFilterCommand::QueryFilterCommand(IFilter& filter, OutputWriter& writer)
-    : filter(&filter), writer(&writer) {}
-
-QueryFilterCommand::QueryFilterCommand(const QueryFilterCommand& other)
-    : filter(other.filter), writer(other.writer) {}
-
-QueryFilterCommand& QueryFilterCommand::operator=(const QueryFilterCommand& other) {
-    if (this != &other) {
-        filter = other.filter;
-        writer = other.writer;
-    }
-    return *this;
+QueryFilterCommand::QueryFilterCommand(IFilter &filter, OutputWriter &writer) : filter(&filter), writer(&writer) {
 }
 
-QueryFilterCommand::QueryFilterCommand(QueryFilterCommand&& other) noexcept
+QueryFilterCommand::QueryFilterCommand(const QueryFilterCommand &other) : filter(other.filter), writer(other.writer) {
+}
+
+QueryFilterCommand &QueryFilterCommand::operator=(const QueryFilterCommand &other) {
+  if (this != &other) {
+    filter = other.filter;
+    writer = other.writer;
+  }
+  return *this;
+}
+
+QueryFilterCommand::QueryFilterCommand(QueryFilterCommand &&other) noexcept
     : filter(other.filter), writer(other.writer) {
-    other.filter = nullptr;
+  other.filter = nullptr;
 }
 
-QueryFilterCommand& QueryFilterCommand::operator=(QueryFilterCommand&& other) noexcept {
-    if (this != &other) {
-        filter = other.filter;
-        writer = other.writer;
-        other.filter = nullptr;
-    }
-    return *this;
+QueryFilterCommand &QueryFilterCommand::operator=(QueryFilterCommand &&other) noexcept {
+  if (this != &other) {
+    filter = other.filter;
+    writer = other.writer;
+    other.filter = nullptr;
+  }
+  return *this;
 }
 
 QueryFilterCommand::~QueryFilterCommand() = default;
 
-CommandResult QueryFilterCommand::execute(const string& arg) {
-    UrlValidator validator;
-    if (!validator.validate(arg)) {
-        throw invalid_argument("QueryFilterCommand: missing URL argument");
-    }
+CommandResult QueryFilterCommand::execute(const string &arg) {
+  UrlValidator validator;
+  if (!validator.validate(arg)) {
+    throw invalid_argument("QueryFilterCommand: missing URL argument");
+  }
 
-    bool contain = filter->possiblyContains(arg);
-    bool result = filter->isBlacklisted(arg);
+  bool contain = filter->possiblyContains(arg);
+  bool result = filter->isBlacklisted(arg);
+  string line = "200 OK\n\n";
+  if (contain) {
+    line.append("true " + string(result ? "true" : "false"));
 
-    writer->putLine("200 OK");
-    writer->putLine("");    // Empty line for separation
-    writer->putLine("");    // Empty line for separation
-    writer->putLine("");    // Empty line for separation
+  } else {
+    line.append("false");
+  }
 
-    if (contain) {
-        writer->putLine("true " + string(result ? "true" : "false"));
-    } else {
-        writer->putLine("false");
-    }
+  writer->putLine(line);
 
-    return CommandResult::OK_200;
+  return CommandResult::OK_200;
 }
-

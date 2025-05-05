@@ -44,5 +44,5 @@ public:
 
 private:
   int clientSocket;
-  char buffer[1024];
+  char buffer[4096];
 };
