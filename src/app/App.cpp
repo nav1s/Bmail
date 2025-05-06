@@ -10,9 +10,9 @@
 #include <sstream>
 #include <stdexcept>
 #include "../input/InputReader.h"
-#include <string>
 #include "../menu/ConsoleMenu.h"
 #include <filesystem>
+#include <iostream>
 #include <regex>
 #include "../validator/StringValidator.h"
 
@@ -68,12 +68,12 @@ void App::run(InputReader& reader, OutputWriter& writer) {
  * It also loads the filter from a file if it exists.
  * The function takes an InputReader and an OutputWriter as parameters.
  */
-void App::semiConstructor(InputReader& reader, OutputWriter &writer) {
+void App::semiConstructor(InputReader &reader, OutputWriter &writer) {
     // get init line from user
     string input;
     bool validInit = false;
     reader.getLine(input);
-    while(!isValidInit(input)){
+    while (!isValidInit(input)) {
         // todo check if we can do it better
         writer.putLine("404 Bad Request");
         reader.getLine(input);
@@ -92,7 +92,7 @@ void App::semiConstructor(InputReader& reader, OutputWriter &writer) {
     hashAssembler(args, hashFunctions);
     filter = make_shared<BloomFilter>(arraySize, hashFunctions);
     // loading from file if optional
-    if (filesystem::exists(bloomFilterLocation)){
+    if (filesystem::exists(bloomFilterLocation)) {
         filter->loadFromFile(bloomFilterLocation);
     }
 
@@ -109,7 +109,7 @@ void App::registerCommands(OutputWriter& writer) {
     commands["DELETE"] = make_unique<DeleteFilterCommand>(*filter, writer);
 }
 
-void App::parseInput(const string& input, vector<int>& args) {
+void App::parseInput(const string &input, vector<int> &args) {
     istringstream iss(input);
     int val;
     while (iss >> val) {
@@ -123,7 +123,7 @@ void App::parseInput(const string& input, vector<int>& args) {
  * @details This function creates hash functions based on the provided arguments.
  * The arguments are expected to be integers representing the hash function types.
  */
-void App::hashAssembler(vector<int>& args, vector<shared_ptr<IHashFunction>>& out) {
+void App::hashAssembler(vector<int> &args, vector<shared_ptr<IHashFunction>> &out) {
     for (int num : args) {
         string signature = "std:" + to_string(num);
         out.push_back(HashFactory::fromSignature(signature));
