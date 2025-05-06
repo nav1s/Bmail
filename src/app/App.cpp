@@ -26,54 +26,40 @@ string bloomFilterLocation = "../../data";
 void App::run(InputReader& reader, OutputWriter& writer) {
     semiConstructor(reader, writer);
 
-    const unordered_map<CommandResult, string> resultMessages = {
-        {CommandResult::CREATED_201, "201 Created"},
-        {CommandResult::NO_CONTENT_204, "204 No Content"},
-        {CommandResult::OK_200, "200 OK"},
-        {CommandResult::NOT_FOUND_404, "404 Not Found"},
-        {CommandResult::BAD_REQUEST_400, "400 Bad Request"}
-    };
-
     while (true) {
-        // Get command and argument from the menu
         string commandName, arg;
         try {
             bool commandsuccess = menu->getCommand(commandName, arg);
 
-            // If the command is empty or "EXIT", break the loop
             if (commandName.empty() || !commandsuccess) {
                 break;
             }
 
-            // Check if the command exists in the map and execute it
             auto it = commands.find(commandName);
             if (it != commands.end() && !arg.empty()) {
                 CommandResult result = it->second->execute(arg);
 
-                // Print the result message to the client
-                auto msgIt = resultMessages.find(result);
-                if (msgIt != resultMessages.end() && commandName != "GET") {
-                    writer.putLine(msgIt->second);
+                if (commandName != "GET") {
+                    menu->displayResult(result);
                 }
 
                 if (commandName == "POST" || commandName == "DELETE") {
                     filter->saveToFile(bloomFilterLocation);
                 }
             } else {
-                writer.putLine("400 Bad Request");
+                menu->displayResult(CommandResult::BAD_REQUEST_400);
             }
 
-        } catch (const invalid_argument& e) {
-            writer.putLine("400 Bad Request");
-        } catch (const runtime_error& e) {
-            writer.putLine("404 Not Found");
-        } catch (const std::exception& e) {
-            writer.putLine("500 Internal Server Error");
+        } catch (const invalid_argument&) {
+            menu->displayResult(CommandResult::BAD_REQUEST_400);
+        } catch (const runtime_error&) {
+            menu->displayResult(CommandResult::NOT_FOUND_404);
         }
     }
 
     filter->saveToFile(bloomFilterLocation);
 }
+
 
 /* @brief semiConstructor
  * @param reader InputReader& reader
@@ -89,7 +75,7 @@ void App::semiConstructor(InputReader& reader, OutputWriter &writer) {
     reader.getLine(input);
     while(!isValidInit(input)){
         // todo check if we can do it better
-        writer.putLine("fix me");
+        writer.putLine("invalid init format, please try again");
         reader.getLine(input);
     }
 
@@ -114,7 +100,7 @@ void App::semiConstructor(InputReader& reader, OutputWriter &writer) {
     registerCommands(writer);
     menu = make_unique<ConsoleMenu>(reader, writer);
     // todo check if we can do it better
-    writer.putLine("fix me");
+    writer.putLine("init");
 }
 
 void App::registerCommands(OutputWriter& writer) {
@@ -151,6 +137,6 @@ void App::hashAssembler(vector<int>& args, vector<shared_ptr<IHashFunction>>& ou
  * A valid initialization string consists of positive integers separated by spaces.
  */
 bool App::isValidInit(const string& input) {
-    std::regex pattern(R"(^([1-9][0-9])( [1-9][0-9])+$)");
+    std::regex pattern(R"(^([1-9][0-9]*)( [1-9][0-9]*)*$)");
     return regex_match(input, pattern);
 }
