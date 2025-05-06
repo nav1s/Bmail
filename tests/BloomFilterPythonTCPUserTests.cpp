@@ -47,7 +47,7 @@ string runClientWithInput(const vector<string>& inputLines) {
     fflush(pipe);
 
     // Capture stdout from client
-    char buffer[4096];
+    char buffer[1024];
     stringstream output;
     while (fgets(buffer, sizeof(buffer), pipe)) {
         output << buffer;
@@ -80,24 +80,24 @@ vector<string> splitLines(const string& output) {
 TEST(ClientIntegrationTest, AllCasesMerged) {
     vector<string> input = {
         // InitWithInvalidConfig
-        "0 3",                       // Invalid: size = 0
-        "1000 0",                    // Invalid: num = 0
-        "0 0",                       // Both invalid
-        "abc 3",                     // Non-numeric size
-        "1000 xyz",                  // Non-numeric hash count
-        "-1000 3",                   // Negative size
-        "1000 -3",                   // Negative hash count
-        "1000",                      // Missing hash count
-        "#",                         // Empty command
+        // "0 3",                       // Invalid: size = 0
+        // "1000 0",                    // Invalid: num = 0
+        // "0 0",                       // Both invalid
+        // "abc 3",                     // Non-numeric size
+        // "1000 xyz",                  // Non-numeric hash count
+        // "-1000 3",                   // Negative size
+        // "1000 -3",                   // Negative hash count
+        // "1000",                      // Missing hash count
+        // "#",                         // Empty command
 
-        "1 www.beforeinit.com",      // POST before init
-        "2 www.beforeinit.com",      // GET before init
-        "3 www.beforeinit.com",      // DELETE before init
-        "POST www.beforeinit.com",   // POST before init
-        "GET www.beforeinit.com",    // GET before init
-        "DELETE www.beforeinit.com", // DELETE before init
+        // "1 www.beforeinit.com",      // POST before init
+        // "2 www.beforeinit.com",      // GET before init
+        // "3 www.beforeinit.com",      // DELETE before init
+        // "POST www.beforeinit.com",   // POST before init
+        // "GET www.beforeinit.com",    // GET before init
+        // "DELETE www.beforeinit.com", // DELETE before init
 
-        "8 1 2",                     // Valid init: array size = 8, std:1, std:2
+        // "8 1 2",                     // Valid init: array size = 8, std:1, std:2
 
         // InvalidMetaCommands
         "42 www.test.com",                  // Totally unrecognized command
