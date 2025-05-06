@@ -151,6 +151,6 @@ void App::hashAssembler(vector<int>& args, vector<shared_ptr<IHashFunction>>& ou
  * A valid initialization string consists of positive integers separated by spaces.
  */
 bool App::isValidInit(const string& input) {
-    static const regex pattern("^[1-9 ]+$");
+    std::regex pattern(R"(^([1-9][0-9])( [1-9][0-9])+$)");
     return regex_match(input, pattern);
 }
