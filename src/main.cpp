@@ -7,7 +7,7 @@
 
 int main(int argc, char* argv[]) {
     // Check if the correct number of arguments is provided
-    if (argc <= 2) {
+    if (argc <= 5) {
         std::cerr << "Usage: ./tcp-server ip_address port bloom-filter-array-size hash-function1 hash-function2 ..." << std::endl;
         return 1;
     }
