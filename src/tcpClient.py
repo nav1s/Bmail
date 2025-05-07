@@ -1,19 +1,13 @@
 #!/usr/bin/env python3
-from time import sleep
 import socket
 import sys
 
 def main(dest_ip, dest_port):
-    # try to connect to our socket
-    while 1:
-        try:
-            # create a new socket
-            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            # connect to the ip and the port
-            s.connect((dest_ip, dest_port))
-            break
-        except ConnectionRefusedError:
-            sleep(0.5)
+    # create a new socket
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    # connect to the ip and the port
+    s.connect((dest_ip, dest_port))
+    # print("connected to server")
 
     # ask for the user to type a message
     msg = input()
