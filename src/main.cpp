@@ -5,6 +5,21 @@
 #include <algorithm>
 #include <iostream>
 
+
+bool convertStringVectorToNumberVector(const std::vector<std::string>& strVec, std::vector<int>& numVec) {
+    for (const auto& str : strVec) {
+        // check if the item is a number
+        if (!std::all_of(str.begin(), str.end(), ::isdigit)) {
+            // std::cerr << "Error: " << str << " is not a number." << std::endl;
+            return false;
+        }
+        // add the number to the vector
+        numVec.push_back(std::stoi(str));
+        // std::cout << "item: " << *item << std::endl;
+    }
+    return true;
+}
+
 int main(int argc, char* argv[]) {
     // Check if the correct number of arguments is provided
     if (argc <= 5) {
@@ -15,17 +30,12 @@ int main(int argc, char* argv[]) {
     std::string ip_address = argv[1];
     std::string port = argv[2];
 
+    // save everything after the first two arguments in a vector
     std::vector<std::string> stringArgs(argv+3, argv + argc);
     std::vector<int> numArgs;
 
-    for (auto item = stringArgs.begin(); item != stringArgs.end(); item++) {
-        // check if the item is a number
-        if (!std::all_of(item->begin(), item->end(), ::isdigit)) {
-            std::cerr << "Error: " << *item << " is not a number." << std::endl;
-            return 1;
-        }
-        numArgs.push_back(std::stoi(*item));
-        // std::cout << "item: " << *item << std::endl;
+    if (!convertStringVectorToNumberVector(stringArgs, numArgs)) {
+        return 1;
     }
 
     std::cout << "IP Address: " << ip_address << std::endl;
