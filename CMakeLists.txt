@@ -22,5 +22,4 @@ src/validator/StringValidator.cpp
 src/network/TCPServer.cpp
 src/output/TCPWriter.cpp
 src/input/TCPReader.cpp
-src/validator/CommandValidator.cpp
 )
