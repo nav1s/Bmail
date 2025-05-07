@@ -6,6 +6,20 @@
 #include <iostream>
 #include <fstream>
 
+bool convertStringVectorToNumberVector(const std::vector<std::string>& strVec, std::vector<int>& numVec) {
+    for (const auto& str : strVec) {
+        // check if the item is a number
+        if (!std::all_of(str.begin(), str.end(), ::isdigit)) {
+            // std::cerr << "Error: " << str << " is not a number." << std::endl;
+            return false;
+        }
+        // add the number to the vector
+        numVec.push_back(std::stoi(str));
+        // std::cout << "item: " << *item << std::endl;
+    }
+    return true;
+}
+
 int main(int argc, char* argv[]) {
     // Check if the correct number of arguments is provided
     if (argc <= 5) {
@@ -34,6 +48,12 @@ int main(int argc, char* argv[]) {
     TCPServer server(ip_address, std::stoi(port));
     std::ofstream out("/tmp/tcp-server");
     server.initializeServer();
+    // create a new file 
+    std::ofstream file("/tmp/tcp-server.txt");
+    if (!file) {
+        std::cerr << "Error: Could not create file." << std::endl;
+        return 1;
+    }
 
     int clientSocket = server.acceptConnection();
     std::cout << "Client connected." << std::endl;

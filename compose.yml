@@ -6,8 +6,9 @@ services:
     command: python /app/src/tcpClient.py tcp-server 12345
     volumes:
       - ./:/app/
-    stdin_open: true # docker run -i
-    tty: true        # docker run -t
+    depends_on:
+      tcp-server:
+        condition: service_healthy
   tcp-server:
     build:
       context: .
