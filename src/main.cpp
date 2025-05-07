@@ -42,7 +42,7 @@ int main(int argc, char* argv[]) {
     std::cout << "Port: " << port << std::endl;
     TCPServer server(ip_address, std::stoi(port));
     server.initializeServer();
-    // create a new file 
+    // create a new file for the docker health check
     std::ofstream file("/tmp/tcp-server.txt");
     if (!file) {
         std::cerr << "Error: Could not create file." << std::endl;
