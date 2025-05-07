@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../filter/IFilter.h"
+#include "../output/OutputWriter.h"
 #include "ICommand.h"
 #include <string>
 
@@ -14,10 +15,11 @@
 class AddFilterCommand : public ICommand {
 public:
     /**
-     * @brief Constructs the command with a reference to an IFilter instance.
+     * @brief Constructs the command with a reference to an IFilter instance and output writer.
      * @param filter A reference to a filter where items will be added.
+     * @param writer A reference to an output writer for user feedback.
      */
-    explicit AddFilterCommand(IFilter& filter);
+    AddFilterCommand(IFilter& filter, OutputWriter& writer);
 
     /**
      * @brief Copy constructor.
@@ -49,8 +51,9 @@ public:
      * @param arg The item to add to the filter.
      * @throws std::invalid_argument if the argument is empty.
      */
-    void execute(const std::string& arg = "") override;
+    CommandResult execute(const std::string& arg = "") override;
 
 private:
     IFilter* filter;
+    OutputWriter* writer;
 };

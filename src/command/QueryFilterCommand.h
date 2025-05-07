@@ -58,9 +58,9 @@ public:
      * @param arg The item (e.g., URL) to query in the filter.
      * @throws std::invalid_argument if the argument is missing or invalid.
      */
-    void execute(const std::string& arg = "") override;
+    CommandResult execute(const std::string& arg = "") override;
 
 private:
     IFilter* filter;
-    OutputWriter& writer;
+    OutputWriter* writer;
 };

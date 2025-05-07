@@ -8,6 +8,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 add_executable(tcp-server src/app/App.cpp 
 src/command/AddFilterCommand.cpp 
 src/command/QueryFilterCommand.cpp 
+src/command/DeleteFilterCommand.cpp
 src/filter/BloomFilter.cpp 
 src/main.cpp 
 src/menu/ConsoleMenu.cpp
@@ -22,5 +23,4 @@ src/validator/StringValidator.cpp
 src/network/TCPServer.cpp
 src/output/TCPWriter.cpp
 src/input/TCPReader.cpp
-src/validator/CommandValidator.cpp
 )

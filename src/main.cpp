@@ -3,6 +3,7 @@
 #include "network/TCPServer.h"
 #include "output/TCPWriter.h"
 #include <iostream>
+#include <fstream>
 
 int main(int argc, char* argv[]) {
     // Check if the correct number of arguments is provided
@@ -17,6 +18,7 @@ int main(int argc, char* argv[]) {
     std::cout << "IP Address: " << ip_address << std::endl;
     std::cout << "Port: " << port << std::endl;
     TCPServer server(ip_address, std::stoi(port));
+    std::ofstream out("/tmp/tcp-server");
     server.initializeServer();
     int clientSocket = server.acceptConnection();
 

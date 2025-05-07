@@ -29,7 +29,7 @@ runTests
 ./UrlValidatorTests.cpp 
 ../src/validator/UrlValidator.cpp
 
-./CommandValidatorTests.cpp
+./FilterCommandValidatorTests.cpp
 ../src/validator/FilterCommandValidator.cpp
 
 ./FileReaderTests.cpp
@@ -48,6 +48,7 @@ runTests
 ../src/app/App.cpp
 ../src/command/AddFilterCommand.cpp
 ../src/command/QueryFilterCommand.cpp
+../src/command/DeleteFilterCommand.cpp
 ../src/menu/ConsoleMenu.cpp
 ../src/output/CliPrinter.cpp
 ../src/validator/StringValidator.cpp
