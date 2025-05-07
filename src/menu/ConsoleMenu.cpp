@@ -47,6 +47,6 @@ void ConsoleMenu::displayResult(const CommandResult& response) const {
     if (it != resultMessages.end()) {
         writer.putLine(it->second);
     } else {
-        writer.putLine("Unknown Result");
+        writer.putLine("400 Bad Request");
     }
 }
