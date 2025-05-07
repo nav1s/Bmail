@@ -9,8 +9,6 @@ services:
     depends_on:
       tcp-server:
         condition: service_healthy
-    stdin_open: true # docker run -i
-    tty: true        # docker run -t
   tcp-server:
     build:
       context: .
@@ -23,7 +21,7 @@ services:
               cmake ../.. && \
               make && \
               touch /tmp/tcp-server && \
-              ./tcp-server 0.0.0.0 12345"
+              ./tcp-server 0.0.0.0 12345 8 1 2"
     volumes:
       - ./:/app
     ports:
