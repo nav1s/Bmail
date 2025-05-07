@@ -75,7 +75,7 @@ void App::semiConstructor(InputReader& reader, OutputWriter &writer) {
     reader.getLine(input);
     while(!isValidInit(input)){
         // todo check if we can do it better
-        writer.putLine("invalid init format, please try again");
+        writer.putLine("404 Bad Request");
         reader.getLine(input);
     }
 
