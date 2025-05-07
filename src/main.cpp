@@ -13,6 +13,10 @@ bool convertStringVectorToNumberVector(const std::vector<std::string>& strVec, s
             // std::cerr << "Error: " << str << " is not a number." << std::endl;
             return false;
         }
+        int number = std::stoi(str);
+        if (number == 0) {
+            return false;
+        }
         // add the number to the vector
         numVec.push_back(std::stoi(str));
         // std::cout << "item: " << *item << std::endl;
