@@ -20,9 +20,7 @@ int main(int argc, char* argv[]) {
     TCPServer server(ip_address, std::stoi(port));
     std::ofstream out("/tmp/tcp-server");
     server.initializeServer();
-
     int clientSocket = server.acceptConnection();
-    std::cout << "Got client" << std::endl;
 
     TCPReader reader(clientSocket);
     TCPWriter writer(clientSocket);
