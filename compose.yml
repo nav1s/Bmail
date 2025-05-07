@@ -20,7 +20,7 @@ services:
               cd build/app && \
               cmake ../.. && \
               make && \
-              ./tcp-server 0.0.0.0 12345"
+              ./tcp-server 0.0.0.0 12345 8 1 2"
     volumes:
       - ./:/app
     ports:
