@@ -1,18 +1,20 @@
 #include "App.h"
 #include "../command/AddFilterCommand.h"
 #include "../command/QueryFilterCommand.h"
+#include "../command/DeleteFilterCommand.h"
+#include "../command/ICommand.h"
+#include "../output/OutputWriter.h"
 #include "../filter/BloomFilter.h"
 #include "../hash/HashFactory.h"
 #include "../hash/IHashFunction.h"
-#include <iostream>
 #include <sstream>
 #include <stdexcept>
 #include "../input/InputReader.h"
 #include <string>
 #include "../menu/ConsoleMenu.h"
-#include "../validator/StringValidator.h"
 #include <filesystem>
 #include <regex>
+#include "../validator/StringValidator.h"
 
 using namespace std;
 
@@ -21,30 +23,43 @@ App::App() {
 
 string bloomFilterLocation = "../../data";
 
-void App::run(InputReader& reader, OutputWriter &writer) {
-    // init app (bloom filter,hash functions, commands etc...)
+void App::run(InputReader& reader, OutputWriter& writer) {
     semiConstructor(reader, writer);
 
     while (true) {
-        int commandId;
-        string arg;
-        menu->getCommand(commandId, arg);
-        // fetch command and calls it
-        auto it = commands.find(commandId);
-        if (it != commands.end()) {
-            try {
-                it->second->execute(arg);
-                 // "add" command
-                if (commandId == 1) {
+        string commandName, arg;
+        try {
+            bool commandsuccess = menu->getCommand(commandName, arg);
+
+            if (commandName.empty() || !commandsuccess) {
+                break;
+            }
+
+            auto it = commands.find(commandName);
+            if (it != commands.end() && !arg.empty()) {
+                CommandResult result = it->second->execute(arg);
+
+                if (commandName != "GET") {
+                    menu->displayResult(result);
+                }
+
+                if (commandName == "POST" || commandName == "DELETE") {
                     filter->saveToFile(bloomFilterLocation);
                 }
-            } catch (const std::exception& ex) {
-                continue;
+            } else {
+                menu->displayResult(CommandResult::BAD_REQUEST_400);
             }
+
+        } catch (const invalid_argument&) {
+            menu->displayResult(CommandResult::BAD_REQUEST_400);
+        } catch (const runtime_error&) {
+            menu->displayResult(CommandResult::NOT_FOUND_404);
         }
     }
+
     filter->saveToFile(bloomFilterLocation);
 }
+
 
 /* @brief semiConstructor
  * @param reader InputReader& reader
@@ -60,7 +75,7 @@ void App::semiConstructor(InputReader& reader, OutputWriter &writer) {
     reader.getLine(input);
     while(!isValidInit(input)){
         // todo check if we can do it better
-        writer.putLine("400 Bad Request");
+        writer.putLine("404 Bad Request");
         reader.getLine(input);
     }
 
@@ -85,12 +100,13 @@ void App::semiConstructor(InputReader& reader, OutputWriter &writer) {
     registerCommands(writer);
     menu = make_unique<ConsoleMenu>(reader, writer);
     // todo check if we can do it better
-    writer.putLine("201 Created");
+    writer.putLine("init");
 }
 
 void App::registerCommands(OutputWriter& writer) {
-    commands[1] = make_unique<AddFilterCommand>(*filter);
-    commands[2] = make_unique<QueryFilterCommand>(*filter, writer);
+    commands["POST"] = make_unique<AddFilterCommand>(*filter, writer);
+    commands["GET"] = make_unique<QueryFilterCommand>(*filter, writer);
+    commands["DELETE"] = make_unique<DeleteFilterCommand>(*filter, writer);
 }
 
 void App::parseInput(const string& input, vector<int>& args) {
@@ -121,6 +137,6 @@ void App::hashAssembler(vector<int>& args, vector<shared_ptr<IHashFunction>>& ou
  * A valid initialization string consists of positive integers separated by spaces.
  */
 bool App::isValidInit(const string& input) {
-    static const regex pattern("^[1-9 ]+$");
+    std::regex pattern(R"(^([1-9][0-9]*)( [1-9][0-9]*)*$)");
     return regex_match(input, pattern);
 }

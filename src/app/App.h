@@ -13,6 +13,7 @@
 #include <string>
 #include <vector>
 
+
 /**
  * @class App
  * @brief Core application class responsible for initializing and running the command-driven filter system.
@@ -64,7 +65,7 @@ private:
     /**
      * @brief Map of integer command codes to command objects.
      */
-    std::unordered_map<int, std::unique_ptr<ICommand>> commands;
+    std::unordered_map<std::string, std::unique_ptr<ICommand>> commands;
 
     /**
      * @brief Pointer to the active filter used for command operations.

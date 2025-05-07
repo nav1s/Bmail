@@ -1,5 +1,6 @@
 #pragma once
 
+#include "../command/CommandResult.h"
 #include <string>
 
 /**
@@ -16,8 +17,21 @@ public:
     /**
      * @brief retrieves their selected command and argument.
      * 
-     * @param commandId Output parameter for the command number (e.g. 1, 2).
+     * @param commandName Output parameter for the command name.
      * @param argument Output parameter for the remainder of the input (e.g. a URL).
      */
-    virtual void getCommand(int& commandId, std::string& argument) const = 0;
+    virtual bool getCommand(std::string& commandName, std::string& argument) const = 0;
+
+    /**
+     * @brief Displays a message to the user.
+     * @param message The message to display.
+     */
+    virtual void displayMessage(const std::string& message) const = 0;
+
+    /**
+     * @brief Displays a predefined message based on the command result.
+     * converts the CommandResult enum to a string and displays it.
+     * @param result The CommandResult enum value.
+     */
+    virtual void displayResult(const CommandResult& result) const = 0;
 };
