@@ -30,7 +30,7 @@ runTests
 ../src/validator/UrlValidator.cpp
 
 ./CommandValidatorTests.cpp
-../src/validator/CommandValidator.cpp
+../src/validator/FilterCommandValidator.cpp
 
 ./FileReaderTests.cpp
 ../src/input/FileReader.cpp

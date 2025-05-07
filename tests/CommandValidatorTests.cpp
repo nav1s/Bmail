@@ -1,21 +1,21 @@
 #include <gtest/gtest.h>
-#include "../src/validator/CommandValidator.h"
+#include "../src/validator/FilterCommandValidator.h"
 
 /**
- * @class CommandValidatorTests
- * @brief Test fixture for CommandValidator unit tests.
+ * @class FilterCommandValidatorTests
+ * @brief Test fixture for FilterCommandValidator unit tests.
  * 
- * Provides a common CommandValidator instance for all test cases.
+ * Provides a common FilterCommandValidator instance for all test cases.
  */
-class CommandValidatorTests : public ::testing::Test {
+class FilterCommandValidatorTests : public ::testing::Test {
 protected:
-    CommandValidator validator;
+    FilterCommandValidator validator;
 };
 
 /**
  * @brief Test case for validating correct POST command formats with valid URLs.
  */
-TEST_F(CommandValidatorTests, ValidPostCommands) {
+TEST_F(FilterCommandValidatorTests, ValidPostCommands) {
     EXPECT_TRUE(validator.validate("POST www.google.com"));
     EXPECT_TRUE(validator.validate("POST http://www.example.com"));
     EXPECT_TRUE(validator.validate("POST https://kanarit.com"));
@@ -24,7 +24,7 @@ TEST_F(CommandValidatorTests, ValidPostCommands) {
 /**
  * @brief Test case for validating correct GET command formats with valid URLs.
  */
-TEST_F(CommandValidatorTests, ValidGetCommands) {
+TEST_F(FilterCommandValidatorTests, ValidGetCommands) {
     EXPECT_TRUE(validator.validate("GET google.com"));
     EXPECT_TRUE(validator.validate("GET https://mail.google.com"));
     EXPECT_TRUE(validator.validate("GET http://example.com/search"));
@@ -33,7 +33,7 @@ TEST_F(CommandValidatorTests, ValidGetCommands) {
 /**
  * @brief Test case for validating correct DELETE command formats with valid URLs.
  */
-TEST_F(CommandValidatorTests, ValidDeleteCommands) {
+TEST_F(FilterCommandValidatorTests, ValidDeleteCommands) {
     EXPECT_TRUE(validator.validate("DELETE www.example.com"));
     EXPECT_TRUE(validator.validate("DELETE https://sub.domain.com"));
     EXPECT_TRUE(validator.validate("DELETE http://example.org/path"));
@@ -42,7 +42,7 @@ TEST_F(CommandValidatorTests, ValidDeleteCommands) {
 /**
  * @brief Test case for invalid command keywords.
  */
-TEST_F(CommandValidatorTests, InvalidCommandKeywords) {
+TEST_F(FilterCommandValidatorTests, InvalidCommandKeywords) {
     EXPECT_FALSE(validator.validate("PUT www.example.com"));   // Unsupported verb
     EXPECT_FALSE(validator.validate("post www.example.com"));  // Lowercase
     EXPECT_FALSE(validator.validate("FETCH www.example.com")); // Not allowed
@@ -52,7 +52,7 @@ TEST_F(CommandValidatorTests, InvalidCommandKeywords) {
 /**
  * @brief Test case for invalid or malformed URLs.
  */
-TEST_F(CommandValidatorTests, InvalidUrls) {
+TEST_F(FilterCommandValidatorTests, InvalidUrls) {
     EXPECT_FALSE(validator.validate("POST not_a_url"));
     EXPECT_FALSE(validator.validate("GET .com"));
     EXPECT_FALSE(validator.validate("DELETE www..com"));
@@ -63,7 +63,7 @@ TEST_F(CommandValidatorTests, InvalidUrls) {
 /**
  * @brief Test case for commands missing a URL argument.
  */
-TEST_F(CommandValidatorTests, MissingUrlArgument) {
+TEST_F(FilterCommandValidatorTests, MissingUrlArgument) {
     EXPECT_FALSE(validator.validate("GET"));
     EXPECT_FALSE(validator.validate("POST"));
     EXPECT_FALSE(validator.validate("DELETE"));
@@ -72,7 +72,7 @@ TEST_F(CommandValidatorTests, MissingUrlArgument) {
 /**
  * @brief Test case for commands with extra arguments beyond command and URL.
  */
-TEST_F(CommandValidatorTests, ExtraArguments) {
+TEST_F(FilterCommandValidatorTests, ExtraArguments) {
     EXPECT_FALSE(validator.validate("GET www.google.com extra"));
     EXPECT_FALSE(validator.validate("POST www.example.com extra token"));
     EXPECT_FALSE(validator.validate("DELETE www.example.com trailing"));
@@ -81,7 +81,7 @@ TEST_F(CommandValidatorTests, ExtraArguments) {
 /**
  * @brief Test case for empty or meaningless input strings.
  */
-TEST_F(CommandValidatorTests, EmptyOrWhitespaceInputs) {
+TEST_F(FilterCommandValidatorTests, EmptyOrWhitespaceInputs) {
     EXPECT_FALSE(validator.validate(""));
     EXPECT_FALSE(validator.validate(" "));
     EXPECT_FALSE(validator.validate("#"));

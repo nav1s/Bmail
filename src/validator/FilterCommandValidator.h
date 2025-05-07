@@ -4,7 +4,7 @@
 #include "UrlValidator.h"
 
 /**
- * @class CommandValidator
+ * @class FilterCommandValidator
  * @brief Validates commands with correct syntax and valid URLs.
  *
  * Accepts only commands in the format:
@@ -14,16 +14,16 @@
  * 
  * Command is case-sensitive. URL is validated using UrlValidator.
  */
-class CommandValidator : public IValidator {
+class FilterCommandValidator : public IValidator {
 public:
-    CommandValidator();
-    ~CommandValidator();
+    FilterCommandValidator();
+    ~FilterCommandValidator();
 
-    CommandValidator(const CommandValidator& other);
-    CommandValidator& operator=(const CommandValidator& other);
+    FilterCommandValidator(const FilterCommandValidator& other);
+    FilterCommandValidator& operator=(const FilterCommandValidator& other);
 
-    CommandValidator(CommandValidator&& other) noexcept;
-    CommandValidator& operator=(CommandValidator&& other) noexcept;
+    FilterCommandValidator(FilterCommandValidator&& other) noexcept;
+    FilterCommandValidator& operator=(FilterCommandValidator&& other) noexcept;
 
     /**
      * @brief Validates a command line.

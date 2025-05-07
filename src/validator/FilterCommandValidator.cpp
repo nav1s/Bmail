@@ -1,33 +1,33 @@
-#include "CommandValidator.h"
+#include "FilterCommandValidator.h"
 #include <sstream>
 
 using namespace std;
 
-CommandValidator::CommandValidator() = default;
+FilterCommandValidator::FilterCommandValidator() = default;
 
-CommandValidator::~CommandValidator() = default;
+FilterCommandValidator::~FilterCommandValidator() = default;
 
-CommandValidator::CommandValidator(const CommandValidator& other)
+FilterCommandValidator::FilterCommandValidator(const FilterCommandValidator& other)
     : urlValidator(other.urlValidator) {}
 
-CommandValidator& CommandValidator::operator=(const CommandValidator& other) {
+FilterCommandValidator& FilterCommandValidator::operator=(const FilterCommandValidator& other) {
     if (this != &other) {
         urlValidator = other.urlValidator;
     }
     return *this;
 }
 
-CommandValidator::CommandValidator(CommandValidator&& other) noexcept
+FilterCommandValidator::FilterCommandValidator(FilterCommandValidator&& other) noexcept
     : urlValidator(move(other.urlValidator)) {}
 
-CommandValidator& CommandValidator::operator=(CommandValidator&& other) noexcept {
+FilterCommandValidator& FilterCommandValidator::operator=(FilterCommandValidator&& other) noexcept {
     if (this != &other) {
         urlValidator = move(other.urlValidator);
     }
     return *this;
 }
 
-bool CommandValidator::validate(const string& input) const {
+bool FilterCommandValidator::validate(const string& input) const {
     istringstream iss(input);
     string command, url;
 
@@ -48,6 +48,6 @@ bool CommandValidator::validate(const string& input) const {
     return urlValidator.validate(url);
 }
 
-bool CommandValidator::startsWithValidCommand(const string& cmd) const {
+bool FilterCommandValidator::startsWithValidCommand(const string& cmd) const {
     return cmd == "GET" || cmd == "POST" || cmd == "DELETE";
 }
