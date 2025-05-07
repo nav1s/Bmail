@@ -31,11 +31,18 @@ cd bmail
 
 #### Running the Application
 
+##### Terminal 1: Start the server
 ```bash
 docker compose down tcp-server
-docker compose up --detach --pull always --remove-orphans --build tcp-server
+docker compose up --pull always --remove-orphans --build tcp-server
+```
+
+> After the server is fully initialized we can start the client
+##### Terminal 2: Run the client
+```bash
 docker compose run --pull always --remove-orphans --rm tcp-client
 ```
+
 
 The application preserves the Bloom filter state between runs. If you want to start with a fresh Bloom filter, delete the data file:
 ```bash
@@ -65,11 +72,18 @@ docker compose down tcp-server
 
 #### Running the Application
 
+##### Terminal 1: Start the server
 ```powershell
 docker compose down tcp-server
-docker compose up --detach --pull always --remove-orphans --build tcp-server
+docker compose up --pull always --remove-orphans --build tcp-server
+```
+
+> After the server is fully initialized we can start the client
+##### Terminal 2: Run the client
+```powershell
 docker compose run --pull always --remove-orphans --rm tcp-client
 ```
+
 The application preserves the Bloom filter state between runs. If you want to start with a fresh Bloom filter, delete the data file:
 ```bash
 rm data/bloomFilter.txt
