@@ -4,13 +4,15 @@
 #include "../filter/BloomFilter.h"
 #include "../hash/HashFactory.h"
 #include "../hash/IHashFunction.h"
-#include "../input/InputReader.h"
-#include "../menu/ConsoleMenu.h"
-#include <filesystem>
 #include <iostream>
-#include <regex>
 #include <sstream>
+#include <stdexcept>
+#include "../input/InputReader.h"
 #include <string>
+#include "../menu/ConsoleMenu.h"
+#include "../validator/StringValidator.h"
+#include <filesystem>
+#include <regex>
 
 using namespace std;
 
@@ -19,9 +21,9 @@ App::App() {
 
 string bloomFilterLocation = "../../data";
 
-void App::run(InputReader &reader, OutputWriter &writer, vector<int> &args) {
+void App::run(InputReader& reader, OutputWriter &writer) {
     // init app (bloom filter,hash functions, commands etc...)
-    semiConstructor(reader, writer, args);
+    semiConstructor(reader, writer);
 
     while (true) {
         int commandId;
@@ -32,13 +34,11 @@ void App::run(InputReader &reader, OutputWriter &writer, vector<int> &args) {
         if (it != commands.end()) {
             try {
                 it->second->execute(arg);
-                // "add" command
+                 // "add" command
                 if (commandId == 1) {
-                    writer.putLine("added");
                     filter->saveToFile(bloomFilterLocation);
                 }
-            } catch (const std::exception &ex) {
-                writer.putLine("unknown command");
+            } catch (const std::exception& ex) {
                 continue;
             }
         }
@@ -53,7 +53,22 @@ void App::run(InputReader &reader, OutputWriter &writer, vector<int> &args) {
  * It also loads the filter from a file if it exists.
  * The function takes an InputReader and an OutputWriter as parameters.
  */
-void App::semiConstructor(InputReader &reader, OutputWriter &writer, vector<int> &args) {
+void App::semiConstructor(InputReader& reader, OutputWriter &writer) {
+    // get init line from user
+    string input;
+    bool validInit = false;
+    reader.getLine(input);
+    while(!isValidInit(input)){
+        // todo check if we can do it better
+        writer.putLine("400 Bad Request");
+        reader.getLine(input);
+    }
+
+    vector<int> args;
+    parseInput(input, args);
+    if (!StringValidator::validatePositiveIntegers(args)) {
+        throw std::invalid_argument("Incorrect filter init format.");
+    }
     size_t arraySize = args.front();
     args.erase(args.begin());
 
@@ -62,21 +77,23 @@ void App::semiConstructor(InputReader &reader, OutputWriter &writer, vector<int>
     hashAssembler(args, hashFunctions);
     filter = make_shared<BloomFilter>(arraySize, hashFunctions);
     // loading from file if optional
-    if (filesystem::exists(bloomFilterLocation)) {
+    if (filesystem::exists(bloomFilterLocation)){
         filter->loadFromFile(bloomFilterLocation);
     }
 
     // creating commands and menu
     registerCommands(writer);
     menu = make_unique<ConsoleMenu>(reader, writer);
+    // todo check if we can do it better
+    writer.putLine("201 Created");
 }
 
-void App::registerCommands(OutputWriter &writer) {
+void App::registerCommands(OutputWriter& writer) {
     commands[1] = make_unique<AddFilterCommand>(*filter);
     commands[2] = make_unique<QueryFilterCommand>(*filter, writer);
 }
 
-void App::parseInput(const string &input, vector<int> &args) {
+void App::parseInput(const string& input, vector<int>& args) {
     istringstream iss(input);
     int val;
     while (iss >> val) {
@@ -90,7 +107,7 @@ void App::parseInput(const string &input, vector<int> &args) {
  * @details This function creates hash functions based on the provided arguments.
  * The arguments are expected to be integers representing the hash function types.
  */
-void App::hashAssembler(vector<int> &args, vector<shared_ptr<IHashFunction>> &out) {
+void App::hashAssembler(vector<int>& args, vector<shared_ptr<IHashFunction>>& out) {
     for (int num : args) {
         string signature = "std:" + to_string(num);
         out.push_back(HashFactory::fromSignature(signature));
@@ -103,7 +120,7 @@ void App::hashAssembler(vector<int> &args, vector<shared_ptr<IHashFunction>> &ou
  * @details This function checks if the input string is a valid initialization string.
  * A valid initialization string consists of positive integers separated by spaces.
  */
-bool App::isValidInit(const string &input) {
-    std::regex pattern(R"(^([1-9][0-9])( [1-9][0-9])+$)");
+bool App::isValidInit(const string& input) {
+    static const regex pattern("^[1-9 ]+$");
     return regex_match(input, pattern);
 }
