@@ -9,8 +9,6 @@ services:
     depends_on:
       tcp-server:
         condition: service_healthy
-    stdin_open: true # docker run -i
-    tty: true        # docker run -t
   tcp-server:
     build:
       context: .

@@ -4,7 +4,7 @@
 #include "output/TCPWriter.h"
 #include <algorithm>
 #include <iostream>
-
+#include <fstream>
 
 bool convertStringVectorToNumberVector(const std::vector<std::string>& strVec, std::vector<int>& numVec) {
     for (const auto& str : strVec) {
@@ -42,6 +42,12 @@ int main(int argc, char* argv[]) {
     std::cout << "Port: " << port << std::endl;
     TCPServer server(ip_address, std::stoi(port));
     server.initializeServer();
+    // create a new file 
+    std::ofstream file("/tmp/tcp-server.txt");
+    if (!file) {
+        std::cerr << "Error: Could not create file." << std::endl;
+        return 1;
+    }
 
     int clientSocket = server.acceptConnection();
     std::cout << "Client connected." << std::endl;
