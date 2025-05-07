@@ -2,17 +2,31 @@
 #include "input/TCPReader.h"
 #include "network/TCPServer.h"
 #include "output/TCPWriter.h"
+#include <algorithm>
 #include <iostream>
 
 int main(int argc, char* argv[]) {
     // Check if the correct number of arguments is provided
-    if (argc != 3) {
-        std::cerr << "Usage: ./tcp-server ip_address port" << std::endl;
+    if (argc <= 2) {
+        std::cerr << "Usage: ./tcp-server ip_address port bloom-filter-array-size hash-function1 hash-function2 ..." << std::endl;
         return 1;
     }
 
     std::string ip_address = argv[1];
     std::string port = argv[2];
+
+    std::vector<std::string> stringArgs(argv+3, argv + argc);
+    std::vector<int> numArgs;
+
+    for (auto item = stringArgs.begin(); item != stringArgs.end(); item++) {
+        // check if the item is a number
+        if (!std::all_of(item->begin(), item->end(), ::isdigit)) {
+            std::cerr << "Error: " << *item << " is not a number." << std::endl;
+            return 1;
+        }
+        numArgs.push_back(std::stoi(*item));
+        // std::cout << "item: " << *item << std::endl;
+    }
 
     std::cout << "IP Address: " << ip_address << std::endl;
     std::cout << "Port: " << port << std::endl;
@@ -20,13 +34,13 @@ int main(int argc, char* argv[]) {
     server.initializeServer();
 
     int clientSocket = server.acceptConnection();
-    std::cout << "Got client" << std::endl;
+    std::cout << "Client connected." << std::endl;
 
     TCPReader reader(clientSocket);
     TCPWriter writer(clientSocket);
 
     App app;
-    app.run(reader, writer);
+    app.run(reader, writer, numArgs);
 
     return 0;
 }

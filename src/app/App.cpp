@@ -6,12 +6,10 @@
 #include "../hash/IHashFunction.h"
 #include "../input/InputReader.h"
 #include "../menu/ConsoleMenu.h"
-#include "../validator/StringValidator.h"
 #include <filesystem>
 #include <iostream>
 #include <regex>
 #include <sstream>
-#include <stdexcept>
 #include <string>
 
 using namespace std;
@@ -21,9 +19,9 @@ App::App() {
 
 string bloomFilterLocation = "../../data";
 
-void App::run(InputReader &reader, OutputWriter &writer) {
+void App::run(InputReader &reader, OutputWriter &writer, vector<int> &args) {
     // init app (bloom filter,hash functions, commands etc...)
-    semiConstructor(reader, writer);
+    semiConstructor(reader, writer, args);
 
     while (true) {
         int commandId;
@@ -34,12 +32,13 @@ void App::run(InputReader &reader, OutputWriter &writer) {
         if (it != commands.end()) {
             try {
                 it->second->execute(arg);
-                writer.putLine("Not implemented yet");
                 // "add" command
                 if (commandId == 1) {
+                    writer.putLine("added");
                     filter->saveToFile(bloomFilterLocation);
                 }
             } catch (const std::exception &ex) {
+                writer.putLine("unknown command");
                 continue;
             }
         }
@@ -54,22 +53,7 @@ void App::run(InputReader &reader, OutputWriter &writer) {
  * It also loads the filter from a file if it exists.
  * The function takes an InputReader and an OutputWriter as parameters.
  */
-void App::semiConstructor(InputReader &reader, OutputWriter &writer) {
-    // get init line from user
-    string input;
-    bool validInit = false;
-    reader.getLine(input);
-    while (!isValidInit(input)) {
-        // todo check if we can do it better
-        writer.putLine("400 Bad Request");
-        reader.getLine(input);
-    }
-
-    vector<int> args;
-    parseInput(input, args);
-    if (!StringValidator::validatePositiveIntegers(args)) {
-        throw std::invalid_argument("Incorrect filter init format.");
-    }
+void App::semiConstructor(InputReader &reader, OutputWriter &writer, vector<int> &args) {
     size_t arraySize = args.front();
     args.erase(args.begin());
 
@@ -85,8 +69,6 @@ void App::semiConstructor(InputReader &reader, OutputWriter &writer) {
     // creating commands and menu
     registerCommands(writer);
     menu = make_unique<ConsoleMenu>(reader, writer);
-    // todo check if we can do it better
-    writer.putLine("201 Created");
 }
 
 void App::registerCommands(OutputWriter &writer) {
