@@ -54,7 +54,6 @@ runTests
 ../src/validator/StringValidator.cpp
 
 ./BloomFilterPythonTCPUserTests.cpp
-../src/tcpClient.py
 )
 
 target_link_libraries(runTests gtest_main)
