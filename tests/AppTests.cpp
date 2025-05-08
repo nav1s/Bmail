@@ -152,9 +152,8 @@ TEST_F(AppTests, exampleRun2) {
  * @brief Tests the App with the third example from the task
  */
 TEST_F(AppTests, exampleRun3) {
-    return;
     // Create a sequence that mimics the user's example
-    std::vector<std::string> exampleRun3 = {"8 2", "1 www.example.com0", "2 www.example.com0", "2 www.example.com4"};
+    std::vector<std::string> exampleRun3 = {"8 2", "POST www.example.com0", "GET www.example.com0", "GET www.example.com4"};
 
     mockReader = std::make_shared<MockInputReader>(exampleRun3);
     mockWriter = std::make_shared<MockOutputWriter>();
@@ -163,29 +162,31 @@ TEST_F(AppTests, exampleRun3) {
     ASSERT_NO_THROW(runAppBriefly(mockReader, mockWriter));
 
     // Check that we got at exactly 2 outputs
-    ASSERT_EQ(mockWriter->outputLines.size(), 2);
+    ASSERT_EQ(mockWriter->outputLines.size(), 4);
 
-    // First query should be "true true" (URL in filter)
-    EXPECT_EQ(mockWriter->outputLines[0], "true true");
-
-    // Second query should be "true false" (URL not in filter)
-    EXPECT_EQ(mockWriter->outputLines[1], "true false");
+    // first query should be "400 Bad Request" (invalid command)
+    EXPECT_EQ(mockWriter->outputLines[0], "400 Bad Request");
+    // second query should be "201 Created" (added URL)
+    EXPECT_EQ(mockWriter->outputLines[1], "201 Created");
+    // third query should be "200 OK" (true true because URL is in filter)
+    EXPECT_EQ(mockWriter->outputLines[2], "200 OK\n\ntrue true");
+    // fourth query should be "200 OK" (false because URL is not in filter)
+    EXPECT_EQ(mockWriter->outputLines[3], "200 OK\n\nfalse");
 }
 
 /**
- * @brief Tests the App with the invalid initialization
+ * @brief Tests the App with invalid commands
  */
-TEST_F(AppTests, invalidInit) {
-    return;
+TEST_F(AppTests, invalidCommands1) {
     std::vector<std::string> exampleRun3 = {"10 a",
                                             "10 2 b",
                                             "100",
                                             "8 2",
                                             "-5 3",
                                             "-2 4",
-                                            "1 www.example.com0",
-                                            "2 www.example.com0",
-                                            "2 www.example.com4"};
+                                            "POST www.example.com0",
+                                            "GET www.example.com0",
+                                            "GET www.example.com4"};
 
     mockReader = std::make_shared<MockInputReader>(exampleRun3);
     mockWriter = std::make_shared<MockOutputWriter>();
@@ -193,26 +194,38 @@ TEST_F(AppTests, invalidInit) {
     ASSERT_NO_THROW(runAppBriefly(mockReader, mockWriter));
 
     // Check that we got at exactly 2 outputs
-    ASSERT_EQ(mockWriter->outputLines.size(), 2);
+    ASSERT_EQ(mockWriter->outputLines.size(), 9);
 
-    // First query should be "true true" (URL in filter)
-    EXPECT_EQ(mockWriter->outputLines[0], "true true");
-
-    // Second query should be "true false" (URL not in filter)
-    EXPECT_EQ(mockWriter->outputLines[1], "true false");
+    // first query should be "400 Bad Request" (invalid command)
+    EXPECT_EQ(mockWriter->outputLines[0], "400 Bad Request");
+    // second query should be "400 Bad Request" (invalid command)
+    EXPECT_EQ(mockWriter->outputLines[1], "400 Bad Request");
+    // third query should be "400 Bad Request" (invalid command)
+    EXPECT_EQ(mockWriter->outputLines[2], "400 Bad Request");
+    // fourth query should be "400 Bad Request" (invalid command)
+    EXPECT_EQ(mockWriter->outputLines[3], "400 Bad Request");
+    // fifth query should be "400 Bad Request" (invalid command)
+    EXPECT_EQ(mockWriter->outputLines[4], "400 Bad Request");
+    // sixth query should be "400 Bad Request" (invalid command)
+    EXPECT_EQ(mockWriter->outputLines[5], "400 Bad Request");
+    // seventh query should be "201 Created" (added URL)
+    EXPECT_EQ(mockWriter->outputLines[6], "201 Created");
+    // eighth query should be "200 OK" (true true because URL is in filter)
+    EXPECT_EQ(mockWriter->outputLines[7], "200 OK\n\ntrue true");
+    // ninth query should be "200 OK" (false because URL is not in filter)
+    EXPECT_EQ(mockWriter->outputLines[8], "200 OK\n\nfalse");
 }
 
 /**
- * @brief Tests the App with invalid command
+ * @brief Tests the App with more invalid command
  */
-TEST_F(AppTests, InvalidCommand) {
-    return;
+TEST_F(AppTests, invalidCommands2) {
     std::vector<std::string> invalidCommand = {"8 2",
                                                "3 www.hemi.com", // invalid command
                                                "www.hemi.com",   // invalid command
-                                               "1 www.example.com0",
-                                               "2 www.example.com0",
-                                               "2 www.example.com4"};
+                                               "POST www.example.com0",
+                                               "GET www.example.com0",
+                                               "GET www.example.com4"};
 
     mockReader = std::make_shared<MockInputReader>(invalidCommand);
     mockWriter = std::make_shared<MockOutputWriter>();
@@ -221,11 +234,18 @@ TEST_F(AppTests, InvalidCommand) {
     ASSERT_NO_THROW(runAppBriefly(mockReader, mockWriter));
 
     // Check that we got at exactly 2 outputs
-    ASSERT_EQ(mockWriter->outputLines.size(), 2);
+    ASSERT_EQ(mockWriter->outputLines.size(), 6);
 
-    // First query should be "true true" (URL in filter)
-    EXPECT_EQ(mockWriter->outputLines[0], "true true");
-
-    // Second query should be "true false" (URL not in filter)
-    EXPECT_EQ(mockWriter->outputLines[1], "true false");
+    // First query should be "400 Bad Request" (invalid command)
+    EXPECT_EQ(mockWriter->outputLines[0], "400 Bad Request");
+    // Second query should be "400 Bad Request" (invalid command)
+    EXPECT_EQ(mockWriter->outputLines[1], "400 Bad Request");
+    //third query should be "400 bad request" (invalid command)
+    EXPECT_EQ(mockWriter->outputLines[2], "400 Bad Request");
+    // fourth query should be "201 Created" (added URL)
+    EXPECT_EQ(mockWriter->outputLines[3], "201 Created");
+    // fifth query should be "200 OK" (true true because URL is in filter)
+    EXPECT_EQ(mockWriter->outputLines[4], "200 OK\n\ntrue true");
+    // sixth query should be "200 OK" (false because URL is not in filter)
+    EXPECT_EQ(mockWriter->outputLines[5], "200 OK\n\nfalse");
 }
