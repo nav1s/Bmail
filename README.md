@@ -2,14 +2,14 @@
 
 > **Note:** The first part of this project can be found at https://github.com/Binja12/Bmail/tree/part1
 
-This project implements a console application demonstrating the use of a Bloom filter.
-Users can add urls to the filter and query whether a url has been blocked.
+This project implements a server and client application demonstrating the use of a Bloom filter.
+Users can add urls to the filter, query whether a url has been blocked and delete a url from the filter.
 
-It utilizes Docker for building and running both the main application and the unit tests, ensuring a consistent environment.
+It utilizes Docker for building and running server, client and the unit tests, ensuring a consistent environment.
 
 ## Demo
 
-![Bmail Demo](assets/example-run.gif)
+![Bmail Demo](assets/ex2-example-run.gif)
 
 ## Getting Started
 
@@ -33,7 +33,7 @@ cd bmail
 
 ```bash
 docker compose down
-docker compose up --detach --pull always --remove-orphans --build --wait tcp-server
+COMPOSE_BAKE=true docker compose up --detach --pull always --remove-orphans --build --wait tcp-server
 docker compose run --pull always --remove-orphans --rm tcp-client
 ```
 
@@ -68,7 +68,7 @@ docker compose down tcp-server
 
 ```powershell
 docker compose down
-docker compose up --detach --pull always --remove-orphans --build --wait tcp-server
+COMPOSE_BAKE=true docker compose up --detach --pull always --remove-orphans --build --wait tcp-server
 docker compose run --pull always --remove-orphans --rm tcp-client
 ```
 
@@ -84,25 +84,6 @@ docker build --tag bmail-tests --file Dockerfile.tests .
 docker run --rm --volume "${PWD}:/app" --workdir /app bmail-tests bash -c "mkdir -p build/tests && cd build/tests && cmake ../../tests && make && ./runTests"
 ```
 
-## UML Diagram
-
-The UML diagram for the project structure:
-
-![Bmail UML Diagram](assets/bmail.png)
-
-The source PlantUML code for this diagram is available in [assets/bmail-uml-diagram.puml](assets/bmail-uml-diagram.puml).
-
-### Creating the UML Diagram
-
-To regenerate the diagram:
-
-```bash
-# Install PlantUML
-sudo apt install plantuml
-
-# Generate the diagram
-plantuml assets/bmail-uml-diagram.puml
-```
 ### How SOLID Principles Helped Us Handle Changes Smoothly
 
 How SOLID Principles Helped Us Handle Changes Smoothly
@@ -123,3 +104,22 @@ Moving from console to TCP I/O was surprisingly smooth. Because we used abstract
 
 Overall, because our system was built to be extendable from day one, we were able to make all these changes without doing any big rewrites gnor major implemintation changes.
 
+## UML Diagram
+
+The UML diagram for the project structure:
+
+![Bmail UML Diagram](assets/bmail.png)
+
+The source PlantUML code for this diagram is available in [assets/bmail-uml-diagram.puml](assets/bmail-uml-diagram.puml).
+
+### Creating the UML Diagram
+
+To regenerate the diagram:
+
+```bash
+# Install PlantUML
+sudo apt install plantuml
+
+# Generate the diagram
+plantuml assets/bmail-uml-diagram.puml
+```
