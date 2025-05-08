@@ -61,7 +61,8 @@ protected:
 
   void runAppBriefly(std::shared_ptr<MockInputReader> mockReader, std::shared_ptr<MockOutputWriter> mockWriter) {
     try {
-      app->run(*mockReader, *mockWriter);
+      std::vector<int> args = {8, 1,2}; // Example arguments for initialization
+      app->run(*mockReader, *mockWriter, args);
     } catch (const std::exception &) {
       // Expected to throw when it runs out of input
     }
@@ -81,14 +82,13 @@ protected:
 TEST_F(AppTests, exampleRun1) {
   // Create a sequence that mimics the user's example
   std::vector<std::string> exampleRun1 = {
-      "a",                  // Invalid initialization
-      "8 1 2",              // Valid initialization with size 8 and 2 hash functions
-      "2 www.example.com0", // Query non-existent URL
+      "a",                  // Invalid command
+      "GET www.example.com0", // Query non-existent URL
       "x",                  // Invalid command
-      "1 www.example.com0", // Add URL
-      "2 www.example.com0", // Query added URL
-      "2 www.example.com1", // Query similar but different URL
-      "2 www.example.com11" // Query URL that will cause false positive
+      "POST www.example.com0", // Add URL
+      "GET www.example.com0", // Query added URL
+      "GET www.example.com1", // Query non-existent URL 
+      "GET www.example.com11" // Query URL that will cause false positive
   };
 
   mockReader = std::make_shared<MockInputReader>(exampleRun1);
@@ -97,20 +97,29 @@ TEST_F(AppTests, exampleRun1) {
   // Run the app with the user sequence
   ASSERT_NO_THROW(runAppBriefly(mockReader, mockWriter));
 
-  // Check that we got at exactly 4 outputs
-  ASSERT_EQ(mockWriter->outputLines.size(), 4);
+  // Check that we got at exactly 7 outputs
+  ASSERT_EQ(mockWriter->outputLines.size(), 7);
 
-  // First query should be "false" (URL not in filter)
-  EXPECT_EQ(mockWriter->outputLines[0], "false");
+  // first query should be "400 Bad Request" (invalid command)
+  EXPECT_EQ(mockWriter->outputLines[0], "400 Bad Request");
 
-  // Second query should be "true true" (URL in filter)
-  EXPECT_EQ(mockWriter->outputLines[1], "true true");
+  // second query should be "200 OK" (false because URL is not in filter)
+  EXPECT_EQ(mockWriter->outputLines[1], "200 OK\n\nfalse");
 
-  // Third query should be "false" (similar URL not in filter)
-  EXPECT_EQ(mockWriter->outputLines[2], "false");
+  // third query should be "400 Bad Request" (invalid command)
+  EXPECT_EQ(mockWriter->outputLines[2], "400 Bad Request");
 
-  // Fourth query should be "true false" (false positive)
-  EXPECT_EQ(mockWriter->outputLines[3], "true false");
+  // fourth query should be "201 Created" (added URL)
+  EXPECT_EQ(mockWriter->outputLines[3], "201 Created");
+
+  // fifth query should be "200 OK" (true true because URL is in filter) 
+  EXPECT_EQ(mockWriter->outputLines[4], "200 OK\n\ntrue true");
+
+  // sixth query should be "200 OK" (false because URL is not in filter)
+  EXPECT_EQ(mockWriter->outputLines[5], "200 OK\n\nfalse");
+
+  // seventh query should be "200 OK" (true false because it's a false positive)
+  EXPECT_EQ(mockWriter->outputLines[6], "200 OK\n\ntrue false");
 }
 
 /**
