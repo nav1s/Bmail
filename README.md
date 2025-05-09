@@ -50,7 +50,7 @@ docker compose up --detach --pull always --remove-orphans --build tcp-server &&
 docker build --tag bmail-tests --file Dockerfile.tests . && \
 rm data/bloomFilter.txt
 docker run --rm \
---network bmail_default \
+--network bmail \
 --volume "$PWD":/app --workdir /app bmail-tests bash -c "
 mkdir -p build/tests && \
 cd build/tests && \
@@ -77,11 +77,21 @@ The application preserves the Bloom filter state between runs. If you want to st
 rm data/bloomFilter.txt
 ```
 
-#### Running the Unit Tests
+#### Running the Unit Tests including server running, deleting bloomfilter data from previous runs
 
-```powershell
-docker build --tag bmail-tests --file Dockerfile.tests .
-docker run --rm --volume "${PWD}:/app" --workdir /app bmail-tests bash -c "mkdir -p build/tests && cd build/tests && cmake ../../tests && make && ./runTests"
+```bash
+docker compose up --detach --pull always --remove-orphans --build tcp-server &&
+docker build --tag bmail-tests --file Dockerfile.tests . && \
+rm data/bloomFilter.txt
+docker run --rm \
+--network bmail \
+--volume "${PWD}":/app --workdir /app bmail-tests bash -c "
+mkdir -p build/tests && \
+cd build/tests && \
+cmake ../../tests && \
+make && \
+./runTests" &&
+docker compose down tcp-server
 ```
 
 ### How SOLID Principles Helped Us Handle Changes Smoothly

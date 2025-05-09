@@ -9,6 +9,9 @@ services:
     depends_on:
       tcp-server:
         condition: service_healthy
+    networks:
+      - bmail
+
   tcp-server:
     build:
       context: .
@@ -30,3 +33,9 @@ services:
       interval: 5s
       timeout: 1s
       retries: 5
+    networks:
+      - bmail
+
+networks:
+  bmail:
+    name: bmail
