@@ -3,11 +3,15 @@ services:
     image: python:3-alpine
     container_name: tcp-client
     restart: "no"
-    command: sh -c "sleep 5 && python /app/src/tcpClient.py tcp-server 12345"
+    command: python /app/src/tcpClient.py tcp-server 12345
     volumes:
       - ./:/app/
-    stdin_open: true # docker run -i
-    tty: true        # docker run -t
+    depends_on:
+      tcp-server:
+        condition: service_healthy
+    networks:
+      - bmail
+
   tcp-server:
     build:
       context: .
@@ -19,7 +23,7 @@ services:
               cd build/app && \
               cmake ../.. && \
               make && \
-              ./tcp-server 0.0.0.0 12345"
+              ./tcp-server 0.0.0.0 12345 8 1 2"
     volumes:
       - ./:/app
     ports:
@@ -29,3 +33,9 @@ services:
       interval: 5s
       timeout: 1s
       retries: 5
+    networks:
+      - bmail
+
+networks:
+  bmail:
+    name: bmail

@@ -10,11 +10,12 @@
 #include <sstream>
 #include <stdexcept>
 #include "../input/InputReader.h"
-#include <string>
 #include "../menu/ConsoleMenu.h"
 #include <filesystem>
+#include <iostream>
 #include <regex>
-#include "../validator/StringValidator.h"
+#include <sstream>
+#include <string>
 
 using namespace std;
 
@@ -23,8 +24,8 @@ App::App() {
 
 string bloomFilterLocation = "../../data";
 
-void App::run(InputReader& reader, OutputWriter& writer) {
-    semiConstructor(reader, writer);
+void App::run(InputReader &reader, OutputWriter &writer, vector<int> &args) {
+    semiConstructor(reader, writer, args);
 
     while (true) {
         string commandName, arg;
@@ -68,22 +69,7 @@ void App::run(InputReader& reader, OutputWriter& writer) {
  * It also loads the filter from a file if it exists.
  * The function takes an InputReader and an OutputWriter as parameters.
  */
-void App::semiConstructor(InputReader& reader, OutputWriter &writer) {
-    // get init line from user
-    string input;
-    bool validInit = false;
-    reader.getLine(input);
-    while(!isValidInit(input)){
-        // todo check if we can do it better
-        writer.putLine("404 Bad Request");
-        reader.getLine(input);
-    }
-
-    vector<int> args;
-    parseInput(input, args);
-    if (!StringValidator::validatePositiveIntegers(args)) {
-        throw std::invalid_argument("Incorrect filter init format.");
-    }
+void App::semiConstructor(InputReader &reader, OutputWriter &writer, vector<int> &args) {
     size_t arraySize = args.front();
     args.erase(args.begin());
 
@@ -92,15 +78,13 @@ void App::semiConstructor(InputReader& reader, OutputWriter &writer) {
     hashAssembler(args, hashFunctions);
     filter = make_shared<BloomFilter>(arraySize, hashFunctions);
     // loading from file if optional
-    if (filesystem::exists(bloomFilterLocation)){
+    if (filesystem::exists(bloomFilterLocation)) {
         filter->loadFromFile(bloomFilterLocation);
     }
 
     // creating commands and menu
     registerCommands(writer);
     menu = make_unique<ConsoleMenu>(reader, writer);
-    // todo check if we can do it better
-    writer.putLine("init");
 }
 
 void App::registerCommands(OutputWriter& writer) {
@@ -109,7 +93,7 @@ void App::registerCommands(OutputWriter& writer) {
     commands["DELETE"] = make_unique<DeleteFilterCommand>(*filter, writer);
 }
 
-void App::parseInput(const string& input, vector<int>& args) {
+void App::parseInput(const string &input, vector<int> &args) {
     istringstream iss(input);
     int val;
     while (iss >> val) {
@@ -123,7 +107,7 @@ void App::parseInput(const string& input, vector<int>& args) {
  * @details This function creates hash functions based on the provided arguments.
  * The arguments are expected to be integers representing the hash function types.
  */
-void App::hashAssembler(vector<int>& args, vector<shared_ptr<IHashFunction>>& out) {
+void App::hashAssembler(vector<int> &args, vector<shared_ptr<IHashFunction>> &out) {
     for (int num : args) {
         string signature = "std:" + to_string(num);
         out.push_back(HashFactory::fromSignature(signature));

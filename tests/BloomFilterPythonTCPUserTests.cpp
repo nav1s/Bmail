@@ -21,7 +21,7 @@ using namespace std;
  */
 string runClientWithInput(const vector<string>& inputLines) {
     /*
-    * replace sorce main function here
+    * replace source main function here
     */
     const char* cmd = "python3 ../../src/tcpClient.py tcp-server 12345";
     cout << "Launching command: " << cmd << endl;
