@@ -9,7 +9,7 @@
  * This class provides static utility methods to validate data such as filter initialization
  * parameters. No instantiation is required.
  */
-class Validator {
+class StringValidator {
 public:
     /**
      * @brief Validates that all integers in the vector are strictly positive.

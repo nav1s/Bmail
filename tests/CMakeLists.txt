@@ -19,7 +19,7 @@ runTests
 ./tester.cpp
 
 ./BloomFilterTests.cpp
-../src/FileManager/BloomFilterFileManager.cpp
+../src/fileManager/BloomFilterFileManager.cpp
 ../src/filter/BloomFilter.cpp
 
 ../src/hash/HashFactory.cpp
@@ -27,7 +27,10 @@ runTests
 ../src/hash/StdHash.cpp
 
 ./UrlValidatorTests.cpp 
-../src/StringValidator/UrlValidator.cpp
+../src/validator/UrlValidator.cpp
+
+./FilterCommandValidatorTests.cpp
+../src/validator/FilterCommandValidator.cpp
 
 ./FileReaderTests.cpp
 ../src/input/FileReader.cpp
@@ -45,9 +48,10 @@ runTests
 ../src/app/App.cpp
 ../src/command/AddFilterCommand.cpp
 ../src/command/QueryFilterCommand.cpp
+../src/command/DeleteFilterCommand.cpp
 ../src/menu/ConsoleMenu.cpp
-../src/Output/CliPrinter.cpp
-../src/StringValidator/Validator.cpp
+../src/output/CliPrinter.cpp
+../src/validator/StringValidator.cpp
 )
 
 target_link_libraries(runTests gtest_main)

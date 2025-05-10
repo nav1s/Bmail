@@ -2,7 +2,7 @@
 # https://clang.llvm.org/docs/ClangFormatStyleOptions.html
 Language:                                    Cpp
 ColumnLimit:                                 120
-IndentWidth:                                 2
+IndentWidth:                                 4
 InsertBraces:                                true
 SeparateDefinitionBlocks:                    Always
 AllowShortLoopsOnASingleLine:                false

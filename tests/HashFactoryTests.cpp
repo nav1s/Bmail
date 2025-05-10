@@ -1,7 +1,5 @@
 #include <gtest/gtest.h>
 #include "../src/hash/HashFactory.h"
-#include "../src/hash/StdHash.h"
-#include <memory>
 #include <stdexcept>
 
 /**

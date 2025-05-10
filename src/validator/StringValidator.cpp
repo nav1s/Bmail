@@ -1,8 +1,8 @@
-#include "Validator.h"
+#include "StringValidator.h"
 
 using namespace std;
 
-bool Validator::validatePositiveIntegers(const vector<int>& args) {
+bool StringValidator::validatePositiveIntegers(const vector<int>& args) {
     for (int val : args) {
         if (val <= 0) {
             return false;

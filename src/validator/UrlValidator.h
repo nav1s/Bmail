@@ -2,7 +2,7 @@
 
 #include <string>
 #include <regex>
-#include "StringValidator.h"
+#include "Ivalidator.h"
 
 /**
  * @class UrlValidator
@@ -15,7 +15,7 @@
  * - URLs with or without path segments
  * - URLs with different TLDs (top-level domains)
  */
-class UrlValidator : public StringValidator {
+class UrlValidator : public IValidator {
 public:
     /**
      * @brief Constructs a UrlValidator with a predefined URL pattern.

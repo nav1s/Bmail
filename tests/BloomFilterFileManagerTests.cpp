@@ -3,7 +3,7 @@
 #include <fstream>
 #include <string>
 #include <memory>
-#include "../src/FileManager/BloomFilterFileManager.h"
+#include "../src/fileManager/BloomFilterFileManager.h"
 #include "../src/filter/BloomFilter.h"
 #include "../src/hash/StdHash.h"
 

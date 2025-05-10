@@ -2,7 +2,7 @@
 
 #include "../menu/IMenu.h"
 #include "../input/InputReader.h"
-#include "../Output/OutputWriter.h"
+#include "../output/OutputWriter.h"
 #include "../filter/IFilter.h"
 #include "../hash/IHashFunction.h"
 #include "../command/ICommand.h"
@@ -12,6 +12,7 @@
 #include <unordered_map>
 #include <string>
 #include <vector>
+
 
 /**
  * @class App
@@ -30,7 +31,7 @@ public:
     /**
      * @brief Runs the main application loop, including configuration and command execution.
      */
-    void run(InputReader& reader, OutputWriter &writer);
+    void run(InputReader& reader, OutputWriter &writer, std::vector<int> & args);
 
 private:
     /**
@@ -40,7 +41,7 @@ private:
      * This function parses the initialization input line to extract filter parameters and
      * construct the appropriate filter and hash functions.
      */
-    void semiConstructor(InputReader& reader, OutputWriter &writer);
+    void semiConstructor(InputReader& reader, OutputWriter &writer, std::vector<int> & args);
 
     /**
      * @brief Registers available commands into the command map.
@@ -64,7 +65,7 @@ private:
     /**
      * @brief Map of integer command codes to command objects.
      */
-    std::unordered_map<int, std::unique_ptr<ICommand>> commands;
+    std::unordered_map<std::string, std::unique_ptr<ICommand>> commands;
 
     /**
      * @brief Pointer to the active filter used for command operations.
