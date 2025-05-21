@@ -3,7 +3,7 @@ services:
     image: python:3-alpine
     container_name: tcp-client
     restart: "no"
-    command: python /app/src/tcpClient.py tcp-server 12345
+    command: python /app/src/bloomFilter/tcpClient.py tcp-server 12345
     volumes:
       - ./:/app/
     depends_on:

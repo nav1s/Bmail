@@ -3,9 +3,9 @@
 #include <fstream>
 #include <string>
 #include <memory>
-#include "../src/fileManager/BloomFilterFileManager.h"
-#include "../src/filter/BloomFilter.h"
-#include "../src/hash/StdHash.h"
+#include "../src/bloomFilter/fileManager/BloomFilterFileManager.h"
+#include "../src/bloomFilter/filter/BloomFilter.h"
+#include "../src/bloomFilter/hash/StdHash.h"
 
 namespace fs = std::filesystem;
 

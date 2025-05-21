@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include "../src/validator/FilterCommandValidator.h"
+#include "../src/bloomFilter/validator/FilterCommandValidator.h"
 
 /**
  * @class FilterCommandValidatorTests

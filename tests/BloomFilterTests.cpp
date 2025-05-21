@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
-#include "../src/filter/BloomFilter.h"
-#include "../src/hash/StdHash.h"
+#include "../src/bloomFilter/filter/BloomFilter.h"
+#include "../src/bloomFilter/hash/StdHash.h"
 #include <filesystem>
 
 namespace fs = std::filesystem;

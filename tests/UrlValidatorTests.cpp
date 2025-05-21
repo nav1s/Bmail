@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include "../src/validator/UrlValidator.h"
+#include "../src/bloomFilter/validator/UrlValidator.h"
 
 /**
  * @class UrlValidatorTests

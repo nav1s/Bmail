@@ -1,4 +1,4 @@
-#include "../src/input/CliReader.h"
+#include "../src/bloomFilter/input/CliReader.h"
 #include <gtest/gtest.h>
 #include <sstream>
 
