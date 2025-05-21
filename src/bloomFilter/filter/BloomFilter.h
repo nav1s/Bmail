@@ -6,6 +6,7 @@
 #include <memory>
 #include <unordered_set>
 #include "../hash/IHashFunction.h"
+#include "../fileManager/BloomFilterFileManager.h"
 
 using namespace std;
 
