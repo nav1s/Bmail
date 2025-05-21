@@ -1,9 +1,4 @@
 #include "BloomFilter.h"
-#include "../hash/IHashFunction.h"
-#include <memory>
-#include <vector>
-#include <string>
-#include "../fileManager/BloomFilterFileManager.h"
 
 using namespace std;
 
