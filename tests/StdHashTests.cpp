@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include "../src/hash/StdHash.h"
+#include "../src/bloomFilter/hash/StdHash.h"
 
 /**
  * @class StdHashTest

@@ -19,39 +19,39 @@ runTests
 ./tester.cpp
 
 ./BloomFilterTests.cpp
-../src/fileManager/BloomFilterFileManager.cpp
-../src/filter/BloomFilter.cpp
+../src/bloomFilter/fileManager/BloomFilterFileManager.cpp
+../src/bloomFilter/filter/BloomFilter.cpp
 
-../src/hash/HashFactory.cpp
-../src/input/FileReader.cpp
-../src/hash/StdHash.cpp
+../src/bloomFilter/hash/HashFactory.cpp
+../src/bloomFilter/input/FileReader.cpp
+../src/bloomFilter/hash/StdHash.cpp
 
 ./UrlValidatorTests.cpp 
-../src/validator/UrlValidator.cpp
+../src/bloomFilter/validator/UrlValidator.cpp
 
 ./FilterCommandValidatorTests.cpp
-../src/validator/FilterCommandValidator.cpp
+../src/bloomFilter/validator/FilterCommandValidator.cpp
 
 ./FileReaderTests.cpp
-../src/input/FileReader.cpp
+../src/bloomFilter/input/FileReader.cpp
 
 ./CliReaderTests.cpp
-../src/input/CliReader.cpp
+../src/bloomFilter/input/CliReader.cpp
 
 ./StdHashTests.cpp
-../src/hash/StdHash.h
+../src/bloomFilter/hash/StdHash.h
 
 ./HashFactoryTests.cpp
-../src/hash/HashFactory.cpp
+../src/bloomFilter/hash/HashFactory.cpp
 
 ./AppTests.cpp
-../src/app/App.cpp
-../src/command/AddFilterCommand.cpp
-../src/command/QueryFilterCommand.cpp
-../src/command/DeleteFilterCommand.cpp
-../src/menu/ConsoleMenu.cpp
-../src/output/CliPrinter.cpp
-../src/validator/StringValidator.cpp
+../src/bloomFilter/app/App.cpp
+../src/bloomFilter/command/AddFilterCommand.cpp
+../src/bloomFilter/command/QueryFilterCommand.cpp
+../src/bloomFilter/command/DeleteFilterCommand.cpp
+../src/bloomFilter/menu/ConsoleMenu.cpp
+../src/bloomFilter/output/CliPrinter.cpp
+../src/bloomFilter/validator/StringValidator.cpp
 )
 
 target_link_libraries(runTests gtest_main)

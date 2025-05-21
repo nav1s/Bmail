@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include "../src/hash/HashFactory.h"
+#include "../src/bloomFilter/hash/HashFactory.h"
 #include <stdexcept>
 
 /**

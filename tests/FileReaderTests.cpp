@@ -1,4 +1,4 @@
-#include "../src/input/FileReader.h"
+#include "../src/bloomFilter/input/FileReader.h"
 #include <gtest/gtest.h>
 #include <fstream>
 #include <string>
