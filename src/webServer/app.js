@@ -1,7 +1,10 @@
 const express = require('express');
 var app = express();
 app.use(express.json());
+// Tag disable
+app.disable('etag');
 
+// Routes
 const users = require('./routes/users');
 app.use('/api/users', users);
 
