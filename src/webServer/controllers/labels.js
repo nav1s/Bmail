@@ -1,6 +1,6 @@
 const { labels } = require('../data/memory');
 const { buildLabel } = require('../models/labelSchema');
-const { badRequest, created, ok } = require('../utils/httpResponses');
+const { badRequest, created, ok, notFound, noContent } = require('../utils/httpResponses');
 
 /**
  * GET /api/labels
@@ -46,4 +46,67 @@ function createLabel(req, res) {
   return created(res, result.label);
 }
 
-module.exports = { listLabels, createLabel };
+/**
+ * GET /api/labels/:id
+ * Returns a specific label by ID for the logged-in user.
+ *
+ * @param {import('express').Request} req - Express request, expects :id param and req.user
+ * @param {import('express').Response} res - Express response
+ */
+function getLabelById(req, res) {
+  const userId = req.user.id;
+  const labelId = parseInt(req.params.id, 10);
+  // Gets user labels or an empty arr if he doesnt have any
+  const label = (labels[userId] || []).find(l => l.id === labelId);
+
+  if (!label) return notFound(res, 'Label not found');
+  return ok(res, label);
+}
+
+
+/**
+ * PATCH /api/labels/:id
+ * Updates the name of a label (if it belongs to the current user).
+ * Enforces uniqueness of names per user.
+ *
+ * @param {import('express').Request} req - Express request with body: { name: string }
+ * @param {import('express').Response} res - Express response
+ */
+function updateLabelById(req, res) {
+  const userId = req.user.id;
+  const labelId = parseInt(req.params.id, 10);
+  // Gets user labels or an empty arr if he doesnt have any
+  const label = (labels[userId] || []).find(l => l.id === labelId);
+
+  if (!label) return notFound(res, 'Label not found');
+
+  // Updates new label
+  const newName = req.body.name;
+  label.name = newName;
+  return ok(res, label);
+}
+
+
+/**
+ * DELETE /api/labels/:id
+ * Deletes a label owned by the logged-in user.
+ *
+ * @param {import('express').Request} req - Express request with :id param
+ * @param {import('express').Response} res - Express response
+ */
+function deleteLabelById(req, res) {
+  const userId = req.user.id;
+  const labelId = parseInt(req.params.id, 10);
+  // Gets user labels or an empty arr if he doesnt have any
+  const labelList = labels[userId] || [];
+  const index = labelList.findIndex(l => l.id === labelId);
+
+
+  if (index === -1) return notFound(res, 'Label not found');
+
+  labelList.splice(index, 1);
+  return noContent(res);
+}
+
+
+module.exports = { listLabels, createLabel, getLabelById, updateLabelById, deleteLabelById };

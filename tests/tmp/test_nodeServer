@@ -337,3 +337,60 @@ curl -i -X POST http://localhost:8080/api/tokens \
 ## 8.8 ✔️ View labels as bob456 (should be empty)
 curl -i http://localhost:8080/api/labels
 # Expected: []
+
+# 9.0 Labels: By ID Access
+
+## 9.1 ✔️ Register user eve999
+curl -i -X POST http://localhost:8080/api/users \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "eve999",
+    "password": "evesecret",
+    "firstName": "Eve",
+    "lastName": "User"
+  }'
+
+## 9.2 ✔️ Login as eve999
+curl -i -X POST http://localhost:8080/api/tokens \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "eve999",
+    "password": "evesecret"
+  }'
+
+## 9.3 ✔️ Create label \"Urgent\"
+curl -i -X POST http://localhost:8080/api/labels \
+  -H "Content-Type: application/json" \
+  -d '{ "name": "Urgent" }'
+# Expected: 201 Created with { "id": 1, "name": "Urgent" }
+
+## 9.4 ✔️ Get label by ID
+curl -i http://localhost:8080/api/labels/1
+# Expected: 200 OK with { "id": 1, "name": "Urgent" }
+
+## 9.5 ❌ Get non-existing label by ID
+curl -i http://localhost:8080/api/labels/999
+# Expected: 404 Not Found
+
+## 9.6 ✔️ Update label by ID (rename to "🔥 Important")
+curl -i -X PATCH http://localhost:8080/api/labels/1 \
+  -H "Content-Type: application/json" \
+  -d '{ "name": "🔥 Important" }'
+# Expected: 200 OK with { "id": 1, "name": "🔥 Important" }
+
+## 9.7 ✔️ Verify rename worked
+curl -i http://localhost:8080/api/labels/1
+# Expected: 200 OK with { "id": 1, "name": "🔥 Important" }
+
+## 9.8 ✔️ Delete label
+curl -i -X DELETE http://localhost:8080/api/labels/1
+# Expected: 204 No Content
+
+## 9.9 ❌ Confirm label is gone
+curl -i http://localhost:8080/api/labels/1
+# Expected: 404 Not Found
+
+## 9.10 ✔️ View all labels (should be empty)
+curl -i http://localhost:8080/api/labels
+# Expected: []
+
