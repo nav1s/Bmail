@@ -184,3 +184,9 @@ HTTP/1.1 201 Created
   "body": "This should work",
   "timestamp": "..."
 }
+
+✅ 4.4 Valid mail creation
+
+curl -i http://localhost:8080/api/mails
+
+Expected: list of mails inside "[]"
