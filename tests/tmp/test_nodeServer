@@ -273,3 +273,67 @@ curl -i -X DELETE http://localhost:8080/api/mails/2
 #   "error": "You are not allowed to delete this mail"
 # }
 
+# 8.0 Labels API (per-user)
+
+## 8.1 ✔️ Register user alice123
+curl -i -X POST http://localhost:8080/api/users \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "alice123",
+    "password": "alicepass",
+    "firstName": "Alice",
+    "lastName": "Test"
+  }'
+
+## 8.2 ✔️ Login as alice123
+curl -i -X POST http://localhost:8080/api/tokens \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "alice123",
+    "password": "alicepass"
+  }'
+
+## 8.3 ✔️ Create label \"Work\" for alice123
+curl -i -X POST http://localhost:8080/api/labels \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Work"
+  }'
+# Expected: 201 Created with { "id": 1, "name": "Work" }
+
+## 8.4 ✔️ View labels as alice123
+curl -i http://localhost:8080/api/labels
+# Expected:
+# [
+#   { "id": 1, "name": "Work" }
+# ]
+
+## 8.5 ❌ Try to create duplicate label
+curl -i -X POST http://localhost:8080/api/labels \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Work"
+  }'
+# Expected: 400 Bad Request with error "Label with this name already exists"
+
+## 8.6 ✔️ Register user bob456
+curl -i -X POST http://localhost:8080/api/users \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "bob456",
+    "password": "bobpass",
+    "firstName": "Bob",
+    "lastName": "Tester"
+  }'
+
+## 8.7 ✔️ Login as bob456
+curl -i -X POST http://localhost:8080/api/tokens \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "bob456",
+    "password": "bobpass"
+  }'
+
+## 8.8 ✔️ View labels as bob456 (should be empty)
+curl -i http://localhost:8080/api/labels
+# Expected: []
