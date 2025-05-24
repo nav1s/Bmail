@@ -25,7 +25,6 @@ function unauthorized(res, message = 'Unauthorized') {
   return res.status(401).json({ error: message });
 }
 
-
 /**
  * Sends a 404 Not Found with a JSON error message.
  * @param {import('express').Response} res
@@ -53,11 +52,22 @@ function created(res, data) {
   return res.status(201).json(data);
 }
 
+/**
+ * Sends a 204 No Content with no response body.
+ * Typically used for successful DELETE operations.
+ *
+ * @param {import('express').Response} res
+ */
+function noContent(res) {
+  return res.status(204).end();
+}
+
 module.exports = {
+  ok,
   badRequest,
-  notFound,
   unauthorized,
+  notFound,
   created,
   createdWithLocation,
-  ok
+  noContent
 };

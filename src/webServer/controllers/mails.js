@@ -1,7 +1,7 @@
 const { buildMail, filterMailForOutput } = require('../models/mailSchema');
-const { badRequest, created, unauthorized } = require('../utils/httpResponses');
-const { mails } = require('../data/memory');
-const { getUserIdFromToken } = require('../models/tokens');
+const { badRequest, created, unauthorized, ok, notFound, noContent } = require('../utils/httpResponses');
+const { mails, users } = require('../data/memory');
+
 
 /**
  * POST /api/mails
@@ -12,14 +12,28 @@ const { getUserIdFromToken } = require('../models/tokens');
  * @param {import('express').Response} res
  */
 function createMail(req, res) {
-  // Build mail with sender injected as 'from' -> add this in later assignment where we have a header
+  // converts "to" from names to ids, must be hard coded "to" field
+  const toUsernames = req.body.to;
+  if (!Array.isArray(toUsernames)) {
+    return badRequest(res, '"to" must be an array');
+  }
+
+  // Try to match usernames to users
+  const toIds = toUsernames
+    .map(name => users.find(u => u.username === name))
+    .filter(u => u) // drop non-existent usernames
+    .map(u => u.id); // get only the IDs
+
+  // Build mail with sender injected as 'from'
   const input = {
-    ...req.body
+  ...req.body,
+  from: req.user.id,
+  to: toIds // Replace usernames with valid IDs
   };
 
   // Creating new mail
   const id = mails.length + 1;
-    const newMail = buildMail(input, id);
+  const newMail = buildMail(input, id);
 
   if (!newMail.success) {
     return badRequest(res, newMail.error);
@@ -39,17 +53,111 @@ function createMail(req, res) {
  * @param {import('express').Response} res
  */
 function listInbox(req, res) {
-    // Filter mails where userId is a recipient
-  //const userId = getUserIdFromToken(req.loginToken); -> later will be added when we filter mails by user
+  const userId = req.user.id;
+  //fetching mails, in LIFO order
   const relevant = mails
-    //.filter(mail => Array.isArray(mail.to) && mail.to.includes(userId)) -> later will be added when we filter mails by user
+    .filter(mail =>
+      mail.from === userId || (Array.isArray(mail.to) && mail.to.includes(userId))
+    )
     .slice(-50)
+    .reverse()
     .map(filterMailForOutput);
 
   res.json(relevant);
 }
 
+/**
+ * GET /api/mails/:id
+ * Returns the public-facing mail details for a specific mail ID.
+ * Requires login.
+ *
+ * @param {import('express').Request} req
+ * @param {import('express').Response} res
+ */
+function getMailById(req, res) {
+  const id = parseInt(req.params.id, 10);
+  const mail = mails.find(m => m.id === id);
+
+  if (!mail) {
+    return notFound(res, 'Mail not found');
+  }
+
+  // Checks if im not the sender gnor the recipiant
+  const isSender = mail.from === req.user.id;
+  const isRecipient = Array.isArray(mail.to) && mail.to.includes(req.user.id);
+  if (!isSender && !isRecipient) {
+    return unauthorized(res, 'You are not allowed to view this mail');
+  }
+
+  return ok(res, filterMailForOutput(mail));
+}
+
+/**
+ * PATCH /api/mails/:id
+ * Edits the title/body of an existing mail with a given ID.
+ * Only the sender can update.
+ * Requires login.
+ *
+ * @param {import('express').Request} req
+ * @param {import('express').Response} res
+ */
+function updateMailById(req, res) {
+
+  const id = parseInt(req.params.id, 10);
+  const mail = mails.find(m => m.id === id);
+
+  if (!mail) {
+    return notFound(res, 'Mail not found');
+  }
+  // Checks if im the sender
+  if (mail.from !== req.user.id) {
+    return unauthorized(res, 'Only the sender can update this mail');
+  }
+  // Enable editing of body and title
+  const editableFields = ['title', 'body'];
+  for (const field of editableFields) {
+    if (field in req.body) {
+      mail[field] = req.body[field];
+    }
+  }
+
+  return ok(res, filterMailForOutput(mail));
+}
+
+/**
+ * DELETE /api/mails/:id
+ * Deletes a mail by its ID if it exists.
+ * Only the sender or one of the recipients may delete.
+ * Requires login.
+ *
+ * @param {import('express').Request} req
+ * @param {import('express').Response} res
+ */
+function deleteMailById(req, res) {
+  const id = parseInt(req.params.id, 10);
+  const index = mails.findIndex(m => m.id === id);
+
+  if (index === -1) {
+    return notFound(res, 'Mail not found');
+  }
+  // checks if im sender or reciever
+  const mail = mails[index];
+  const isSender = mail.from === req.user.id;
+  const isRecipient = Array.isArray(mail.to) && mail.to.includes(req.user.id);
+
+  if (!isSender && !isRecipient) {
+    return unauthorized(res, 'You are not allowed to delete this mail');
+  }
+
+  mails.splice(index, 1);
+  return noContent(res);
+}
+
+
 module.exports = {
   createMail,
-  listInbox
+  listInbox,
+  getMailById,
+  updateMailById,
+  deleteMailById
 };

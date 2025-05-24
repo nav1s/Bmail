@@ -165,10 +165,8 @@ HTTP/1.1 400 Bad Request
 ✅ 4.3 Valid mail creation
 
 curl -i -X POST http://localhost:8080/api/mails \
--H "Authorization: 1" \
 -H "Content-Type: application/json" \
 -d '{
-  "from": "Alice",
   "to": [1],
   "title": "Hello again",
   "body": "This should work"
@@ -190,3 +188,88 @@ HTTP/1.1 201 Created
 curl -i http://localhost:8080/api/mails
 
 Expected: list of mails inside "[]"
+
+# 5.0 Mail by ID Tests
+
+## 5.1 ✔️ View mail you sent or received
+curl -i http://localhost:8080/api/mails/1
+
+# Expected:
+# HTTP/1.1 200 OK
+# {
+#   "id": 1,
+#   "from": 1,
+#   "to": [2],
+#   "title": "Test mail",
+#   "body": "Test content",
+#   "timestamp": 1722023771000
+# }
+
+## 5.2 ❌ Try to view mail that isn’t yours (login as another user first)
+curl -i http://localhost:8080/api/mails/1
+
+# Expected:
+# HTTP/1.1 401 Unauthorized
+# {
+#   "error": "You are not allowed to view this mail"
+# }
+
+## 5.3 ❌ View non-existent mail
+curl -i http://localhost:8080/api/mails/999
+
+# Expected:
+# HTTP/1.1 404 Not Found
+# {
+#   "error": "Mail not found"
+# }
+
+
+
+# 6. Edit Mail
+
+✔️ Edit mail as sender
+curl -i -X PATCH http://localhost:8080/api/mails/1 \
+  -H "Content-Type: application/json" \
+  -d '{"body": "Updated body"}'
+
+# Expected:
+# HTTP/1.1 200 OK
+# {
+#   "id": 1,
+#   "from": 1,
+#   "to": [2],
+#   "title": "Test mail",
+#   "body": "Updated body",
+#   "timestamp": 1722023771000
+# }
+
+❌ Edit mail as recipient (unauthorized)
+curl -i -X PATCH http://localhost:8080/api/mails/1 \
+  -H "Content-Type: application/json" \
+  -d '{"body": "Should not work"}'
+
+# Expected:
+# HTTP/1.1 401 Unauthorized
+# {
+#   "error": "Only the sender can update this mail"
+# }
+
+
+
+# 7. Delete Mail
+
+✔️ Delete mail as sender or recipient
+curl -i -X DELETE http://localhost:8080/api/mails/1
+
+# Expected:
+# HTTP/1.1 204 No Content
+
+❌ Delete mail you're not related to
+curl -i -X DELETE http://localhost:8080/api/mails/2
+
+# Expected:
+# HTTP/1.1 401 Unauthorized
+# {
+#   "error": "You are not allowed to delete this mail"
+# }
+

@@ -1,14 +1,12 @@
-const { validateToken } = require('../models/tokens');
-const { users } = require('../data/memory');
-const { badRequest } = require('../utils/httpResponses');
+const { state } = require('../data/memory');
 
-/**
- * Middleware to validate Authorization header containing userId.
- */
 function requireAuth(req, res, next) {
-  const token = req.header('Authorization');
-  return next();
-}
+  if (!state.connectedUser) {
+    return res.status(401).json({ error: 'Need to be logged in to perform this action' });
+  }
 
+  req.user = state.connectedUser;
+  next();
+}
 
 module.exports = { requireAuth };
