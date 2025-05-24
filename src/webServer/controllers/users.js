@@ -1,22 +1,18 @@
-const { addUser } = require('../models/users');
 const { users } = require('../data/memory');
-const { badRequest, createdWithLocation, notFound } = require('../utils/httpResponses');
-const { filterUserByVisibility, getRequiredFields } = require('../models/userSchema');
+const { badRequest, created, notFound, ok } = require('../utils/httpResponses');
+const { filterUserByVisibility, getRequiredFields, addUser } = require('../models/userSchema');
 
 /**
  * Handles user registration using centralized field schema config.
  */
 function register(req, res) {
-  // Use global schema config
   const requiredFields = getRequiredFields();
-
-  // Check for missing fields
   const missing = requiredFields.filter(field => !req.body[field]);
+
   if (missing.length > 0) {
     return badRequest(res, `Missing fields: ${missing.join(', ')}`);
   }
 
-  // Extract valid fields from req.body
   const userData = {};
   for (const field of requiredFields) {
     userData[field] = req.body[field];
@@ -27,8 +23,13 @@ function register(req, res) {
     return badRequest(res, result.error);
   }
 
-  return createdWithLocation(res, `/api/users/${result.user.id}`);
+  // Filter and remove the ID before sending the response
+  const publicUser = filterUserByVisibility(result.user, 'public');
+  delete publicUser.id;
+
+   return created(res, publicUser);
 }
+
 
 /**
  * GET /api/users/:id
@@ -52,7 +53,7 @@ function getUserById(req, res) {
   // Use field visibility config to return safe subset of user fields
   const publicUser = filterUserByVisibility(user, 'public');
 
-  res.json(publicUser);
+  return ok(res, publicUser);
 }
 
 module.exports = { register, getUserById };

@@ -1,9 +1,9 @@
 ========================================
- BMAIL - USER API TESTS
+ BMAIL - USER & MAIL API TESTS
 ========================================
 
 Author: [Your Name]
-Purpose: Manual testing for user registration, login, and retrieval
+Purpose: Manual testing for user registration, login, and mail
 Date: [2025-MM-DD]
 
 ----------------------------------------
@@ -19,7 +19,7 @@ curl -i -X POST http://localhost:8080/api/users \
 }'
 
 Expected:
-HTTP/1.1 400 Bad Request
+HTTP/1.1 400 Bad Request  
 {"error":"Missing fields: lastName, username, password"}
 
 
@@ -35,7 +35,7 @@ curl -i -X POST http://localhost:8080/api/users \
 }'
 
 Expected:
-HTTP/1.1 201 Created
+HTTP/1.1 201 Created  
 Location: /api/users/1
 
 
@@ -51,8 +51,23 @@ curl -i -X POST http://localhost:8080/api/users \
 }'
 
 Expected:
-HTTP/1.1 400 Bad Request
-{"error":"Username already taken"}
+HTTP/1.1 400 Bad Request  
+{"error":"Username already exists."}
+
+❌ 4.1 Mail creation without login
+
+curl -i -X POST http://localhost:8080/api/mails \
+-H "Content-Type: application/json" \
+-d '{
+  "from": "Alice",
+  "to": [1],
+  "title": "Hello",
+  "body": "This should fail"
+}'
+
+Expected:
+HTTP/1.1 401 Unauthorized  
+{"error":"You must be logged in to send mail."}
 
 
 ----------------------------------------
@@ -69,7 +84,7 @@ curl -i -X POST http://localhost:8080/api/tokens \
 }'
 
 Expected:
-HTTP/1.1 400 Bad Request
+HTTP/1.1 400 Bad Request  
 {"error":"Invalid username or password"}
 
 
@@ -83,7 +98,7 @@ curl -i -X POST http://localhost:8080/api/tokens \
 }'
 
 Expected:
-HTTP/1.1 400 Bad Request
+HTTP/1.1 400 Bad Request  
 {"error":"Invalid username or password"}
 
 
@@ -97,7 +112,7 @@ curl -i -X POST http://localhost:8080/api/tokens \
 }'
 
 Expected:
-HTTP/1.1 201 Created
+HTTP/1.1 200 OK  
 {"token":"1"}
 
 
@@ -110,7 +125,7 @@ HTTP/1.1 201 Created
 curl -i http://localhost:8080/api/users/1
 
 Expected:
-HTTP/1.1 200 OK
+HTTP/1.1 200 OK  
 {
   "id": 1,
   "username": "alice123",
@@ -124,8 +139,48 @@ HTTP/1.1 200 OK
 curl -i http://localhost:8080/api/users/999
 
 Expected:
-HTTP/1.1 404 Not Found
+HTTP/1.1 404 Not Found  
 {"error":"User not found"}
 
+
+----------------------------------------
+ 4. MAIL CREATION
 ----------------------------------------
 
+
+❌ 4.2 Mail creation with missing fields (must include all: from, to, title, body)
+
+curl -i -X POST http://localhost:8080/api/mails \
+-H "Authorization: 1" \
+-H "Content-Type: application/json" \
+-d '{
+  "title": "Hello"
+}'
+
+Expected:
+HTTP/1.1 400 Bad Request  
+{"error":"Missing fields: to, body"}
+
+
+✅ 4.3 Valid mail creation
+
+curl -i -X POST http://localhost:8080/api/mails \
+-H "Authorization: 1" \
+-H "Content-Type: application/json" \
+-d '{
+  "from": "Alice",
+  "to": [1],
+  "title": "Hello again",
+  "body": "This should work"
+}'
+
+Expected:
+HTTP/1.1 201 Created  
+{
+  "id": 1,
+  "from": 1,
+  "to": [1],
+  "title": "Hello again",
+  "body": "This should work",
+  "timestamp": "..."
+}

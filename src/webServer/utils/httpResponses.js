@@ -1,4 +1,13 @@
 /**
+ * Sends a 200 OK with optional JSON data.
+ * @param {import('express').Response} res
+ * @param {object} data
+ */
+function ok(res, data) {
+  return res.status(200).json(data);
+}
+
+/**
  * Sends a 400 Bad Request with a JSON error message.
  * @param {import('express').Response} res
  * @param {string} message
@@ -6,6 +15,16 @@
 function badRequest(res, message) {
   return res.status(400).json({ error: message });
 }
+
+/**
+ * Sends a 401 Unauthorized Request with a JSON error message.
+ * @param {import('express').Response} res
+ * @param {string} message
+ */
+function unauthorized(res, message = 'Unauthorized') {
+  return res.status(401).json({ error: message });
+}
+
 
 /**
  * Sends a 404 Not Found with a JSON error message.
@@ -37,6 +56,8 @@ function created(res, data) {
 module.exports = {
   badRequest,
   notFound,
+  unauthorized,
   created,
-  createdWithLocation
+  createdWithLocation,
+  ok
 };

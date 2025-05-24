@@ -1,3 +1,5 @@
+const { tokens } = require('../data/memory');
+
 /**
  * Generates a "token" for a user — currently just returns the userId as asked from Hemi.
  */
@@ -15,4 +17,14 @@ function validateToken(token, users) {
   return exists ? token : null;
 }
 
-module.exports = { generateToken, validateToken };
+/**
+ * Resolves a user ID from a given token string.
+ *
+ * @param {string} token
+ * @returns {number|null}
+ */
+function getUserIdFromToken(token) {
+  return tokens[token]?.userId ?? null;
+}
+
+module.exports = { generateToken, validateToken, getUserIdFromToken };

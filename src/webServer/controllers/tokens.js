@@ -1,6 +1,6 @@
 const { users } = require('../data/memory');
 const { generateToken } = require('../models/tokens');
-const { badRequest, created } = require('../utils/httpResponses');
+const { badRequest, ok } = require('../utils/httpResponses');
 
 /**
  * POST /api/tokens
@@ -8,8 +8,8 @@ const { badRequest, created } = require('../utils/httpResponses');
  * Returns user.id as "token".
  */
 function login(req, res) {
-  const { username, password } = req.body;
 
+  const { username, password } = req.body;
   // Verefies username and password are given
   if (!username || !password) {
     return badRequest(res, 'Username and password are required');
@@ -25,7 +25,7 @@ function login(req, res) {
   // Generated token
   const token = generateToken(user.id);
   
-  return created(res, { token });
+  return ok(res, { token });
 }
 
 module.exports = { login };
