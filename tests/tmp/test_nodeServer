@@ -394,3 +394,65 @@ curl -i http://localhost:8080/api/labels/1
 curl -i http://localhost:8080/api/labels
 # Expected: []
 
+# 10.0 Mail Search by Query (GET /api/mails/search/:query)
+
+## 10.1 ✔️ Register user testsearch
+curl -i -X POST http://localhost:8080/api/users \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "testsearch",
+    "password": "searchpass",
+    "firstName": "Test",
+    "lastName": "Search"
+  }'
+
+## 10.2 ✔️ Login as testsearch
+curl -i -X POST http://localhost:8080/api/tokens \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "testsearch",
+    "password": "searchpass"
+  }'
+
+## 10.3 ✔️ Send mail with title "Alpha Notice" and body "Search test body"
+curl -i -X POST http://localhost:8080/api/mails \
+  -H "Content-Type: application/json" \
+  -d '{
+    "to": ["testsearch"],
+    "title": "Alpha Notice",
+    "body": "Search test body"
+  }'
+
+## 10.4 ✔️ Send mail with title "Beta Alert" and body "This is a lowerCase match"
+curl -i -X POST http://localhost:8080/api/mails \
+  -H "Content-Type: application/json" \
+  -d '{
+    "to": ["testsearch"],
+    "title": "Beta Alert",
+    "body": "This is a lowerCase match"
+  }'
+
+## 10.5 ✔️ Search for "Alpha"
+curl -i http://localhost:8080/api/mails/search/Alpha
+# Expected: 1 result with title "Alpha Notice"
+
+## 10.6 ❌ Search for "alpha" (case-sensitive!)
+curl -i http://localhost:8080/api/mails/search/alpha
+# Expected: []
+
+## 10.7 ✔️ Search for "Search"
+curl -i http://localhost:8080/api/mails/search/Search
+# Expected: 1 result from body match ("Search test body")
+
+## 10.8 ❌ Search for word that doesn’t exist
+curl -i http://localhost:8080/api/mails/search/NonExistentWord
+# Expected: []
+
+## 10.9 ✔️ Search for "Beta"
+curl -i http://localhost:8080/api/mails/search/Beta
+# Expected: 1 result with title "Beta Alert"
+
+## 10.10 ❌ Search for "lowercase" (will not match "lowerCase")
+curl -i http://localhost:8080/api/mails/search/lowercase
+# Expected: []
+

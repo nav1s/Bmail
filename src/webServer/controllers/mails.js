@@ -153,11 +153,37 @@ function deleteMailById(req, res) {
   return noContent(res);
 }
 
+/**
+ * GET /api/mails/search/:query
+ * Returns all mails sent to the user where title or body includes the query (case-insensitive).
+ *
+ * @param {import('express').Request} req - Express request, expects :query param and req.user
+ * @param {import('express').Response} res - Express response
+ */
+function searchMails(req, res) {
+  const userId = req.user.id;
+  const query = req.params.query;
+
+  const results = mails
+    .filter(mail =>
+      Array.isArray(mail.to) &&
+      mail.to.includes(userId) &&
+      (
+        (mail.title && mail.title.includes(query)) || (mail.body && mail.body.includes(query))
+      )
+    )
+    .map(filterMailForOutput);
+
+  return res.json(results);
+}
+
+
 
 module.exports = {
   createMail,
   listInbox,
   getMailById,
   updateMailById,
-  deleteMailById
+  deleteMailById,
+  searchMails
 };
