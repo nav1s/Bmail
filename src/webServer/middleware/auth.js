@@ -1,11 +1,23 @@
-const { state } = require('../data/memory');
+const { users } = require('../data/memory');
 
+/**
+ * Middleware to authenticate user from Authorization header (user ID).
+ */
 function requireAuth(req, res, next) {
-  if (!state.connectedUser) {
-    return res.status(401).json({ error: 'Need to be logged in to perform this action' });
+  const token = req.header('Authorization');
+
+  if (!token) {
+    return res.status(401).json({ error: 'Missing Authorization header' });
   }
 
-  req.user = state.connectedUser;
+  const userId = parseInt(token, 10);
+  const user = users.find(u => u.id === userId);
+
+  if (!user) {
+    return res.status(401).json({ error: 'Invalid token or user not found' });
+  }
+
+  req.user = user;
   next();
 }
 

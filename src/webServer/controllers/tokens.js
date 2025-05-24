@@ -1,4 +1,4 @@
-const { users, state } = require('../data/memory');
+const { users } = require('../data/memory');
 const { generateToken } = require('../models/tokensSchema');
 const { badRequest, ok } = require('../utils/httpResponses');
 
@@ -12,20 +12,14 @@ const { badRequest, ok } = require('../utils/httpResponses');
  */
 function login(req, res) {
   const { username, password } = req.body;
-
-  if (!username || !password) {
-    return badRequest(res, 'Username and password are required');
-  }
-
   const user = users.find(u => u.username === username && u.password === password);
+
   if (!user) {
-    return badRequest(res, 'Invalid username or password');
+    return unauthorized(res, 'Invalid credentials');
   }
 
-  state.connectedUser = user;
-
-  const token = generateToken(user.id);
-  return ok(res, { token });
+  // Return user.id as the token
+  return ok(res, { token: String(user.id) });
 }
 
 module.exports = { login };
