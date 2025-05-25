@@ -80,5 +80,6 @@ int main(int argc, char *argv[]) {
 
         App app;
         app.run(reader, writer, numArgs);
+        std::cout << "Client disconnected." << std::endl;
     }
 }

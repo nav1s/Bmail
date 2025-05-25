@@ -1,3 +1,4 @@
+---
 services:
   web-server:
     image: node:24-bookworm
@@ -10,7 +11,7 @@ services:
     command: bash -c "
               cd /app/src/webServer && \
               npm install && \
-              node app.js"
+              npm start"
     volumes:
       - ./:/app/
     depends_on:
@@ -38,11 +39,28 @@ services:
     ports:
       - "12345:12345"
     healthcheck:
-      test: ["CMD", "bash", "-c", "exec 3<>/dev/tcp/localhost/12345"]
-      interval: 3s
-      timeout: 5s
+      # This healthcheck uses a TCP connection to check if the server is running.
+      test: ["CMD", "bash", "-c", "exec 3<>/dev/tcp/localhost/12345 && echo 'Healthcheck' >&3 && exec 3<&-"]
+      interval: 1m
+      timeout: 2s
+      start_period: 1s
       retries: 5
 
+    networks:
+      - bmail
+
+  python-client:
+    image: python:3-bookworm
+    container_name: python-client
+    hostname: python-client
+    user: "${UID:-1000}:${GID:-1000}"
+    restart: "no"
+    command: python /app/src/bloomFilter/tcpClient.py bloom-filter 12345
+    volumes:
+      - ./:/app/
+    depends_on:
+      bloom-filter:
+        condition: service_healthy
     networks:
       - bmail
 

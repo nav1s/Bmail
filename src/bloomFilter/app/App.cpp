@@ -24,7 +24,7 @@ App::App() {
 
 string bloomFilterLocation = "../../data";
 
-void App::run(InputReader &reader, OutputWriter &writer, vector<int> &args) {
+void App::run(InputReader &reader, OutputWriter &writer, vector<int> args) {
     semiConstructor(reader, writer, args);
 
     while (true) {
@@ -68,7 +68,7 @@ void App::run(InputReader &reader, OutputWriter &writer, vector<int> &args) {
  * It also loads the filter from a file if it exists.
  * The function takes an InputReader and an OutputWriter as parameters.
  */
-void App::semiConstructor(InputReader &reader, OutputWriter &writer, vector<int> &args) {
+void App::semiConstructor(InputReader &reader, OutputWriter &writer, vector<int> args) {
     size_t arraySize = args.front();
     args.erase(args.begin());
 

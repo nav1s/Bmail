@@ -31,7 +31,7 @@ public:
     /**
      * @brief Runs the main application loop, including configuration and command execution.
      */
-    void run(InputReader& reader, OutputWriter &writer, std::vector<int> & args);
+    void run(InputReader& reader, OutputWriter &writer, std::vector<int> args);
 
 private:
     /**
@@ -41,7 +41,7 @@ private:
      * This function parses the initialization input line to extract filter parameters and
      * construct the appropriate filter and hash functions.
      */
-    void semiConstructor(InputReader& reader, OutputWriter &writer, std::vector<int> & args);
+    void semiConstructor(InputReader& reader, OutputWriter &writer, std::vector<int> args);
 
     /**
      * @brief Registers available commands into the command map.
