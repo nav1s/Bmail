@@ -49,6 +49,23 @@ services:
     networks:
       - bmail
 
+  bloom-filter-tests:
+    build:
+      context: .
+      dockerfile: Dockerfile.tests
+    container_name: bloom-filter-tests
+    hostname: bloom-filter-tests
+    user: "${UID:-1000}:${GID:-1000}"
+    restart: "no"
+    command: bash -c "
+              mkdir -p build/tests && \
+              cd build/tests && \
+              cmake ../../tests && \
+              make && \
+              ./runTests"
+    volumes:
+      - ./:/app
+
   python-client:
     image: python:3-bookworm
     container_name: python-client
