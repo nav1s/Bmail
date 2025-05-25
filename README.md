@@ -35,10 +35,9 @@ cd bmail
 
 ```bash
 docker compose down
-COMPOSE_BAKE=true docker compose up --detach --pull always --remove-orphans --build --wait tcp-server
-docker compose run --pull always --remove-orphans --rm tcp-client
+UID=$(id --user) GID=$(id --group) COMPOSE_BAKE=true docker compose up --detach --pull always --remove-orphans --build --wait tcp-server
+UID=$(id --user) GID=$(id --group) docker compose run --pull always --remove-orphans --rm tcp-client
 ```
-
 
 The application preserves the Bloom filter state between runs. If you want to start with a fresh Bloom filter, delete the data file:
 ```bash
@@ -48,18 +47,20 @@ rm data/bloomFilter.txt
 #### Running the Unit Tests including server running, deleting bloomfilter data from previous runs
 
 ```bash
-docker compose up --detach --pull always --remove-orphans --build tcp-server &&
+docker compose down
+UID=$(id --user) GID=$(id --group) docker compose up --detach --pull always --remove-orphans --build tcp-server &&
 docker build --tag bmail-tests --file Dockerfile.tests . && \
 rm data/bloomFilter.txt
 docker run --rm \
 --network bmail \
+--user $(id --user):$(id --group) \
 --volume "$PWD":/app --workdir /app bmail-tests bash -c "
 mkdir -p build/tests && \
 cd build/tests && \
 cmake ../../tests && \
 make && \
 ./runTests" &&
-docker compose down tcp-server
+UID=$(id --user) GID=$(id --group) docker compose down tcp-server
 ```
 
 
