@@ -29,10 +29,11 @@ services:
     ports:
       - "12345:12345"
     healthcheck:
-      test: ["CMD", "bash", "-c", "test -f /tmp/tcp-server"]
-      interval: 5s
-      timeout: 1s
+      test: ["CMD", "bash", "-c", "exec 3<>/dev/tcp/localhost/12345"]
+      interval: 3s
+      timeout: 5s
       retries: 5
+
     networks:
       - bmail
 
