@@ -31,8 +31,7 @@ void App::run(InputReader &reader, OutputWriter &writer, vector<int> &args) {
         string commandName, arg;
         try {
             bool commandsuccess = menu->getCommand(commandName, arg);
-
-            if (commandName.empty() || !commandsuccess) {
+            if (!commandsuccess) {
                 break;
             }
 
