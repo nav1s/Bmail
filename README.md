@@ -47,7 +47,7 @@ UID=$(id --user) GID=$(id --group) docker compose run --pull always --remove-orp
 #### Running the bloom filter unit tests
 
 ```bash
-UID=$(id --user) GID=$(id --group) docker compose run --pull always --remove-orphans --rm bloom-filter-tests
+UID=$(id --user) GID=$(id --group) docker compose run --build --pull always --remove-orphans --rm bloom-filter-tests
 ```
 
 The application preserves the Bloom filter state between runs. If you want to start with a fresh Bloom filter, delete the data file:
@@ -72,7 +72,7 @@ docker compose run --pull always --remove-orphans --rm python-client
 #### Running the bloom filter unit tests
 
 ```powershell
-docker compose run --pull always --remove-orphans --rm bloom-filter-tests
+docker compose run --build --pull always --remove-orphans --rm bloom-filter-tests
 ```
 
 The application preserves the Bloom filter state between runs. If you want to start with a fresh Bloom filter, delete the data file:
