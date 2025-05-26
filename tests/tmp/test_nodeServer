@@ -61,7 +61,7 @@ curl -i -X POST http://localhost:8080/api/users \
 -d '{
   "firstName": "Alice",
   "lastName": "",
-  "username": "alice123",
+  "username": "alice1234",
   "password": "securepass"
 }'
 
@@ -114,6 +114,19 @@ Expected:
 HTTP/1.1 200 OK  
 {"token":"1"}
 
+❌ 2.4 missing username or password
+
+curl -i -X POST http://localhost:8080/api/tokens \
+-H "Content-Type: application/json" \
+-d '{
+  "username": "alice123",
+  "password": ""
+}'
+
+Expected:
+HTTP/1.1 400 Bad Request  
+{"error":"Invalid username or password"}
+
 ----------------------------------------
  3. GET USER INFO
 ----------------------------------------
@@ -135,6 +148,14 @@ HTTP/1.1 200 OK
 ❌ 3.2 Invalid user ID
 
 curl -i http://localhost:8080/api/users/999
+
+Expected:
+HTTP/1.1 404 Not Found  
+{"error":"User not found"}
+
+❌ 3.2 Invalid user ID
+
+curl -i http://localhost:8080/api/users/ 
 
 Expected:
 HTTP/1.1 404 Not Found  
@@ -172,7 +193,6 @@ Expected:
 HTTP/1.1 400 Bad Request  
 {"error":"Missing fields: to, body"}
 
-
 ✅ 4.3 Valid mail creation
 
 curl -i -X POST http://localhost:8080/api/mails \
@@ -194,11 +214,34 @@ HTTP/1.1 201 Created
   "timestamp": "..."
 }
 
-✅ 4.4 Valid mail creation
+✅ 4.4 Valid mail Get
 
-curl -i http://localhost:8080/api/mails
+curl -i Get http://localhost:8080/api/mails
 
-Expected: list of mails inside "[]"
+Expected: list of last 50 mails inside "[]"
+
+✅ 4.5 Valid mail Get by id
+
+curl -i -X Get http://localhost:8080/api/mails/:1 \
+
+Expected:
+HTTP/1.1 200 OK
+{
+  "id": 1,
+  "from": 1,
+  "to": [1],
+  "title": "Hello again",
+  "body": "This should work",
+  "timestamp": "..."
+}
+
+❌ 4.6 invalid mail Get by id
+
+curl -i -X Get http://localhost:8080/api/mails/:555 \
+
+Expected:
+HTTP/1.1 400 Bad Request  
+{"error":"mail id not found"}
 
 # 5.0 Mail by ID Tests
 
