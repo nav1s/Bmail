@@ -54,21 +54,20 @@ Expected:
 HTTP/1.1 400 Bad Request  
 {"error":"Username already exists."}
 
-❌ 4.1 Mail creation without login
+❌ 1.4 Missing content in required fields in registration
 
-curl -i -X POST http://localhost:8080/api/mails \
+curl -i -X POST http://localhost:8080/api/users \
 -H "Content-Type: application/json" \
 -d '{
-  "from": "Alice",
-  "to": [1],
-  "title": "Hello",
-  "body": "This should fail"
+  "firstName": "Alice",
+  "lastName": "",
+  "username": "alice123",
+  "password": "securepass"
 }'
 
 Expected:
-HTTP/1.1 401 Unauthorized  
-{"error":"You must be logged in to send mail."}
-
+HTTP/1.1 400 Bad Request  
+{"error":"Missing fields: lastName"}
 
 ----------------------------------------
  2. USER LOGIN (TOKEN GENERATION)
@@ -115,7 +114,6 @@ Expected:
 HTTP/1.1 200 OK  
 {"token":"1"}
 
-
 ----------------------------------------
  3. GET USER INFO
 ----------------------------------------
@@ -142,11 +140,24 @@ Expected:
 HTTP/1.1 404 Not Found  
 {"error":"User not found"}
 
-
 ----------------------------------------
  4. MAIL CREATION
 ----------------------------------------
 
+❌ 4.1 Mail creation without login
+
+curl -i -X POST http://localhost:8080/api/mails \
+-H "Content-Type: application/json" \
+-d '{
+  "from": "Alice",
+  "to": [1],
+  "title": "Hello",
+  "body": "This should fail"
+}'
+
+Expected:
+HTTP/1.1 401 Unauthorized  
+{"error":"You must be logged in to send mail."}
 
 ❌ 4.2 Mail creation with missing fields (must include all: from, to, title, body)
 
