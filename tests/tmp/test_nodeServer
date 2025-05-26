@@ -270,7 +270,6 @@ HTTP/1.1 200 OK
 curl -i -X PATCH http://localhost:8080/api/mails/555 \
 -H "Authorization: 1" \
 -H "Content-Type: application/json" \
-
 -d '{"title": "New Title"}'
 
 Expected:
