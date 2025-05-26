@@ -168,6 +168,7 @@ HTTP/1.1 404 Not Found
 ❌ 4.1 Mail creation without login
 
 curl -i -X POST http://localhost:8080/api/mails \
+-H "Authorization: 1" \
 -H "Content-Type: application/json" \
 -d '{
   "from": "Alice",
@@ -196,6 +197,7 @@ HTTP/1.1 400 Bad Request
 ✅ 4.3 Valid mail creation
 
 curl -i -X POST http://localhost:8080/api/mails \
+-H "Authorization: 1" \
 -H "Content-Type: application/json" \
 -d '{
   "to": [1],
@@ -216,13 +218,15 @@ HTTP/1.1 201 Created
 
 ✅ 4.4 Valid mail Get
 
-curl -i Get http://localhost:8080/api/mails
+curl -i GET http://localhost:8080/api/mails \
+-H "Authorization: 1"
 
 Expected: list of last 50 mails inside "[]"
 
 ✅ 4.5 Valid mail Get by id
 
-curl -i -X Get http://localhost:8080/api/mails/:1 \
+curl -i -X GET http://localhost:8080/api/mails/1 \
+-H "Authorization: 1"
 
 Expected:
 HTTP/1.1 200 OK
@@ -235,17 +239,19 @@ HTTP/1.1 200 OK
   "timestamp": "..."
 }
 
-❌ 4.6 invalid mail Get by id
+❌ 4.6 invalid mail GET by id
 
-curl -i -X Get http://localhost:8080/api/mails/:555 \
+curl -i -X GET http://localhost:8080/api/mails/555 \
+-H "Authorization: 555" \
 
 Expected:
 HTTP/1.1 400 Bad Request  
 {"error":"mail id not found"}
 
-✅ 4.7 Valid mail Patch by id
+✅ 4.7 Valid mail PATCH by id
 
 curl -i -X PATCH http://localhost:8080/api/mails/1 \
+-H "Authorization: 1" \
 -H "Content-Type: application/json" \
 -d '{"title": "Updated Title"}'
 
@@ -260,10 +266,12 @@ HTTP/1.1 200 OK
   "timestamp": "..."
 }
 
-❌ 4.8 invalid mail Get by id
+❌ 4.8 invalid mail PATCH by id
 
 curl -i -X PATCH http://localhost:8080/api/mails/555 \
+-H "Authorization: 1" \
 -H "Content-Type: application/json" \
+
 -d '{"title": "New Title"}'
 
 Expected:
@@ -272,17 +280,97 @@ HTTP/1.1 400 Bad Request
 
 ✅ 4.9 Valid mail Delete by id
 
-curl -i -X DELETE http://localhost:8080/api/mails/1
+curl -i -X DELETE http://localhost:8080/api/mails/1 \
+-H "Authorization: 1" \
 
 Expected:
 HTTP/1.1 204 No Content
 
 ❌ 4.10 invalid mail Delete by id
 curl -i -X DELETE http://localhost:8080/api/mails/555
+-H "Authorization: 1" \
 
 Expected:
 HTTP/1.1 400 Bad Request
 {"error":"mail id not found"}
+
+✅ 4.11 Valid label create
+
+curl -i -X POST http://localhost:8080/api/labels \
+-H "Authorization: 1" \
+-H "Content-Type: application/json" \
+-d '{
+  "name": "Important"
+}'
+
+Expected:
+HTTP/1.1 201 Created
+{W
+  "id": 1,
+  "name": "Important"
+}
+
+✅ 4.12 Valid label GET by id
+curl -i -X GET http://localhost:8080/api/labels/1 \
+-H "Authorization: 1"
+
+Expected:
+HTTP/1.1 200 OK
+{
+  "id": 1,
+  "name": "Important"
+}
+
+❌ 4.13 invalid label GET by id
+curl -i -X GET http://localhost:8080/api/labels/5 \
+-H "Authorization: 1"
+
+Expected:
+HTTP/1.1 400 Bad Request
+{
+  "error": "label not found"
+}
+
+✅ 4.14 Valid label PATCH by id
+curl -i -X PATCH http://localhost:8080/api/labels/1 \
+-H "Authorization: 1" \
+-H "Content-Type: application/json" \
+-d '{
+  "name": "Very Important"
+}'
+
+Expected:
+HTTP/1.1 200 OK
+{
+  "id": 1,
+  "name": "Very Important",
+  "owner": 1
+}
+
+❌ 4.15 Valid label PATCH by id
+curl -i -X PATCH http://localhost:8080/api/labels/555 \
+-H "Authorization: 1" \
+-H "Content-Type: application/json" \
+-d '{
+  "name": "NewName"
+}'
+
+Expected:
+HTTP/1.1 400 Bad Request
+{
+  "error": "label not found"
+}
+
+✅ 4.16 Valid label DELETE by id
+curl -i -X DELETE http://localhost:8080/api/labels/1 \
+-H "Authorization: 1"
+
+Expected:
+HTTP/1.1 204 No Content
+X-Powered-By: Express
+Date: Mon, 26 May 2025 12:46:33 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
 
 # 5.0 Mail by ID Tests
 
