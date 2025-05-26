@@ -1,9 +1,13 @@
 #include "../src/bloomFilter/app/App.h"
+#include "../src/bloomFilter/filter/BloomFilter.h"
 #include <filesystem>
 #include <gtest/gtest.h>
 #include <memory>
 #include <string>
 #include <vector>
+#include "../src/bloomFilter/hash/StdHash.h"
+
+namespace fs = std::filesystem;
 
 class MockInputReader : public InputReader {
   private:
@@ -49,20 +53,29 @@ class AppTests : public ::testing::Test {
     std::unique_ptr<App> app;
     std::shared_ptr<MockInputReader> mockReader;
     std::shared_ptr<MockOutputWriter> mockWriter;
+    std::shared_ptr<BloomFilter> filter;
+    const std::string testDir = "./test_data";
+    const std::string bloomFilterFile = testDir + "/bloom_test.txt";
+    std::vector<std::shared_ptr<IHashFunction>> hashFunctions;
 
     void SetUp() override {
-        app = std::make_unique<App>();
 
-        // Create clean test environment
-        if (std::filesystem::exists("../../data")) {
-            std::filesystem::remove_all("../../data");
+        // Create test directory if it doesn't exist
+        if (!fs::exists(testDir)) {
+            fs::create_directories(testDir);
         }
+
+        app = std::make_unique<App>();
+        hashFunctions.push_back(std::make_shared<StdHash>(1));
+        hashFunctions.push_back(std::make_shared<StdHash>(2));
+        filter = std::make_shared<BloomFilter>(8, hashFunctions, bloomFilterFile);
     }
 
     void runAppBriefly(std::shared_ptr<MockInputReader> mockReader, std::shared_ptr<MockOutputWriter> mockWriter) {
         try {
-            std::vector<int> args = {8, 1, 2}; // Example arguments for initialization
-            app->run(*mockReader, *mockWriter, args);
+            // std::vector<int> args = {8, 1, 2}; // Example arguments for initialization
+            // app->run(*mockReader, *mockWriter, args);
+            app->run(*mockReader, *mockWriter, filter);
         } catch (const std::exception &) {
             // Expected to throw when it runs out of input
         }
@@ -70,8 +83,8 @@ class AppTests : public ::testing::Test {
 
     void TearDown() override {
         // Clean up any files created during tests
-        if (std::filesystem::exists("../../data")) {
-            std::filesystem::remove_all("../../data");
+        if (fs::exists(bloomFilterFile)) {
+            fs::remove_all(bloomFilterFile);
         }
     }
 };
@@ -153,7 +166,8 @@ TEST_F(AppTests, exampleRun2) {
  */
 TEST_F(AppTests, exampleRun3) {
     // Create a sequence that mimics the user's example
-    std::vector<std::string> exampleRun3 = {"8 2", "POST www.example.com0", "GET www.example.com0", "GET www.example.com4"};
+    std::vector<std::string> exampleRun3 = {"8 2", "POST www.example.com0", "GET www.example.com0",
+                                            "GET www.example.com4"};
 
     mockReader = std::make_shared<MockInputReader>(exampleRun3);
     mockWriter = std::make_shared<MockOutputWriter>();
@@ -240,7 +254,7 @@ TEST_F(AppTests, invalidCommands2) {
     EXPECT_EQ(mockWriter->outputLines[0], "400 Bad Request");
     // Second query should be "400 Bad Request" (invalid command)
     EXPECT_EQ(mockWriter->outputLines[1], "400 Bad Request");
-    //third query should be "400 bad request" (invalid command)
+    // third query should be "400 bad request" (invalid command)
     EXPECT_EQ(mockWriter->outputLines[2], "400 Bad Request");
     // fourth query should be "201 Created" (added URL)
     EXPECT_EQ(mockWriter->outputLines[3], "201 Created");

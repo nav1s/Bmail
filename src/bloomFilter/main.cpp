@@ -109,6 +109,7 @@ int main(int argc, char *argv[]) {
     // create a mutex to protect the filter from concurrent access
     std::mutex filterMutex;
 
+    // todo fix www.1.com as invalid url
     // loop forever, accepting connections
     while (true) {
         int clientSocket = server.acceptConnection();
