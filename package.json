@@ -1,0 +1,23 @@
+{
+  "name": "bmail",
+  "version": "1.0.0",
+  "description": "> **Previous parts of the project:**\r > - Part 1: https://github.com/Binja12/Bmail/tree/part1\r > - Part 2: https://github.com/Binja12/Bmail/tree/part2",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Binja12/Bmail.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Binja12/Bmail/issues"
+  },
+  "homepage": "https://github.com/Binja12/Bmail#readme"
+}
