@@ -88,7 +88,7 @@ int main(int argc, char *argv[]) {
 
     std::cout << "IP Address: " << ip_address << std::endl;
     std::cout << "Port: " << port << std::endl;
-    TCPServer server(ip_address, std::stoi(port), 1);
+    TCPServer server(ip_address, std::stoi(port), 5);
 
     server.initializeServer();
 
@@ -106,8 +106,8 @@ int main(int argc, char *argv[]) {
         filter->loadFromFile();
     }
 
-    // create a mutex to protect the filter from concurrent access
-    std::mutex filterMutex;
+    // create a shared pointer to mutex to protect the filter from concurrent access
+    std::shared_ptr<std::mutex> filterMutex = std::make_shared<std::mutex>();
 
     // loop forever, accepting connections
     while (true) {
@@ -121,12 +121,9 @@ int main(int argc, char *argv[]) {
         auto app = std::make_shared<App>();
 
         // Pass shared_ptr objects to the thread
-        std::thread appThread([reader, writer, app, filter]() {
-            app->run(*reader, *writer, filter);
+        std::thread appThread([reader, writer, app, filter, filterMutex]() {
+            app->run(*reader, *writer, filter, filterMutex);
         });
-
-        // app.run(reader, writer, filter, bloomFilterLocation);
-        // start the application in a new thread
 
         // Detach the thread to allow it to run independently
         appThread.detach();

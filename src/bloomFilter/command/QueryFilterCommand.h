@@ -2,6 +2,8 @@
 
 #include "../filter/IFilter.h"
 #include "ICommand.h"
+#include <memory>
+#include <mutex>
 #include <string>
 #include "../output/OutputWriter.h"
 
@@ -20,7 +22,7 @@ public:
      * @param filter Reference to an IFilter object for querying.
      * @param writer Reference to an OutputWriter used to print results.
      */
-    explicit QueryFilterCommand(IFilter& filter, OutputWriter& writer);
+    explicit QueryFilterCommand(IFilter& filter, OutputWriter& writer, std::shared_ptr<std::mutex> filterMutex);
 
     /**
      * @brief Copy constructor.
@@ -63,4 +65,5 @@ public:
 private:
     IFilter* filter;
     OutputWriter* writer;
+    std::shared_ptr<std::mutex> filterMutex;
 };

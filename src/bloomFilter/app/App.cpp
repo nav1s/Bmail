@@ -1,27 +1,20 @@
 #include "App.h"
-#include "../command/AddFilterCommand.h"
-#include "../command/DeleteFilterCommand.h"
-#include "../command/ICommand.h"
-#include "../command/QueryFilterCommand.h"
-#include "../input/InputReader.h"
-#include "../menu/ConsoleMenu.h"
-#include "../output/OutputWriter.h"
-#include <stdexcept>
-#include <string>
-
 using namespace std;
 
 App::App() {
 }
 
-void App::run(InputReader &reader, OutputWriter &writer, shared_ptr<IFilter> filter) {
-    semiConstructor(reader, writer, filter);
+void App::run(InputReader &reader, OutputWriter &writer, shared_ptr<IFilter> filter, shared_ptr<std::mutex> filterMutex) {
+    // creating commands and menu
+    registerCommands(writer, filter, filterMutex);
+    menu = make_unique<ConsoleMenu>(reader, writer);
 
     while (true) {
         string commandName, arg;
         try {
             bool commandsuccess = menu->getCommand(commandName, arg);
-            if (!commandsuccess) {
+            // If the command is empty, break the loop
+            if (!commandsuccess || commandName.empty() ) {
                 break;
             }
 
@@ -50,21 +43,8 @@ void App::run(InputReader &reader, OutputWriter &writer, shared_ptr<IFilter> fil
     filter->saveToFile();
 }
 
-/* @brief semiConstructor
- * @param reader InputReader& reader
- * @param writer OutputWriter& writer
- * @details This function initializes the BloomFilter and its hash functions.
- * It also loads the filter from a file if it exists.
- * The function takes an InputReader and an OutputWriter as parameters.
- */
-void App::semiConstructor(InputReader &reader, OutputWriter &writer, shared_ptr<IFilter> filter) {
-    // creating commands and menu
-    registerCommands(writer, filter);
-    menu = make_unique<ConsoleMenu>(reader, writer);
-}
-
-void App::registerCommands(OutputWriter &writer, shared_ptr<IFilter> filter) {
-    commands["POST"] = make_unique<AddFilterCommand>(*filter, writer);
-    commands["GET"] = make_unique<QueryFilterCommand>(*filter, writer);
-    commands["DELETE"] = make_unique<DeleteFilterCommand>(*filter, writer);
+void App::registerCommands(OutputWriter &writer, shared_ptr<IFilter> filter, shared_ptr<std::mutex> filterMutex) {
+    commands["POST"] = make_unique<AddFilterCommand>(*filter, writer, filterMutex);
+    commands["GET"] = make_unique<QueryFilterCommand>(*filter, writer, filterMutex);
+    commands["DELETE"] = make_unique<DeleteFilterCommand>(*filter, writer, filterMutex);
 }

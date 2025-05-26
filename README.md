@@ -35,7 +35,7 @@ cd bmail
 
 ```bash
 docker compose down
-UID=$(id --user) GID=$(id --group) COMPOSE_BAKE=true docker compose up --detach --pull always --remove-orphans --build --wait bloom-filter web-server
+UID=$(id --user) GID=$(id --group) docker compose up --detach --pull always --remove-orphans --build --wait bloom-filter web-server
 ```
 
 #### Running the python client
@@ -47,7 +47,7 @@ UID=$(id --user) GID=$(id --group) docker compose run --pull always --remove-orp
 #### Running the bloom filter unit tests
 
 ```bash
-UID=$(id --user) GID=$(id --group) COMPOSE_BAKE=true docker compose run --pull always --remove-orphans --rm bloom-filter-tests
+UID=$(id --user) GID=$(id --group) docker compose run --pull always --remove-orphans --rm bloom-filter-tests
 ```
 
 The application preserves the Bloom filter state between runs. If you want to start with a fresh Bloom filter, delete the data file:
@@ -61,7 +61,7 @@ rm data/bloomFilter.txt
 
 ```powershell
 docker compose down
-COMPOSE_BAKE=true docker compose up --detach --pull always --remove-orphans --build --wait bloom-filter web-server
+docker compose up --detach --pull always --remove-orphans --build --wait bloom-filter web-server
 ```
 
 #### Running the python client
@@ -72,7 +72,7 @@ docker compose run --pull always --remove-orphans --rm python-client
 #### Running the bloom filter unit tests
 
 ```powershell
-COMPOSE_BAKE=true docker compose run --pull always --remove-orphans --rm bloom-filter-tests
+docker compose run --pull always --remove-orphans --rm bloom-filter-tests
 ```
 
 The application preserves the Bloom filter state between runs. If you want to start with a fresh Bloom filter, delete the data file:
@@ -99,23 +99,3 @@ Changes in output format did require a small change: we updated the return value
 Moving from console to TCP I/O was surprisingly smooth. Because we used abstract Reader and Writer objects from the start, we only had to switch the implementations. The rest of the code didn’t even notice the difference.
 
 Overall, because our system was built to be extendable from day one, we were able to make all these changes without doing any big rewrites gnor major implemintation changes.
-
-## UML Diagram
-
-The UML diagram for the project structure:
-
-![Bmail UML Diagram](assets/bmail.png)
-
-The source PlantUML code for this diagram is available in [assets/bmail-uml-diagram.puml](assets/bmail-uml-diagram.puml).
-
-### Creating the UML Diagram
-
-To regenerate the diagram:
-
-```bash
-# Install PlantUML
-sudo apt install plantuml
-
-# Generate the diagram
-plantuml assets/bmail-uml-diagram.puml
-```

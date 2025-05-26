@@ -1,11 +1,11 @@
 #include "../src/bloomFilter/app/App.h"
 #include "../src/bloomFilter/filter/BloomFilter.h"
+#include "../src/bloomFilter/hash/StdHash.h"
 #include <filesystem>
 #include <gtest/gtest.h>
 #include <memory>
 #include <string>
 #include <vector>
-#include "../src/bloomFilter/hash/StdHash.h"
 
 namespace fs = std::filesystem;
 
@@ -75,7 +75,9 @@ class AppTests : public ::testing::Test {
         try {
             // std::vector<int> args = {8, 1, 2}; // Example arguments for initialization
             // app->run(*mockReader, *mockWriter, args);
-            app->run(*mockReader, *mockWriter, filter);
+            // create a shared pointer to mutex to protect the filter from concurrent access
+            std::shared_ptr<std::mutex> filterMutex = std::make_shared<std::mutex>();
+            app->run(*mockReader, *mockWriter, filter, filterMutex);
         } catch (const std::exception &) {
             // Expected to throw when it runs out of input
         }

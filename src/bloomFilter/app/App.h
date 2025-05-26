@@ -1,16 +1,22 @@
 #pragma once
 
+#include "../command/AddFilterCommand.h"
+#include "../command/DeleteFilterCommand.h"
 #include "../command/ICommand.h"
+#include "../command/QueryFilterCommand.h"
 #include "../filter/IFilter.h"
 #include "../hash/IHashFunction.h"
 #include "../input/InputReader.h"
 #include "../menu/IMenu.h"
+#include "../menu/ConsoleMenu.h"
 #include "../output/OutputWriter.h"
 
 #include <memory>
+#include <mutex>
 #include <string>
 #include <unordered_map>
 #include <vector>
+#include <stdexcept>
 
 /**
  * @class App
@@ -29,22 +35,15 @@ class App {
     /**
      * @brief Runs the main application loop, including configuration and command execution.
      */
-    void run(InputReader &reader, OutputWriter &writer, std::shared_ptr<IFilter> filter);
+    void run(InputReader &reader, OutputWriter &writer, std::shared_ptr<IFilter> filter,
+             std::shared_ptr<std::mutex> filterMutex);
 
   private:
     /**
-     * @brief Performs the configuration of the filter based on user input.
-     * @param reader An input reader object used to obtain the initialization line.
-     *
-     * This function parses the initialization input line to extract filter parameters and
-     * construct the appropriate filter and hash functions.
-     */
-    void semiConstructor(InputReader &reader, OutputWriter &writer, std::shared_ptr<IFilter> filter);
-
-    /**
      * @brief Registers available commands into the command map.
      */
-    void registerCommands(OutputWriter &writer, std::shared_ptr<IFilter> filter);
+    void registerCommands(OutputWriter &writer, std::shared_ptr<IFilter> filter, 
+                          std::shared_ptr<std::mutex> filterMutex);
 
     /**
      * @brief Generates hash function instances based on integer signatures.
