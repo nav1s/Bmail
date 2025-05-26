@@ -168,7 +168,6 @@ HTTP/1.1 404 Not Found
 ❌ 4.1 Mail creation without login
 
 curl -i -X POST http://localhost:8080/api/mails \
--H "Authorization: 1" \
 -H "Content-Type: application/json" \
 -d '{
   "from": "Alice",
