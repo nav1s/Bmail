@@ -2,10 +2,11 @@
 
 using namespace std;
 
-BloomFilter::BloomFilter(size_t size, vector<shared_ptr<IHashFunction>> hashFuncs)
+BloomFilter::BloomFilter(size_t size, vector<shared_ptr<IHashFunction>> hashFuncs, string bloomFilterLocation)
     : arraySize(size),
       hashFunctions(hashFuncs),
-      bitArray(size, false)
+      bitArray(size, false),
+      path(std::move(bloomFilterLocation))
 {}
 
 BloomFilter::BloomFilter(const BloomFilter& other)
@@ -65,12 +66,12 @@ bool BloomFilter::isBlacklisted(const string& item) const {
     return false;
 }
 
-void BloomFilter::saveToFile(const string& path) const {
+void BloomFilter::saveToFile() const {
     BloomFilterFileManager manager(path);
     manager.save((void*)this);
 }
 
-void BloomFilter::loadFromFile(const string& path) {
+void BloomFilter::loadFromFile() {
     BloomFilterFileManager manager(path);
     manager.load((void*)this);
 }

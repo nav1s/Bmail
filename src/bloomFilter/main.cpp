@@ -1,12 +1,14 @@
 #include "app/App.h"
 #include "filter/BloomFilter.h"
+#include "hash/HashFactory.h"
 #include "input/TCPReader.h"
 #include "network/TCPServer.h"
 #include "output/TCPWriter.h"
 #include <algorithm>
 #include <filesystem>
 #include <iostream>
-#include "hash/HashFactory.h"
+#include <mutex>
+#include <thread>
 
 using namespace std;
 
@@ -41,7 +43,7 @@ bool convertStringVectorToNumberVector(const std::vector<std::string> &strVec, s
     return true;
 }
 
-/* 
+/*
  * @brief This function creates hash functions based on the provided arguments.
  * The arguments are expected to be integers representing the hash function types.
  * @param args vector<int>& args
@@ -53,7 +55,6 @@ void hashAssembler(vector<int> &args, vector<shared_ptr<IHashFunction>> &out) {
         out.push_back(HashFactory::fromSignature(signature));
     }
 }
-
 
 /*
  * @brief Main function for the TCP server.
@@ -87,7 +88,7 @@ int main(int argc, char *argv[]) {
 
     std::cout << "IP Address: " << ip_address << std::endl;
     std::cout << "Port: " << port << std::endl;
-    TCPServer server(ip_address, std::stoi(port));
+    TCPServer server(ip_address, std::stoi(port), 1);
 
     server.initializeServer();
 
@@ -98,13 +99,15 @@ int main(int argc, char *argv[]) {
     std::vector<std::shared_ptr<IHashFunction>> hashFunctions;
     hashAssembler(numArgs, hashFunctions);
     std::shared_ptr<IFilter> filter;
-    
-    filter = make_shared<BloomFilter>(arraySize, hashFunctions);
-    // loading from file if optional
+
+    filter = make_shared<BloomFilter>(arraySize, hashFunctions, bloomFilterLocation);
+
     if (filesystem::exists(bloomFilterLocation)) {
-        filter->loadFromFile(bloomFilterLocation);
+        filter->loadFromFile();
     }
 
+    // create a mutex to protect the filter from concurrent access
+    std::mutex filterMutex;
 
     // loop forever, accepting connections
     while (true) {
@@ -112,14 +115,20 @@ int main(int argc, char *argv[]) {
         // print the client socket
         std::cout << "Accepted connection from client socket: " << clientSocket << std::endl;
 
-        TCPReader reader(clientSocket);
-        TCPWriter writer(clientSocket);
+        // Create objects on the heap so they persist after this scope
+        auto reader = std::make_shared<TCPReader>(clientSocket);
+        auto writer = std::make_shared<TCPWriter>(clientSocket);
+        auto app = std::make_shared<App>();
 
-        App app;
-        app.run(clientSocket, reader, writer, numArgs, filter);
-        // Start the application in a separate thread to handle client requests concurrently
-        // std::thread appThread(&App::run, &app, clientSocket, std::ref(reader), std::ref(writer), numArgs);
+        // Pass shared_ptr objects to the thread
+        std::thread appThread([reader, writer, app, filter]() {
+            app->run(*reader, *writer, filter);
+        });
+
+        // app.run(reader, writer, filter, bloomFilterLocation);
+        // start the application in a new thread
+
         // Detach the thread to allow it to run independently
-        // appThread.detach();
+        appThread.detach();
     }
 }
