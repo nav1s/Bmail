@@ -6,7 +6,6 @@
 #include "../input/InputReader.h"
 #include "../menu/ConsoleMenu.h"
 #include "../output/OutputWriter.h"
-#include <iostream>
 #include <stdexcept>
 #include <string>
 
@@ -49,7 +48,6 @@ void App::run(InputReader &reader, OutputWriter &writer, shared_ptr<IFilter> fil
     }
 
     filter->saveToFile();
-    std::cout << "Client disconnected" << std::endl;
 }
 
 /* @brief semiConstructor
