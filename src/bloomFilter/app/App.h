@@ -31,7 +31,7 @@ public:
     /**
      * @brief Runs the main application loop, including configuration and command execution.
      */
-    void run(InputReader& reader, OutputWriter &writer, std::vector<int> args);
+    void run(int clientSocket, InputReader& reader, OutputWriter &writer, std::vector<int> args, std::shared_ptr<IFilter> filter);
 
 private:
     /**
@@ -41,19 +41,13 @@ private:
      * This function parses the initialization input line to extract filter parameters and
      * construct the appropriate filter and hash functions.
      */
-    void semiConstructor(InputReader& reader, OutputWriter &writer, std::vector<int> args);
+    void semiConstructor(InputReader& reader, OutputWriter &writer, std::vector<int> args, 
+                         std::shared_ptr<IFilter> filter);
 
     /**
      * @brief Registers available commands into the command map.
      */
-    void registerCommands(OutputWriter& writer);
-
-    /**
-     * @brief Parses space-separated integers from a string into a vector.
-     * @param input The raw input string.
-     * @param args The output vector of parsed integers.
-     */
-    void parseInput(const std::string& input, std::vector<int>& args);
+    void registerCommands(OutputWriter& writer, std::shared_ptr<IFilter> filter);
 
     /**
      * @brief Generates hash function instances based on integer signatures.
@@ -68,21 +62,8 @@ private:
     std::unordered_map<std::string, std::unique_ptr<ICommand>> commands;
 
     /**
-     * @brief Pointer to the active filter used for command operations.
-     */
-    std::shared_ptr<IFilter> filter;
-
-    /**
      * @brief Pointer to a menu that interacts with the user
      */
     std::unique_ptr<IMenu> menu;
-
-    /**
-     * @brief Validates that a string contains only digits from 1 to 9 and whitespace.
-     *
-     * @param input The input string to validate.
-     * @return true if the string is a valid initialization input; false otherwise.
-     */
-    bool isValidInit(const std::string& input);
 
 };

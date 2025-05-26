@@ -44,15 +44,15 @@ UID=$(id --user) GID=$(id --group) docker compose run --pull always --remove-orp
 
 ```
 
-The application preserves the Bloom filter state between runs. If you want to start with a fresh Bloom filter, delete the data file:
-```bash
-rm data/bloomFilter.txt
-```
-
 #### Running the bloom filter unit tests
 
 ```bash
 UID=$(id --user) GID=$(id --group) COMPOSE_BAKE=true docker compose run --pull always --remove-orphans --rm bloom-filter-tests
+```
+
+The application preserves the Bloom filter state between runs. If you want to start with a fresh Bloom filter, delete the data file:
+```bash
+rm data/bloomFilter.txt
 ```
 
 ### Windows Instructions
@@ -69,15 +69,15 @@ COMPOSE_BAKE=true docker compose up --detach --pull always --remove-orphans --bu
 docker compose run --pull always --remove-orphans --rm python-client
 ```
 
-The application preserves the Bloom filter state between runs. If you want to start with a fresh Bloom filter, delete the data file:
-```bash
-rm data/bloomFilter.txt
-```
-
 #### Running the bloom filter unit tests
 
 ```powershell
 COMPOSE_BAKE=true docker compose run --pull always --remove-orphans --rm bloom-filter-tests
+```
+
+The application preserves the Bloom filter state between runs. If you want to start with a fresh Bloom filter, delete the data file:
+```bash
+rm data/bloomFilter.txt
 ```
 
 ### How SOLID Principles Helped Us Handle Changes Smoothly

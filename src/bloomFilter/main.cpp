@@ -1,9 +1,16 @@
 #include "app/App.h"
+#include "filter/BloomFilter.h"
 #include "input/TCPReader.h"
 #include "network/TCPServer.h"
 #include "output/TCPWriter.h"
 #include <algorithm>
+#include <filesystem>
 #include <iostream>
+#include "hash/HashFactory.h"
+
+using namespace std;
+
+string bloomFilterLocation = "../../data";
 
 /*
  * @brief Converts a vector of strings to a vector of integers.
@@ -33,6 +40,20 @@ bool convertStringVectorToNumberVector(const std::vector<std::string> &strVec, s
     }
     return true;
 }
+
+/* 
+ * @brief This function creates hash functions based on the provided arguments.
+ * The arguments are expected to be integers representing the hash function types.
+ * @param args vector<int>& args
+ * @param out vector<shared_ptr<IHashFunction>>& out
+ */
+void hashAssembler(vector<int> &args, vector<shared_ptr<IHashFunction>> &out) {
+    for (int num : args) {
+        string signature = "std:" + to_string(num);
+        out.push_back(HashFactory::fromSignature(signature));
+    }
+}
+
 
 /*
  * @brief Main function for the TCP server.
@@ -70,16 +91,35 @@ int main(int argc, char *argv[]) {
 
     server.initializeServer();
 
+    size_t arraySize = numArgs.front();
+    numArgs.erase(numArgs.begin());
+
+    // creating hash functions and filter
+    std::vector<std::shared_ptr<IHashFunction>> hashFunctions;
+    hashAssembler(numArgs, hashFunctions);
+    std::shared_ptr<IFilter> filter;
+    
+    filter = make_shared<BloomFilter>(arraySize, hashFunctions);
+    // loading from file if optional
+    if (filesystem::exists(bloomFilterLocation)) {
+        filter->loadFromFile(bloomFilterLocation);
+    }
+
+
     // loop forever, accepting connections
     while (true) {
         int clientSocket = server.acceptConnection();
-        std::cout << "Client connected." << std::endl;
+        // print the client socket
+        std::cout << "Accepted connection from client socket: " << clientSocket << std::endl;
 
         TCPReader reader(clientSocket);
         TCPWriter writer(clientSocket);
 
         App app;
-        app.run(reader, writer, numArgs);
-        std::cout << "Client disconnected." << std::endl;
+        app.run(clientSocket, reader, writer, numArgs, filter);
+        // Start the application in a separate thread to handle client requests concurrently
+        // std::thread appThread(&App::run, &app, clientSocket, std::ref(reader), std::ref(writer), numArgs);
+        // Detach the thread to allow it to run independently
+        // appThread.detach();
     }
 }
