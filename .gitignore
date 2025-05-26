@@ -1,6 +1,6 @@
 .vscode
-data
 build
 .cache
+*.out
 node_modules
 *.txt

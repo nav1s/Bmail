@@ -1,0 +1,458 @@
+========================================
+ BMAIL - USER & MAIL API TESTS
+========================================
+
+Author: [Your Name]
+Purpose: Manual testing for user registration, login, and mail
+Date: [2025-MM-DD]
+
+----------------------------------------
+ 1. USER REGISTRATION
+----------------------------------------
+
+❌ 1.1 Missing required fields
+
+curl -i -X POST http://localhost:8080/api/users \
+-H "Content-Type: application/json" \
+-d '{
+  "firstName": "Alice"
+}'
+
+Expected:
+HTTP/1.1 400 Bad Request  
+{"error":"Missing fields: lastName, username, password"}
+
+
+✅ 1.2 Successful registration
+
+curl -i -X POST http://localhost:8080/api/users \
+-H "Content-Type: application/json" \
+-d '{
+  "firstName": "Alice",
+  "lastName": "Test",
+  "username": "alice123",
+  "password": "securepass"
+}'
+
+Expected:
+HTTP/1.1 201 Created  
+Location: /api/users/1
+
+
+❌ 1.3 Duplicate username
+
+curl -i -X POST http://localhost:8080/api/users \
+-H "Content-Type: application/json" \
+-d '{
+  "firstName": "Alice",
+  "lastName": "Test2",
+  "username": "alice123",
+  "password": "newpass"
+}'
+
+Expected:
+HTTP/1.1 400 Bad Request  
+{"error":"Username already exists."}
+
+❌ 4.1 Mail creation without login
+
+curl -i -X POST http://localhost:8080/api/mails \
+-H "Content-Type: application/json" \
+-d '{
+  "from": "Alice",
+  "to": [1],
+  "title": "Hello",
+  "body": "This should fail"
+}'
+
+Expected:
+HTTP/1.1 401 Unauthorized  
+{"error":"You must be logged in to send mail."}
+
+
+----------------------------------------
+ 2. USER LOGIN (TOKEN GENERATION)
+----------------------------------------
+
+❌ 2.1 Invalid username
+
+curl -i -X POST http://localhost:8080/api/tokens \
+-H "Content-Type: application/json" \
+-d '{
+  "username": "notexists",
+  "password": "securepass"
+}'
+
+Expected:
+HTTP/1.1 400 Bad Request  
+{"error":"Invalid username or password"}
+
+
+❌ 2.2 Invalid password
+
+curl -i -X POST http://localhost:8080/api/tokens \
+-H "Content-Type: application/json" \
+-d '{
+  "username": "alice123",
+  "password": "wrongpass"
+}'
+
+Expected:
+HTTP/1.1 400 Bad Request  
+{"error":"Invalid username or password"}
+
+
+✅ 2.3 Valid login
+
+curl -i -X POST http://localhost:8080/api/tokens \
+-H "Content-Type: application/json" \
+-d '{
+  "username": "alice123",
+  "password": "securepass"
+}'
+
+Expected:
+HTTP/1.1 200 OK  
+{"token":"1"}
+
+
+----------------------------------------
+ 3. GET USER INFO
+----------------------------------------
+
+✅ 3.1 Valid user ID
+
+curl -i http://localhost:8080/api/users/1
+
+Expected:
+HTTP/1.1 200 OK  
+{
+  "id": 1,
+  "username": "alice123",
+  "firstName": "Alice",
+  "lastName": "Test"
+}
+
+
+❌ 3.2 Invalid user ID
+
+curl -i http://localhost:8080/api/users/999
+
+Expected:
+HTTP/1.1 404 Not Found  
+{"error":"User not found"}
+
+
+----------------------------------------
+ 4. MAIL CREATION
+----------------------------------------
+
+
+❌ 4.2 Mail creation with missing fields (must include all: from, to, title, body)
+
+curl -i -X POST http://localhost:8080/api/mails \
+-H "Authorization: 1" \
+-H "Content-Type: application/json" \
+-d '{
+  "title": "Hello"
+}'
+
+Expected:
+HTTP/1.1 400 Bad Request  
+{"error":"Missing fields: to, body"}
+
+
+✅ 4.3 Valid mail creation
+
+curl -i -X POST http://localhost:8080/api/mails \
+-H "Content-Type: application/json" \
+-d '{
+  "to": [1],
+  "title": "Hello again",
+  "body": "This should work"
+}'
+
+Expected:
+HTTP/1.1 201 Created  
+{
+  "id": 1,
+  "from": 1,
+  "to": [1],
+  "title": "Hello again",
+  "body": "This should work",
+  "timestamp": "..."
+}
+
+✅ 4.4 Valid mail creation
+
+curl -i http://localhost:8080/api/mails
+
+Expected: list of mails inside "[]"
+
+# 5.0 Mail by ID Tests
+
+## 5.1 ✔️ View mail you sent or received
+curl -i http://localhost:8080/api/mails/1
+
+# Expected:
+# HTTP/1.1 200 OK
+# {
+#   "id": 1,
+#   "from": 1,
+#   "to": [2],
+#   "title": "Test mail",
+#   "body": "Test content",
+#   "timestamp": 1722023771000
+# }
+
+## 5.2 ❌ Try to view mail that isn’t yours (login as another user first)
+curl -i http://localhost:8080/api/mails/1
+
+# Expected:
+# HTTP/1.1 401 Unauthorized
+# {
+#   "error": "You are not allowed to view this mail"
+# }
+
+## 5.3 ❌ View non-existent mail
+curl -i http://localhost:8080/api/mails/999
+
+# Expected:
+# HTTP/1.1 404 Not Found
+# {
+#   "error": "Mail not found"
+# }
+
+
+
+# 6. Edit Mail
+
+✔️ Edit mail as sender
+curl -i -X PATCH http://localhost:8080/api/mails/1 \
+  -H "Content-Type: application/json" \
+  -d '{"body": "Updated body"}'
+
+# Expected:
+# HTTP/1.1 200 OK
+# {
+#   "id": 1,
+#   "from": 1,
+#   "to": [2],
+#   "title": "Test mail",
+#   "body": "Updated body",
+#   "timestamp": 1722023771000
+# }
+
+❌ Edit mail as recipient (unauthorized)
+curl -i -X PATCH http://localhost:8080/api/mails/1 \
+  -H "Content-Type: application/json" \
+  -d '{"body": "Should not work"}'
+
+# Expected:
+# HTTP/1.1 401 Unauthorized
+# {
+#   "error": "Only the sender can update this mail"
+# }
+
+
+
+# 7. Delete Mail
+
+✔️ Delete mail as sender or recipient
+curl -i -X DELETE http://localhost:8080/api/mails/1
+
+# Expected:
+# HTTP/1.1 204 No Content
+
+❌ Delete mail you're not related to
+curl -i -X DELETE http://localhost:8080/api/mails/2
+
+# Expected:
+# HTTP/1.1 401 Unauthorized
+# {
+#   "error": "You are not allowed to delete this mail"
+# }
+
+# 8.0 Labels API (per-user)
+
+## 8.1 ✔️ Register user alice123
+curl -i -X POST http://localhost:8080/api/users \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "alice123",
+    "password": "alicepass",
+    "firstName": "Alice",
+    "lastName": "Test"
+  }'
+
+## 8.2 ✔️ Login as alice123
+curl -i -X POST http://localhost:8080/api/tokens \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "alice123",
+    "password": "alicepass"
+  }'
+
+## 8.3 ✔️ Create label \"Work\" for alice123
+curl -i -X POST http://localhost:8080/api/labels \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Work"
+  }'
+# Expected: 201 Created with { "id": 1, "name": "Work" }
+
+## 8.4 ✔️ View labels as alice123
+curl -i http://localhost:8080/api/labels
+# Expected:
+# [
+#   { "id": 1, "name": "Work" }
+# ]
+
+## 8.5 ❌ Try to create duplicate label
+curl -i -X POST http://localhost:8080/api/labels \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Work"
+  }'
+# Expected: 400 Bad Request with error "Label with this name already exists"
+
+## 8.6 ✔️ Register user bob456
+curl -i -X POST http://localhost:8080/api/users \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "bob456",
+    "password": "bobpass",
+    "firstName": "Bob",
+    "lastName": "Tester"
+  }'
+
+## 8.7 ✔️ Login as bob456
+curl -i -X POST http://localhost:8080/api/tokens \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "bob456",
+    "password": "bobpass"
+  }'
+
+## 8.8 ✔️ View labels as bob456 (should be empty)
+curl -i http://localhost:8080/api/labels
+# Expected: []
+
+# 9.0 Labels: By ID Access
+
+## 9.1 ✔️ Register user eve999
+curl -i -X POST http://localhost:8080/api/users \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "eve999",
+    "password": "evesecret",
+    "firstName": "Eve",
+    "lastName": "User"
+  }'
+
+## 9.2 ✔️ Login as eve999
+curl -i -X POST http://localhost:8080/api/tokens \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "eve999",
+    "password": "evesecret"
+  }'
+
+## 9.3 ✔️ Create label \"Urgent\"
+curl -i -X POST http://localhost:8080/api/labels \
+  -H "Content-Type: application/json" \
+  -d '{ "name": "Urgent" }'
+# Expected: 201 Created with { "id": 1, "name": "Urgent" }
+
+## 9.4 ✔️ Get label by ID
+curl -i http://localhost:8080/api/labels/1
+# Expected: 200 OK with { "id": 1, "name": "Urgent" }
+
+## 9.5 ❌ Get non-existing label by ID
+curl -i http://localhost:8080/api/labels/999
+# Expected: 404 Not Found
+
+## 9.6 ✔️ Update label by ID (rename to "🔥 Important")
+curl -i -X PATCH http://localhost:8080/api/labels/1 \
+  -H "Content-Type: application/json" \
+  -d '{ "name": "🔥 Important" }'
+# Expected: 200 OK with { "id": 1, "name": "🔥 Important" }
+
+## 9.7 ✔️ Verify rename worked
+curl -i http://localhost:8080/api/labels/1
+# Expected: 200 OK with { "id": 1, "name": "🔥 Important" }
+
+## 9.8 ✔️ Delete label
+curl -i -X DELETE http://localhost:8080/api/labels/1
+# Expected: 204 No Content
+
+## 9.9 ❌ Confirm label is gone
+curl -i http://localhost:8080/api/labels/1
+# Expected: 404 Not Found
+
+## 9.10 ✔️ View all labels (should be empty)
+curl -i http://localhost:8080/api/labels
+# Expected: []
+
+# 10.0 Mail Search by Query (GET /api/mails/search/:query)
+
+## 10.1 ✔️ Register user testsearch
+curl -i -X POST http://localhost:8080/api/users \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "testsearch",
+    "password": "searchpass",
+    "firstName": "Test",
+    "lastName": "Search"
+  }'
+
+## 10.2 ✔️ Login as testsearch
+curl -i -X POST http://localhost:8080/api/tokens \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "testsearch",
+    "password": "searchpass"
+  }'
+
+## 10.3 ✔️ Send mail with title "Alpha Notice" and body "Search test body"
+curl -i -X POST http://localhost:8080/api/mails \
+  -H "Content-Type: application/json" \
+  -d '{
+    "to": ["testsearch"],
+    "title": "Alpha Notice",
+    "body": "Search test body"
+  }'
+
+## 10.4 ✔️ Send mail with title "Beta Alert" and body "This is a lowerCase match"
+curl -i -X POST http://localhost:8080/api/mails \
+  -H "Content-Type: application/json" \
+  -d '{
+    "to": ["testsearch"],
+    "title": "Beta Alert",
+    "body": "This is a lowerCase match"
+  }'
+
+## 10.5 ✔️ Search for "Alpha"
+curl -i http://localhost:8080/api/mails/search/Alpha
+# Expected: 1 result with title "Alpha Notice"
+
+## 10.6 ❌ Search for "alpha" (case-sensitive!)
+curl -i http://localhost:8080/api/mails/search/alpha
+# Expected: []
+
+## 10.7 ✔️ Search for "Search"
+curl -i http://localhost:8080/api/mails/search/Search
+# Expected: 1 result from body match ("Search test body")
+
+## 10.8 ❌ Search for word that doesn’t exist
+curl -i http://localhost:8080/api/mails/search/NonExistentWord
+# Expected: []
+
+## 10.9 ✔️ Search for "Beta"
+curl -i http://localhost:8080/api/mails/search/Beta
+# Expected: 1 result with title "Beta Alert"
+
+## 10.10 ❌ Search for "lowercase" (will not match "lowerCase")
+curl -i http://localhost:8080/api/mails/search/lowercase
+# Expected: []
+
