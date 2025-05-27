@@ -1,20 +1,12 @@
-const { users } = require('../data/memory');
-
 // Static counter id
 let idCounter = 1;
+const users = []
 
 /**
  * Adds a new user to the in-memory store.
  * Accepts all user fields as a single object.
- *
- * @param {object} userData - Object containing user fields
- * @returns {{
- *   success: boolean,
- *   user?: object,
- *   error?: string
- * }}
  */
-function addUser(userData) {
+function createUser(userData) {
     // Checks username duplication
   if (users.find(u => u.username === userData.username)) {
     return { success: false, error: 'Username already exists.' };
@@ -26,7 +18,11 @@ function addUser(userData) {
   };
 
   users.push(newUser);
-  return { success: true, user: newUser };
+  return newUser;
+}
+
+function findUserById(id) {
+  return users.find(user => user.id === id);
 }
 
 const userFieldConfig = {
@@ -38,6 +34,9 @@ const userFieldConfig = {
   //image: { public: true, required: false } // optional future support
 };
 
+/**
+ * @brief Returns an array of required user fields based on the centralized field config.
+ */
 function getRequiredFields() {
   return Object.entries(userFieldConfig)
     .filter(([_, config]) => config.required)
@@ -55,8 +54,8 @@ function filterUserByVisibility(user, visibility = 'public') {
 }
 
 module.exports = {
-  userFieldConfig,
   filterUserByVisibility,
   getRequiredFields,
-  addUser
+  createUser,
+  findUserById
 };
