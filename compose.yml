@@ -33,7 +33,7 @@ services:
               cd build/app && \
               cmake ../.. && \
               make && \
-              ./tcp-server 0.0.0.0 12345 8 1 2"
+              ./bloom-filter 0.0.0.0 12345 8 1 2"
     volumes:
       - ./:/app
     ports:
@@ -41,9 +41,8 @@ services:
     healthcheck:
       # This healthcheck uses a TCP connection to check if the server is running.
       test: ["CMD", "bash", "-c", "exec 3<>/dev/tcp/localhost/12345 && echo 'Healthcheck' >&3 && exec 3<&-"]
-      interval: 1m
-      timeout: 2s
-      start_period: 1s
+      interval: 3s
+      timeout: 1s
       retries: 5
 
     networks:

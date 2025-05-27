@@ -5,11 +5,12 @@ project(Bmail)
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-add_executable(tcp-server src/bloomFilter/app/App.cpp 
+add_executable(bloom-filter src/bloomFilter/app/App.cpp 
 src/bloomFilter/command/AddFilterCommand.cpp 
 src/bloomFilter/command/QueryFilterCommand.cpp 
 src/bloomFilter/command/DeleteFilterCommand.cpp
 src/bloomFilter/filter/BloomFilter.cpp 
+src/bloomFilter/filter/FilterFactory.cpp
 src/bloomFilter/main.cpp 
 src/bloomFilter/menu/ConsoleMenu.cpp
 src/bloomFilter/hash/StdHash.cpp
