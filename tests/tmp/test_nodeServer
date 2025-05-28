@@ -302,7 +302,7 @@ curl -i -X POST http://localhost:8080/api/labels \
 
 Expected:
 HTTP/1.1 201 Created
-{W
+{
   "id": 1,
   "name": "Important"
 }
@@ -385,6 +385,33 @@ Keep-Alive: timeout=5
   [{all labels}]
 }
 
+# Blacklist Tests
+
+✅ 1.1 Valid POST blacklist
+curl -i -X POST http://localhost:8080/api/blacklist \
+-H "Authorization: 1" \
+-H "Content-Type: application/json" \
+-d '{ "url": "http://bad.com" }'
+
+
+Expected:
+HTTP/1.1 201 Created
+{
+  "url": "http://bad.com",
+  "id": "http%3A%2F%2Fbad.com"
+}
+
+❌ 1.2 invalid POST blacklist - missing arguments
+curl -i -X POST http://localhost:8080/api/blacklist \
+-H "Authorization: 1" \
+-H "Content-Type: application/json" \
+-d '{ "url": "" }'
+
+Expected:
+HTTP/1.1 400 Bad Request  
+{"error":"Missing fields: url"}
+
+d
 # 5.0 Mail by ID Tests
 
 ## 5.1 ✔️ View mail you sent or received
