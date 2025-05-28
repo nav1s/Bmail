@@ -54,3 +54,19 @@ test('returns 400 when trying to create a user with an existing username', async
     .expect('Content-Type', /application\/json/)
     .expect({ error: 'Username already exists.' });
 });
+
+test('returns 400 and error message when required fields have empty values', async () => {
+  await api
+    .post('/api/users')
+    .send({
+      firstName: "Alice",
+      lastName: "",
+      username: "alice1234",
+      password: "securepass"
+    })
+    .set('Content-Type', 'application/json')
+    .expect(400)
+    .expect('Content-Type', /application\/json/)
+    .expect({ error: 'Missing fields: lastName' });
+});
+
