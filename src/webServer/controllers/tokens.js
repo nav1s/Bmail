@@ -17,7 +17,7 @@ function login(req, res) {
   const user = users.find(u => u.username === username && u.password === password);
 
   if (!user) {
-    return unauthorized(res, 'Invalid credentials');
+    return unauthorized(res, 'Invalid username or password');
   }
 
   // Return user.id as the token
