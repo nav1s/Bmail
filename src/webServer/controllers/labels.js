@@ -76,12 +76,21 @@ function updateLabelById(req, res) {
   const userId = req.user.id;
   const labelId = parseInt(req.params.id, 10);
   // Gets user labels or an empty arr if he doesnt have any
-  const label = (labels[userId] || []).find(l => l.id === labelId);
-
+  
+  const labelList = labels[userId] || [];
+  const label = labelList.find(l => l.id === labelId);
+  // If label doesnt exist, return not found
   if (!label) return notFound(res, 'Label not found');
 
-  // Updates new label
   const newName = req.body.name;
+  const duplicate = labelList.find(l => l.name === newName && l.id !== labelId);
+  // If a label with the new name already exists, return bad request
+  if (duplicate) {
+    return badRequest(res, 'Label with this name already exists');
+  }
+
+  // Updates new label
+  
   label.name = newName;
   return ok(res, label);
 }
