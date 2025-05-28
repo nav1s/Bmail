@@ -146,7 +146,7 @@ HTTP/1.1 200 OK
 
 ❌ 3.2 Invalid user ID
 
-curl -i http://localhost:8080/api/users/999
+curl -i GET http://localhost:8080/api/users/999
 
 Expected:
 HTTP/1.1 404 Not Found  
@@ -154,7 +154,7 @@ HTTP/1.1 404 Not Found
 
 ❌ 3.2 Invalid user ID
 
-curl -i http://localhost:8080/api/users/ 
+curl -i GET http://localhost:8080/api/users/ 
 
 Expected:
 HTTP/1.1 404 Not Found  

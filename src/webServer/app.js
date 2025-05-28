@@ -24,4 +24,9 @@ app.use('/api/blacklist', blacklist);
 const search = require('./routes/search');
 app.use('/api/search', search);
 
+// Error handling
+app.use((err, req, res, next) => {
+  res.status(404).json({ error: `Cannot ${req.method} ${req.originalUrl}` });
+});
+
 app.listen(8080)
