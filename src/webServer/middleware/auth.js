@@ -7,7 +7,7 @@ function requireAuth(req, res, next) {
   const token = req.header('Authorization');
 
   if (!token) {
-    return res.status(401).json({ error: 'Missing Authorization header' });
+    return res.status(401).json({ error: 'You must be logged in' });
   }
 
   const userId = parseInt(token, 10);

@@ -158,7 +158,7 @@ curl -i GET http://localhost:8080/api/users/
 
 Expected:
 HTTP/1.1 404 Not Found  
-{"error":"User not found"}
+{"error":"Cannot GET /api/users/"}
 
 ----------------------------------------
  4. MAIL CREATION
@@ -240,7 +240,7 @@ HTTP/1.1 200 OK
 ❌ 4.6 invalid mail GET by id
 
 curl -i -X GET http://localhost:8080/api/mails/555 \
--H "Authorization: 555" \
+-H "Authorization: 1" \
 
 Expected:
 HTTP/1.1 400 Bad Request  
