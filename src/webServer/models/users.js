@@ -3,6 +3,15 @@ let idCounter = 1;
 const users = []
 
 /**
+ * @brief allow user login by username and password.
+ * @param username the username of the user
+ * @param password the password of the user
+ * @returns user object if login is successful, otherwise undefined.
+ */
+function login(username, password) {
+  return users.find(u => u.username === username && u.password === password);
+}
+/**
  * Adds a new user to the in-memory store.
  * Accepts all user fields as a single object.
  */
@@ -57,5 +66,6 @@ module.exports = {
   filterUserByVisibility,
   getRequiredFields,
   createUser,
-  findUserById
+  findUserById,
+  login
 };
