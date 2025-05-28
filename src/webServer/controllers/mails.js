@@ -166,8 +166,10 @@ function searchMails(req, res) {
 
   const results = mails
     .filter(mail =>
-      Array.isArray(mail.to) &&
-      mail.to.includes(userId) &&
+      (
+        mail.from === userId ||
+        (Array.isArray(mail.to) && mail.to.includes(userId))
+      ) && 
       (
         (mail.title && mail.title.includes(query)) || (mail.body && mail.body.includes(query))
       )

@@ -38,7 +38,6 @@ Expected:
 HTTP/1.1 201 Created  
 Location: /api/users/1
 
-
 ❌ 1.3 Duplicate username
 
 curl -i -X POST http://localhost:8080/api/users \
