@@ -284,7 +284,7 @@ Expected:
 HTTP/1.1 204 No Content
 
 ❌ 4.10 invalid mail Delete by id
-curl -i -X DELETE http://localhost:8080/api/mails/555
+curl -i -X DELETE http://localhost:8080/api/mails/555 \
 -H "Authorization: 1" \
 
 Expected:

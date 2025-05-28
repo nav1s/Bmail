@@ -32,7 +32,9 @@ function createMail(req, res) {
   };
 
   // Creating new mail
-  const id = mails.length + 1;
+  const existing = mails.map(mail => mail.id);  // Get existing mail IDs
+  const maxId = existing.length === 0 ? 0 : Math.max(...existing); // Find the maximum ID
+  const id = maxId + 1; // Increment to get the next ID
   const newMail = buildMail(input, id);
 
   if (!newMail.success) {
