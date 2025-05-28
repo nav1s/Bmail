@@ -11,7 +11,7 @@ test('returns 400 and error message when required fields are missing', async () 
     .set('Content-Type', 'application/json')
     .expect(400)
     .expect('Content-Type', /application\/json/)
-    .expect({ error: 'Missing fields: username, lastName, password' });
+    .expect({ error: 'Missing fields: username, lastname, password' });
 });
 
 test('successfully creates a new user when all required fields are provided', async () => {
