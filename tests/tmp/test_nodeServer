@@ -132,7 +132,7 @@ HTTP/1.1 400 Bad Request
 
 ✅ 3.1 Valid user ID
 
-curl -i http://localhost:8080/api/users/1
+curl -i GET http://localhost:8080/api/users/1
 
 Expected:
 HTTP/1.1 200 OK  
