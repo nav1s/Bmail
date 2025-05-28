@@ -1,5 +1,5 @@
 const express = require('express');
-var app = express();
+const app = express();
 app.use(express.json());
 
 // Tag disable
@@ -35,5 +35,4 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: 'Internal Server Error' });
 });
 
-
-app.listen(8080)
+module.exports = app;
