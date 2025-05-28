@@ -19,7 +19,7 @@ exports.createUser = (req, res) => {
 
   const result = users.createUser(userData);
 
-  if (!result) {
+  if (result.success === false) {
     return badRequest(res, result.error);
   }
 
