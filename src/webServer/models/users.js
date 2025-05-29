@@ -27,7 +27,7 @@ function createUser(userData) {
   };
 
   users.push(newUser);
-  return newUser;
+  return {success: true, newUser};
 }
 
 function findUserById(id) {
