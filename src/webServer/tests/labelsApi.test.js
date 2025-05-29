@@ -32,7 +32,7 @@ async function createTestUserAndReturn() {
   });
 }
 
-// 4.11 - Valid label creation
+// ✅ 4.11 - Valid label creation
 test('4.11 Valid label create', async () => {
   await createTestUserAndReturn();
 
@@ -48,7 +48,7 @@ test('4.11 Valid label create', async () => {
   assert.strictEqual(response.body.name, "Important");
 });
 
-// 4.12 - Valid label GET by id
+// ✅ 4.12 - Valid label GET by id
 test('4.12 Valid label GET by id', async () => {
   // user already created and label 1 exists from previous test
 
@@ -64,7 +64,7 @@ test('4.12 Valid label GET by id', async () => {
   });
 });
 
-// 4.13 - Invalid label GET by id
+// ✅ ❌ 4.13 - Invalid label GET by id
 test('4.13 invalid label GET by id', async () => {
   await api
     .get('/api/labels/5')
@@ -74,7 +74,7 @@ test('4.13 invalid label GET by id', async () => {
     .expect({ error: "Label not found" });
 });
 
-// 4.14 - Valid label PATCH by id
+// ✅ 4.14 - Valid label PATCH by id
 test('4.14 Valid label PATCH by id', async () => {
   const response = await api
     .patch('/api/labels/1')
@@ -90,7 +90,7 @@ test('4.14 Valid label PATCH by id', async () => {
   assert.strictEqual(response.body.owner, 1);
 });
 
-// 4.15 - Invalid label PATCH by id
+// ❌ 4.15 - Invalid label PATCH by id
 test('4.15 invalid label PATCH by id', async () => {
   await api
     .patch('/api/labels/555')
@@ -102,7 +102,7 @@ test('4.15 invalid label PATCH by id', async () => {
     .expect({ error: "Label not found" });
 });
 
-// 4.16 - Valid label DELETE by id
+// ✅ 4.16 - Valid label DELETE by id
 test('4.16 Valid label DELETE by id', async () => {
   await api
     .delete('/api/labels/1')
@@ -110,7 +110,7 @@ test('4.16 Valid label DELETE by id', async () => {
     .expect(204);
 });
 
-// 4.17 - Valid GET all labels
+// ✅ 4.17 - Valid GET all labels
 test('4.17 Valid GET all labels', async () => {
   // Re-create a label so GET all labels returns something
   await api
