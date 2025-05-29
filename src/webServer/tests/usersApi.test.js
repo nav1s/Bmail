@@ -1,10 +1,12 @@
 const { test } = require('node:test')
 const supertest = require('supertest')
 const app = require('../app')
+const assert = require('node:assert')
 const assert = require('node:assert/strict');
 
 const api = supertest(app)
 
+// ❌ 1.1 Missing required fields
 test('returns 400 and error message when required fields are missing', async () => {
   await api
     .post('/api/users')
@@ -15,6 +17,7 @@ test('returns 400 and error message when required fields are missing', async () 
     .expect({ error: 'Missing fields: username, lastName, password' });
 });
 
+// ✅ 1.2 Successful registration
 test('successfully creates a new user when all required fields are provided', async () => {
   await api
     .post('/api/users')
@@ -65,6 +68,7 @@ test('returns 400 when trying to create a user with an existing username', async
     .expect({ error: 'Username already exists.' });
 });
 
+// ❌ 1.4 Missing content in required fields in registration
 test('returns 400 and error message when required fields have empty values', async () => {
   await api
     .post('/api/users')
