@@ -20,6 +20,24 @@ services:
     networks:
       - bmail
 
+  web-server-tests:
+    image: node:24-bookworm
+    container_name: web-server-tests
+    hostname: web-server-tests
+    user: "${UID:-1000}:${GID:-1000}"
+    restart: "no"
+    command: bash -c "
+              cd /app/src/webServer && \
+              npm install --include=dev && \
+              npm test"
+    volumes:
+      - ./:/app/
+    depends_on:
+      bloom-filter:
+        condition: service_healthy
+    networks:
+      - bmail
+
   bloom-filter:
     build:
       context: .
