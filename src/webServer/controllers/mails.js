@@ -1,28 +1,41 @@
 const { buildMail, filterMailForOutput } = require('../models/mailSchema');
 const { badRequest, created, unauthorized, ok, notFound, noContent } = require('../utils/httpResponses');
-const { mails, users } = require('../data/memory');
+const { mails } = require('../data/memory');
+const users = require('../models/users.js');
 
 
 /**
  * POST /api/mails
  * Creates a new mail and stores it in memory.
  * Requires user to be logged in (loginToken).
- *
- * @param {import('express').Request} req
- * @param {import('express').Response} res
  */
 function createMail(req, res) {
-  // converts "to" from names to ids, must be hard coded "to" field
+  if (!req.body || !req.body.to || !req.body.title || !req.body.body) {
+    return badRequest(res, 'Missing fields');
+  }
+
+  const sender = users.findUserById(req.user.id);
+  if (!sender) {
+    return unauthorized(res, 'You must be logged in to send mail');
+  }
+
   const toUsernames = req.body.to;
   if (!Array.isArray(toUsernames)) {
     return badRequest(res, '"to" must be an array');
   }
 
-  // Try to match usernames to users
-  const toIds = toUsernames
-    .map(name => users.find(u => u.username === name))
-    .filter(u => u) // drop non-existent usernames
-    .map(u => u.id); // get only the IDs
+  const toIds = toUsernames.map(uid => {
+    const uidInt = parseInt(uid, 10);
+    const user = users.findUserById(uidInt);
+    if (!user) {
+      return null; // Invalid username
+    }
+    return user.id; // Return the user ID
+  }).filter(id => id !== null); // Filter out any null values
+
+  if (toIds.length === 0) {
+    return badRequest(res, 'No valid recipients found');
+  }
 
   // Build mail with sender injected as 'from'
   const input = {

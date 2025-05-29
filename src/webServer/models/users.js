@@ -67,5 +67,5 @@ module.exports = {
   getRequiredFields,
   createUser,
   findUserById,
-  login
+  login,
 };

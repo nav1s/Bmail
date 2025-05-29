@@ -1,5 +1,5 @@
 const users = require('../models/users.js');
-const { badRequest, created, notFound, ok } = require('../utils/httpResponses');
+const { badRequest, notFound, ok, createdWithLocation } = require('../utils/httpResponses');
 
 /**
  * Handles user registration using centralized field schema config.
@@ -24,7 +24,7 @@ exports.createUser = (req, res) => {
   }
 
   console.log(`User created with ID: ${result.newUser.id}`);
-  return created(res, result.newUser.id);
+  return createdWithLocation(res, `/api/users/${result.newUser.id}`);
 }
 
 

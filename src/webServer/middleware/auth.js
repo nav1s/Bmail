@@ -1,4 +1,4 @@
-const { users } = require('../data/memory');
+const users = require('../models/users');
 
 /**
  * Middleware to authenticate user from Authorization header (user ID).
@@ -11,7 +11,7 @@ function requireAuth(req, res, next) {
   }
 
   const userId = parseInt(token, 10);
-  const user = users.find(u => u.id === userId);
+  const user = users.findUserById(userId);
 
   if (!user) {
     return res.status(401).json({ error: 'Invalid token or user not found' });
