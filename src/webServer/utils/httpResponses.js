@@ -46,8 +46,8 @@ function createdWithLocation(res, locationUrl) {
 /**
  * Sends a 201 Created with JSON data (used when not following header-only REST).
  */
-function created(res, id) {
-  return res.status(201).location(`/api/users/${id}`).end();
+function created(res, data) {
+  return res.status(201).json(data);
 }
 
 /**

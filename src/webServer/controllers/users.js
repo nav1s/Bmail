@@ -24,7 +24,7 @@ exports.createUser = (req, res) => {
   }
 
   console.log(`User created with ID: ${result.newUser.id}`);
-  return created(res, result.newUser.id);
+  return created(res, result.newUser);
 }
 
 

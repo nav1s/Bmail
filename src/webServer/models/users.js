@@ -1,6 +1,6 @@
 // Static counter id
 let idCounter = 1;
-const users = []
+const { users } = require('../data/memory');
 
 /**
  * @brief allow user login by username and password.

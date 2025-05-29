@@ -41,7 +41,6 @@ test('returns 200 and user info for valid user ID', async () => {
     lastName: "Test",
     username: "alice123"
   });
-
 });
 
 // ❌ 3.2 Invalid user ID (non-existing ID)

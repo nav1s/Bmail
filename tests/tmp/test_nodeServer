@@ -177,7 +177,7 @@ curl -i -X POST http://localhost:8080/api/mails \
 
 Expected:
 HTTP/1.1 401 Unauthorized  
-{"error":"You must be logged in to send mail."}
+{"error":"You must be logged in"}
 
 ❌ 4.2 Mail creation with missing fields (must include all: from, to, title, body)
 
@@ -192,7 +192,7 @@ Expected:
 HTTP/1.1 400 Bad Request  
 {"error":"Missing fields: to, body"}
 
-✅ 4.3 Valid mail creation
+✅ 4.31 Valid mail creation
 
 curl -i -X POST http://localhost:8080/api/mails \
 -H "Authorization: 1" \
@@ -201,6 +201,28 @@ curl -i -X POST http://localhost:8080/api/mails \
   "to": [1],
   "title": "Hello again",
   "body": "This should work"
+}'
+
+Expected:
+HTTP/1.1 201 Created  
+{
+  "id": 1,
+  "from": 1,
+  "to": [1],
+  "title": "Hello again",
+  "body": "This should work",
+  "timestamp": "..."
+}
+
+✅ 4.32 Valid mail creation
+
+curl -i -X POST http://localhost:8080/api/mails \
+-H "Authorization: 1" \
+-H "Content-Type: application/json" \
+-d '{
+  "to": [1],
+  "title": "Hello Wirtz",
+  "body": "Sign for Liverpool"
 }'
 
 Expected:
