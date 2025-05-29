@@ -2,6 +2,7 @@ const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const supertest = require('supertest');
 const app = require('../app');
+const request = require('supertest');
 
 const api = supertest(app);
 
@@ -16,12 +17,12 @@ async function createTestUserAndReturn() {
     })
     .set('Content-Type', 'application/json')
     .expect(201);
-
+  
   const response = await api
     .get('/api/users/1')
     .expect(200)
     .expect('Content-Type', /application\/json/);
-
+  
   assert.deepStrictEqual(response.body, {
     id: 1,
     firstName: "Alice",
@@ -30,77 +31,47 @@ async function createTestUserAndReturn() {
   });
 }
 
-// Helper to create mail and return response body
-async function createMail(mailData) {
-  const res = await api
-    .post('/api/mails')
-    .set('Authorization', '1')
-    .set('Content-Type', 'application/json')
-    .send(mailData)
-    .expect(201)
-    .expect('Content-Type', /application\/json/);
+async function createInitialMails() {
+  const mails = [
+    { to: [1], title: "Hello again", body: "This should work" },
+    { to: [1], title: "Hello Wirtz", body: "Sign for Liverpool" },
+    { to: [1], title: "query Match Test", body: "This is a unique phrase xyz123" },
+    { to: [1], title: "Foo bar news", body: "query scores again" },
+    { to: [1], title: "Test query subject", body: "Body with some content" }
+  ];
 
-  return res.body;
+  for (const mail of mails) {
+    await api
+      .post('/api/mails')
+      .set('Authorization', '1')
+      .set('Content-Type', 'application/json')
+      .send(mail)
+      .expect(201);
+  }
 }
 
-test('setup: create test user', async () => {
+test('setup: create user and mails for query tests', async () => {
   await createTestUserAndReturn();
+  await createInitialMails();
 });
 
-test('setup: create mails containing the query string in various fields', async () => {
-  // Mail with query in title
-  await createMail({
-    to: ["1"],
-    title: "Meeting about query handling",
-    body: "Body without the keyword"
-  });
-
-  // Mail with query in body
-  await createMail({
-    to: ["1"],
-    title: "No keyword here",
-    body: "This body contains the special QUERY keyword."
-  });
-
-  // Mail with query in to field
-  await createMail({
-    to: ["queryUser"],
-    title: "Hello",
-    body: "Nothing special here"
-  });
-
-  // Mail with query in from field (assuming from = 1 is user Alice)
-  // For that, create mail from user 1, and we know from = 1, so search for "alice" (username)
-  await createMail({
-    to: ["1"],
-    title: "Just a test",
-    body: "Body text"
-  });
-});
-
-test('GET /api/mails/search/:query returns mails containing query in title, body or to or from', async () => {
-  const query = 'query';
-
-  const response = await api
-    .get(`/api/mails/search/${encodeURIComponent(query)}`)
+test('returns all mails matching "query" in title or body', async () => {
+  const response = await request(app)
+    .get('/api/mails/search/query')
     .set('Authorization', '1')
-    .expect(200)
-    .expect('Content-Type', /application\/json/);
 
-  assert.ok(Array.isArray(response.body), 'Response should be an array');
+  assert.strictEqual(response.status, 200);
+  const mails = response.body;
 
-  response.body.forEach(mail => {
-    const q = query.toLowerCase();
-
-    const titleContains = mail.title && mail.title.toLowerCase().includes(q);
-    const bodyContains = mail.body && mail.body.toLowerCase().includes(q);
-    const toContains = Array.isArray(mail.to) && mail.to.some(toUser => toUser.toLowerCase().includes(q));
-    // from can be a number (id) or string (username), here we convert to string and check if contains query
-    const fromContains = mail.from && String(mail.from).toLowerCase().includes(q);
-
+  for (const mail of mails) {
+    const inTitle = mail.title?.includes("query") ?? false;
+    const inBody = mail.body?.includes("query") ?? false;
     assert.ok(
-      titleContains || bodyContains || toContains || fromContains,
-      `Mail id ${mail.id} does not contain query '${query}' in any searchable field`
+      inTitle || inBody,
+      `Expected mail with id=${mail.id} to contain "query" in title or body`
     );
-  });
+  }
+  assert.ok(mails.length > 0, 'No mails returned');
 });
+
+

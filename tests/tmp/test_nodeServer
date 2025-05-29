@@ -408,7 +408,7 @@ Keep-Alive: timeout=5
 }
 
 ✅ 4.18 valid get all mails with string 'query'
-curl -i -X GET http://foo.com/api/mails/search/query \
+curl -i -X GET http://localhost:8080/api/mails/search/query \
 -H "Authorization: 1"
 
 Expected:
