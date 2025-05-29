@@ -1,6 +1,7 @@
 const { test } = require('node:test')
 const supertest = require('supertest')
 const app = require('../app')
+const assert = require('node:assert/strict');
 
 const api = supertest(app)
 
@@ -26,6 +27,15 @@ test('successfully creates a new user when all required fields are provided', as
     .set('Content-Type', 'application/json')
     .expect(201)
     .expect('location', /\/api\/users\/1/)
+  const response = await api
+    .get('/api/users/1')
+    .expect(200)
+    .expect('Content-Type', /application\/json/);
+  assert.deepStrictEqual(response.body, {
+    id: 1,
+    firstName: "Alice",
+    lastName: "Test",
+    username: "alice123"});
 });
 
 test('returns 400 when trying to create a user with an existing username', async () => {
