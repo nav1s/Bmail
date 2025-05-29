@@ -1,7 +1,6 @@
 const { test } = require('node:test')
 const supertest = require('supertest')
 const app = require('../app')
-const assert = require('node:assert')
 const assert = require('node:assert/strict');
 
 const api = supertest(app)
