@@ -31,7 +31,7 @@ function createLabel(req, res) {
   }
 
   // Builds label
-  const id = labels[userId].length + 1;
+  const id = userLabels.length + 1;
   const result = buildLabel(req.body, id);
   if (!result.success) {
     return badRequest(res, result.error);

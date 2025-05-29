@@ -407,6 +407,16 @@ Keep-Alive: timeout=5
   [{all labels}]
 }
 
+✅ 4.18 valid get all mails with string 'query'
+curl -i -X GET http://foo.com/api/mails/search/query \
+-H "Authorization: 1"
+
+Expected:
+HTTP/1.1 200 OK
+{
+  [{all mails with query}]
+}
+
 # Blacklist Tests
 
 ✅ 1.1 Valid POST blacklist
