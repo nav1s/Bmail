@@ -19,9 +19,6 @@ function listLabels(req, res) {
 /**
  * POST /api/labels
  * Creates a new label for the logged-in user.
- *
- * @param {import('express').Request} req - Express request object with body: { name: string }
- * @param {import('express').Response} res - Express response object
  */
 function createLabel(req, res) {
   const userId = req.user.id;
@@ -31,7 +28,7 @@ function createLabel(req, res) {
   }
 
   // Builds label
-  const id = userLabels.length + 1;
+  const id = labels[userId].length + 1;
   const result = buildLabel(req.body, id);
   if (!result.success) {
     return badRequest(res, result.error);

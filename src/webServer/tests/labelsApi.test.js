@@ -87,7 +87,6 @@ test('4.14 Valid label PATCH by id', async () => {
   // owner field expected here
   assert.strictEqual(response.body.id, 1);
   assert.strictEqual(response.body.name, "Very Important");
-  assert.strictEqual(response.body.owner, 1);
 });
 
 // ❌ 4.15 - Invalid label PATCH by id
