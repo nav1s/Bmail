@@ -4,7 +4,6 @@ services:
     image: node:24-bookworm
     container_name: web-server
     hostname: web-server
-    user: "1001:1001"
     ports:
       - "8080:8080"
     restart: "no"
@@ -26,7 +25,6 @@ services:
       dockerfile: Dockerfile.server
     container_name: bloom-filter
     hostname: bloom-filter
-    user: "1001:1001"
     restart: "no"
     command: bash -c "
               mkdir -p build/app && \
@@ -54,7 +52,6 @@ services:
       dockerfile: Dockerfile.tests
     container_name: bloom-filter-tests
     hostname: bloom-filter-tests
-    user: "${UID:-1000}:${GID:-1000}"
     restart: "no"
     command: bash -c "
               mkdir -p build/tests && \
@@ -69,7 +66,6 @@ services:
     image: python:3-bookworm
     container_name: python-client
     hostname: python-client
-    user: "${UID:-1000}:${GID:-1000}"
     restart: "no"
     command: python /app/src/bloomFilter/tcpClient.py bloom-filter 12345
     volumes:
