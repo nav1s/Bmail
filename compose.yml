@@ -8,7 +8,10 @@ services:
     ports:
       - "8080:8080"
     restart: "no"
-    command: python /app/src/bloomFilter/tcpClient.py tcp-server 12345
+    command: bash -c "
+              cd /app/src/webServer && \
+              npm install && \
+              npm start"
     volumes:
       - ./:/app/
     depends_on:
@@ -40,7 +43,7 @@ services:
       test: ["CMD", "bash", "-c", "exec 3<>/dev/tcp/localhost/12345 && echo 'Healthcheck' >&3 && exec 3<&-"]
       interval: 3s
       timeout: 5s
-      retries: 5
+      retries: 10
 
     networks:
       - bmail
