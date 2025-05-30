@@ -23,8 +23,9 @@ public:
      * @brief Constructs a BloomFilter with a given bit array size and hash functions.
      * @param size The number of bits in the filter.
      * @param hashFuncs A vector of hash functions to use.
+     * @param bloomFilterLocation The location to save the Bloom filter data.
      */
-    BloomFilter(size_t size, std::vector<std::shared_ptr<IHashFunction>> hashFuncs);
+    BloomFilter(size_t size, std::vector<std::shared_ptr<IHashFunction>> hashFuncs, std::string bloomFilterLocation);
 
     /**
      * @brief Copy constructor.
@@ -78,15 +79,13 @@ public:
 
     /**
      * @brief Saves the filter's bit array and blacklist to a file.
-     * @param path The path of the file to write to.
      */
-    void saveToFile(const string& path) const override;
+    void saveToFile() const override;
 
     /**
      * @brief Loads the filter's bit array and blacklist from a file.
-     * @param path The path of the file to read from.
      */
-    void loadFromFile(const string& path) override;
+    void loadFromFile() override;
 
     /**
      * @brief Returns a const reference to the internal bit array.
@@ -145,6 +144,11 @@ private:
      * @brief The bit array used for the filter.
      */
     vector<bool> bitArray;
+
+    /**
+     * @brief The file path where the Bloom filter data is saved.
+     */
+    std::string path;
 
     /**
      * @brief A list of hash functions used in the filter.

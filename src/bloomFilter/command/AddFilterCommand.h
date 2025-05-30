@@ -3,6 +3,8 @@
 #include "../filter/IFilter.h"
 #include "../output/OutputWriter.h"
 #include "ICommand.h"
+#include <memory>
+#include <mutex>
 #include <string>
 
 /**
@@ -19,7 +21,7 @@ public:
      * @param filter A reference to a filter where items will be added.
      * @param writer A reference to an output writer for user feedback.
      */
-    AddFilterCommand(IFilter& filter, OutputWriter& writer);
+    AddFilterCommand(IFilter& filter, OutputWriter& writer, std::shared_ptr<std::mutex> filterMutex);
 
     /**
      * @brief Copy constructor.
@@ -56,4 +58,5 @@ public:
 private:
     IFilter* filter;
     OutputWriter* writer;
+    std::shared_ptr<std::mutex> filterMutex;
 };

@@ -4,6 +4,9 @@
 #include <netinet/in.h>
 #include <string>
 #include <sys/socket.h>
+#include <iostream>
+#include <unistd.h>
+#include <cstring>
 
 /**
  * @class TCPConnectionHandler

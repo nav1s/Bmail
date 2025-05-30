@@ -1,4 +1,4 @@
-FROM gcc:latest
+FROM gcc:15.1-bookworm
 
 # Install cmake
 RUN apt-get update && apt-get install -y cmake

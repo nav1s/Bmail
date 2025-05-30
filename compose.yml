@@ -4,32 +4,11 @@ services:
     image: node:24-bookworm
     container_name: web-server
     hostname: web-server
-    user: "${UID:-1000}:${GID:-1000}"
+    user: "1001:1001"
     ports:
       - "8080:8080"
     restart: "no"
-    command: bash -c "
-              cd /app/src/webServer && \
-              npm install && \
-              npm start"
-    volumes:
-      - ./:/app/
-    depends_on:
-      bloom-filter:
-        condition: service_healthy
-    networks:
-      - bmail
-
-  web-server-tests:
-    image: node:24-bookworm
-    container_name: web-server-tests
-    hostname: web-server-tests
-    user: "${UID:-1000}:${GID:-1000}"
-    restart: "no"
-    command: bash -c "
-              cd /app/src/webServer && \
-              npm install --include=dev && \
-              npm test"
+    command: python /app/src/bloomFilter/tcpClient.py tcp-server 12345
     volumes:
       - ./:/app/
     depends_on:
@@ -44,7 +23,7 @@ services:
       dockerfile: Dockerfile.server
     container_name: bloom-filter
     hostname: bloom-filter
-    user: "${UID:-1000}:${GID:-1000}"
+    user: "1001:1001"
     restart: "no"
     command: bash -c "
               mkdir -p build/app && \
@@ -60,7 +39,7 @@ services:
       # This healthcheck uses a TCP connection to check if the server is running.
       test: ["CMD", "bash", "-c", "exec 3<>/dev/tcp/localhost/12345 && echo 'Healthcheck' >&3 && exec 3<&-"]
       interval: 3s
-      timeout: 1s
+      timeout: 5s
       retries: 5
 
     networks:

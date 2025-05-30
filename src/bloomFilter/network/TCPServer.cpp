@@ -1,10 +1,7 @@
 #include "TCPServer.h"
-#include <iostream>
-#include <unistd.h>
-#include <cstring>
 
 TCPServer::TCPServer(const std::string& ip_address, int port, int max_connections)
-    : is_connected(false), ip_address(ip_address), port(port), max_connections(1)
+    : is_connected(false), ip_address(ip_address), port(port), max_connections(5)
       {
 };
 

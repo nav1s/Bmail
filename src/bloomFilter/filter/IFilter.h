@@ -44,10 +44,10 @@ public:
     /**
      * @brief Saves the filter to a file.
      */
-    virtual void saveToFile(const std::string& path) const = 0;
+    virtual void saveToFile() const = 0;
 
     /**
      * @brief Loads the filter from a file.
      */
-    virtual void loadFromFile(const std::string& path) = 0;
+    virtual void loadFromFile() = 0;
 };

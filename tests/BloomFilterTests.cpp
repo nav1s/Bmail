@@ -16,6 +16,7 @@ protected:
     std::shared_ptr<BloomFilter> filter;
     std::vector<std::shared_ptr<IHashFunction>> hashFunctions;
     const std::string testDir = "./test_data";
+    const std::string bloomFilterFile = testDir + "/bloom_test.txt";
 
     void SetUp() override {
         // Create test directory if it doesn't exist
@@ -26,13 +27,13 @@ protected:
 
     void TearDown() override {
         // Clean up test files after tests
-        if (fs::exists(testDir + "/bloom_test.txt")) {
+        if (fs::exists(bloomFilterFile)) {
             try {
-                fs::remove(testDir + "/bloom_test.txt");
+                fs::remove(bloomFilterFile);
             } catch (const std::exception& e) {
                 // If it's a directory instead of a file, remove it recursively
-                if (fs::is_directory(testDir + "/bloom_test.txt")) {
-                    fs::remove_all(testDir + "/bloom_test.txt");
+                if (fs::is_directory(bloomFilterFile)) {
+                    fs::remove_all(bloomFilterFile);
                 }
             }
         }
@@ -55,7 +56,7 @@ protected:
  */
 TEST_F(BloomFilterTests, AddSingleItem) {
     hashFunctions.push_back(std::make_shared<StdHash>(1));
-    filter = std::make_shared<BloomFilter>(5, hashFunctions);
+    filter = std::make_shared<BloomFilter>(5, hashFunctions, bloomFilterFile);
     filter->add("abc");
     EXPECT_TRUE(filter->isBlacklisted("abc"));
 }
@@ -67,7 +68,7 @@ TEST_F(BloomFilterTests, AddSingleItem) {
  */
 TEST_F(BloomFilterTests, AddMultipleItems) {
     hashFunctions.push_back(std::make_shared<StdHash>(2));
-    filter = std::make_shared<BloomFilter>(10, hashFunctions);
+    filter = std::make_shared<BloomFilter>(10, hashFunctions, bloomFilterFile);
 
     filter->add("dog");
     filter->add("cat");
@@ -85,7 +86,7 @@ TEST_F(BloomFilterTests, AddMultipleItems) {
  */
 TEST_F(BloomFilterTests, ItemNotAddedToFilterShouldNotBeBlacklisted) {
     hashFunctions.push_back(std::make_shared<StdHash>(3));
-    filter = std::make_shared<BloomFilter>(10, hashFunctions);
+    filter = std::make_shared<BloomFilter>(10, hashFunctions, bloomFilterFile);
 
     filter->add("lion");
 
@@ -102,7 +103,7 @@ TEST_F(BloomFilterTests, FalsePositivePossibleButUnlikelyWithDifferentSeeds) {
     hashFunctions.push_back(std::make_shared<StdHash>(1));
     hashFunctions.push_back(std::make_shared<StdHash>(2));
     hashFunctions.push_back(std::make_shared<StdHash>(3));
-    filter = std::make_shared<BloomFilter>(50, hashFunctions);
+    filter = std::make_shared<BloomFilter>(50, hashFunctions, bloomFilterFile);
 
     filter->add("elephant");
     filter->add("giraffe");
@@ -119,7 +120,7 @@ TEST_F(BloomFilterTests, FalsePositivePossibleButUnlikelyWithDifferentSeeds) {
  */
 TEST_F(BloomFilterTests, SameItemMultipleAdds) {
     hashFunctions.push_back(std::make_shared<StdHash>(4));
-    filter = std::make_shared<BloomFilter>(10, hashFunctions);
+    filter = std::make_shared<BloomFilter>(10, hashFunctions, bloomFilterFile);
 
     filter->add("parrot");
     filter->add("parrot");
@@ -136,7 +137,7 @@ TEST_F(BloomFilterTests, SameItemMultipleAdds) {
  */
 TEST_F(BloomFilterTests, EmptyFilterCheck) {
     hashFunctions.push_back(std::make_shared<StdHash>(5));
-    filter = std::make_shared<BloomFilter>(5, hashFunctions);
+    filter = std::make_shared<BloomFilter>(5, hashFunctions, bloomFilterFile);
 
     EXPECT_FALSE(filter->isBlacklisted("anyitem"));
 }
@@ -149,7 +150,7 @@ TEST_F(BloomFilterTests, EmptyFilterCheck) {
  */
 TEST_F(BloomFilterTests, OneArrayCell) {
     hashFunctions.push_back(std::make_shared<StdHash>(1));
-    filter = std::make_shared<BloomFilter>(1, hashFunctions);
+    filter = std::make_shared<BloomFilter>(1, hashFunctions, bloomFilterFile);
 
     filter->add("parrot");
     filter->add("tilde");
@@ -172,7 +173,7 @@ TEST_F(BloomFilterTests, OneArrayCell) {
  */
 TEST_F(BloomFilterTests, CopyConstructor) {
     hashFunctions.push_back(std::make_shared<StdHash>(6));
-    filter = std::make_shared<BloomFilter>(10, hashFunctions);
+    filter = std::make_shared<BloomFilter>(10, hashFunctions,bloomFilterFile);
     
     filter->add("test1");
     filter->add("test2");
@@ -205,7 +206,7 @@ TEST_F(BloomFilterTests, CopyConstructor) {
  */
 TEST_F(BloomFilterTests, MoveConstructor) {
     hashFunctions.push_back(std::make_shared<StdHash>(7));
-    filter = std::make_shared<BloomFilter>(10, hashFunctions);
+    filter = std::make_shared<BloomFilter>(10, hashFunctions, bloomFilterFile);
     
     filter->add("movetest1");
     filter->add("movetest2");
@@ -238,7 +239,7 @@ TEST_F(BloomFilterTests, MultipleHashFunctions) {
         hashFunctions.push_back(std::make_shared<StdHash>(i));
     }
     
-    filter = std::make_shared<BloomFilter>(100, hashFunctions);
+    filter = std::make_shared<BloomFilter>(100, hashFunctions, bloomFilterFile);
     
     std::vector<std::string> testItems = {
         "apple", "banana", "cherry", "date", "elderberry"
@@ -275,24 +276,22 @@ TEST_F(BloomFilterTests, MultipleHashFunctions) {
 TEST_F(BloomFilterTests, SaveAndLoadFile) {
     hashFunctions.push_back(std::make_shared<StdHash>(10));
     hashFunctions.push_back(std::make_shared<StdHash>(20));
-    filter = std::make_shared<BloomFilter>(50, hashFunctions);
+    filter = std::make_shared<BloomFilter>(50, hashFunctions, bloomFilterFile);
     
     filter->add("url1.com");
     filter->add("url2.com");
     filter->add("url3.com");
     
-    std::string testFile = testDir + "/bloom_test.txt";
-    
     // Save filter to file
-    filter->saveToFile(testFile);
+    filter->saveToFile();
     
     // Create a new filter with different initial state
     std::vector<std::shared_ptr<IHashFunction>> newHashFuncs;
     newHashFuncs.push_back(std::make_shared<StdHash>(30));
-    auto newFilter = std::make_shared<BloomFilter>(20, newHashFuncs);
+    auto newFilter = std::make_shared<BloomFilter>(20, newHashFuncs, bloomFilterFile);
     
     // Load from the saved file
-    newFilter->loadFromFile(testFile);
+    newFilter->loadFromFile();
     
     // Verify loaded filter has same properties
     EXPECT_EQ(filter->getArraySize(), newFilter->getArraySize());
@@ -315,7 +314,7 @@ TEST_F(BloomFilterTests, SaveAndLoadFile) {
 TEST_F(BloomFilterTests, LargeNumberOfItems) {
     hashFunctions.push_back(std::make_shared<StdHash>(42));
     hashFunctions.push_back(std::make_shared<StdHash>(43));
-    filter = std::make_shared<BloomFilter>(1000, hashFunctions);
+    filter = std::make_shared<BloomFilter>(1000, hashFunctions, bloomFilterFile);
     
     // Add 100 items
     const int numItems = 100;
@@ -348,7 +347,7 @@ TEST_F(BloomFilterTests, GettersReturnExpectedValues) {
     hashFunctions.push_back(std::make_shared<StdHash>(51));
     
     const size_t testSize = 42;
-    filter = std::make_shared<BloomFilter>(testSize, hashFunctions);
+    filter = std::make_shared<BloomFilter>(testSize, hashFunctions, bloomFilterFile);
     
     // Test initial values
     EXPECT_EQ(testSize, filter->getArraySize());
@@ -374,7 +373,7 @@ TEST_F(BloomFilterTests, GettersReturnExpectedValues) {
  */
 TEST_F(BloomFilterTests, BitArrayCorrectlyUpdated) {
     hashFunctions.push_back(std::make_shared<StdHash>(100));
-    filter = std::make_shared<BloomFilter>(10, hashFunctions);
+    filter = std::make_shared<BloomFilter>(10, hashFunctions, bloomFilterFile);
     
     // Initially all bits should be false
     const auto& initialBits = filter->getBitArray();
