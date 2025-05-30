@@ -190,3 +190,18 @@ test('returns 404 on deleting non-existent mail (4.10)', async () => {
     .expect('Content-Type', /application\/json/)
     .expect({ error: 'Mail not found' });
 });
+
+// ❌ 4.11 Invalid mail POST without the user signed up
+test('returns 401 when trying to create mail without login (4.11)', async () => {
+  await api
+    .post('/api/mails')
+    .send({
+      to: ["1"],
+      title: "Test Mail",
+      body: "This is a test mail."
+    })
+    .set('Content-Type', 'application/json')
+    .expect(401)
+    .expect('Content-Type', /application\/json/)
+    .expect({ error: 'You must be logged in' });
+});
