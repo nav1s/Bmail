@@ -49,12 +49,6 @@ docker compose run --pull always --remove-orphans --rm python-client
 docker compose run --build --pull always --remove-orphans --rm bloom-filter-tests
 ```
 
-### Running the web server unit tests
-
-```bash
-docker compose run --pull always --remove-orphans --rm web-server-tests
-```
-
 The application preserves the Bloom filter state between runs. If you want to start with a fresh Bloom filter, delete the data file:
 ```bash
 rm data/bloomFilter.txt
