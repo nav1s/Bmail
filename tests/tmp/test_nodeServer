@@ -417,6 +417,9 @@ HTTP/1.1 200 OK
   [{all mails with query}]
 }
 
+# edge cases checked:
+✅ Valid - Creating 2 users and trying to patch a label to a name that is in another user. return '200 OK'
+
 # Blacklist Tests
 
 ✅ 1.1 Valid POST blacklist
