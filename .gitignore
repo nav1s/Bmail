@@ -3,4 +3,3 @@ build
 .cache
 *.out
 node_modules
-data

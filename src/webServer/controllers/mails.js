@@ -10,29 +10,31 @@ const users = require('../models/users.js');
  * Requires user to be logged in (loginToken).
  */
 function createMail(req, res) {
+  // return a missing fields error if any of the required fields are missing
   if (!req.body || !req.body.to || !req.body.title || !req.body.body) {
     return badRequest(res, 'Missing fields');
   }
 
-  const sender = users.findUserById(req.user.id);
-  if (!sender) {
-    return unauthorized(res, 'You must be logged in to send mail');
-  }
-
+  // converts "to" from names to ids, must be hard coded "to" field
   const toUsernames = req.body.to;
   if (!Array.isArray(toUsernames)) {
     return badRequest(res, '"to" must be an array');
   }
 
+  // try to convert ids to usernames
   const toIds = toUsernames.map(uid => {
+    // convert uid to integer 
     const uidInt = parseInt(uid, 10);
+    // find the user by ID
     const user = users.findUserById(uidInt);
+    // If user is not found, return null
     if (!user) {
-      return null; // Invalid username
+      return null;
     }
     return user.id; // Return the user ID
   }).filter(id => id !== null); // Filter out any null values
 
+  // If no valid recipients were found, return a bad request error
   if (toIds.length === 0) {
     return badRequest(res, 'No valid recipients found');
   }
