@@ -3,6 +3,7 @@ const assert = require('node:assert/strict');
 const supertest = require('supertest');
 const app = require('../app');
 
+// Create the test client
 const api = supertest(app);
 
 // Create test user and return its data including id (assuming first user will get id=1)

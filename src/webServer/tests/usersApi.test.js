@@ -3,6 +3,7 @@ const supertest = require('supertest')
 const app = require('../app')
 const assert = require('node:assert/strict');
 
+// Create the test client
 const api = supertest(app)
 
 // ❌ 1.1 Missing required fields

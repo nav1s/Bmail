@@ -4,8 +4,10 @@ const supertest = require('supertest');
 const app = require('../app');
 const request = require('supertest');
 
+// Create the test client
 const api = supertest(app);
 
+// Utility function to create the test user before running search tests
 async function createTestUserAndReturn() {
   await api
     .post('/api/users')
@@ -31,6 +33,7 @@ async function createTestUserAndReturn() {
   });
 }
 
+// Create initial mails for query tests
 async function createInitialMails() {
   const mails = [
     { to: [1], title: "Hello again", body: "This should work" },
@@ -50,11 +53,13 @@ async function createInitialMails() {
   }
 }
 
+// Setup: Create user and mails before running tests
 test('setup: create user and mails for query tests', async () => {
   await createTestUserAndReturn();
   await createInitialMails();
 });
 
+// ✅ 1 Search mails by query in title or body
 test('returns all mails matching "query" in title or body', async () => {
   const response = await request(app)
     .get('/api/mails/search/query')

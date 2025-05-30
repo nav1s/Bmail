@@ -3,7 +3,7 @@ const supertest = require('supertest');
 const app = require('../app');
 const assert = require('assert');
 
-
+// Create the test client
 const api = supertest(app);
 
 // Utility function to create the test user before running login tests
