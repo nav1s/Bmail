@@ -1,32 +1,17 @@
-# Ignore build artifacts
-bin/
-obj/
-out/
-
-# Ignore CMake and Makefiles outputs
-Makefile
-cmake_install.cmake
-
-# Ignore compiled object files and executables
-*.o
-*.obj
-*.so
-*.a
-*.exe
-*.out
-
-# Ignore editor/IDE files
+# ignore editor/IDE files
 .vscode/
 .idea/
 *.swp
 *.swo
 *.user
 *.log
+*.txt
 
-# Ignore system files
-.DS_Store
-Thumbs.db
-
-# Ignore Git stuff
+# ignore Git stuff
 .git/
 .gitignore
+
+# other stuff
+data
+node_modules
+.cache

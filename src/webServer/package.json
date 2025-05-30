@@ -1,10 +1,10 @@
 {
   "name": "bmail",
-  "version": "1.0.0",
-  "description": "",
+  "version": "0.0.17",
+  "description": "better gmail project",
   "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node app.js"
   },
   "keywords": [],
   "author": "",

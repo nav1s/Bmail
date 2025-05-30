@@ -4,8 +4,8 @@
 
 using namespace std;
 
-DeleteFilterCommand::DeleteFilterCommand(IFilter& filter, OutputWriter& writer)
-    : filter(&filter), writer(&writer) {}
+DeleteFilterCommand::DeleteFilterCommand(IFilter& filter, OutputWriter& writer, std::shared_ptr<std::mutex> filterMutex)
+    : filter(&filter), writer(&writer), filterMutex(filterMutex) {}
 
 DeleteFilterCommand::DeleteFilterCommand(const DeleteFilterCommand& other)
     : filter(other.filter), writer(other.writer) {}
@@ -41,12 +41,18 @@ CommandResult DeleteFilterCommand::execute(const string& arg) {
         throw invalid_argument("DeleteFilterCommand: missing URL argument");
     }
 
+    filterMutex->lock();
+    bool isBlacklisted = filter->isBlacklisted(arg);
+    filterMutex->unlock();
+
     // Check if URL is actually blacklisted
-    if (!filter->isBlacklisted(arg)) {
+    if (!isBlacklisted) {
         throw runtime_error("DeleteFilterCommand: URL not found in blacklist");
     }
 
+    filterMutex->lock();
     // Remove the URL from the filter
     filter->remove(arg);
+    filterMutex->unlock();
     return CommandResult::NO_CONTENT_204;
 }

@@ -1,9 +1,11 @@
 #pragma once
 
 #include "../filter/IFilter.h"
-#include "ICommand.h"
-#include <string>
 #include "../output/OutputWriter.h"
+#include "ICommand.h"
+#include <memory>
+#include <mutex>
+#include <string>
 
 /**
  * @class DeleteFilterCommand
@@ -13,25 +15,25 @@
  * from a given IFilter instance. It throws an exception if the input argument is empty or invalid.
  */
 class DeleteFilterCommand : public ICommand {
-public:
+  public:
     /**
      * @brief Constructs the command with a reference to an IFilter instance and an output writer.
      * @param filter A reference to a filter where items will be removed.
      * @param writer A reference to an output writer for feedback.
      */
-    DeleteFilterCommand(IFilter& filter, OutputWriter& writer);
+    DeleteFilterCommand(IFilter &filter, OutputWriter &writer, std::shared_ptr<std::mutex> filterMutex);
 
     /** @brief Copy constructor. */
-    DeleteFilterCommand(const DeleteFilterCommand& other);
+    DeleteFilterCommand(const DeleteFilterCommand &other);
 
     /** @brief Copy assignment operator. */
-    DeleteFilterCommand& operator=(const DeleteFilterCommand& other);
+    DeleteFilterCommand &operator=(const DeleteFilterCommand &other);
 
     /** @brief Move constructor. */
-    DeleteFilterCommand(DeleteFilterCommand&& other) noexcept;
+    DeleteFilterCommand(DeleteFilterCommand &&other) noexcept;
 
     /** @brief Move assignment operator. */
-    DeleteFilterCommand& operator=(DeleteFilterCommand&& other) noexcept;
+    DeleteFilterCommand &operator=(DeleteFilterCommand &&other) noexcept;
 
     /** @brief Destructor. */
     ~DeleteFilterCommand() override;
@@ -41,9 +43,10 @@ public:
      * @param arg The item to remove from the filter.
      * @throws std::invalid_argument if the argument is empty or invalid.
      */
-    CommandResult execute(const std::string& arg = "") override;
+    CommandResult execute(const std::string &arg = "") override;
 
-private:
-    IFilter* filter;
-    OutputWriter* writer;
+  private:
+    IFilter *filter;
+    OutputWriter *writer;
+    std::shared_ptr<std::mutex> filterMutex; // Mutex to protect the filter from concurrent access
 };

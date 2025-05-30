@@ -20,4 +20,6 @@ app.use('/api/blacklist', blacklist);
 const search = require('./routes/search');
 app.use('/api/search', search);
 
+console.log('Web server started on port 8080');
+
 app.listen(8080)

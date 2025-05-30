@@ -1,38 +1,82 @@
+---
 services:
-  tcp-client:
-    image: python:3-alpine
-    container_name: tcp-client
+  web-server:
+    image: node:24-bookworm
+    container_name: web-server
+    hostname: web-server
+    user: "${UID:-1000}:${GID:-1000}"
+    ports:
+      - "8080:8080"
     restart: "no"
-    command: python /app/src/bloomFilter/tcpClient.py tcp-server 12345
+    command: bash -c "
+              cd /app/src/webServer && \
+              npm install && \
+              npm start"
     volumes:
       - ./:/app/
     depends_on:
-      tcp-server:
+      bloom-filter:
         condition: service_healthy
     networks:
       - bmail
 
-  tcp-server:
+  bloom-filter:
     build:
       context: .
       dockerfile: Dockerfile.server
-    container_name: tcp-server
+    container_name: bloom-filter
+    hostname: bloom-filter
+    user: "${UID:-1000}:${GID:-1000}"
     restart: "no"
     command: bash -c "
               mkdir -p build/app && \
               cd build/app && \
               cmake ../.. && \
               make && \
-              ./tcp-server 0.0.0.0 12345 8 1 2"
+              ./bloom-filter 0.0.0.0 12345 8 1 2"
     volumes:
       - ./:/app
     ports:
       - "12345:12345"
     healthcheck:
-      test: ["CMD", "bash", "-c", "test -f /tmp/tcp-server"]
-      interval: 5s
+      # This healthcheck uses a TCP connection to check if the server is running.
+      test: ["CMD", "bash", "-c", "exec 3<>/dev/tcp/localhost/12345 && echo 'Healthcheck' >&3 && exec 3<&-"]
+      interval: 3s
       timeout: 1s
       retries: 5
+
+    networks:
+      - bmail
+
+  bloom-filter-tests:
+    build:
+      context: .
+      dockerfile: Dockerfile.tests
+    container_name: bloom-filter-tests
+    hostname: bloom-filter-tests
+    user: "${UID:-1000}:${GID:-1000}"
+    restart: "no"
+    command: bash -c "
+              mkdir -p build/tests && \
+              cd build/tests && \
+              cmake ../../tests && \
+              make && \
+              ./runTests"
+    volumes:
+      - ./:/app
+
+  python-client:
+    image: python:3-bookworm
+    container_name: python-client
+    hostname: python-client
+    user: "${UID:-1000}:${GID:-1000}"
+    restart: "no"
+    command: python /app/src/bloomFilter/tcpClient.py bloom-filter 12345
+    volumes:
+      - ./:/app/
+    depends_on:
+      bloom-filter:
+        condition: service_healthy
     networks:
       - bmail
 

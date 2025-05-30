@@ -1,18 +1,22 @@
 #pragma once
 
-#include "../menu/IMenu.h"
-#include "../input/InputReader.h"
-#include "../output/OutputWriter.h"
+#include "../command/AddFilterCommand.h"
+#include "../command/DeleteFilterCommand.h"
+#include "../command/ICommand.h"
+#include "../command/QueryFilterCommand.h"
 #include "../filter/IFilter.h"
 #include "../hash/IHashFunction.h"
-#include "../command/ICommand.h"
 #include "../input/InputReader.h"
+#include "../menu/IMenu.h"
+#include "../menu/ConsoleMenu.h"
+#include "../output/OutputWriter.h"
 
 #include <memory>
-#include <unordered_map>
+#include <mutex>
 #include <string>
+#include <unordered_map>
 #include <vector>
-
+#include <stdexcept>
 
 /**
  * @class App
@@ -22,7 +26,7 @@
  * constructing the filter and associated hash functions, and dispatching commands via a menu interface.
  */
 class App {
-public:
+  public:
     /**
      * @brief Constructs the App object.
      */
@@ -31,36 +35,22 @@ public:
     /**
      * @brief Runs the main application loop, including configuration and command execution.
      */
-    void run(InputReader& reader, OutputWriter &writer, std::vector<int> & args);
+    void run(InputReader &reader, OutputWriter &writer, std::shared_ptr<IFilter> filter,
+             std::shared_ptr<std::mutex> filterMutex);
 
-private:
-    /**
-     * @brief Performs the configuration of the filter based on user input.
-     * @param reader An input reader object used to obtain the initialization line.
-     *
-     * This function parses the initialization input line to extract filter parameters and
-     * construct the appropriate filter and hash functions.
-     */
-    void semiConstructor(InputReader& reader, OutputWriter &writer, std::vector<int> & args);
-
+  private:
     /**
      * @brief Registers available commands into the command map.
      */
-    void registerCommands(OutputWriter& writer);
-
-    /**
-     * @brief Parses space-separated integers from a string into a vector.
-     * @param input The raw input string.
-     * @param args The output vector of parsed integers.
-     */
-    void parseInput(const std::string& input, std::vector<int>& args);
+    void registerCommands(OutputWriter &writer, std::shared_ptr<IFilter> filter, 
+                          std::shared_ptr<std::mutex> filterMutex);
 
     /**
      * @brief Generates hash function instances based on integer signatures.
      * @param args A vector of integer identifiers for hash function configuration.
      * @param out The vector to store generated hash function instances.
      */
-    void hashAssembler(std::vector<int>& args, std::vector<std::shared_ptr<IHashFunction>>& out);
+    void hashAssembler(std::vector<int> &args, std::vector<std::shared_ptr<IHashFunction>> &out);
 
     /**
      * @brief Map of integer command codes to command objects.
@@ -68,21 +58,7 @@ private:
     std::unordered_map<std::string, std::unique_ptr<ICommand>> commands;
 
     /**
-     * @brief Pointer to the active filter used for command operations.
-     */
-    std::shared_ptr<IFilter> filter;
-
-    /**
      * @brief Pointer to a menu that interacts with the user
      */
     std::unique_ptr<IMenu> menu;
-
-    /**
-     * @brief Validates that a string contains only digits from 1 to 9 and whitespace.
-     *
-     * @param input The input string to validate.
-     * @return true if the string is a valid initialization input; false otherwise.
-     */
-    bool isValidInit(const std::string& input);
-
 };

@@ -4,8 +4,8 @@
 
 using namespace std;
 
-AddFilterCommand::AddFilterCommand(IFilter& filter, OutputWriter& writer)
-    : filter(&filter), writer(&writer) {}
+AddFilterCommand::AddFilterCommand(IFilter& filter, OutputWriter& writer, std::shared_ptr<std::mutex> filterMutex)
+    : filter(&filter), writer(&writer), filterMutex(filterMutex) {}
 
 AddFilterCommand::AddFilterCommand(const AddFilterCommand& other)
     : filter(other.filter), writer(other.writer) {}
@@ -43,6 +43,9 @@ CommandResult AddFilterCommand::execute(const string& arg) {
         throw invalid_argument("AddFilterCommand: missing URL argument");
     }
 
+    filterMutex->lock();
     filter->add(arg);
+    filterMutex->unlock();
+
     return CommandResult::CREATED_201;
 }
