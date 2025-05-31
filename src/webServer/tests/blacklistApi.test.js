@@ -34,7 +34,8 @@ async function createTestUserAndReturn() {
 
 // ✅ 1.1 Valid POST blacklist
 test('1.1 Valid POST blacklist', async () => {
-  const response = await request(app)
+  await createTestUserAndReturn();
+  const response = await api
     .post('/api/blacklist')
     .set('Authorization', '1')
     .set('Content-Type', 'application/json')
