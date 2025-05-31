@@ -1,8 +1,7 @@
-const { buildMail, filterMailForOutput } = require('../models/mailSchema');
-const { badRequest, created, unauthorized, ok, notFound, noContent } = require('../utils/httpResponses');
-const { httpError } = require('../utils/error');
+const { buildMail, filterMailForOutput, validateMailInput, findMailById, editMail, deleteMail, userIsSender, canUserAccessMail, getMailsForUser, searchMailsForUser } = require('../models/mailSchema');
+const { badRequest, created, unauthorized, ok, notFound, noContent, forbidden } = require('../utils/httpResponses');
+const { httpError, createError } = require('../utils/error');
 const users = require('../models/users.js');
-
 
 /**
  * POST /api/mails
@@ -18,8 +17,8 @@ function createMail(req, res) {
 
   // Validate recipients and mail structure
   try {
-    mailInput.to = validateRecipients(mailInput.to);
     validateMailInput(mailInput);
+    mailInput.to = validateRecipients(mailInput.to);
   } catch (err) {
     return httpError(res, err);
   }
@@ -53,13 +52,14 @@ function listInbox(req, res) {
  * @param {import('express').Response} res
  */
 function getMailById(req, res) {
-  const rawId = req.params.id;
+  const id = Number(req.params.id);
+  if (!Number.isInteger(id)) {
+    return badRequest(res, 'Mail ID must be a valid integer');
+  }
   const username = req.user.username;
 
   try {
-    const id = Number(rawId);
     const mail = findMailById(id);
-
     if (!canUserAccessMail(mail, username)) {
       return forbidden(res, 'You are not allowed to view this mail');
 
@@ -83,11 +83,14 @@ function getMailById(req, res) {
  */
 function updateMailById(req, res) {
   const id = Number(req.params.id);
+  if (!Number.isInteger(id)) {
+    return badRequest(res, 'Mail ID must be a valid integer');
+  }
   const username = req.user.username;
 
   try {
-    const mail = findMailById(id);
-    ensureUserIsSender(mail, username);
+    let mail = findMailById(id);
+    userIsSender(mail, username);
     mail = editMail(mail, req.body);
 
     return ok(res, filterMailForOutput(mail));
@@ -111,7 +114,7 @@ function deleteMailById(req, res) {
 
   try {
     const mail = findMailById(id);
-    ensureUserAccessMail(mail, username);
+    canUserAccessMail(mail, username);
     deleteMail(mail.id);
     return noContent(res);
   } catch (err) {

@@ -115,10 +115,6 @@ function getMailsForUser(username, limit) {
 }
 
 function findMailById(id) {
-  if (!Number.isInteger(id)) {
-    throw createError('Mail ID must be a valid integer', { status: 400 });
-  }
-
   const mail = mails.find(m => m.id === id);
   if (!mail) {
     throw createError('Mail not found', { status: 404 });
@@ -129,8 +125,7 @@ function findMailById(id) {
 
 function canUserAccessMail(mail, username) {
   return (
-    mail.from === username ||
-    (Array.isArray(mail.to) && mail.to.includes(username))
+    mail.from === username || (Array.isArray(mail.to) && mail.to.includes(username))
   );
 }
 

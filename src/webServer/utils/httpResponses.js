@@ -3,80 +3,63 @@
  * @param {import('express').Response} res
  * @param {object} data
  */
-function ok(res, data) {
-  return res.status(200).json(data);
-}
+exports.ok = (res, data) =>
+  res.status(200).json(data);
 
 /**
- * Sends a 400 Bad Request with a JSON error message.
+ * Sends a 201 Created with JSON data (used when not following header-only REST).
  * @param {import('express').Response} res
- * @param {string} message
+ * @param {object} data
  */
-function badRequest(res, message) {
-  return res.status(400).json({ error: message });
-}
-
-/**
- * Sends a 401 Unauthorized Request with a JSON error message.
- * @param {import('express').Response} res
- * @param {string} message
- */
-function unauthorized(res, message = 'Unauthorized') {
-  return res.status(401).json({ error: message });
-}
-
-/**
- * Sends a 403 Forbidden with a JSON error message.
- * @param {import('express').Response} res
- * @param {string} message
- */
-function forbidden(res, message = 'Forbidden') {
-  return res.status(403).json({ error: message });
-}
-
-
-/**
- * Sends a 404 Not Found with a JSON error message.
- * @param {import('express').Response} res
- * @param {string} message
- */
-function notFound(res, message) {
-  return res.status(404).json({ error: message });
-}
+exports.created = (res, data) =>
+  res.status(201).json(data);
 
 /**
  * Sends a 201 Created with a Location header and no body.
  * @param {import('express').Response} res
  * @param {string} locationUrl
  */
-function createdWithLocation(res, locationUrl) {
-  return res.status(201).location(locationUrl).end();
-}
-
-/**
- * Sends a 201 Created with JSON data (used when not following header-only REST).
- */
-function created(res, data) {
-  return res.status(201).json(data);
-}
+exports.createdWithLocation = (res, locationUrl) =>
+  res.status(201).location(locationUrl).end();
 
 /**
  * Sends a 204 No Content with no response body.
  * Typically used for successful DELETE operations.
- *
  * @param {import('express').Response} res
  */
-function noContent(res) {
-  return res.status(204).end();
-}
+exports.noContent = (res) =>
+  res.status(204).end();
 
-module.exports = {
-  ok,
-  badRequest,
-  unauthorized,
-  forbidden,
-  notFound,
-  created,
-  createdWithLocation,
-  noContent
-};
+/**
+ * Sends a 400 Bad Request with a JSON error message.
+ * @param {import('express').Response} res
+ * @param {string} message
+ */
+exports.badRequest = (res, message = 'Bad request') =>
+  res.status(400).json({ error: message });
+
+/**
+ * Sends a 401 Unauthorized with a JSON error message.
+ * @param {import('express').Response} res
+ * @param {string} message
+ */
+exports.unauthorized = (res, message = 'Unauthorized') =>
+  res.status(401).json({ error: message });
+
+/**
+ * Sends a 403 Forbidden with a JSON error message.
+ * @param {import('express').Response} res
+ * @param {string} message
+ */
+exports.forbidden = (res, message = 'Forbidden') =>
+  res.status(403).json({ error: message });
+
+/**
+ * Sends a 404 Not Found with a JSON error message.
+ * @param {import('express').Response} res
+ * @param {string} message
+ */
+exports.notFound = (res, message = 'Not found') =>
+  res.status(404).json({ error: message });
+
+

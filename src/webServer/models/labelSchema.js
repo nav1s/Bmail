@@ -1,5 +1,6 @@
 const { createError } = require('../utils/error');
 const userLabels = {}; // key = userId, value = array of labels [{ id, name }]
+let labelId = 1;
 
 /**
  * Builds a label object after validating input.
@@ -52,7 +53,7 @@ function addLabelForUser(userId, name) {
   }
 
   // Adding new label to the user
-  const id = userLabels[userId].length + 1;
+  const id = labelId++;
   const newLabel = buildLabel(name, id);
   userLabels[userId].push(newLabel);
   return newLabel;

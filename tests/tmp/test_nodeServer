@@ -146,7 +146,7 @@ HTTP/1.1 200 OK
 
 ❌ 3.2 Invalid user ID
 
-curl -i GET http://localhost:8080/api/users/999
+curl -i -X GET http://localhost:8080/api/users/999
 
 Expected:
 HTTP/1.1 404 Not Found  
@@ -154,7 +154,7 @@ HTTP/1.1 404 Not Found
 
 ❌ 3.2 Invalid user ID
 
-curl -i GET http://localhost:8080/api/users/ 
+curl -i -X GET http://localhost:8080/api/users/ 
 
 Expected:
 HTTP/1.1 404 Not Found  
@@ -198,7 +198,7 @@ curl -i -X POST http://localhost:8080/api/mails \
 -H "Authorization: 1" \
 -H "Content-Type: application/json" \
 -d '{
-  "to": [1],
+  "to": ["alice123"], 
   "title": "Hello again",
   "body": "This should work"
 }'
@@ -208,7 +208,7 @@ HTTP/1.1 201 Created
 {
   "id": 1,
   "from": 1,
-  "to": [1],
+  "to": ["alice123"],
   "title": "Hello again",
   "body": "This should work",
   "timestamp": "..."
@@ -220,7 +220,7 @@ curl -i -X POST http://localhost:8080/api/mails \
 -H "Authorization: 1" \
 -H "Content-Type: application/json" \
 -d '{
-  "to": [1],
+  "to": ["alice123"],
   "title": "Hello Wirtz",
   "body": "Sign for Liverpool"
 }'
@@ -230,7 +230,7 @@ HTTP/1.1 201 Created
 {
   "id": 1,
   "from": 1,
-  "to": [1],
+  "to": ["alice123"],
   "title": "Hello again",
   "body": "This should work",
   "timestamp": "..."
@@ -253,7 +253,7 @@ HTTP/1.1 200 OK
 {
   "id": 1,
   "from": 1,
-  "to": [1],
+  "to": ["alice123"],
   "title": "Hello again",
   "body": "This should work",
   "timestamp": "..."

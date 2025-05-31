@@ -1,5 +1,5 @@
 const { getAllLabelsForUser, addLabelForUser, getLabelByUserAndId, deleteLabelForUser } = require('../models/labelSchema');
-
+const { created, badRequest, notFound, ok, noContent } = require('../utils/httpResponses');
 const { httpError } = require('../utils/error');
 
 
@@ -39,7 +39,7 @@ function createLabel(req, res) {
   if (keys.length !== 1) {
     return badRequest(res, 'Request body must contain exactly one field');
   }
-  const name = req.body[keys[0]];
+  const name = req.body.name;
   if (!name || typeof name !== 'string') {
     return badRequest(res, 'Label name must be a non-empty string');
   }
