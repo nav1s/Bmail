@@ -26,6 +26,16 @@ function unauthorized(res, message = 'Unauthorized') {
 }
 
 /**
+ * Sends a 403 Forbidden with a JSON error message.
+ * @param {import('express').Response} res
+ * @param {string} message
+ */
+function forbidden(res, message = 'Forbidden') {
+  return res.status(403).json({ error: message });
+}
+
+
+/**
  * Sends a 404 Not Found with a JSON error message.
  * @param {import('express').Response} res
  * @param {string} message
@@ -64,6 +74,7 @@ module.exports = {
   ok,
   badRequest,
   unauthorized,
+  forbidden,
   notFound,
   created,
   createdWithLocation,

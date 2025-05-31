@@ -1,5 +1,10 @@
+const { createError } = require('../utils/error');
+
+const mails = []; // [{ id, from, to[], title, body, timestamp }]
+let mailIdCounter = 1;
+
 /**
- * Schema for mail input fields.
+ * Schema for newMail input fields.
  * - Contains only fields the user must provide
  * - `normalize: true` indicates value should be wrapped in an array
  *
@@ -22,107 +27,167 @@ const mailInputSchema = {
  * @returns {{ success: true } | { success: false, error: string }}
  */
 function validateMailInput(input) {
-  // Extract required fields from schema
+  // Parses fields from keys
   const requiredFields = Object.keys(mailInputSchema);
-
-  // Extract actual fields provided by user
   const inputFields = Object.keys(input);
 
-  // Identify missing and unexpected fields
+  // Filtering fields from input
   const missing = requiredFields.filter(field => !(field in input));
   const unknown = inputFields.filter(field => !requiredFields.includes(field));
 
-  // Reject if any required fields are missing
+  // checks if there are any missing or extra fields
   if (missing.length > 0) {
-    return { success: false, error: `Missing fields: ${missing.join(', ')}` };
+    throw createError(`Missing fields: ${missing.join(', ')}`, { status: 400, type: 'VALIDATION' });
   }
-
-  // Reject if any unexpected fields are included
   if (unknown.length > 0) {
-    return { success: false, error: `Unknown fields: ${unknown.join(', ')}` };
+    throw createError(`Unknown fields: ${unknown.join(', ')}`, { status: 400, type: 'VALIDATION' });
   }
 
   /* need to implement bloom filter checks
-  // Reject if mail contains blacklisted URLs in title or body
+  // Reject if newMail contains blacklisted URLs in title or body
   const combinedText = [input.title, input.body].join(' ');
   if (!validateBodyAndTitle(combinedText)) {
-    return { success: false, error: 'Includes blacklisted URLs' };
   } */
 
-  // Input is valid
-  return { success: true };
+  return true;
 }
 
 /**
- * Constructs a validated mail object using the schema.
+ * Constructs a validated newMail object using the schema.
  * - Validates input against the config
  * - Injects internal fields like `id` and `timestamp`
  * - Normalizes specific fields (e.g. wraps `to` in an array)
  *
- * @param {object} input - Raw mail input from client
- * @param {number} id - Generated mail ID to assign
- * @returns {{ success: true, mail: object } | { success: false, error: string }}
+ * @param {object} input - Raw newMail input from client
+ * @param {number} id - Generated newMail ID to assign
+ * @returns {{ success: true, newMail: object } | { success: false, error: string }}
  */
-function buildMail(input, id) {
-  // Validate fields before attempting to build mail
-  const validation = validateMailInput(input);
-  if (!validation.success) {
-    return validation; // Forward validation error
-  }
-
-  // Construct mail object with internal fields
-  const mail = {
-    // Internal fields
-    id,
-    timestamp: new Date().toISOString()
+function buildMail(input) {
+  const newMail = {
+    id : mailIdCounter++,
+    timestamp: new Date().toISOString(),
   };
 
-  const inputFields = Object.keys(input);
-
-  // Parse validated input into mail object
-  for (const field of inputFields) {
+  // Filling fields with input according to the schema of newMail
+  for (const field of Object.keys(input)) {
     const cfg = mailInputSchema[field];
-
-    // Apply normalization if required (e.g. convert `to` into array) and add to mail fields
+    // Normalizing the
     if (cfg && cfg.normalize) {
-      mail[field] = Array.isArray(input[field])
-        ? input[field]
-        : [input[field]];
+      newMail[field] = Array.isArray(input[field]) ? input[field] : [input[field]];
     } else {
-      mail[field] = input[field];
+      newMail[field] = input[field];
     }
   }
-
-  return { success: true, mail };
+  mails.push(newMail);
+  return newMail;
 }
 
+
 /**
- * Filters a mail object to expose only public fields in the API response.
+ * Filters a newMail object to expose only public fields in the API response.
  * Includes internal public fields like id and timestamp.
  *
- * @param {object} mail - Full mail object
- * @returns {object} - Public-facing mail object
+ * @param {object} newMail - Full newMail object
+ * @returns {object} - Public-facing newMail object
  */
-function filterMailForOutput(mail) {
+function filterMailForOutput(newMail) {
   const output = {};
 
   // Include all public fields from schema
   for (const field in mailInputSchema) {
-    if (mailInputSchema[field].public && mail[field] !== undefined) {
-      output[field] = mail[field];
+    if (mailInputSchema[field].public && newMail[field] !== undefined) {
+      output[field] = newMail[field];
     }
   }
 
   // Add internal public fields manually, can be deleted if this fields shouldnt be public
-  if ('id' in mail) output.id = mail.id;
-  //if ('timestamp' in mail) output.timestamp = mail.timestamp;
+  if ('id' in newMail) output.id = newMail.id;
+  //if ('timestamp' in newMail) output.timestamp = newMail.timestamp;
 
   return output;
 }
 
+function getMailsForUser(username, limit) {
+  return mails
+    .filter(mail => mail.from === username ||
+      (Array.isArray(mail.to) && mail.to.includes(username)))
+    .slice(-limit).reverse();
+}
+
+function findMailById(id) {
+  if (!Number.isInteger(id)) {
+    throw createError('Mail ID must be a valid integer', { status: 400 });
+  }
+
+  const mail = mails.find(m => m.id === id);
+  if (!mail) {
+    throw createError('Mail not found', { status: 404 });
+  }
+
+  return mail;
+}
+
+function canUserAccessMail(mail, username) {
+  return (
+    mail.from === username ||
+    (Array.isArray(mail.to) && mail.to.includes(username))
+  );
+}
+
+function userIsSender(mail, username) {
+  if (mail.from !== username) {
+    throw createError('Only the sender can update this mail', { status: 403 });
+  }
+}
+
+function editMail(mail, updates) {
+  const editableFields = ['title', 'body'];
+
+  for (const field of editableFields) {
+    if (field in updates) {
+      if (typeof updates[field] !== 'string') {
+        throw createError(`Field "${field}" must be a string`, { status: 400 });
+      }
+      mail[field] = updates[field];
+    }
+  }
+
+  return mail;
+}
+
+function deleteMail(id) {
+  const index = mails.findIndex(m => m.id === id);
+  if (index === -1) {
+    throw createError('Mail not found', { status: 404 });
+  }
+  mails.splice(index, 1);
+}
+
+function searchMailsForUser(username, query) {
+  const lowerQuery = query.toLowerCase();
+
+  return mails.filter(mail => { const isSenderOrRecipient = mail.from === username ||
+      (Array.isArray(mail.to) && mail.to.includes(username));
+
+    const matchesContent =
+      (mail.title && mail.title.toLowerCase().includes(lowerQuery)) ||
+      (mail.body && mail.body.toLowerCase().includes(lowerQuery));
+
+    return isSenderOrRecipient && matchesContent;
+  });
+}
+
+
+
 module.exports = {
-  mailInputSchema,
   validateMailInput,
   buildMail,
-  filterMailForOutput
+  filterMailForOutput,
+  getMailsForUser,
+  findMailById,
+  canUserAccessMail,
+  userIsSender,
+  editMail,
+  deleteMail,
+  searchMailsForUser
 };

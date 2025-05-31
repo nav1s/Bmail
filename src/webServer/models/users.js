@@ -67,6 +67,22 @@ function findUserById(id) {
 
 
 /**
+ * Finds a user by username.
+ *
+ * @param {string} username - The username to search for.
+ * @returns {object} The user object if found.
+ * @throws {Error} If no user is found.
+ */
+function findUserByUsername(username) {
+  const user = users.find(u => u.username === username);
+  if (!user) {
+    throw createError('User not found', { status: 404 });
+  }
+  return user;
+}
+
+
+/**
  * @brief Returns an array of required user fields based on the centralized field config.
  */
 function getRequiredFields() {
@@ -96,5 +112,6 @@ module.exports = {
   getRequiredFields,
   createUser,
   findUserById,
-  login,
+  findUserByUsername,
+  login
 };
