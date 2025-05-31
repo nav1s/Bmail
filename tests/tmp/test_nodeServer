@@ -238,7 +238,7 @@ HTTP/1.1 201 Created
 
 ✅ 4.4 Valid mail Get
 
-curl -i GET http://localhost:8080/api/mails \
+curl -i -X GET http://localhost:8080/api/mails \
 -H "Authorization: 1"
 
 Expected: list of last 50 mails inside "[]"
