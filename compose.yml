@@ -79,3 +79,4 @@ services:
 networks:
   bmail:
     name: bmail
+    external: true
