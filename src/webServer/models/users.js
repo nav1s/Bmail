@@ -13,14 +13,21 @@ const userFieldConfig = {
 };
 
 /**
- * @brief Creates a new user with the provided data as a json.
- * @param {Object} userData - An object containing required user fields: username, firstName, lastName, password.
- * @throws {Error} If a user with the given username already exists.
- * @returns {Object} The newly created user object.
+ * Authenticates a user by username and password.
+ * @param {string} username
+ * @param {string} password
+ * @returns {Object} The authenticated user.
+ * @throws {Error} If credentials are invalid.
  */
 function login(username, password) {
-  return users.find(u => u.username === username && u.password === password);
+  // Searching for user with matching username and password
+  const user = users.find(u => u.username === username && u.password === password);
+  if (!user) {
+    throw new Error('Invalid username or password');
+  }
+  return user;
 }
+
 /**
  * @brief Creates a new user with the provided data.
  * @param userData Object containing username, firstName, lastName, password.

@@ -6,18 +6,20 @@ const { unauthorized } = require('../utils/httpResponses');
 /**
  * POST /api/tokens
  * Authenticates a user by username and password.
- * Sets them as the currently connected user.
+ * Returns their user ID as a token if successful.
  */
 function login(req, res) {
-  const { username, password } = req.body;
-  const user = users.login(username, password);
+  try {
+    // searching for user and trying to login
+    const { username, password } = req.body;
+    const user = users.login(username, password);
+    return ok(res, { token: String(user.id) });
 
-  if (!user) {
-    return unauthorized(res, 'Invalid username or password');
+  } catch (err) {
+    // Error if there was a problem connecting
+    return unauthorized(res, err.message);
   }
-
-  // Return user.id as the token
-  return ok(res, { token: String(user.id) });
 }
 
 module.exports = { login };
+
