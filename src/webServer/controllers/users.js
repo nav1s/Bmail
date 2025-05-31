@@ -45,19 +45,18 @@ exports.createUser = (req, res) => {
  * Returns public user details for a given user ID
  */
 exports.getUserById = (req, res) => {
-  // convert the ID from string to integer
-  const id = parseInt(req.params.id, 10);
-  // find the user by ID
-  const user = users.findUserById(id);
+  try {
+    // searching for user
+    const id = parseInt(req.params.id, 10);
+    const user = users.findUserById(id);
 
-  // If user not found, return 404 Not Found
-  if (!user) {
-    return notFound(res, 'User not found');
+    // Returning only public user fields
+    const publicUser = users.filterUserByVisibility(user, 'public');
+    return ok(res, publicUser);
+
+  } catch (err) {
+    // Throwing error if fails
+    return notFound(res, err.message);
   }
+};
 
-  // Use field visibility config to return safe subset of user fields
-  const publicUser = users.filterUserByVisibility(user, 'public');
-
-  // return the public user details
-  return ok(res, publicUser);
-}

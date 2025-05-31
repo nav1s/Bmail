@@ -39,17 +39,23 @@ function createUser(userData) {
 
   // add the new user to the users array
   users.push(newUser);
-  return {newUser};
+  return newUser;
 }
 
 /**
- * @brief Finds a user by their ID
- * @param id The ID of the user to find
- * @returns The user object if found, otherwise undefined.
+ * Finds a user by their ID.
+ * @param {number} id - The ID of the user to find.
+ * @returns {Object} The user object.
+ * @throws {Error} If no user is found with the given ID.
  */
 function findUserById(id) {
-  return users.find(user => user.id === id);
+  const user = users.find(user => user.id === id);
+  if (!user) {
+    throw new Error('User not found');
+  }
+  return user;
 }
+
 
 /**
  * @brief Returns an array of required user fields based on the centralized field config.
