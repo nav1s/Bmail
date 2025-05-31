@@ -21,9 +21,6 @@ app.use('/api/labels', labels);
 const blacklist = require('./routes/blacklist');
 app.use('/api/blacklist', blacklist);
 
-const search = require('./routes/search');
-app.use('/api/search', search);
-
 // Error for unmatched /api/* routes — return JSON
 app.use('/api', (req, res) => {
   res.status(404).json({ error: `Cannot ${req.method} ${req.originalUrl}` });
