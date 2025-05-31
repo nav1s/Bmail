@@ -1,6 +1,7 @@
 const users = require('../models/users.js')
 const { ok } = require('../utils/httpResponses');
-const { unauthorized } = require('../utils/httpResponses');
+const { httpError } = require('../utils/error');
+
 
 
 /**
@@ -17,7 +18,7 @@ function login(req, res) {
 
   } catch (err) {
     // Error if there was a problem connecting
-    return unauthorized(res, err.message);
+    return httpError(res, err);
   }
 }
 

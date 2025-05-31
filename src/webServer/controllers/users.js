@@ -1,5 +1,7 @@
 const users = require('../models/users.js');
 const { badRequest, notFound, ok, createdWithLocation } = require('../utils/httpResponses');
+const { httpError } = require('../utils/error');
+
 
 /**
  * @brief Handles HTTP request to create a new user.
@@ -34,9 +36,9 @@ exports.createUser = (req, res) => {
   try {
   const newUser = users.createUser(userData);
   return createdWithLocation(res, `/api/users/${newUser.id}`);
-} catch (err) {
-  return badRequest(res, err.message);
-}
+  } catch (err) {
+    return httpError(res, err);
+  }
 }
 
 
@@ -47,16 +49,14 @@ exports.createUser = (req, res) => {
 exports.getUserById = (req, res) => {
   try {
     // searching for user
-    const id = parseInt(req.params.id, 10);
-    const user = users.findUserById(id);
-
-    // Returning only public user fields
-    const publicUser = users.filterUserByVisibility(user, 'public');
-    return ok(res, publicUser);
-
+  const id = parseInt(req.params.id, 10);
+  const user = users.findUserById(id);
+  
+  // Returning only public user fields
+  const publicUser = users.filterUserByVisibility(user, 'public');
+  return ok(res, publicUser);
   } catch (err) {
-    // Throwing error if fails
-    return notFound(res, err.message);
+    return httpError(res, err);
   }
 };
 

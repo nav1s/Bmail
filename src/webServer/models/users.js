@@ -1,3 +1,5 @@
+const { createError } = require('../utils/error');
+
 // Static counter id
 let idCounter = 1;
 const users = [];
@@ -23,7 +25,7 @@ function login(username, password) {
   // Searching for user with matching username and password
   const user = users.find(u => u.username === username && u.password === password);
   if (!user) {
-    throw new Error('Invalid username or password');
+    throw createError('Invalid username or password', { status: 401, type: 'AUTH' });
   }
   return user;
 }
@@ -35,7 +37,7 @@ function login(username, password) {
 function createUser(userData) {
     // Checks username duplication
     if (users.find(u => u.username === userData.username)) {
-    throw new Error('Username already exists');
+      throw createError('Username already exists', { status: 400, type: 'DUPLICATE' });
     }
 
   // add id to the user data
@@ -58,7 +60,7 @@ function createUser(userData) {
 function findUserById(id) {
   const user = users.find(user => user.id === id);
   if (!user) {
-    throw new Error('User not found');
+    throw createError('User not found', { status: 404, type: 'NOT_FOUND' });
   }
   return user;
 }
