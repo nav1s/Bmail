@@ -2,14 +2,21 @@ const users = require('../models/users.js');
 const { badRequest, notFound, ok, createdWithLocation } = require('../utils/httpResponses');
 
 /**
- * @brief Creates a new user
- * @param req - Express request object
- * @param res - Express response object
+ * @brief Handles HTTP request to create a new user.
+ *
+ * Validates the request body to ensure all required fields are present.
+ * Delegates user creation to the model, and returns appropriate HTTP responses.
+ * If a user with the same username already exists, a 400 Bad Request is returned.
+ *
+ * @param {Object} req - Express request object, expected to contain user fields in `req.body`.
+ * @param {Object} res - Express response object used to send the result.
+ * @returns {Object} HTTP Response:
+ *   - 201 Created with `Location` header if successful.
+ *   - 400 Bad Request if required fields are missing or username already exists.
  */
 exports.createUser = (req, res) => {
   // Validate that the request body contains all required fields
   const requiredFields = users.getRequiredFields();
-  // count the number of missing fields
   const missing = requiredFields.filter(field => !req.body[field]);
 
   // If any required fields are missing, return a 400 Bad Request
@@ -17,20 +24,19 @@ exports.createUser = (req, res) => {
     return badRequest(res, `Missing fields: ${missing.join(', ')}`);
   }
 
+  //parses data into json
   const userData = {};
-
   for (const field of requiredFields) {
     userData[field] = req.body[field];
   }
-
-  const result = users.createUser(userData);
-
-  if (result.success === false) {
-    return badRequest(res, result.error);
-  }
-
-  console.log(`User created with ID: ${result.newUser.id}`);
-  return createdWithLocation(res, `/api/users/${result.newUser.id}`);
+  
+  // Trying to create a user, returning bad request with the error if failed
+  try {
+  const newUser = users.createUser(userData);
+  return createdWithLocation(res, `/api/users/${newUser.id}`);
+} catch (err) {
+  return badRequest(res, err.message);
+}
 }
 
 

@@ -13,10 +13,10 @@ const userFieldConfig = {
 };
 
 /**
- * @brief allow user login by username and password.
- * @param username the username of the user
- * @param password the password of the user
- * @returns user object if login is successful, otherwise undefined.
+ * @brief Creates a new user with the provided data as a json.
+ * @param {Object} userData - An object containing required user fields: username, firstName, lastName, password.
+ * @throws {Error} If a user with the given username already exists.
+ * @returns {Object} The newly created user object.
  */
 function login(username, password) {
   return users.find(u => u.username === username && u.password === password);
@@ -27,9 +27,9 @@ function login(username, password) {
  */
 function createUser(userData) {
     // Checks username duplication
-  if (users.find(u => u.username === userData.username)) {
-    return { success: false, error: 'Username already exists.' };
-  }
+    if (users.find(u => u.username === userData.username)) {
+    throw new Error('Username already exists');
+    }
 
   // add id to the user data
   const newUser = {
@@ -39,7 +39,7 @@ function createUser(userData) {
 
   // add the new user to the users array
   users.push(newUser);
-  return {success: true, newUser};
+  return {newUser};
 }
 
 /**
