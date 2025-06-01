@@ -60,6 +60,15 @@ function noContent(res) {
   return res.status(204).end();
 }
 
+/**
+ * sends a 500 Internal Server Error with a JSON error message.
+ * @param res the response object
+ * @param message  the error message to send
+ */
+function serverError(res, message = 'Internal Server Error') {
+  return res.status(500).json({ error: message }).end();
+}
+
 module.exports = {
   ok,
   badRequest,
@@ -67,5 +76,6 @@ module.exports = {
   notFound,
   created,
   createdWithLocation,
-  noContent
+  noContent,
+  serverError
 };
