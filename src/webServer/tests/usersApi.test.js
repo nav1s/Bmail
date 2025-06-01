@@ -65,7 +65,7 @@ test('returns 400 when trying to create a user with an existing username', async
     .set('Content-Type', 'application/json')
     .expect(400)
     .expect('Content-Type', /application\/json/)
-    .expect({ error: 'Username already exists.' });
+    .expect({ error: 'Username already exists' });
 });
 
 // ❌ 1.4 Missing content in required fields in registration

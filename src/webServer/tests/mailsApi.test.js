@@ -65,7 +65,7 @@ test('returns 400 when required fields are missing', async () => {
     .set('Authorization', '1') // Assuming user ID 1 is logged in
     .expect(400)
     .expect('Content-Type', /application\/json/)
-    .expect({ error: 'Missing fields' });
+    .expect({ error: 'Missing fields: to, title, body' });
 });
 
 // ✅ 4.31 Valid mail creation
