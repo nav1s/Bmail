@@ -75,7 +75,7 @@ test('creates a valid mail (4.31)', async () => {
     .set('Authorization', '1')
     .set('Content-Type', 'application/json')
     .send({
-      to: ["1"],
+      to: ["alice123"],
       title: "Hello again",
       body: "This should work"
     })
@@ -83,8 +83,8 @@ test('creates a valid mail (4.31)', async () => {
     .expect('Content-Type', /application\/json/);
 
   assert.deepStrictEqual(response.body, {
-    from: 1,
-    to: [1],
+    from: "alice123",
+    to: ["alice123"],
     title: "Hello again",
     body: "This should work",
     id: 1
@@ -98,7 +98,7 @@ test('creates another valid mail (4.32)', async () => {
     .set('Authorization', '1')
     .set('Content-Type', 'application/json')
     .send({
-      to: [1],
+      to: ["alice123"],
       title: "Hello Wirtz",
       body: "Sign for Liverpool"
     })
@@ -106,8 +106,8 @@ test('creates another valid mail (4.32)', async () => {
     .expect('Content-Type', /application\/json/);
 
   assert.deepStrictEqual(response.body, {
-    from: 1,
-    to: [1],
+    from: "alice123",
+    to: ["alice123"],
     title: "Hello Wirtz",
     body: "Sign for Liverpool",
     id: 2
