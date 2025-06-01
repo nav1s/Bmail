@@ -504,7 +504,7 @@ curl -i http://localhost:8080/api/mails/1
 # {
 #   "id": 1,
 #   "from": 1,
-#   "to": [2],
+#   "to": ["2"],
 #   "title": "Test mail",
 #   "body": "Test content",
 #   "timestamp": 1722023771000
