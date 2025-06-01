@@ -34,19 +34,19 @@ exports.addToBlacklist = (req, res) => {
         }
 
         // otherwise, return an error
-        return serverError(res, 'Failed to process the request');
+        return serverError(res, 'unexpected response from server');
     });
 
     // return a server error if the connection ends unexpectedly
     client.on('end', () => {
-        console.error('Disconnected from server');
-        return serverError(res, 'Failed to process the request');
+        console.error('disconnected from server');
+        return serverError(res, 'disconnected from server');
     });
 
     // return a server error if there is an error connecting to the server
     client.on('error', (error) => {
-        console.error('Error connecting to server:', error);
-        return serverError(res, 'Failed to process the request');
+        console.error('error connecting to server:', error);
+        return serverError(res, 'error connecting to server');
     });
 }
 
@@ -90,19 +90,19 @@ exports.removeFromBlacklist = (req, res) => {
         }
 
         // otherwise, return an error
-        return serverError(res, 'Failed to process the request');
+        return serverError(res, 'unexpected response from server');
     });
 
     // return a server error if the connection ends unexpectedly
     client.on('end', () => {
-        console.error('Disconnected from server');
-        return serverError(res, 'Failed to process the request');
+        console.error('disconnected from server');
+        return serverError(res, 'disconnected from server');
     });
 
     // return a server error if there is an error connecting to the server
     client.on('error', (error) => {
-        console.error('Error connecting to server:', error);
-        return serverError(res, 'Failed to process the request');
+        console.error('error connecting to server:', error);
+        return serverError(res, 'error connecting to server');
     });
 
 }
