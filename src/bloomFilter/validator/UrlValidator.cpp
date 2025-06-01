@@ -4,7 +4,7 @@ using namespace std;
 
 UrlValidator::UrlValidator()
     : url(
-        R"(^(?:https?:\/\/)?(?:www\.)?[a-zA-Z]{2,}(?:\.[a-zA-Z]{2,}){1,2}(?:\/[a-zA-Z0-9]{2,})?|(?:https?:\/\/)?(?:www\.)?[a-zA-Z0-9]{2,}(?:\.[a-zA-Z0-9]{2,}){2,}(?:\/[a-zA-Z0-9]{2,})?$)"
+        R"(^(?:https?:\/\/)?(?:www\.)?[a-zA-Z]{1,}(?:\.[a-zA-Z]{2,}){1,2}(?:\/[a-zA-Z0-9]{2,})?|(?:https?:\/\/)?(?:www\.)?[a-zA-Z0-9]{2,}(?:\.[a-zA-Z0-9]{2,}){2,}(?:\/[a-zA-Z0-9]{2,})?$)"
     ) {}
 
 UrlValidator::UrlValidator(const UrlValidator& other)
