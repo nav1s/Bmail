@@ -1,3 +1,5 @@
+const { createError } = require('../utils/error');
+
 // Static counter id
 let idCounter = 1;
 const users = [];
@@ -13,23 +15,30 @@ const userFieldConfig = {
 };
 
 /**
- * @brief allow user login by username and password.
- * @param username the username of the user
- * @param password the password of the user
- * @returns user object if login is successful, otherwise undefined.
+ * Authenticates a user by username and password.
+ * @param {string} username
+ * @param {string} password
+ * @returns {Object} The authenticated user.
+ * @throws {Error} If credentials are invalid.
  */
 function login(username, password) {
-  return users.find(u => u.username === username && u.password === password);
+  // Searching for user with matching username and password
+  const user = users.find(u => u.username === username && u.password === password);
+  if (!user) {
+    throw createError('Invalid username or password', { status: 401, type: 'AUTH' });
+  }
+  return user;
 }
+
 /**
  * @brief Creates a new user with the provided data.
  * @param userData Object containing username, firstName, lastName, password.
  */
 function createUser(userData) {
     // Checks username duplication
-  if (users.find(u => u.username === userData.username)) {
-    return { success: false, error: 'Username already exists.' };
-  }
+    if (users.find(u => u.username === userData.username)) {
+      throw createError('Username already exists', { status: 400, type: 'DUPLICATE' });
+    }
 
   // add id to the user data
   const newUser = {
@@ -39,17 +48,39 @@ function createUser(userData) {
 
   // add the new user to the users array
   users.push(newUser);
-  return {success: true, newUser};
+  return newUser;
 }
 
 /**
- * @brief Finds a user by their ID
- * @param id The ID of the user to find
- * @returns The user object if found, otherwise undefined.
+ * Finds a user by their ID.
+ * @param {number} id - The ID of the user to find.
+ * @returns {Object} The user object.
+ * @throws {Error} If no user is found with the given ID.
  */
 function findUserById(id) {
-  return users.find(user => user.id === id);
+  const user = users.find(user => user.id === id);
+  if (!user) {
+    throw createError('User not found', { status: 404, type: 'NOT_FOUND' });
+  }
+  return user;
 }
+
+
+/**
+ * Finds a user by username.
+ *
+ * @param {string} username - The username to search for.
+ * @returns {object} The user object if found.
+ * @throws {Error} If no user is found.
+ */
+function findUserByUsername(username) {
+  const user = users.find(u => u.username === username);
+  if (!user) {
+    throw createError('User not found', { status: 404 });
+  }
+  return user;
+}
+
 
 /**
  * @brief Returns an array of required user fields based on the centralized field config.
@@ -81,5 +112,6 @@ module.exports = {
   getRequiredFields,
   createUser,
   findUserById,
-  login,
+  findUserByUsername,
+  login
 };

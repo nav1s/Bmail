@@ -1,6 +1,7 @@
-const { labels } = require('../data/memory');
-const { buildLabel } = require('../models/labelSchema');
-const { badRequest, created, ok, notFound, noContent } = require('../utils/httpResponses');
+const { getAllLabelsForUser, addLabelForUser, getLabelByUserAndId, deleteLabelForUser } = require('../models/labelSchema');
+const { created, badRequest, notFound, ok, noContent } = require('../utils/httpResponses');
+const { httpError } = require('../utils/error');
+
 
 /**
  * GET /api/labels
@@ -11,36 +12,45 @@ const { badRequest, created, ok, notFound, noContent } = require('../utils/httpR
  */
 function listLabels(req, res) {
   const userId = req.user.id;
-  // Fetch labels of users, or an empty array if user doesnt have labels yet
-  const userLabelList = labels[userId] || [];
-  return ok(res, userLabelList);
+
+  try {
+    const userLabelList = getAllLabelsForUser(userId);
+    return ok(res, userLabelList);
+  } catch (err) {
+    return httpError(res, err);
+    }
 }
 
 /**
  * POST /api/labels
  * Creates a new label for the logged-in user.
+ *
+ * @param {import('express').Request} req - Express request object, expects `req.user.id` and JSON body.
+ * @param {import('express').Response} res - Express response object.
+ * @returns {Object} HTTP Response:
+ *   - 201 Created with the new label if successful.
+ *   - 400 Bad Request if input is invalid or label already exists.
  */
 function createLabel(req, res) {
   const userId = req.user.id;
-  // Init labels array for user
-  if (!labels[userId]) {
-    labels[userId] = [];
+  const keys = Object.keys(req.body);
+
+  // Validating that we get exactly one label and extracting it.
+  if (keys.length !== 1) {
+    return badRequest(res, 'Request body must contain exactly one field');
+  }
+  const name = req.body.name;
+  if (!name || typeof name !== 'string') {
+    return badRequest(res, 'Label name must be a non-empty string');
   }
 
-  // Builds label
-  const id = labels[userId].length + 1;
-  const result = buildLabel(req.body, id);
-  if (!result.success) {
-    return badRequest(res, result.error);
-  }
-
-  if (labels[userId].some(l => l.name === result.label.name)) {
-    return badRequest(res, 'Label with this name already exists');
-  }
-
-  // Adds label
-  labels[userId].push(result.label);
-  return created(res, result.label);
+  // Adding label to user
+  try {
+    const label = addLabelForUser(userId, name);
+    return created(res, label);
+  } catch (err) {
+    return httpError(res, err);
+    }
 }
 
 /**
@@ -52,46 +62,62 @@ function createLabel(req, res) {
  */
 function getLabelById(req, res) {
   const userId = req.user.id;
-  const labelId = parseInt(req.params.id, 10);
-  // Gets user labels or an empty arr if he doesnt have any
-  const label = (labels[userId] || []).find(l => l.id === labelId);
+  // Checking we got a Label id
+  const rawId = req.params.id;
+  if (rawId === undefined) {
+    return badRequest(res, 'Label ID is required');
+  }
 
-  if (!label) return notFound(res, 'Label not found');
-  return ok(res, label);
+  // Checking its a number
+  const labelId = Number(rawId);
+  if (!Number.isInteger(labelId)) {
+    return badRequest(res, 'Label ID must be a valid integer');
+  }
+
+  // Getting the label
+  try {
+    const label = getLabelByUserAndId(userId, labelId);
+    return ok(res, label);
+  } catch (err) {
+    return httpError(res, err);
+    }
 }
 
+
+
+const { updateLabelForUser } = require('../models/labelSchema');
 
 /**
  * PATCH /api/labels/:id
  * Updates the name of a label (if it belongs to the current user).
- * Enforces uniqueness of names per user.
+ * Enforces uniqueness of label names per user.
  *
- * @param {import('express').Request} req - Express request with body: { name: string }
- * @param {import('express').Response} res - Express response
+ * @param {import('express').Request} req - Express request object
+ * @param {import('express').Response} res - Express response object
  */
 function updateLabelById(req, res) {
   const userId = req.user.id;
-  const labelId = parseInt(req.params.id, 10);
-  // Gets user labels or an empty arr if he doesnt have any
-  
-  const labelList = labels[userId] || [];
-  const label = labelList.find(l => l.id === labelId);
-  // If label doesnt exist, return not found
-  if (!label) return notFound(res, 'Label not found');
 
+  // Validate fields
+  const rawId = req.params?.id;
+  if (!rawId) return badRequest(res, 'Label ID parameter is missing');
+  const labelId = Number(rawId);
+  if (!Number.isInteger(labelId)) {
+    return badRequest(res, 'Label ID must be a valid integer');
+  }
   const newName = req.body.name;
-  const duplicate = labelList.find(l => l.name === newName && l.id !== labelId);
-  // If a label with the new name already exists, return bad request
-  if (duplicate) {
-    return badRequest(res, 'Label with this name already exists');
+  if (newName === undefined) {
+    return badRequest(res, 'Missing "name" field in request body');
   }
 
-  // Updates new label
   
-  label.name = newName;
-  return ok(res, label);
+  try {
+    const updatedLabel = updateLabelForUser(userId, labelId, newName);
+    return ok(res, updatedLabel);
+  } catch (err) {
+    return httpError(res, err);
+    }
 }
-
 
 /**
  * DELETE /api/labels/:id
@@ -102,16 +128,22 @@ function updateLabelById(req, res) {
  */
 function deleteLabelById(req, res) {
   const userId = req.user.id;
-  const labelId = parseInt(req.params.id, 10);
-  // Gets user labels or an empty arr if he doesnt have any
-  const labelList = labels[userId] || [];
-  const index = labelList.findIndex(l => l.id === labelId);
 
+  // Validates fields
+  const rawId = req.params?.id;
+  if (!rawId) return badRequest(res, 'Label ID parameter is missing');
+  const labelId = Number(rawId);
+  if (!Number.isInteger(labelId)) {
+    return badRequest(res, 'Label ID must be a valid integer');
+  }
 
-  if (index === -1) return notFound(res, 'Label not found');
-
-  labelList.splice(index, 1);
-  return noContent(res);
+  // Deleting label
+  try {
+    deleteLabelForUser(userId, labelId);
+    return noContent(res);
+  } catch (err) {
+  return httpError(res, err);
+  }
 }
 
 

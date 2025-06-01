@@ -36,11 +36,11 @@ async function createTestUserAndReturn() {
 // Create initial mails for query tests
 async function createInitialMails() {
   const mails = [
-    { to: [1], title: "Hello again", body: "This should work" },
-    { to: [1], title: "Hello Wirtz", body: "Sign for Liverpool" },
-    { to: [1], title: "query Match Test", body: "This is a unique phrase xyz123" },
-    { to: [1], title: "Foo bar news", body: "query scores again" },
-    { to: [1], title: "Test query subject", body: "Body with some content" }
+    { to: ["alice123"], title: "Hello again", body: "This should work" },
+    { to: ["alice123"], title: "Hello Wirtz", body: "Sign for Liverpool" },
+    { to: ["alice123"], title: "query Match Test", body: "This is a unique phrase xyz123" },
+    { to: ["alice123"], title: "Foo bar news", body: "query scores again" },
+    { to: ["alice123"], title: "Test query subject", body: "Body with some content" }
   ];
 
   for (const mail of mails) {
