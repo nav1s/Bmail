@@ -47,6 +47,17 @@ test('4.11 Valid label create', async () => {
 
   assert.strictEqual(response.body.id, 1);
   assert.strictEqual(response.body.name, "Important");
+
+  const response2 = await api
+    .post('/api/labels')
+    .set('Authorization', '1')
+    .set('Content-Type', 'application/json')
+    .send({ name: "Too Important" })
+    .expect(201)
+    .expect('Content-Type', /application\/json/);
+
+  assert.strictEqual(response2.body.id, 2);
+  assert.strictEqual(response2.body.name, "Too Important");
 });
 
 // ✅ 4.12 - Valid label GET by id
@@ -129,4 +140,32 @@ test('4.17 Valid GET all labels', async () => {
   // Response body should be an array containing at least the recreated label
   assert(Array.isArray(response.body));
   assert(response.body.some(label => label.name === "Recreated Label"));
+});
+
+// ❌ 4.18 - Invalid Try to create duplicate label (should return 400)
+test('❌ Try to create duplicate label (should return 400)', async () => {
+    // First create a label
+    const response = await api
+    .post('/api/labels')
+    .set('Authorization', '1')
+    .set('Content-Type', 'application/json')
+    .send({ name: "Important" })
+    .expect(201)
+    .expect('Content-Type', /application\/json/);
+
+
+  assert.strictEqual(response.body.id, 4);
+  assert.strictEqual(response.body.name, "Important");
+
+  // Try to create another label with the same name
+  // This should return 400 since the label already exists
+  const response2 = await api
+    .post('/api/labels')
+    .set('Authorization', '1')
+    .set('Content-Type', 'application/json')
+    .send({ name: "Important" })
+    .expect(400)
+    .expect('Content-Type', /application\/json/);
+
+  assert.strictEqual(response2.body.error, "Label with this name already exists");
 });
