@@ -1,10 +1,12 @@
 # Bmail
 
-Bmail is a mail server application featuring a C++-based Bloom filter for blacklist management and a Node.js web server providing a RESTful API for mail operations. The project also includes a Python client for interacting with the Bloom filter and utilizes Docker for streamlined deployment and testing.
-
 > **Previous parts of the project:**
 > - Part 1: https://github.com/Binja12/Bmail/tree/part1
 > - Part 2: https://github.com/Binja12/Bmail/tree/part2
+
+Bmail is a mail server application featuring a C++-based Bloom filter for blacklist management and a Node.js web server providing a RESTful API for mail operations.
+
+The project also includes a Python client for interacting with the Bloom filter and utilizes Docker for streamlined deployment and testing.
 
 ## Demo
 
@@ -36,6 +38,21 @@ docker compose up --detach --pull always --remove-orphans --build --wait bloom-f
 > **if you want to start with a fresh Bloom filter, delete the data file with the following command:**
 ```bash
 rm data/bloomFilter.txt
+```
+
+### Sample curl commands for the api
+
+> **register a new user:**
+
+```bash
+curl -i -X POST http://localhost:8080/api/users \
+-H "Content-Type: application/json" \
+-d '{
+  "firstName": "Alice",
+  "lastName": "Test",
+  "username": "alice123",
+  "password": "securepass"
+}'
 ```
 
 ## Useful commands from previous exercises
