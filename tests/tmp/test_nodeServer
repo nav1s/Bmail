@@ -170,7 +170,7 @@ curl -i -X POST http://localhost:8080/api/mails \
 -H "Content-Type: application/json" \
 -d '{
   "from": "Alice",
-  "to": [1],
+  "to": ["alice123"],
   "title": "Hello",
   "body": "This should fail"
 }'
@@ -280,7 +280,7 @@ HTTP/1.1 200 OK
 {
   "id": 1,
   "from": 1,
-  "to": [1],
+  "to": ["alice123"],
   "title": "Updated Title",
   "body": "This should work",
   "timestamp": "..."
@@ -519,7 +519,7 @@ curl -i http://localhost:8080/api/mails/1
 # {
 #   "id": 1,
 #   "from": 1,
-#   "to": ["2"],
+#   "to": ["alice123"],
 #   "title": "Test mail",
 #   "body": "Test content",
 #   "timestamp": 1722023771000
@@ -557,7 +557,7 @@ curl -i -X PATCH http://localhost:8080/api/mails/1 \
 # {
 #   "id": 1,
 #   "from": 1,
-#   "to": [2],
+#   "to": [alice123],
 #   "title": "Test mail",
 #   "body": "Updated body",
 #   "timestamp": 1722023771000
