@@ -68,17 +68,6 @@ exports.notFound = (res, message = 'Not found') =>
  * @param res the response object
  * @param message  the error message to send
  */
-function serverError(res, message = 'Internal Server Error') {
+exports.serverError = (res, message = 'Internal Server Error') => {
   return res.status(500).json({ error: message }).end();
-}
-
-module.exports = {
-  ok,
-  badRequest,
-  unauthorized,
-  notFound,
-  created,
-  createdWithLocation,
-  noContent,
-  serverError
 };
