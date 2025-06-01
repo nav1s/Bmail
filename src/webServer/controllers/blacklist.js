@@ -1,4 +1,4 @@
-const { serverError, badRequest, noContent, notFound } = require("../utils/httpResponses");
+const { created, serverError, badRequest, noContent, notFound } = require("../utils/httpResponses");
 const net = require("net");
 
 /**
@@ -7,8 +7,10 @@ const net = require("net");
  * @param res the response object used to send the response back to the client
  */
 exports.addToBlacklist = (req, res) => {
+    console.log('Received request to add URL to blacklist:', req.body);
     // check if the request has the required parameters
     if (!req.body || !req.body.url) {
+        console.error('Missing fields in request body:', req.body);
         return badRequest(res, 'Missing fields: url');
     }
 
@@ -30,7 +32,7 @@ exports.addToBlacklist = (req, res) => {
         // check if the response indicates success
         if (data.toString() === '201 Created') {
             console.log('Successfully added to blacklist');
-            return noContent(res);
+            return created(res);
         }
 
         // otherwise, return an error
@@ -86,7 +88,7 @@ exports.removeFromBlacklist = (req, res) => {
         // check if the response indicates that the URL was not found
         if (data.toString() === '404 Not Found') {
             console.log('URL not found in blacklist');
-            notFound(res, 'URL not found in blacklist');
+            return notFound(res, 'URL not found in blacklist');
         }
 
         // otherwise, return an error
