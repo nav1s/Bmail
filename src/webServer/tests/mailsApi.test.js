@@ -68,7 +68,7 @@ test('returns 400 when required fields are missing', async () => {
     .expect({ error: 'Missing fields' });
 });
 
-// ✅ 4.31 Valid mail creation
+// ✅ 4.3 Valid mail creation
 test('creates a valid mail (4.31)', async () => {
   const response = await api
     .post('/api/mails')
@@ -91,7 +91,7 @@ test('creates a valid mail (4.31)', async () => {
   });
 });
 
-// ✅ 4.32 Another valid mail creation
+// ✅ 4.4 Another valid mail creation
 test('creates another valid mail (4.32)', async () => {
   const response = await api
     .post('/api/mails')
@@ -114,7 +114,7 @@ test('creates another valid mail (4.32)', async () => {
   });
 });
 
-// ✅ 4.4 Valid mail Get
+// ✅ 4.5 Valid mail Get
 test('returns list of last mails (4.4)', async () => {
   const response = await api
     .get('/api/mails')
@@ -126,7 +126,7 @@ test('returns list of last mails (4.4)', async () => {
   assert(response.body.length >= 2);
 });
 
-// ✅ 4.5 Valid mail GET by id
+// ✅ 4.6 Valid mail GET by id
 test('gets mail by id (4.5)', async () => {
   const response = await api
     .get('/api/mails/1')
@@ -138,7 +138,7 @@ test('gets mail by id (4.5)', async () => {
   assert.strictEqual(response.body.title, "Hello again");
 });
 
-// ❌ 4.6 Invalid mail GET by id
+// ❌ 4.7 Invalid mail GET by id
 test('returns 404 for invalid mail id (4.6)', async () => {
   await api
     .get('/api/mails/555')
@@ -148,7 +148,7 @@ test('returns 404 for invalid mail id (4.6)', async () => {
     .expect({ error: 'Mail not found' });
 });
 
-// ✅ 4.7 Valid mail PATCH
+// ✅ 4.8 Valid mail PATCH
 test('updates mail title by id (4.7)', async () => {
   const response = await api
     .patch('/api/mails/1')
@@ -161,7 +161,7 @@ test('updates mail title by id (4.7)', async () => {
   assert.strictEqual(response.body.title, "Updated Title");
 });
 
-// ❌ 4.8 Invalid mail PATCH
+// ❌ 4.9 Invalid mail PATCH
 test('returns 404 on patching non-existent mail (4.8)', async () => {
   await api
     .patch('/api/mails/555')
@@ -173,7 +173,7 @@ test('returns 404 on patching non-existent mail (4.8)', async () => {
     .expect({ error: 'Mail not found' });
 });
 
-// ✅ 4.9 Valid mail DELETE
+// ✅ 4.10 Valid mail DELETE
 test('deletes mail by id (4.9)', async () => {
   await api
     .delete('/api/mails/1')
@@ -181,7 +181,7 @@ test('deletes mail by id (4.9)', async () => {
     .expect(204);
 });
 
-// ❌ 4.10 Invalid mail DELETE
+// ❌ 4.11 Invalid mail DELETE
 test('returns 404 on deleting non-existent mail (4.10)', async () => {
   await api
     .delete('/api/mails/555')
@@ -191,7 +191,7 @@ test('returns 404 on deleting non-existent mail (4.10)', async () => {
     .expect({ error: 'Mail not found' });
 });
 
-// ❌ 4.11 Invalid mail POST without the user signed up
+// ❌ 4.12 Invalid mail POST without the user signed up
 test('returns 401 when trying to create mail without login (4.11)', async () => {
   await api
     .post('/api/mails')

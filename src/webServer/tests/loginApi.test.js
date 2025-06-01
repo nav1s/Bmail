@@ -19,7 +19,7 @@ async function createTestUser() {
     .set('Content-Type', 'application/json');
 }
 
-// 2.1 Invalid username
+// ❌ 2.1 Invalid username
 test('returns 401 and error message when username does not exist', async () => {
   await api
     .post('/api/tokens')
@@ -33,7 +33,7 @@ test('returns 401 and error message when username does not exist', async () => {
     .expect({ error: 'Invalid username or password' });
 });
 
-// 2.2 Invalid password
+// ❌ 2.2 Invalid password
 test('returns 401 and error message when password is incorrect', async () => {
   // Ensure the user exists
   await createTestUser();
@@ -50,7 +50,7 @@ test('returns 401 and error message when password is incorrect', async () => {
     .expect({ error: 'Invalid username or password' });
 });
 
-// 2.3 Valid login
+// ✅ 2.3 Valid login
 test('returns 200 and token when login is successful', async () => {
   // Ensure the user exists
   await createTestUser();
@@ -71,7 +71,7 @@ test('returns 200 and token when login is successful', async () => {
   assert.strictEqual(response.status, 200);
 });
 
-// 2.4 Missing password
+// ❌ 2.4 Missing password
 test('returns 401 and error message when password is empty', async () => {
   await createTestUser();
 

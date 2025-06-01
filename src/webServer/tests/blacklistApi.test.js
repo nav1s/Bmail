@@ -86,6 +86,7 @@ test('1.4 invalid POST mail with blacklisted URL', async () => {
   });
 });
 
+// ✅ 7.5 Valid DELETE blacklist
 test('1.5 Valid DELETE blacklist', async () => {
   const response = await request(app)
     .delete(`/api/blacklist/${blacklistedId}`)
@@ -94,6 +95,7 @@ test('1.5 Valid DELETE blacklist', async () => {
   assert.strictEqual(response.status, 204);
 });
 
+// ✅ 7.6 Valid POST mail - after DELETE of blacklisted URL
 test('1.6 Valid POST mail - after DELETE of blacklisted URL', async () => {
   const response = await request(app)
     .post('/api/mails')
