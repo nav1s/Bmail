@@ -1,10 +1,11 @@
 {
   "name": "bmail",
   "version": "0.0.17",
-  "description": "better gmail project",
-  "main": "app.js",
+  "description": "",
+  "main": "index.js",
   "scripts": {
-    "start": "node app.js"
+    "start": "node index.js",
+    "test": "node --test"
   },
   "keywords": [],
   "author": "",
@@ -12,5 +13,8 @@
   "type": "commonjs",
   "dependencies": {
     "express": "^5.1.0"
+  },
+  "devDependencies": {
+    "supertest": "^7.1.1"
   }
 }

@@ -1,7 +1,11 @@
 const express = require('express');
-var app = express();
+const app = express();
 app.use(express.json());
 
+// Tag disable
+app.disable('etag');
+
+// Routes
 const users = require('./routes/users');
 app.use('/api/users', users);
 
@@ -20,6 +24,15 @@ app.use('/api/blacklist', blacklist);
 const search = require('./routes/search');
 app.use('/api/search', search);
 
-console.log('Web server started on port 8080');
+// Error for unmatched /api/* routes — return JSON
+app.use('/api', (req, res) => {
+  res.status(404).json({ error: `Cannot ${req.method} ${req.originalUrl}` });
+});
 
-app.listen(8080)
+// Fallback error handler (optional)
+app.use((err, req, res, next) => {
+  console.error(err);
+  res.status(500).json({ error: 'Internal Server Error' });
+});
+
+module.exports = app;
