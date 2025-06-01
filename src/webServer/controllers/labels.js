@@ -1,4 +1,4 @@
-const { getAllLabelsForUser, addLabelForUser, getLabelByUserAndId, deleteLabelForUser } = require('../models/labelSchema');
+const { getAllLabelsForUser, addLabelForUser, getLabelByUserAndId, deleteLabelForUser } = require('../models/labels');
 const { created, badRequest, notFound, ok, noContent } = require('../utils/httpResponses');
 const { httpError } = require('../utils/error');
 
@@ -85,7 +85,7 @@ function getLabelById(req, res) {
 
 
 
-const { updateLabelForUser } = require('../models/labelSchema');
+const { updateLabelForUser } = require('../models/labels');
 
 /**
  * PATCH /api/labels/:id
