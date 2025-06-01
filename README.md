@@ -1,13 +1,10 @@
 # Bmail
 
+Bmail is a mail server application featuring a C++-based Bloom filter for blacklist management and a Node.js web server providing a RESTful API for mail operations. The project also includes a Python client for interacting with the Bloom filter and utilizes Docker for streamlined deployment and testing.
+
 > **Previous parts of the project:**
 > - Part 1: https://github.com/Binja12/Bmail/tree/part1
 > - Part 2: https://github.com/Binja12/Bmail/tree/part2
-
-This project implements a server and client application demonstrating the use of a Bloom filter.
-Users can add urls to the filter, query whether a url has been blocked and delete a url from the filter.
-
-It utilizes Docker for building and running server, client and the unit tests, ensuring a consistent environment.
 
 ## Demo
 
@@ -31,16 +28,21 @@ cd bmail
 
 ### Running the Application
 
-
 ```bash
 docker compose down --remove-orphans
 docker compose up --detach --pull always --remove-orphans --build --wait bloom-filter web-server
 ```
 
+> **if you want to start with a fresh Bloom filter, delete the data file with the following command:**
+```bash
+rm data/bloomFilter.txt
+```
+
+## Useful commands from previous exercises
+
 ### Running the python client
 ```bash
 docker compose run --pull always --remove-orphans --rm python-client
-
 ```
 
 ### Running the bloom filter unit tests
@@ -48,12 +50,6 @@ docker compose run --pull always --remove-orphans --rm python-client
 ```bash
 docker compose run --build --pull always --remove-orphans --rm bloom-filter-tests
 ```
-
-The application preserves the Bloom filter state between runs. If you want to start with a fresh Bloom filter, delete the data file:
-```bash
-rm data/bloomFilter.txt
-```
-
 ### How SOLID Principles Helped Us Handle Changes Smoothly
 
 How SOLID Principles Helped Us Handle Changes Smoothly
@@ -72,4 +68,4 @@ Changes in output format did require a small change: we updated the return value
 - **Swapping Console I/O with TCP**  
 Moving from console to TCP I/O was surprisingly smooth. Because we used abstract Reader and Writer objects from the start, we only had to switch the implementations. The rest of the code didn’t even notice the difference.
 
-Overall, because our system was built to be extendable from day one, we were able to make all these changes without doing any big rewrites gnor major implemintation changes.
+Overall, because our system was built to be extendable from day one, we were able to make all these changes without doing any big rewrites nor major implementation changes.
