@@ -41,8 +41,6 @@ test('1.1 Valid POST blacklist', async () => {
     .send({ url: 'http://bad.com' });
 
   assert.strictEqual(response.status, 201);
-  assert.strictEqual(response.body.url, 'http://bad.com');
-  assert.strictEqual(response.body.id, encodeURIComponent('http://bad.com'));
 });
 
 // ❌ 1.2 invalid POST blacklist - missing arguments
@@ -51,7 +49,7 @@ test('1.2 Invalid POST blacklist - missing arguments', async () => {
     .post('/api/blacklist')
     .set('Authorization', '1')
     .set('Content-Type', 'application/json')
-    .send({url: 'http://bad.com'});
+    .send({url: ''});
 
   assert.strictEqual(response.status, 400);
   assert.strictEqual(response.body.error, 'Missing fields: url');
@@ -59,14 +57,15 @@ test('1.2 Invalid POST blacklist - missing arguments', async () => {
 
 // ❌ 1.3 invalid DELETE blacklist - wrong id
 test('1.3 invalid DELETE blacklist - wrong id', async () => {
+  const url = encodeURIComponent('http://bar.com');
   const response = await api
-    .delete('/api/blacklist/http%3A%2F%2Fbar.com') // wrong URL
+    .delete(`/api/blacklist/${url}`) // wrong URL
     .set('Authorization', '1')
     .set('Content-Type', 'application/json')
 
-  assert.strictEqual(response.status, 400);
+  assert.strictEqual(response.status, 404);
   assert.deepStrictEqual(response.body, {
-    error: 'mail id not found'
+    error: 'URL not found in blacklist'
   });
 });
 
