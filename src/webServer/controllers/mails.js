@@ -1,5 +1,5 @@
-const { buildMail, filterMailForOutput, validateMailInput, findMailById, editMail, deleteMail, userIsSender, canUserAccessMail, getMailsForUser, searchMailsForUser } = require('../models/mailSchema');
-const { badRequest, created, unauthorized, ok, notFound, noContent, forbidden } = require('../utils/httpResponses');
+const { buildMail, filterMailForOutput, validateMailInput, findMailById, editMail, deleteMail, userIsSender, canUserAccessMail, getMailsForUser, searchMailsForUser } = require('../models/mails.js');
+const { badRequest, created, ok, noContent, forbidden } = require('../utils/httpResponses');
 const { httpError, createError } = require('../utils/error');
 const users = require('../models/users.js');
 
