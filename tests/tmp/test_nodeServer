@@ -161,7 +161,7 @@ HTTP/1.1 404 Not Found
 {"error":"Cannot GET /api/users/"}
 
 ----------------------------------------
- 4. MAIL CREATION
+ 4. MAILS
 ----------------------------------------
 
 ❌ 4.1 Mail creation without login
@@ -192,7 +192,7 @@ Expected:
 HTTP/1.1 400 Bad Request  
 {"error":"Missing fields: to, body"}
 
-✅ 4.31 Valid mail creation
+✅ 4.3 Valid mail creation
 
 curl -i -X POST http://localhost:8080/api/mails \
 -H "Authorization: 1" \
@@ -214,7 +214,7 @@ HTTP/1.1 201 Created
   "timestamp": "..."
 }
 
-✅ 4.32 Valid mail creation
+✅ 4.4 Valid mail creation
 
 curl -i -X POST http://localhost:8080/api/mails \
 -H "Authorization: 1" \
@@ -236,14 +236,14 @@ HTTP/1.1 201 Created
   "timestamp": "..."
 }
 
-✅ 4.4 Valid mail Get
+✅ 4.5 Valid mail Get
 
-curl -i GET http://localhost:8080/api/mails \
+curl -i -X GET http://localhost:8080/api/mails \
 -H "Authorization: 1"
 
 Expected: list of last 50 mails inside "[]"
 
-✅ 4.5 Valid mail Get by id
+✅ 4.6 Valid mail Get by id
 
 curl -i -X GET http://localhost:8080/api/mails/1 \
 -H "Authorization: 1"
@@ -259,7 +259,7 @@ HTTP/1.1 200 OK
   "timestamp": "..."
 }
 
-❌ 4.6 invalid mail GET by id
+❌ 4.7 invalid mail GET by id
 
 curl -i -X GET http://localhost:8080/api/mails/555 \
 -H "Authorization: 1" \
@@ -268,7 +268,7 @@ Expected:
 HTTP/1.1 400 Bad Request  
 {"error":"mail id not found"}
 
-✅ 4.7 Valid mail PATCH by id
+✅ 4.8 Valid mail PATCH by id
 
 curl -i -X PATCH http://localhost:8080/api/mails/1 \
 -H "Authorization: 1" \
@@ -286,7 +286,7 @@ HTTP/1.1 200 OK
   "timestamp": "..."
 }
 
-❌ 4.8 invalid mail PATCH by id
+❌ 4.9 invalid mail PATCH by id
 
 curl -i -X PATCH http://localhost:8080/api/mails/555 \
 -H "Authorization: 1" \
@@ -297,7 +297,7 @@ Expected:
 HTTP/1.1 400 Bad Request
 {"error":"mail id not found"}
 
-✅ 4.9 Valid mail Delete by id
+✅ 4.10 Valid mail Delete by id
 
 curl -i -X DELETE http://localhost:8080/api/mails/1 \
 -H "Authorization: 1" \
@@ -305,7 +305,7 @@ curl -i -X DELETE http://localhost:8080/api/mails/1 \
 Expected:
 HTTP/1.1 204 No Content
 
-❌ 4.10 invalid mail Delete by id
+❌ 4.11 invalid mail Delete by id
 curl -i -X DELETE http://localhost:8080/api/mails/555 \
 -H "Authorization: 1" \
 
@@ -313,7 +313,11 @@ Expected:
 HTTP/1.1 400 Bad Request
 {"error":"mail id not found"}
 
-✅ 4.11 Valid label create
+----------------------------------------
+ 5. LABELS
+----------------------------------------
+
+✅ 5.1 Valid label create
 
 curl -i -X POST http://localhost:8080/api/labels \
 -H "Authorization: 1" \
@@ -329,7 +333,7 @@ HTTP/1.1 201 Created
   "name": "Important"
 }
 
-✅ 4.12 Valid label GET by id
+✅ 5.2 Valid label GET by id
 curl -i -X GET http://localhost:8080/api/labels/1 \
 -H "Authorization: 1"
 
@@ -340,7 +344,7 @@ HTTP/1.1 200 OK
   "name": "Important"
 }
 
-❌ 4.13 invalid label GET by id
+❌ 5.3 invalid label GET by id
 curl -i -X GET http://localhost:8080/api/labels/5 \
 -H "Authorization: 1"
 
@@ -350,7 +354,7 @@ HTTP/1.1 400 Bad Request
   "error": "label not found"
 }
 
-✅ 4.14 Valid label PATCH by id
+✅ 5.4 Valid label PATCH by id
 curl -i -X PATCH http://localhost:8080/api/labels/1 \
 -H "Authorization: 1" \
 -H "Content-Type: application/json" \
@@ -366,7 +370,7 @@ HTTP/1.1 200 OK
   "owner": 1
 }
 
-❌ 4.15 invalid label PATCH by id
+❌ 5.5 invalid label PATCH by id
 curl -i -X PATCH http://localhost:8080/api/labels/555 \
 -H "Authorization: 1" \
 -H "Content-Type: application/json" \
@@ -380,7 +384,7 @@ HTTP/1.1 400 Bad Request
   "error": "label not found"
 }
 
-✅ 4.16 Valid label DELETE by id
+✅ 5.6 Valid label DELETE by id
 curl -i -X DELETE http://localhost:8080/api/labels/1 \
 -H "Authorization: 1"
 
@@ -391,7 +395,7 @@ Date: Mon, 26 May 2025 12:46:33 GMT
 Connection: keep-alive
 Keep-Alive: timeout=5
 
-✅ 4.17 Valid GET all labels
+✅ 5.7 Valid GET all labels
 curl -i -X GET http://localhost:8080/api/labels \
 -H "Authorization: 1"
 
@@ -407,7 +411,11 @@ Keep-Alive: timeout=5
   [{all labels}]
 }
 
-✅ 4.18 valid get all mails with string 'query'
+----------------------------------------
+ 6. SEARCH
+----------------------------------------
+
+✅ 6.0 valid get all mails with string 'query'
 curl -i -X GET http://localhost:8080/api/mails/search/query \
 -H "Authorization: 1"
 
@@ -417,9 +425,16 @@ HTTP/1.1 200 OK
   [{all mails with query}]
 }
 
+# edge cases checked:
+✅ Valid - Creating 2 users and trying to patch a label to a name that is in another user. return '200 OK'
+
 # Blacklist Tests
 
-✅ 1.1 Valid POST blacklist
+----------------------------------------
+ 7. BLACKLIST
+----------------------------------------
+
+✅ 7.1 Valid POST blacklist
 curl -i -X POST http://localhost:8080/api/blacklist \
 -H "Authorization: 1" \
 -H "Content-Type: application/json" \
@@ -433,7 +448,7 @@ HTTP/1.1 201 Created
   "id": "http%3A%2F%2Fbad.com"
 }
 
-❌ 1.2 invalid POST blacklist - missing arguments
+❌ 7.2 invalid POST blacklist - missing arguments
 curl -i -X POST http://localhost:8080/api/blacklist \
 -H "Authorization: 1" \
 -H "Content-Type: application/json" \
@@ -443,7 +458,7 @@ Expected:
 HTTP/1.1 400 Bad Request  
 {"error":"Missing fields: url"}
 
-❌ 1.3 invalid DELETE blacklist - wrong id
+❌ 7.3 invalid DELETE blacklist - wrong id
 curl -i -X DELETE http://localhost:8080/api/blacklist/http%3A%2F%2Fbar.com \
 -H "Authorization: 1"
 
@@ -451,7 +466,7 @@ Expected:
 HTTP/1.1 400 Bad Request
 {"error":"mail id not found"}
 
-❌ 1.4 invalid POST mail with blacklisted URL
+❌ 7.4 invalid POST mail with blacklisted URL
 curl -i -X POST http://localhost:8080/api/mails \
 -H "Authorization: 1" \
 -H "Content-Type: application/json" \
@@ -465,14 +480,14 @@ Expected:
 HTTP/1.1 400 Bad Request  
 {"error":"Malicious URL detected in message"}
 
-✅ 1.5 Valid DELETE blacklist
+✅ 7.5 Valid DELETE blacklist
 curl -i -X DELETE http://localhost:8080/api/blacklist/http%3A%2F%2Fbad.com \
 -H "Authorization: 1"
 
 Expected:
 HTTP/1.1 204 No Content
 
-✅ 1.6 Valid POST mail - after DELETE of blacklisted URL
+✅ 7.6 Valid POST mail - after DELETE of blacklisted URL
 curl -i -X POST http://localhost:8080/api/mails \
 -H "Authorization: 1" \
 -H "Content-Type: application/json" \

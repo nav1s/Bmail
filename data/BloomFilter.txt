@@ -1,4 +1,4 @@
 ArraySize: 8
-BitArray: 00000000
+BitArray: 10000100
 HashList: std:1,std:2
-Blacklist: 
+Blacklist: http://bad.com
