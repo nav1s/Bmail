@@ -1,4 +1,0 @@
-ArraySize: 8
-BitArray: 00000000
-HashList: std:1,std:2
-Blacklist: 

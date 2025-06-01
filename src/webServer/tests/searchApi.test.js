@@ -59,7 +59,7 @@ test('setup: create user and mails for query tests', async () => {
   await createInitialMails();
 });
 
-// ✅ 1 Search mails by query in title or body
+// ✅ 1.0 Search mails by query in title or body
 test('returns all mails matching "query" in title or body', async () => {
   const response = await request(app)
     .get('/api/mails/search/query')

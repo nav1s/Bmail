@@ -63,3 +63,11 @@ exports.notFound = (res, message = 'Not found') =>
   res.status(404).json({ error: message });
 
 
+/**
+ * sends a 500 Internal Server Error with a JSON error message.
+ * @param res the response object
+ * @param message  the error message to send
+ */
+exports.serverError = (res, message = 'Internal Server Error') => {
+  return res.status(500).json({ error: message }).end();
+};

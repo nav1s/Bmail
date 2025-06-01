@@ -1,4 +1,9 @@
 const express = require('express');
-var router = express.Router();
+const router = express.Router();
+const blacklistController = require('../controllers/blacklist');
+const { requireAuth } = require('../middleware/auth');
+
+router.post('/', requireAuth, blacklistController.addToBlacklist);
+router.delete('/:id', requireAuth, blacklistController.removeFromBlacklist);
 
 module.exports = router;
