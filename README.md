@@ -95,7 +95,7 @@ curl -i -X POST http://localhost:8080/api/labels \
 
 > **search for a mail:**
 ```bash
-curl -i -X GET http://localhost:8080/api/mails/search/query \
+curl -i -X GET http://localhost:8080/api/mails/search/This \
 -H "Authorization: 1"
 ```
 
