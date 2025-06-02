@@ -8,6 +8,7 @@
 #include <mutex>
 #include <stdexcept>
 #include <thread>
+#include <fstream>
 
 using namespace std;
 
@@ -123,6 +124,13 @@ int main(int argc, char *argv[]) {
         // Create the filter using the factory
         auto filter = FilterFactory::createBloomFilter(config.arraySize, config.hashParams, bloomFilterLocation);
 
+        // create a new file for the docker health check
+        std::ofstream file("/tmp/tcp-server");
+
+        if (!file) {
+            std::cerr << "Error: Could not create file." << std::endl;
+            return 1;
+        }
         // Run the server
         runServer(config, filter, filterMutex);
     } catch (const exception &e) {
