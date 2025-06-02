@@ -2,13 +2,67 @@ const { buildMail, filterMailForOutput, validateMailInput, findMailById, editMai
 const { badRequest, created, ok, noContent, forbidden } = require('../utils/httpResponses');
 const { httpError, createError } = require('../utils/error');
 const users = require('../models/users.js');
+const net = require("net");
+
+/**
+ * Checks a list of URLs by sending them to a server for validation.
+ * @param urls the list of URLs to check
+ * @returns true if any URL is blacklisted, false otherwise
+ */
+async function checkBlacklistedUrl(urls) {
+  return new Promise((resolve, reject) => {
+    let urlIndex = 0;
+    const client = new net.Socket();
+
+    // Connect to the server at the specified port and address
+    client.connect(12345, '127.0.0.1', () => {
+      console.log('Connected to server');
+      // send the first URL to the server
+      client.write(`GET ${urls[urlIndex]}\n`);
+      urlIndex++;
+    });
+
+    client.on('data', (data) => {
+      console.log('Received data from server:', data.toString());
+
+      // split the response into lines and check the status
+      const status = data.toString().split('\n')
+      if (status[0] === '200 OK') {
+
+        // Check if the URL is blacklisted
+        if (status[2] === 'true true') {
+          console.log(`URL ${urls[urlIndex - 1]} is blacklisted`);
+          client.destroy();
+          resolve(true);
+          return;
+        }
+      }
+
+      // send the next URL if available
+      if (urlIndex < urls.length) {
+        client.write(`GET ${urls[urlIndex]}\n`);
+        urlIndex++;
+      } else {
+        console.log('All URLs processed, closing connection');
+        client.destroy();
+        resolve(false);
+      }
+    });
+
+    // handle error events
+    client.on('error', (error) => {
+      console.error('error connecting to server:', error);
+      reject(error);
+    });
+  });
+}
 
 /**
  * POST /api/mails
  * Creates a new mail and stores it in memory.
  * Requires user to be logged in (loginToken).
  */
-function createMail(req, res) {
+async function createMail(req, res) {
   // Add sender ("from") to the mail
   const mailInput = {
     ...req.body,
@@ -23,10 +77,35 @@ function createMail(req, res) {
     return httpError(res, err);
   }
 
-    // Build and store the mail
-    const newMail = buildMail(mailInput);
-    return created(res, filterMailForOutput(newMail));
+  // save the mail body to a variable
+  const msg = mailInput.body || '';
+
+  const urlRegex =
+    /(https:\/\/www\.|http:\/\/www\.|https:\/\/|http:\/\/)?[a-zA-Z]{2,}(\.[a-zA-Z]{2,})(\.[a-zA-Z]{2,})?\/[a-zA-Z0-9]{2,}|((https:\/\/www\.|http:\/\/www\.|https:\/\/|http:\/\/)?[a-zA-Z]{2,}(\.[a-zA-Z]{2,})(\.[a-zA-Z]{2,})?)|(https:\/\/www\.|http:\/\/www\.|https:\/\/|http:\/\/)?[a-zA-Z0-9]{2,}\.[a-zA-Z0-9]{2,}\.[a-zA-Z0-9]{2,}(\.[a-zA-Z0-9]{2,})?/g;
+
+  // Extract URLs from the mail body using the regex
+  const urls = msg.match(urlRegex);
+
+  // check if any URLs are present in the mail body
+  if (urls && urls.length > 0) {
+    let isBlacklisted = false;
+
+    // Check if any of the URLs are blacklisted
+    try {
+      isBlacklisted = await checkBlacklistedUrl(urls);
+    } catch (error) {
+      console.error('Error checking blacklisted URLs:', error);
+    }
+    // If any URL is blacklisted, return an error response
+    if (isBlacklisted) {
+      return badRequest(res, 'Mail contains blacklisted URLs');
+    }
   }
+
+  // Build and store the mail
+  const newMail = buildMail(mailInput);
+  return created(res, filterMailForOutput(newMail));
+}
 
 /**
  * GET /api/mails
@@ -70,7 +149,6 @@ function getMailById(req, res) {
     return httpError(res, err);
   }
 }
-
 
 /**
  * PATCH /api/mails/:id
@@ -163,24 +241,24 @@ function validateRecipients(toField) {
   }
 
   // Checks array doesn't contain empty strings
-  const allValid = toField.every( u => typeof u === 'string' && u !== '' );
+  const allValid = toField.every(u => typeof u === 'string' && u !== '');
   if (!allValid) {
     throw createError('"to" must not contain empty strings', { status: 400 });
   }
 
   // Filter "to" field to include only existing users
-    const existingRecipients  = toField.filter(username => {
-      try {
-        users.findUserByUsername(username);
-        // returning "true" to let .filter know we add the username
-        return true;
-      } catch {
-        // returning "false" to let .filter know to ignore the username
-        return false;
-      }
-    });
+  const existingRecipients = toField.filter(username => {
+    try {
+      users.findUserByUsername(username);
+      // returning "true" to let .filter know we add the username
+      return true;
+    } catch {
+      // returning "false" to let .filter know to ignore the username
+      return false;
+    }
+  });
 
-    if (existingRecipients.length === 0) {
+  if (existingRecipients.length === 0) {
     throw createError('No valid recipients found', { status: 400 });
   }
 
