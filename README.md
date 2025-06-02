@@ -20,13 +20,13 @@ The project also includes a Python client for interacting with the Bloom filter 
 # Using HTTPS
 git clone https://github.com/binja12/bmail.git
 cd bmail
+git checkout part3
 
 # OR using SSH
 git clone git@github.com:binja12/bmail.git
 cd bmail
+git checkout part3
 ```
-
-## Usage
 
 ### Running the Application
 
@@ -55,18 +55,63 @@ curl -i -X POST http://localhost:8080/api/users \
 }'
 ```
 
-## Useful commands from previous exercises
-
-### Running the python client
+> **login as the new user:**
 ```bash
-docker compose run --pull always --remove-orphans --rm python-client
+curl -i -X POST http://localhost:8080/api/tokens \
+-H "Content-Type: application/json" \
+-d '{
+  "username": "alice123",
+  "password": "securepass"
+}'
 ```
 
-### Running the bloom filter unit tests
-
+> **get the user public info:**
 ```bash
-docker compose run --build --pull always --remove-orphans --rm bloom-filter-tests
+curl -i -X GET http://localhost:8080/api/users/1
 ```
+
+> **send a mail:**
+```bash
+curl -i -X POST http://localhost:8080/api/mails \
+-H "Authorization: 1" \
+-H "Content-Type: application/json" \
+-d '{
+  "to": ["alice123"], 
+  "title": "Hello again",
+  "body": "This should work"
+}'
+```
+
+> **create a new label:**
+```bash
+curl -i -X POST http://localhost:8080/api/labels \
+-H "Authorization: 1" \
+-H "Content-Type: application/json" \
+-d '{
+  "name": "Important"
+}'
+```
+
+> **search for a mail:**
+```bash
+curl -i -X GET http://localhost:8080/api/mails/search/query \
+-H "Authorization: 1"
+```
+
+> **add a url to the blacklist:**
+```bash
+curl -i -X POST http://localhost:8080/api/blacklist \
+-H "Authorization: 1" \
+-H "Content-Type: application/json" \
+-d '{ "url": "http://bad.com" }'
+```
+
+> **remove a url from the blacklist:**
+```bash
+curl -i -X DELETE http://localhost:8080/api/blacklist/http%3A%2F%2Fbad.com \
+-H "Authorization: 1"
+```
+
 ### How SOLID Principles Helped Us Handle Changes Smoothly
 
 How SOLID Principles Helped Us Handle Changes Smoothly
