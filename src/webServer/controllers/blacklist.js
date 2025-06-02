@@ -1,4 +1,4 @@
-const { created, serverError, badRequest, noContent, notFound } = require("../utils/httpResponses");
+const { serverError, badRequest, noContent, notFound } = require("../utils/httpResponses");
 const net = require("net");
 
 /**
@@ -15,9 +15,9 @@ exports.addToBlacklist = (req, res) => {
     }
 
     const url = req.body.url;
+    const client = new net.Socket();
 
-    // create a TCP client to connect to the server
-    const client = net.createConnection({ port: 12345 }, () => {
+    client.connect(12345, '127.0.0.1', () => {
         console.log('Connected to server');
         // send the request to add the URL to the blacklist
         client.write(`POST ${url}\n`);
@@ -32,23 +32,18 @@ exports.addToBlacklist = (req, res) => {
         // check if the response indicates success
         if (data.toString() === '201 Created') {
             console.log('Successfully added to blacklist');
-            return created(res);
+            res.status(201).end();
+        } else {
+            // otherwise, send an error
+            serverError(res, 'unexpected response from server');
         }
-
-        // otherwise, return an error
-        return serverError(res, 'unexpected response from server');
-    });
-
-    // return a server error if the connection ends unexpectedly
-    client.on('end', () => {
-        console.error('disconnected from server');
-        return serverError(res, 'disconnected from server');
+        client.destroy();
     });
 
     // return a server error if there is an error connecting to the server
     client.on('error', (error) => {
         console.error('error connecting to server:', error);
-        return serverError(res, 'error connecting to server');
+        serverError(res, 'error connecting to server');
     });
 }
 
@@ -66,8 +61,9 @@ exports.removeFromBlacklist = (req, res) => {
     // save the URL to a variable
     const url = req.params.id;
 
-    // create a TCP client to connect to the server
-    const client = net.createConnection({ port: 12345 }, () => {
+    const client = new net.Socket();
+
+    client.connect(12345, '127.0.0.1', () => {
         console.log('Connected to server');
         // send the request to delete the URL from the blacklist
         client.write(`DELETE ${url}\n`);
@@ -82,29 +78,23 @@ exports.removeFromBlacklist = (req, res) => {
         // check if the response indicates success
         if (data.toString() === '204 No Content') {
             console.log('Successfully removed from blacklist');
-            return noContent(res);
-        }
-
-        // check if the response indicates that the URL was not found
-        if (data.toString() === '404 Not Found') {
+            noContent(res);
+        } // check if the response indicates that the URL was not found
+        else if (data.toString() === '404 Not Found') {
             console.log('URL not found in blacklist');
-            return notFound(res, 'URL not found in blacklist');
+            notFound(res, 'URL not found in blacklist');
+        }  // otherwise, return an error
+        else {
+            return serverError(res, 'unexpected response from server');
         }
 
-        // otherwise, return an error
-        return serverError(res, 'unexpected response from server');
-    });
-
-    // return a server error if the connection ends unexpectedly
-    client.on('end', () => {
-        console.error('disconnected from server');
-        return serverError(res, 'disconnected from server');
+        client.destroy();
     });
 
     // return a server error if there is an error connecting to the server
     client.on('error', (error) => {
         console.error('error connecting to server:', error);
-        return serverError(res, 'error connecting to server');
+        serverError(res, 'error connecting to server');
     });
 
 }

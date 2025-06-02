@@ -34,13 +34,13 @@ async function createTestUserAndReturn() {
 // ✅ 1.1 Valid POST blacklist
 test('1.1 Valid POST blacklist', async () => {
   await createTestUserAndReturn();
-  const response = await api
+  await api
     .post('/api/blacklist')
     .set('Authorization', '1')
     .set('Content-Type', 'application/json')
-    .send({ url: 'http://bad.com' });
+    .send({ url: 'http://bad.com' })
+    .expect(201);
 
-  assert.strictEqual(response.status, 201);
 });
 
 // ❌ 1.2 invalid POST blacklist - missing arguments
