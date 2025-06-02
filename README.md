@@ -11,7 +11,7 @@ The project also includes a Python client for interacting with the Bloom filter 
 
 ## Demo
 
-![Bmail Demo](assets/ex2-example-run.gif)
+![Bmail Demo](assets/ex3-example-run.gif)
 
 ## Getting Started
 
