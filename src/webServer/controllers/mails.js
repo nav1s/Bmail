@@ -14,7 +14,7 @@ async function checkBlacklistedUrl(urls) {
     let urlIndex = 0;
 
     // Connect to the server at the specified port and address
-    const client = net.createConnection({ host:'bloom-filter', port: 12345 }, ()  => {
+    const client = net.createConnection({ host: 'bloom-filter', port: 12345 }, () => {
       console.log('Connected to server');
       // send the first URL to the server
       client.write(`GET ${urls[urlIndex]}\n`);
@@ -57,6 +57,33 @@ async function checkBlacklistedUrl(urls) {
 }
 
 /**
+ * This function checks if a message contains any blacklisted URLs.
+ * @param msg The message body or title to check for blacklisted URLs.
+ * @returns true if any blacklisted URLs are found, false otherwise.
+ */
+async function isMessageValid(msg) {
+  const urlRegex =
+    /(https:\/\/www\.|http:\/\/www\.|https:\/\/|http:\/\/)?[a-zA-Z]{2,}(\.[a-zA-Z]{2,})(\.[a-zA-Z]{2,})?\/[a-zA-Z0-9]{2,}|((https:\/\/www\.|http:\/\/www\.|https:\/\/|http:\/\/)?[a-zA-Z]{2,}(\.[a-zA-Z]{2,})(\.[a-zA-Z]{2,})?)|(https:\/\/www\.|http:\/\/www\.|https:\/\/|http:\/\/)?[a-zA-Z0-9]{2,}\.[a-zA-Z0-9]{2,}\.[a-zA-Z0-9]{2,}(\.[a-zA-Z0-9]{2,})?/g;
+
+  // Extract URLs from the mail body using the regex
+  const urls = msg.match(urlRegex);
+
+  let isInvalid = false;
+  if (urls !== null)
+    if (urls.length > 0) {
+      // Check if any of the URLs are blacklisted
+      try {
+        isInvalid = await checkBlacklistedUrl(urls);
+      } catch (error) {
+        console.error('Error checking blacklisted URLs:', error);
+      }
+    }
+
+  return isInvalid;
+
+}
+
+/**
  * POST /api/mails
  * Creates a new mail and stores it in memory.
  * Requires user to be logged in (loginToken).
@@ -76,29 +103,14 @@ async function createMail(req, res) {
     return httpError(res, err);
   }
 
-  // save the mail body to a variable
-  const msg = mailInput.body || '';
+  // check if the mail contains blacklisted URLs
+  const msgBody = mailInput.body || '';
+  const msgTitle = mailInput.title || '';
+  const isBlacklisted = await isMessageValid(msgBody) || await isMessageValid(msgTitle);
 
-  const urlRegex =
-    /(https:\/\/www\.|http:\/\/www\.|https:\/\/|http:\/\/)?[a-zA-Z]{2,}(\.[a-zA-Z]{2,})(\.[a-zA-Z]{2,})?\/[a-zA-Z0-9]{2,}|((https:\/\/www\.|http:\/\/www\.|https:\/\/|http:\/\/)?[a-zA-Z]{2,}(\.[a-zA-Z]{2,})(\.[a-zA-Z]{2,})?)|(https:\/\/www\.|http:\/\/www\.|https:\/\/|http:\/\/)?[a-zA-Z0-9]{2,}\.[a-zA-Z0-9]{2,}\.[a-zA-Z0-9]{2,}(\.[a-zA-Z0-9]{2,})?/g;
-
-  // Extract URLs from the mail body using the regex
-  const urls = msg.match(urlRegex);
-
-  // check if any URLs are present in the mail body
-  if (urls && urls.length > 0) {
-    let isBlacklisted = false;
-
-    // Check if any of the URLs are blacklisted
-    try {
-      isBlacklisted = await checkBlacklistedUrl(urls);
-    } catch (error) {
-      console.error('Error checking blacklisted URLs:', error);
-    }
-    // If any URL is blacklisted, return an error response
-    if (isBlacklisted) {
-      return badRequest(res, 'Mail contains blacklisted URLs');
-    }
+  // return an error if blacklisted URLs are found
+  if (isBlacklisted) {
+    return badRequest(res, 'Mail contains blacklisted URLs');
   }
 
   // Build and store the mail
