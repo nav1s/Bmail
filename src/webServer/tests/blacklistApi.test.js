@@ -77,7 +77,7 @@ test('1.4 invalid POST mail with blacklisted URL', async () => {
     .set('Content-Type', 'application/json')
     .send({
       to: ['alice123'],
-      title: 'Try this site',
+      title: 'Try this site - its http://good.com',
       body: `Check this link: http://bad.com`
     });
 
@@ -87,7 +87,7 @@ test('1.4 invalid POST mail with blacklisted URL', async () => {
   });
 });
 
-// ❌ 1.5 invalid POST mail with blacklisted URL
+// ❌ 1.5 invalid POST mail with one blacklisted URL and one url that hasn't been blacklisted
 test('1.5 invalid POST mail with one blacklisted URL and one url that hasn\'t been blacklisted', async () => {
   const response = await api
     .post('/api/mails')
@@ -135,3 +135,4 @@ test('1.7 Valid POST mail - after DELETE of blacklisted URL', async () => {
   assert.strictEqual(response.body.body, 'Check this link: http://bad.com');
   assert.ok(response.body.id);
 });
+
