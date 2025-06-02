@@ -120,4 +120,21 @@ test('1.6 Valid POST mail - after DELETE of blacklisted URL', async () => {
   assert.ok(response.body.timestamp);
 });
 
+// ❌ 1.7 invalid POST mail with blacklisted URL in title
+test('1.7 invalid POST mail with blacklisted URL in title', async () => {
+  const response = await request(app)
+    .post('/api/mails')
+    .set(auth)
+    .send({
+      to: ['userB'],
+      title: `Try this site ${blacklistedUrl}`,
+      body: 'Check this link:'
+    });
+
+  assert.strictEqual(response.status, 400);
+  assert.deepStrictEqual(response.body, {
+    error: 'Malicious URL detected in message'
+  });
+});
+
 */
