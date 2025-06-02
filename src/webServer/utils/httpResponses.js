@@ -12,7 +12,7 @@ exports.ok = (res, data) =>
  * @param {object} data
  */
 exports.created = (res, data) =>
-  res.status(201).json(data)
+  res.status(201).json(data);
 
 /**
  * Sends a 201 Created with a Location header and no body.

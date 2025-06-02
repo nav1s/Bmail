@@ -1,8 +1,9 @@
 # Bmail
 
-> **Previous parts of the project:**
+> **Previous parts of this project:**
 > - Part 1: https://github.com/Binja12/Bmail/tree/part1
 > - Part 2: https://github.com/Binja12/Bmail/tree/part2
+> - Part 3: https://github.com/Binja12/Bmail/tree/part3
 
 Bmail is a mail server application featuring a C++-based Bloom filter for blacklist management and a Node.js web server providing a RESTful API for mail operations.
 

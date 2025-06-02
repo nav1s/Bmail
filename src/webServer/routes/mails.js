@@ -5,7 +5,6 @@ const { createMail, listInbox } = require('../controllers/mails');
 const { requireAuth } = require('../middleware/auth');
 const { getMailById, updateMailById, deleteMailById } = require('../controllers/mails');
 const { searchMails } = require('../controllers/mails');
-const { notFound } = require('../utils/httpResponses');
 
 // GET /api/mails → returns last 50 mails sent/received by the user
 router.get('/', requireAuth, listInbox);
@@ -19,10 +18,5 @@ router.get('/search/:query', requireAuth, searchMails);
 router.get('/:id', requireAuth, getMailById);
 router.patch('/:id', requireAuth, updateMailById);
 router.delete('/:id', requireAuth, deleteMailById);
-
-// Catch-all for undefined mail routes
-router.use((req, res) => {
-    notFound(res, `Cannot ${req.method} ${req.baseUrl}${req.path}`);
-});
 
 module.exports = router;

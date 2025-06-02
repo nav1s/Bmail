@@ -471,7 +471,7 @@ curl -i -X POST http://localhost:8080/api/mails \
 -H "Authorization: 1" \
 -H "Content-Type: application/json" \
 -d '{
-  "to": ["userB"],
+  "to": ["alice123"],
   "title": "Try this site",
   "body": "Check this link: http://bad.com"
 }'
