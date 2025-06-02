@@ -162,7 +162,7 @@ function validateRecipients(toField) {
     throw createError('"to" must be an array', { status: 400 });
   }
 
-  // Checks array doesnt contain empty strings
+  // Checks array doesn't contain empty strings
   const allValid = toField.every( u => typeof u === 'string' && u !== '' );
   if (!allValid) {
     throw createError('"to" must not contain empty strings', { status: 400 });

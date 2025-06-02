@@ -4,7 +4,7 @@
  * @param {object} data
  */
 exports.ok = (res, data) =>
-  res.status(200).json(data).end();
+  res.status(200).json(data)
 
 /**
  * Sends a 201 Created with JSON data (used when not following header-only REST).
@@ -12,7 +12,7 @@ exports.ok = (res, data) =>
  * @param {object} data
  */
 exports.created = (res, data) =>
-  res.status(201).json(data).end();
+  res.status(201).json(data)
 
 /**
  * Sends a 201 Created with a Location header and no body.
@@ -36,7 +36,7 @@ exports.noContent = (res) =>
  * @param {string} message
  */
 exports.badRequest = (res, message = 'Bad request') =>
-  res.status(400).json({ error: message }).end();
+  res.status(400).json({ error: message });
 
 /**
  * Sends a 401 Unauthorized with a JSON error message.
@@ -44,7 +44,7 @@ exports.badRequest = (res, message = 'Bad request') =>
  * @param {string} message
  */
 exports.unauthorized = (res, message = 'Unauthorized') =>
-  res.status(401).json({ error: message }).end();
+  res.status(401).json({ error: message });
 
 /**
  * Sends a 403 Forbidden with a JSON error message.
@@ -52,7 +52,7 @@ exports.unauthorized = (res, message = 'Unauthorized') =>
  * @param {string} message
  */
 exports.forbidden = (res, message = 'Forbidden') =>
-  res.status(403).json({ error: message }).end();
+  res.status(403).json({ error: message });
 
 /**
  * Sends a 404 Not Found with a JSON error message.
@@ -60,7 +60,7 @@ exports.forbidden = (res, message = 'Forbidden') =>
  * @param {string} message
  */
 exports.notFound = (res, message = 'Not found') =>
-  res.status(404).json({ error: message }).end();
+  res.status(404).json({ error: message });
 
 
 /**
@@ -69,5 +69,5 @@ exports.notFound = (res, message = 'Not found') =>
  * @param message  the error message to send
  */
 exports.serverError = (res, message = 'Internal Server Error') => {
-  return res.status(500).json({ error: message }).end();
+  return res.status(500).json({ error: message });
 };
