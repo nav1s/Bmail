@@ -12,10 +12,9 @@ const net = require("net");
 async function checkBlacklistedUrl(urls) {
   return new Promise((resolve, reject) => {
     let urlIndex = 0;
-    const client = new net.Socket();
 
     // Connect to the server at the specified port and address
-    client.connect(12345, '127.0.0.1', () => {
+    const client = net.createConnection({ host:'bloom-filter', port: 12345 }, ()  => {
       console.log('Connected to server');
       // send the first URL to the server
       client.write(`GET ${urls[urlIndex]}\n`);
