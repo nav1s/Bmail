@@ -107,6 +107,18 @@ curl -i -X POST http://localhost:8080/api/blacklist \
 -d '{ "url": "http://bad.com" }'
 ```
 
+> **attempt to send a mail with a blacklisted url:**
+```bash
+curl -i -X POST http://localhost:8080/api/mails \
+-H "Authorization: 1" \
+-H "Content-Type: application/json" \
+-d '{
+  "to": ["alice123"],
+  "title": "Try this site",
+  "body": "Check this link: http://bad.com"
+}'
+```
+
 > **remove a url from the blacklist:**
 ```bash
 curl -i -X DELETE http://localhost:8080/api/blacklist/http%3A%2F%2Fbad.com \
