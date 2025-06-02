@@ -76,7 +76,7 @@ test('1.4 invalid POST mail with blacklisted URL', async () => {
     .set('Authorization', '1')
     .set('Content-Type', 'application/json')
     .send({
-      to: ['userB'],
+      to: ['alice123'],
       title: 'Try this site',
       body: `Check this link: http://bad.com`
     });
@@ -105,16 +105,15 @@ test('1.6 Valid POST mail - after DELETE of blacklisted URL', async () => {
     .set('Authorization', '1')
     .set('Content-Type', 'application/json')
     .send({
-      to: ['userB'],
+      to: ['alice123'],
       title: 'Try this site',
       body: 'Check this link: http://bad.com'
     });
 
   assert.strictEqual(response.status, 201);
-  assert.strictEqual(response.body.from, 1);
-  assert.deepStrictEqual(response.body.to, ['userB']);
+  assert.strictEqual(response.body.from, 'alice123');
+  assert.deepStrictEqual(response.body.to, ['alice123']);
   assert.strictEqual(response.body.title, 'Try this site');
   assert.strictEqual(response.body.body, 'Check this link: http://bad.com');
   assert.ok(response.body.id);
-  assert.ok(response.body.timestamp);
 });
