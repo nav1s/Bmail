@@ -96,7 +96,7 @@ test('1.5 invalid POST mail with one blacklisted URL and one url that hasn\'t be
     .send({
       to: ['alice123'],
       title: 'Try this site',
-      body: `Check this link: http://bad.com and this one: http://bmail.com`
+      body: "Check this link: http://bmail.com and http://bad.com"
     });
 
   assert.strictEqual(response.status, 400);
