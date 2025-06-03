@@ -16,6 +16,8 @@ async function checkBlacklistedUrl(urls) {
     // Connect to the server at the specified port and address
     const client = net.createConnection({ host: 'bloom-filter', port: 12345 }, () => {
       console.log('Connected to server');
+      // log the urls being sent
+      console.log('Sending this url to the server ', urls[urlIndex]);
       // send the first URL to the server
       client.write(`GET ${urls[urlIndex]}\n`);
       urlIndex++;
@@ -39,6 +41,7 @@ async function checkBlacklistedUrl(urls) {
 
       // send the next URL if available
       if (urlIndex < urls.length) {
+        console.log('Sending this url to the server ', urls[urlIndex]);
         client.write(`GET ${urls[urlIndex]}\n`);
         urlIndex++;
       } else {
@@ -62,8 +65,7 @@ async function checkBlacklistedUrl(urls) {
  * @returns true if any blacklisted URLs are found, false otherwise.
  */
 async function isMessageValid(msg) {
-  const urlRegex =
-    /(https:\/\/www\.|http:\/\/www\.|https:\/\/|http:\/\/)?[a-zA-Z]{2,}(\.[a-zA-Z]{2,})(\.[a-zA-Z]{2,})?\/[a-zA-Z0-9]{2,}|((https:\/\/www\.|http:\/\/www\.|https:\/\/|http:\/\/)?[a-zA-Z]{2,}(\.[a-zA-Z]{2,})(\.[a-zA-Z]{2,})?)|(https:\/\/www\.|http:\/\/www\.|https:\/\/|http:\/\/)?[a-zA-Z0-9]{2,}\.[a-zA-Z0-9]{2,}\.[a-zA-Z0-9]{2,}(\.[a-zA-Z0-9]{2,})?/g;
+  const urlRegex = /\bhttps?:\/\/(?:www\.)?[a-zA-Z0-9\-]+\.[a-zA-Z]{2,}(?:\.[a-zA-Z]{2,})?(?:\/[^\s]*)?\b/g;
 
   // Extract URLs from the mail body using the regex
   const urls = msg.match(urlRegex);
