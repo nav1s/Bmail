@@ -34,13 +34,13 @@ async function createTestUserAndReturn() {
 // ✅ 1.1 Valid POST blacklist
 test('1.1 Valid POST blacklist', async () => {
   await createTestUserAndReturn();
-  const response = await api
+  await api
     .post('/api/blacklist')
     .set('Authorization', '1')
     .set('Content-Type', 'application/json')
-    .send({ url: 'http://bad.com' });
+    .send({ url: 'http://bad.com' })
+    .expect(201);
 
-  assert.strictEqual(response.status, 201);
 });
 
 // ❌ 1.2 invalid POST blacklist - missing arguments
@@ -49,7 +49,7 @@ test('1.2 Invalid POST blacklist - missing arguments', async () => {
     .post('/api/blacklist')
     .set('Authorization', '1')
     .set('Content-Type', 'application/json')
-    .send({url: ''});
+    .send({ url: '' });
 
   assert.strictEqual(response.status, 400);
   assert.strictEqual(response.body.error, 'Missing fields: url');
@@ -76,19 +76,55 @@ test('1.4 invalid POST mail with blacklisted URL', async () => {
     .set('Authorization', '1')
     .set('Content-Type', 'application/json')
     .send({
-      to: ['userB'],
-      title: 'Try this site',
+      to: ['alice123'],
+      title: 'Try this site - its http://good.com',
       body: `Check this link: http://bad.com`
     });
 
   assert.strictEqual(response.status, 400);
   assert.deepStrictEqual(response.body, {
-    error: 'Malicious URL detected in message'
+    error: 'Mail contains blacklisted URLs'
   });
 });
 
-// ✅ 1.5 Valid DELETE blacklist
-test('1.5 Valid DELETE blacklist', async () => {
+// ❌ 1.5 invalid POST mail with one blacklisted URL and one url that hasn't been blacklisted
+test('1.5 invalid POST mail with one blacklisted URL and one url that hasn\'t been blacklisted', async () => {
+  const response = await api
+    .post('/api/mails')
+    .set('Authorization', '1')
+    .set('Content-Type', 'application/json')
+    .send({
+      to: ['alice123'],
+      title: 'Try this site',
+      body: "Check this link: http://bmail.com and http://bad.com"
+    });
+
+  assert.strictEqual(response.status, 400);
+  assert.deepStrictEqual(response.body, {
+    error: 'Mail contains blacklisted URLs'
+  });
+});
+
+// ❌ 1.6 invalid POST mail with blacklisted URL in title
+test('1.6 invalid POST mail with blacklisted URL in title', async () => {
+  const response = await api
+    .post('/api/mails')
+    .set('Authorization', '1')
+    .send({
+      to: ['alice123'],
+      title: 'try this site http://bad.com',
+      body: 'Check this link:'
+    });
+
+  assert.strictEqual(response.status, 400);
+  assert.deepStrictEqual(response.body, {
+    error: 'Mail contains blacklisted URLs'
+  });
+});
+
+
+// ✅ 1.7 Valid DELETE blacklist
+test('1.7 Valid DELETE blacklist', async () => {
   const blacklistedId = encodeURIComponent('http://bad.com');
   const response = await api
     .delete(`/api/blacklist/${blacklistedId}`)
@@ -98,23 +134,23 @@ test('1.5 Valid DELETE blacklist', async () => {
   assert.strictEqual(response.status, 204);
 });
 
-// ✅ 1.6 Valid POST mail - after DELETE of blacklisted URL
-test('1.6 Valid POST mail - after DELETE of blacklisted URL', async () => {
+// ✅ 1.8 Valid POST mail - after DELETE of blacklisted URL
+test('1.8 Valid POST mail - after DELETE of blacklisted URL', async () => {
   const response = await api
     .post('/api/mails')
     .set('Authorization', '1')
     .set('Content-Type', 'application/json')
     .send({
-      to: ['userB'],
+      to: ['alice123'],
       title: 'Try this site',
       body: 'Check this link: http://bad.com'
     });
 
   assert.strictEqual(response.status, 201);
-  assert.strictEqual(response.body.from, 1);
-  assert.deepStrictEqual(response.body.to, ['userB']);
+  assert.strictEqual(response.body.from, 'alice123');
+  assert.deepStrictEqual(response.body.to, ['alice123']);
   assert.strictEqual(response.body.title, 'Try this site');
   assert.strictEqual(response.body.body, 'Check this link: http://bad.com');
   assert.ok(response.body.id);
-  assert.ok(response.body.timestamp);
 });
+

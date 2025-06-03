@@ -471,7 +471,7 @@ curl -i -X POST http://localhost:8080/api/mails \
 -H "Authorization: 1" \
 -H "Content-Type: application/json" \
 -d '{
-  "to": ["userB"],
+  "to": ["alice123"],
   "title": "Try this site",
   "body": "Check this link: http://bad.com"
 }'
@@ -480,19 +480,33 @@ Expected:
 HTTP/1.1 400 Bad Request  
 {"error":"Malicious URL detected in message"}
 
-✅ 7.5 Valid DELETE blacklist
+❌ 7.5 invalid POST mail with one blacklisted URL and one non blacklisted url
+curl -i -X POST http://localhost:8080/api/mails \
+    -H "Authorization: 1" \
+    -H "Content-Type: application/json" \
+    -d '{
+  "to": ["alice123"],
+  "title": "Try this site",
+  "body": "Check this link: http://bmail.com and http://bad.com"
+}'
+
+Expected:
+HTTP/1.1 400 Bad Request  
+{"error":"Malicious URL detected in message"}
+
+✅ 7.6 Valid DELETE blacklist
 curl -i -X DELETE http://localhost:8080/api/blacklist/http%3A%2F%2Fbad.com \
 -H "Authorization: 1"
 
 Expected:
 HTTP/1.1 204 No Content
 
-✅ 7.6 Valid POST mail - after DELETE of blacklisted URL
+✅ 7.7 Valid POST mail - after DELETE of blacklisted URL
 curl -i -X POST http://localhost:8080/api/mails \
 -H "Authorization: 1" \
 -H "Content-Type: application/json" \
 -d '{
-  "to": ["userB"],
+  "to": ["alice123"],
   "title": "Try this site",
   "body": "Check this link: http://bad.com"
 }'
@@ -502,7 +516,7 @@ HTTP/1.1 201 Created
 {
   "id": max_id + 1,
   "from": 1,
-  "to": ["userB"],
+  "to": ["alice123"],
   "title": "Try this site",
   "body": "Check this link: http://bad.com",
   "timestamp": "..."

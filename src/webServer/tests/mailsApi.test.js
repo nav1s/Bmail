@@ -77,7 +77,7 @@ test('creates a valid mail (4.31)', async () => {
     .send({
       to: ["alice123"],
       title: "Hello again",
-      body: "This should work"
+      body: "This should work: https://good.com https://verygood.com"
     })
     .expect(201)
     .expect('Content-Type', /application\/json/);
@@ -86,7 +86,7 @@ test('creates a valid mail (4.31)', async () => {
     from: "alice123",
     to: ["alice123"],
     title: "Hello again",
-    body: "This should work",
+    body: "This should work: https://good.com https://verygood.com",
     id: 1
   });
 });
@@ -100,7 +100,7 @@ test('creates another valid mail (4.32)', async () => {
     .send({
       to: ["alice123"],
       title: "Hello Wirtz",
-      body: "Sign for Liverpool"
+      body: "Sign for Liverpool, via https://liverpool.com, its a great club!"
     })
     .expect(201)
     .expect('Content-Type', /application\/json/);
@@ -109,7 +109,7 @@ test('creates another valid mail (4.32)', async () => {
     from: "alice123",
     to: ["alice123"],
     title: "Hello Wirtz",
-    body: "Sign for Liverpool",
+    body: "Sign for Liverpool, via https://liverpool.com, its a great club!",
     id: 2
   });
 });

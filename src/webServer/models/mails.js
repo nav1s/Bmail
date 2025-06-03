@@ -107,6 +107,12 @@ function filterMailForOutput(newMail) {
   return output;
 }
 
+/**
+ * Returns the last `limit` mails for a given user.
+ * @param {*} username - the username of the user to get mails for
+ * @param {*} limit - the number of mails to return
+ * @returns 
+ */
 function getMailsForUser(username, limit) {
   return mails
     .filter(mail => mail.from === username ||
@@ -114,6 +120,12 @@ function getMailsForUser(username, limit) {
     .slice(-limit).reverse();
 }
 
+/**
+ * finds a mail by its ID.
+ * Throws an error if not found.
+ * @param {*} id - the ID of the mail to find
+ * @returns 
+ */
 function findMailById(id) {
   const mail = mails.find(m => m.id === id);
   if (!mail) {
@@ -123,18 +135,38 @@ function findMailById(id) {
   return mail;
 }
 
+/**
+ * checks if a user can access a mail.
+ * A user can access a mail if they are the sender or one of the recipients.
+ * @param {*} mail - the mail object to check
+ * @param {*} username - the username of the user to check access for
+ * @returns 
+ */
 function canUserAccessMail(mail, username) {
   return (
     mail.from === username || (Array.isArray(mail.to) && mail.to.includes(username))
   );
 }
 
+/**
+ * checks if a user is the sender of a mail.
+ * Throws an error if the user is not the sender.
+ * @param {*} mail - the mail object to check
+ * @param {*} username - the username of the user to check access for
+ */
 function userIsSender(mail, username) {
   if (mail.from !== username) {
     throw createError('Only the sender can update this mail', { status: 403 });
   }
 }
 
+/**
+ * edits a mail object by applying updates to its title and body.
+ * Throws an error if the updates are invalid.
+ * @param {*} mail - the mail object to edit
+ * @param {*} updates - the updates to apply to the mail
+ * @returns 
+ */
 function editMail(mail, updates) {
   const editableFields = ['title', 'body'];
 
@@ -150,6 +182,11 @@ function editMail(mail, updates) {
   return mail;
 }
 
+/**
+ * deletes a mail by its ID.
+ * Throws an error if the mail is not found.
+ * @param {*} id - the ID of the mail to delete
+ */
 function deleteMail(id) {
   const index = mails.findIndex(m => m.id === id);
   if (index === -1) {
@@ -158,6 +195,13 @@ function deleteMail(id) {
   mails.splice(index, 1);
 }
 
+/**
+ * Searches for mails sent to a user where the title or body contains the query.
+ * Case-insensitive search.
+ * @param {string} username - the username of the user to search mails for
+ * @param {string} query - the search query
+ * @returns {Array} - array of mails matching the search criteria
+ */
 function searchMailsForUser(username, query) {
   const lowerQuery = query.toLowerCase();
 

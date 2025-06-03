@@ -37,11 +37,10 @@ services:
     ports:
       - "12345:12345"
     healthcheck:
-      # This healthcheck uses a TCP connection to check if the server is running.
-      test: ["CMD", "bash", "-c", "exec 3<>/dev/tcp/localhost/12345 && echo 'Healthcheck' >&3 && exec 3<&-"]
-      interval: 3s
-      timeout: 5s
-      retries: 10
+      test: ["CMD", "bash", "-c", "test -f /tmp/tcp-server"]
+      interval: 1s
+      timeout: 10s
+      retries: 100
 
     networks:
       - bmail

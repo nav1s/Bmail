@@ -1,4 +1,11 @@
 const express = require('express');
+const users = require('./routes/users');
+const tokens = require('./routes/tokens');
+const mails = require('./routes/mails');
+const labels = require('./routes/labels');
+const blacklist = require('./routes/blacklist');
+const { serverError, notFound } = require('./utils/httpResponses');
+
 const app = express();
 app.use(express.json());
 
@@ -6,30 +13,21 @@ app.use(express.json());
 app.disable('etag');
 
 // Routes
-const users = require('./routes/users');
 app.use('/api/users', users);
-
-const tokens = require('./routes/tokens');
 app.use('/api/tokens', tokens);
-
-const mails = require('./routes/mails');
 app.use('/api/mails', mails);
-
-const labels = require('./routes/labels');
 app.use('/api/labels', labels);
-
-const blacklist = require('./routes/blacklist');
 app.use('/api/blacklist', blacklist);
 
 // Error for unmatched /api/* routes — return JSON
 app.use('/api', (req, res) => {
-  res.status(404).json({ error: `Cannot ${req.method} ${req.originalUrl}` });
+  notFound(res, `Cannot ${req.method} ${req.originalUrl}`);
 });
 
-// Fallback error handler (optional)
+// Fallback error handler
 app.use((err, req, res, next) => {
   console.error(err);
-  res.status(500).json({ error: 'Internal Server Error' });
+  serverError(res, 'An unexpected error occurred');
 });
 
 module.exports = app;

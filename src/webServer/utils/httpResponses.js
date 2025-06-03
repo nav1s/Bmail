@@ -4,7 +4,7 @@
  * @param {object} data
  */
 exports.ok = (res, data) =>
-  res.status(200).json(data);
+  res.status(200).json(data)
 
 /**
  * Sends a 201 Created with JSON data (used when not following header-only REST).
@@ -69,5 +69,5 @@ exports.notFound = (res, message = 'Not found') =>
  * @param message  the error message to send
  */
 exports.serverError = (res, message = 'Internal Server Error') => {
-  return res.status(500).json({ error: message }).end();
+  return res.status(500).json({ error: message });
 };

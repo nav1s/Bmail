@@ -11,14 +11,15 @@ function requireAuth(req, res, next) {
   }
 
   const userId = parseInt(token, 10);
-  const user = users.findUserById(userId);
+  try {
+    const user = users.findUserById(userId);
+    req.user = user;
+    next();
 
-  if (!user) {
+  } catch (err) {
     return res.status(401).json({ error: 'Invalid token or user not found' });
   }
 
-  req.user = user;
-  next();
 }
 
 module.exports = { requireAuth };
