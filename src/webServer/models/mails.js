@@ -145,10 +145,12 @@ function findMailById(id) {
  * @returns 
  */
 function canUserAccessMail(mail, username) {
+  console.log(`Checking access for user ${username} on mail ${mail.id}`);
+
   return (
     mail.from === username && !mail.deletedBySender ||
     (Array.isArray(mail.to) && mail.to.includes(username) &&
-      mail.draft !== true && !mail.deletedByRecipient)
+      mail.draft === false && !mail.deletedByRecipient)
   );
 }
 
@@ -177,6 +179,17 @@ function canUserUpdateMail(mail, username) {
 function editMail(mail, updates) {
   const editableFields = ['title', 'body'];
 
+  // check if the update contains draft
+  if('draft' in updates) {
+    console.log(`Draft status update: ${updates.draft}`);
+    if (mail.draft === true) {
+      if (updates.draft === false) {
+        mail.draft = false;
+      }
+    }
+  }
+
+
   for (const field of editableFields) {
     if (field in updates) {
       if (typeof updates[field] !== 'string') {
@@ -186,6 +199,13 @@ function editMail(mail, updates) {
     }
   }
 
+  // update the mail in the array
+  const index = mails.findIndex(m => m.id === mail.id);
+  if (index === -1) {
+    throw createError('Mail not found', { status: 404 });
+  }
+
+  mails[index] = mail;
   return mail;
 }
 

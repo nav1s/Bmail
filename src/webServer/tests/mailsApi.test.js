@@ -257,7 +257,7 @@ test('4.13 valid mail patch', async () => {
 
 // ❌ 4.14 invalid mail PATCH
 test('invalid mail patch', async () => {
-   await api
+  await api
     .patch('/api/mails/3')
     .set('Authorization', '2')
     .set('Content-Type', 'application/json')
@@ -354,7 +354,7 @@ test('4.20 valid draft creation', async () => {
   });
 });
 
-// ✅ 4.21 Valid draft get by owber and recipient cannot access
+// ✅ 4.21 Valid draft get by owner and recipient cannot access
 test('4.21 valid draft get by id)', async () => {
   const response = await api
     .get('/api/mails/4')
@@ -383,11 +383,11 @@ test('4.22 send draft', async () => {
     .patch('/api/mails/4')
     .set('Authorization', '1')
     .set('Content-Type', 'application/json')
-    .send({ title: "Updated Title" })
+    .send({ draft: false })
     .expect(200)
     .expect('Content-Type', /application\/json/);
 
-  assert.strictEqual(response.body.draft, true);
+  assert.strictEqual(response.body.draft, false);
 });
 
 // ✅ 4.23 valid get sent mail by recipient after sending draft
@@ -397,12 +397,12 @@ test('4.23 valid get sent mail by recipient after sending draft', async () => {
     .set('Authorization', '2')
     .expect(200)
     .expect('Content-Type', /application\/json/);
-    
-    assert.deepStrictEqual(response.body, {
+
+  assert.deepStrictEqual(response.body, {
     from: "alice123",
     to: ["bob"],
-    title: "Updated Title",
-    body: "This should work",
+    title: "Hello again",
+    body: "This should work again",
     id: 4,
     draft: false
   });

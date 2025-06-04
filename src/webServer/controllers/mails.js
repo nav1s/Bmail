@@ -179,6 +179,8 @@ function updateMailById(req, res) {
   }
   const username = req.user.username;
 
+  // log the body of the request
+  console.log(`User ${username} is trying to update mail ${id} with body:`, req.body);
   try {
     let mail = findMailById(id);
     canUserUpdateMail(mail, username);
