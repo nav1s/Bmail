@@ -334,7 +334,7 @@ curl -i -X POST http://localhost:8080/api/mails \
   "to": ["bob"], 
   "title": "Hello again",
   "body": "This should work",
-  draft: true
+  "draft": true
 }'
 
 Expected:
@@ -364,6 +364,7 @@ curl -i -X GET http://localhost:8080/api/mails/2 \
 Expected:
 HTTP/1.1 200 OK
 []
+
 ----------------------------------------
  5. LABELS
 ----------------------------------------
