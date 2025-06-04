@@ -208,7 +208,7 @@ function deleteMail(user, id) {
     mail.deletedByRecipient = true;
   }
 
-  if (mail.deletedBySender && mail.deletedByRecipient) {
+  if (mail.deletedBySender && mail.deletedByRecipient || mail.draft === true) {
     // If both sender and recipient deleted the mail, remove it from the array
     mails.splice(index, 1);
   } else {
