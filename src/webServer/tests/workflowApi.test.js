@@ -40,7 +40,7 @@ test('full flow: user signup → login → send mail → update → delete → c
   await api.patch(`/api/mails/${mailId}`)
     .set('Authorization', token)
     .send({ title: "Updated title" })
-    .expect(200);
+    .expect(403);
 
   // Delete mail
   await api.delete(`/api/mails/${mailId}`)

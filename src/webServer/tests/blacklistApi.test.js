@@ -96,7 +96,7 @@ test('1.5 invalid POST mail with one blacklisted URL and one url that hasn\'t be
     .send({
       to: ['alice123'],
       title: 'Try this site',
-      body: `Check this link: http://bad.com and this one: http://bmail.com`
+      body: "Check this link: http://bmail.com and http://bad.com"
     });
 
   assert.strictEqual(response.status, 400);
@@ -105,8 +105,26 @@ test('1.5 invalid POST mail with one blacklisted URL and one url that hasn\'t be
   });
 });
 
-// ✅ 1.6 Valid DELETE blacklist
-test('1.6 Valid DELETE blacklist', async () => {
+// ❌ 1.6 invalid POST mail with blacklisted URL in title
+test('1.6 invalid POST mail with blacklisted URL in title', async () => {
+  const response = await api
+    .post('/api/mails')
+    .set('Authorization', '1')
+    .send({
+      to: ['alice123'],
+      title: 'try this site http://bad.com',
+      body: 'Check this link:'
+    });
+
+  assert.strictEqual(response.status, 400);
+  assert.deepStrictEqual(response.body, {
+    error: 'Mail contains blacklisted URLs'
+  });
+});
+
+
+// ✅ 1.7 Valid DELETE blacklist
+test('1.7 Valid DELETE blacklist', async () => {
   const blacklistedId = encodeURIComponent('http://bad.com');
   const response = await api
     .delete(`/api/blacklist/${blacklistedId}`)
@@ -116,8 +134,8 @@ test('1.6 Valid DELETE blacklist', async () => {
   assert.strictEqual(response.status, 204);
 });
 
-// ✅ 1.7 Valid POST mail - after DELETE of blacklisted URL
-test('1.7 Valid POST mail - after DELETE of blacklisted URL', async () => {
+// ✅ 1.8 Valid POST mail - after DELETE of blacklisted URL
+test('1.8 Valid POST mail - after DELETE of blacklisted URL', async () => {
   const response = await api
     .post('/api/mails')
     .set('Authorization', '1')

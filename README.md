@@ -11,7 +11,7 @@ The project also includes a Python client for interacting with the Bloom filter 
 
 ## Demo
 
-![Bmail Demo](assets/ex2-example-run.gif)
+![Bmail Demo](assets/ex3-example-run.gif)
 
 ## Getting Started
 
@@ -34,6 +34,11 @@ git checkout part3
 ```bash
 docker compose down --remove-orphans
 docker compose up --detach --pull always --remove-orphans --build --wait bloom-filter web-server
+```
+
+> **When you are done using the application, shut down the containers with:**
+```bash
+docker compose down --remove-orphans
 ```
 
 > **if you want to start with a fresh Bloom filter, delete the data file with the following command:**
@@ -95,7 +100,7 @@ curl -i -X POST http://localhost:8080/api/labels \
 
 > **search for a mail:**
 ```bash
-curl -i -X GET http://localhost:8080/api/mails/search/query \
+curl -i -X GET http://localhost:8080/api/mails/search/This \
 -H "Authorization: 1"
 ```
 
@@ -105,6 +110,18 @@ curl -i -X POST http://localhost:8080/api/blacklist \
 -H "Authorization: 1" \
 -H "Content-Type: application/json" \
 -d '{ "url": "http://bad.com" }'
+```
+
+> **attempt to send a mail with a blacklisted url:**
+```bash
+curl -i -X POST http://localhost:8080/api/mails \
+-H "Authorization: 1" \
+-H "Content-Type: application/json" \
+-d '{
+  "to": ["alice123"],
+  "title": "Try this site",
+  "body": "Check this link: http://bad.com"
+}'
 ```
 
 > **remove a url from the blacklist:**

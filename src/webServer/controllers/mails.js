@@ -1,4 +1,4 @@
-const { buildMail, filterMailForOutput, validateMailInput, findMailById, editMail, deleteMail, userIsSender, canUserAccessMail, getMailsForUser, searchMailsForUser } = require('../models/mails.js');
+const { buildMail, filterMailForOutput, validateMailInput, findMailById, editMail, deleteMail, canUserAccessMail, getMailsForUser, searchMailsForUser, canUserUpdateMail } = require('../models/mails.js');
 const { badRequest, created, ok, noContent, forbidden } = require('../utils/httpResponses');
 const { httpError, createError } = require('../utils/error');
 const users = require('../models/users.js');
@@ -12,11 +12,12 @@ const net = require("net");
 async function checkBlacklistedUrl(urls) {
   return new Promise((resolve, reject) => {
     let urlIndex = 0;
-    const client = new net.Socket();
 
     // Connect to the server at the specified port and address
-    client.connect(12345, '127.0.0.1', () => {
+    const client = net.createConnection({ host: 'bloom-filter', port: 12345 }, () => {
       console.log('Connected to server');
+      // log the urls being sent
+      console.log('Sending this url to the server ', urls[urlIndex]);
       // send the first URL to the server
       client.write(`GET ${urls[urlIndex]}\n`);
       urlIndex++;
@@ -40,6 +41,7 @@ async function checkBlacklistedUrl(urls) {
 
       // send the next URL if available
       if (urlIndex < urls.length) {
+        console.log('Sending this url to the server ', urls[urlIndex]);
         client.write(`GET ${urls[urlIndex]}\n`);
         urlIndex++;
       } else {
@@ -55,6 +57,32 @@ async function checkBlacklistedUrl(urls) {
       reject(error);
     });
   });
+}
+
+/**
+ * This function checks if a message contains any blacklisted URLs.
+ * @param msg The message body or title to check for blacklisted URLs.
+ * @returns true if any blacklisted URLs are found, false otherwise.
+ */
+async function isMessageValid(msg) {
+  const urlRegex = /\bhttps?:\/\/(?:www\.)?[a-zA-Z0-9\-]+\.[a-zA-Z]{2,}(?:\.[a-zA-Z]{2,})?(?:\/[^\s]*)?\b/g;
+
+  // Extract URLs from the mail body using the regex
+  const urls = msg.match(urlRegex);
+
+  let isInvalid = false;
+  if (urls !== null)
+    if (urls.length > 0) {
+      // Check if any of the URLs are blacklisted
+      try {
+        isInvalid = await checkBlacklistedUrl(urls);
+      } catch (error) {
+        console.error('Error checking blacklisted URLs:', error);
+      }
+    }
+
+  return isInvalid;
+
 }
 
 /**
@@ -77,29 +105,14 @@ async function createMail(req, res) {
     return httpError(res, err);
   }
 
-  // save the mail body to a variable
-  const msg = mailInput.body || '';
+  // check if the mail contains blacklisted URLs
+  const msgBody = mailInput.body || '';
+  const msgTitle = mailInput.title || '';
+  const isBlacklisted = await isMessageValid(msgBody) || await isMessageValid(msgTitle);
 
-  const urlRegex =
-    /(https:\/\/www\.|http:\/\/www\.|https:\/\/|http:\/\/)?[a-zA-Z]{2,}(\.[a-zA-Z]{2,})(\.[a-zA-Z]{2,})?\/[a-zA-Z0-9]{2,}|((https:\/\/www\.|http:\/\/www\.|https:\/\/|http:\/\/)?[a-zA-Z]{2,}(\.[a-zA-Z]{2,})(\.[a-zA-Z]{2,})?)|(https:\/\/www\.|http:\/\/www\.|https:\/\/|http:\/\/)?[a-zA-Z0-9]{2,}\.[a-zA-Z0-9]{2,}\.[a-zA-Z0-9]{2,}(\.[a-zA-Z0-9]{2,})?/g;
-
-  // Extract URLs from the mail body using the regex
-  const urls = msg.match(urlRegex);
-
-  // check if any URLs are present in the mail body
-  if (urls && urls.length > 0) {
-    let isBlacklisted = false;
-
-    // Check if any of the URLs are blacklisted
-    try {
-      isBlacklisted = await checkBlacklistedUrl(urls);
-    } catch (error) {
-      console.error('Error checking blacklisted URLs:', error);
-    }
-    // If any URL is blacklisted, return an error response
-    if (isBlacklisted) {
-      return badRequest(res, 'Mail contains blacklisted URLs');
-    }
+  // return an error if blacklisted URLs are found
+  if (isBlacklisted) {
+    return badRequest(res, 'Mail contains blacklisted URLs');
   }
 
   // Build and store the mail
@@ -141,11 +154,11 @@ function getMailById(req, res) {
     const mail = findMailById(id);
     if (!canUserAccessMail(mail, username)) {
       return forbidden(res, 'You are not allowed to view this mail');
-
     }
 
     return ok(res, filterMailForOutput(mail));
   } catch (err) {
+    // console.error(`Error retrieving mail ${id} for user ${username}:`, err);
     return httpError(res, err);
   }
 }
@@ -166,9 +179,11 @@ function updateMailById(req, res) {
   }
   const username = req.user.username;
 
+  // log the body of the request
+  console.log(`User ${username} is trying to update mail ${id} with body:`, req.body);
   try {
     let mail = findMailById(id);
-    userIsSender(mail, username);
+    canUserUpdateMail(mail, username);
     mail = editMail(mail, req.body);
 
     return ok(res, filterMailForOutput(mail));
@@ -192,10 +207,16 @@ function deleteMailById(req, res) {
 
   try {
     const mail = findMailById(id);
-    canUserAccessMail(mail, username);
-    deleteMail(mail.id);
+    if (!canUserAccessMail(mail, username)) {
+      console.warn(`User ${username} tried to delete mail ${id} they don't have access to`);
+      return forbidden(res, 'You are not allowed to delete this mail');
+    }
+
+    console.info(`User ${username} deleted mail ${id}`);
+    deleteMail(req.user, mail.id);
     return noContent(res);
   } catch (err) {
+    // console.error(`Error deleting mail ${id} for user ${username}:`, err);
     return httpError(res, err);
   }
 }

@@ -15,9 +15,7 @@ exports.addToBlacklist = (req, res) => {
     }
 
     const url = req.body.url;
-    const client = new net.Socket();
-
-    client.connect(12345, '127.0.0.1', () => {
+    const client = net.createConnection({ host: 'bloom-filter', port: 12345 }, () => {
         console.log('Connected to server');
         // send the request to add the URL to the blacklist
         client.write(`POST ${url}\n`);
@@ -61,9 +59,7 @@ exports.removeFromBlacklist = (req, res) => {
     // save the URL to a variable
     const url = req.params.id;
 
-    const client = new net.Socket();
-
-    client.connect(12345, '127.0.0.1', () => {
+    const client = net.createConnection({ host:'bloom-filter', port: 12345 }, ()  => {
         console.log('Connected to server');
         // send the request to delete the URL from the blacklist
         client.write(`DELETE ${url}\n`);
