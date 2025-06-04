@@ -67,7 +67,7 @@ function buildMail(input) {
     id: mailIdCounter++,
     timestamp: new Date().toISOString(),
     deletedBySender: false,
-    deletedByRecipient: false,
+    deletedByRecipient: [],
   };
 
   // Filling fields with input according to the schema of newMail
@@ -150,7 +150,7 @@ function canUserAccessMail(mail, username) {
   return (
     mail.from === username && !mail.deletedBySender ||
     (Array.isArray(mail.to) && mail.to.includes(username) &&
-      mail.draft === false && !mail.deletedByRecipient)
+      mail.draft === false && mail.deletedByRecipient.includes(username) === false)
   );
 }
 
@@ -181,7 +181,6 @@ function editMail(mail, updates) {
 
   // check if the update contains draft
   if('draft' in updates) {
-    console.log(`Draft status update: ${updates.draft}`);
     if (mail.draft === true) {
       if (updates.draft === false) {
         mail.draft = false;
@@ -232,7 +231,7 @@ function deleteMail(user, id) {
   if (mail.from === user.username) {
     mail.deletedBySender = true;
   } else if (Array.isArray(mail.to) && mail.to.includes(user.username)) {
-    mail.deletedByRecipient = true;
+    mail.deletedByRecipient.push(user.username);
   }
 
   // If both sender and recipient deleted the mail remove it from the array
