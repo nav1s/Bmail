@@ -255,7 +255,7 @@ test('4.13 valid mail patch', async () => {
   assert.strictEqual(response.body.title, "Updated Title");
 });
 
-// ✅ 4.14 invalid mail PATCH
+// ❌ 4.14 invalid mail PATCH
 test('invalid mail patch', async () => {
    await api
     .patch('/api/mails/3')
