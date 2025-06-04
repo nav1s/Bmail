@@ -354,8 +354,31 @@ test('4.20 valid draft creation', async () => {
   });
 });
 
-// ✅ 4.20 valid send draft
-test('4.20 send draft', async () => {
+// ✅ 4.21 Valid draft get by owber and recipient cannot access
+test('4.21 valid draft get by id)', async () => {
+  const response = await api
+    .get('/api/mails/4')
+    .set('Authorization', '1')
+    .expect(200)
+    .expect('Content-Type', /application\/json/);
+
+  assert.deepStrictEqual(response.body, {
+    from: "alice123",
+    to: ["bob"],
+    title: "Hello again",
+    body: "This should work again",
+    draft: true,
+    id: 4
+  });
+  await api
+    .get('/api/mails/4')
+    .set('Authorization', '2')
+    .expect(403)
+    .expect('Content-Type', /application\/json/);
+});
+
+// ✅ 4.22 valid send draft
+test('4.22 send draft', async () => {
   const response = await api
     .patch('/api/mails/4')
     .set('Authorization', '1')
