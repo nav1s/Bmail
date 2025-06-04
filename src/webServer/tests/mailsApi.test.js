@@ -292,6 +292,19 @@ test('4.16 invalid draft get by id)', async () => {
     .expect('Content-Type', /application\/json/);
 });
 
+// ✅ 4.17 valid send draft
+test('4.17 send draft', async () => {
+  const response = await api
+    .patch('/api/mails/3')
+    .set('Authorization', '1')
+    .set('Content-Type', 'application/json')
+    .send({ title: "Updated Title" })
+    .expect(200)
+    .expect('Content-Type', /application\/json/);
+
+  assert.strictEqual(response.body.draft, true);
+});
+
 // ❌ Receipient cannot delete draft
 test('4.17 recipient cannot delete draft', async () => {
   await api
@@ -316,8 +329,8 @@ test('4.19. Sender cannot access the draft after deleting it', async () => {
   assert.strictEqual(res.status, 404);
 });
 
-// ✅ 4.21 valid send draft
-test('4.21 send draft', async () => {
+// ✅ 4.20 valid send draft
+test('4.20 send draft', async () => {
   const response = await api
     .patch('/api/mails/3')
     .set('Authorization', '1')
