@@ -232,7 +232,7 @@ curl -i -X POST http://localhost:8080/api/mails \
 -H "Authorization: 1" \
 -H "Content-Type: application/json" \
 -d '{
-  "to": ["alice123"],
+  "to": ["bob"],
   "title": "Hello Wirtz",
   "body": "Sign for Liverpool"
 }'
