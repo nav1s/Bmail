@@ -389,3 +389,21 @@ test('4.22 send draft', async () => {
 
   assert.strictEqual(response.body.draft, true);
 });
+
+// ✅ 4.23 valid get sent mail by recipient after sending draft
+test('4.23 valid get sent mail by recipient after sending draft', async () => {
+  const response = await api
+    .get('/api/mails/4')
+    .set('Authorization', '2')
+    .expect(200)
+    .expect('Content-Type', /application\/json/);
+    
+    assert.deepStrictEqual(response.body, {
+    from: "alice123",
+    to: ["bob"],
+    title: "Updated Title",
+    body: "This should work",
+    id: 4,
+    draft: false
+  });
+});
