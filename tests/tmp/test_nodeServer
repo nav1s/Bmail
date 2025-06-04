@@ -68,6 +68,18 @@ Expected:
 HTTP/1.1 400 Bad Request  
 {"error":"Missing fields: lastName"}
 
+✅ 1.5 Successful registration
+
+curl -i -X POST http://localhost:8080/api/users \
+-H "Content-Type: application/json" \
+-d '{
+  "firstName": "Bob",
+  "lastName": "Smith",
+  "username": "bob",
+  "password": "imthebobyboten"
+}'
+
+
 ----------------------------------------
  2. USER LOGIN (TOKEN GENERATION)
 ----------------------------------------
@@ -220,7 +232,7 @@ curl -i -X POST http://localhost:8080/api/mails \
 -H "Authorization: 1" \
 -H "Content-Type: application/json" \
 -d '{
-  "to": ["alice123"],
+  "to": ["bob"],
   "title": "Hello Wirtz",
   "body": "Sign for Liverpool"
 }'
@@ -312,6 +324,70 @@ curl -i -X DELETE http://localhost:8080/api/mails/555 \
 Expected:
 HTTP/1.1 400 Bad Request
 {"error":"mail id not found"}
+
+✅ 4.12 Valid draft creation
+
+curl -i -X POST http://localhost:8080/api/mails \
+-H "Authorization: 1" \
+-H "Content-Type: application/json" \
+-d '{
+  "to": ["bob"], 
+  "title": "Hello again",
+  "body": "This should work",
+  "draft": true
+}'
+
+Expected:
+HTTP/1.1 201 Created  
+
+✅ 4.13 Valid mail title change
+
+curl -i -X PATCH http://localhost:8080/api/mails/1 \
+-H "Authorization: 1" \
+-H "Content-Type: application/json" \
+-d '{"title": "Updated Title"}'
+
+Expected:
+HTTP/1.1 200 OK
+{
+  "title": "Updated Title",
+}
+
+
+✅ 4.14 Valid draft get by id
+
+curl -i -X GET http://localhost:8080/api/mails/2 \
+-H "Authorization: 1"
+
+Expected:
+HTTP/1.1 200 OK
+{
+  "id": 1,
+  "from": 1,
+  "to": ["bob"],
+  "title": "Hello again",
+  "body": "This should work",
+  "timestamp": "..."
+}
+
+✅ 4.15 invalid draft get by id
+
+curl -i -X GET http://localhost:8080/api/mails/2 \
+-H "Authorization: 2"
+
+✅ 4.16 valid send draft
+
+curl -i -X PATCH http://localhost:8080/api/mails/1 \
+-H "Authorization: 1" \
+-H "Content-Type: application/json" \
+-d '{"draft": true}'
+
+Expected:
+HTTP/1.1 200 OK
+{
+  "draft": true
+}
+
 
 ----------------------------------------
  5. LABELS

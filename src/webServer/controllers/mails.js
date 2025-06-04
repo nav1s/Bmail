@@ -1,4 +1,4 @@
-const { buildMail, filterMailForOutput, validateMailInput, findMailById, editMail, deleteMail, userIsSender, canUserAccessMail, getMailsForUser, searchMailsForUser } = require('../models/mails.js');
+const { buildMail, filterMailForOutput, validateMailInput, findMailById, editMail, deleteMail, canUserAccessMail, getMailsForUser, searchMailsForUser, canUserUpdateMail } = require('../models/mails.js');
 const { badRequest, created, ok, noContent, forbidden } = require('../utils/httpResponses');
 const { httpError, createError } = require('../utils/error');
 const users = require('../models/users.js');
@@ -154,11 +154,11 @@ function getMailById(req, res) {
     const mail = findMailById(id);
     if (!canUserAccessMail(mail, username)) {
       return forbidden(res, 'You are not allowed to view this mail');
-
     }
 
     return ok(res, filterMailForOutput(mail));
   } catch (err) {
+    // console.error(`Error retrieving mail ${id} for user ${username}:`, err);
     return httpError(res, err);
   }
 }
@@ -179,9 +179,11 @@ function updateMailById(req, res) {
   }
   const username = req.user.username;
 
+  // log the body of the request
+  console.log(`User ${username} is trying to update mail ${id} with body:`, req.body);
   try {
     let mail = findMailById(id);
-    userIsSender(mail, username);
+    canUserUpdateMail(mail, username);
     mail = editMail(mail, req.body);
 
     return ok(res, filterMailForOutput(mail));
@@ -205,10 +207,16 @@ function deleteMailById(req, res) {
 
   try {
     const mail = findMailById(id);
-    canUserAccessMail(mail, username);
-    deleteMail(mail.id);
+    if (!canUserAccessMail(mail, username)) {
+      console.warn(`User ${username} tried to delete mail ${id} they don't have access to`);
+      return forbidden(res, 'You are not allowed to delete this mail');
+    }
+
+    console.info(`User ${username} deleted mail ${id}`);
+    deleteMail(req.user, mail.id);
     return noContent(res);
   } catch (err) {
+    // console.error(`Error deleting mail ${id} for user ${username}:`, err);
     return httpError(res, err);
   }
 }
