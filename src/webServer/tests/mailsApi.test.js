@@ -51,6 +51,26 @@ async function createTestUserAndReturn() {
     lastName: "smith",
     username: "bob"
   });
+  await api
+    .post('/api/users')
+    .send({
+      firstName: "Carlo",
+      lastName: "Ancelotti",
+      username: "carlo123",
+      password: "securepass"
+    })
+    .set('Content-Type', 'application/json')
+    .expect(201)
+  response = await api
+    .get('/api/users/3')
+    .expect(200)
+    .expect('Content-Type', /application\/json/);
+  assert.deepStrictEqual(response.body, {
+    id: 3,
+    username: "carlo123",
+    firstName: "Carlo",
+    lastName: "Ancelotti",
+  });
 }
 
 // ❌ 4.1 Mail creation without login
@@ -407,3 +427,44 @@ test('4.23 valid get sent mail by recipient after sending draft', async () => {
     draft: false
   });
 });
+
+// ✅ 4.24 valid get mail by recipient after mail deleted in another user
+test('4.24 valid get mail by recipient after mail deleted in another user', async () => {
+  const response = await api
+    .post('/api/mails')
+    .set('Authorization', '1')
+    .set('Content-Type', 'application/json')
+    .send({
+      to: ["alice123", "bob", "carlo123"],
+      title: "Hello again friends",
+      body: "This should work: https://good.com https://verygood.com"
+    })
+    .expect(201)
+    .expect('Content-Type', /application\/json/);
+
+  assert.deepStrictEqual(response.body, {
+    from: "alice123",
+    to: ["alice123", "bob", "carlo123"],
+    title: "Hello again friends",
+    body: "This should work: https://good.com https://verygood.com",
+    draft: false,
+    id: 5
+  })
+  await api
+    .delete('/api/mails/5')
+    .set('Authorization', '2')
+    .expect(204);
+  const response2 = await api
+    .get('/api/mails/5')
+    .set('Authorization', '3')
+    .expect(200)
+    .expect('Content-Type', /application\/json/);
+  assert.deepStrictEqual(response2.body, {
+    from: "alice123",
+    to: ["alice123", "bob", "carlo123"],
+    title: "Hello again friends",
+    body: "This should work: https://good.com https://verygood.com",
+    draft: false,
+    id: 5
+  })
+})
