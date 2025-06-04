@@ -202,15 +202,21 @@ function deleteMail(user, id) {
   }
 
   const mail = mails[index];
+
+  // If the mail is a draft and the user is the sender, just remove it
+  if (mail.draft === true && mail.from === user.username) {
+    mails.splice(index, 1);
+    return;
+  }
+
   if (mail.from === user.username) {
     mail.deletedBySender = true;
   } else if (Array.isArray(mail.to) && mail.to.includes(user.username)) {
     mail.deletedByRecipient = true;
   }
 
-  // If both sender and recipient deleted the mail or the mail was a draft,
-  // remove it from the array
-  if (mail.deletedBySender && mail.deletedByRecipient || mail.draft === true) {
+  // If both sender and recipient deleted the mail remove it from the array
+  if (mail.deletedBySender && mail.deletedByRecipient) {
     mails.splice(index, 1);
   } else {
     // otherwise update the mail in the array
