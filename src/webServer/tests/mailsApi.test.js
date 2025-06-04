@@ -329,10 +329,35 @@ test('4.19. Sender cannot access the draft after deleting it', async () => {
   assert.strictEqual(res.status, 404);
 });
 
+// ✅ 4.20 valid draft creation
+test('4.20 valid draft creation', async () => {
+  const response = await api
+    .post('/api/mails')
+    .set('Authorization', '1')
+    .set('Content-Type', 'application/json')
+    .send({
+      to: ["bob"],
+      title: "Hello again",
+      body: "This should work again",
+      draft: true
+    })
+    .expect(201)
+    .expect('Content-Type', /application\/json/);
+
+  assert.deepStrictEqual(response.body, {
+    from: "alice123",
+    to: ["bob"],
+    title: "Hello again",
+    body: "This should work again",
+    id: 4,
+    draft: true
+  });
+});
+
 // ✅ 4.20 valid send draft
 test('4.20 send draft', async () => {
   const response = await api
-    .patch('/api/mails/3')
+    .patch('/api/mails/4')
     .set('Authorization', '1')
     .set('Content-Type', 'application/json')
     .send({ title: "Updated Title" })
