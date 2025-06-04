@@ -291,3 +291,16 @@ test('4.16 invalid draft get by id)', async () => {
     .expect(403)
     .expect('Content-Type', /application\/json/);
 });
+
+// ✅ 4.17 valid send draft
+test('4.17 send draft', async () => {
+  const response = await api
+    .patch('/api/mails/3')
+    .set('Authorization', '1')
+    .set('Content-Type', 'application/json')
+    .send({ title: "Updated Title" })
+    .expect(200)
+    .expect('Content-Type', /application\/json/);
+
+  assert.strictEqual(response.body.draft, true);
+});
