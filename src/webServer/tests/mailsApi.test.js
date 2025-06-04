@@ -172,7 +172,7 @@ test('returns 404 for invalid mail id (4.6)', async () => {
     .expect({ error: 'Mail not found' });
 });
 
-// ❌ 4.9 Invalid mail PATCH
+// ❌ 4.8 Invalid mail PATCH
 test('returns 404 on patching non-existent mail (4.8)', async () => {
   await api
     .patch('/api/mails/555')
@@ -184,7 +184,7 @@ test('returns 404 on patching non-existent mail (4.8)', async () => {
     .expect({ error: 'Mail not found' });
 });
 
-// ✅ 4.10 Valid mail DELETE
+// ✅ 4.9 Valid mail DELETE
 test('deletes mail by id (4.9)', async () => {
   await api
     .delete('/api/mails/1')
@@ -192,7 +192,7 @@ test('deletes mail by id (4.9)', async () => {
     .expect(204);
 });
 
-// ❌ 4.11 Invalid mail DELETE
+// ❌ 4.10 Invalid mail DELETE
 test('returns 404 on deleting non-existent mail (4.10)', async () => {
   await api
     .delete('/api/mails/555')
@@ -202,7 +202,7 @@ test('returns 404 on deleting non-existent mail (4.10)', async () => {
     .expect({ error: 'Mail not found' });
 });
 
-// ❌ 4.12 Invalid mail POST without the user signed up
+// ❌ 4.11 Invalid mail POST without the user signed up
 test('returns 401 when trying to create mail without login (4.11)', async () => {
   await api
     .post('/api/mails')
@@ -283,11 +283,48 @@ test('4.15 valid draft get by id)', async () => {
   });
 });
 
-// ✅ 4.16 invalid draft get by id
+// ❌ 4.16 invalid draft get by id
 test('4.16 invalid draft get by id)', async () => {
   await api
     .get('/api/mails/3')
     .set('Authorization', '2')
     .expect(403)
     .expect('Content-Type', /application\/json/);
+});
+
+// ❌ Receipient cannot delete draft
+test('4.17 recipient cannot delete draft', async () => {
+  await api
+    .delete('/api/mails/3')
+    .set('Authorization', '2')
+    .expect(403)
+})
+
+// ✅ 4.18 valid draft delete by owner
+test('4.18. Sender can delete draft (soft delete)', async () => {
+  const res = await api.delete('/api/mails/3')
+    .set('Authorization', '1');
+
+  assert.strictEqual(res.status, 204);
+});
+
+// ❌ 4.19 invalid draft get after delete
+test('4.19. Sender cannot access the draft after deleting it', async () => {
+  const res = await api.get('/api/mails/3')
+    .set('Authorization', '1');
+
+  assert.strictEqual(res.status, 404);
+});
+
+// ✅ 4.21 valid send draft
+test('4.21 send draft', async () => {
+  const response = await api
+    .patch('/api/mails/3')
+    .set('Authorization', '1')
+    .set('Content-Type', 'application/json')
+    .send({ title: "Updated Title" })
+    .expect(200)
+    .expect('Content-Type', /application\/json/);
+
+  assert.strictEqual(response.body.draft, true);
 });
