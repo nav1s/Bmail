@@ -12,10 +12,11 @@ let mailIdCounter = 1;
  * in the buildMail() function and are not part of this schema.
  */
 const mailInputSchema = {
-  from:   { public: true },
-  to:     { public: true, normalize: true },
-  title:  { public: true },
-  body:   { public: true }
+  from: { public: true },
+  to: { public: true, normalize: true },
+  title: { public: true },
+  body: { public: true },
+  draft: { public: true, default: false },
 };
 
 /**
@@ -31,6 +32,11 @@ function validateMailInput(input) {
   const requiredFields = Object.keys(mailInputSchema);
   const inputFields = Object.keys(input);
 
+  // check if draft isn't in the input, if not, set it to the default value
+  if (!inputFields.includes('draft')) {
+    input.draft = mailInputSchema.draft.default;
+  }
+
   // Filtering fields from input
   const missing = requiredFields.filter(field => !(field in input));
   const unknown = inputFields.filter(field => !requiredFields.includes(field));
@@ -42,12 +48,6 @@ function validateMailInput(input) {
   if (unknown.length > 0) {
     throw createError(`Unknown fields: ${unknown.join(', ')}`, { status: 400, type: 'VALIDATION' });
   }
-
-  /* need to implement bloom filter checks
-  // Reject if newMail contains blacklisted URLs in title or body
-  const combinedText = [input.title, input.body].join(' ');
-  if (!validateBodyAndTitle(combinedText)) {
-  } */
 
   return true;
 }
@@ -64,20 +64,23 @@ function validateMailInput(input) {
  */
 function buildMail(input) {
   const newMail = {
-    id : mailIdCounter++,
+    id: mailIdCounter++,
     timestamp: new Date().toISOString(),
+    deletedBySender: false,
+    deletedByRecipient: false,
   };
 
   // Filling fields with input according to the schema of newMail
   for (const field of Object.keys(input)) {
     const cfg = mailInputSchema[field];
-    // Normalizing the
+    // Normalizing the field if specified in the schema
     if (cfg && cfg.normalize) {
       newMail[field] = Array.isArray(input[field]) ? input[field] : [input[field]];
     } else {
       newMail[field] = input[field];
     }
   }
+
   mails.push(newMail);
   return newMail;
 }
@@ -100,7 +103,7 @@ function filterMailForOutput(newMail) {
     }
   }
 
-  // Add internal public fields manually, can be deleted if this fields shouldnt be public
+  // Add internal public fields manually, can be deleted if this fields should not be public
   if ('id' in newMail) output.id = newMail.id;
   //if ('timestamp' in newMail) output.timestamp = newMail.timestamp;
 
@@ -115,8 +118,7 @@ function filterMailForOutput(newMail) {
  */
 function getMailsForUser(username, limit) {
   return mails
-    .filter(mail => mail.from === username ||
-      (Array.isArray(mail.to) && mail.to.includes(username)))
+    .filter(mail => canUserAccessMail(mail, username))
     .slice(-limit).reverse();
 }
 
@@ -144,21 +146,26 @@ function findMailById(id) {
  */
 function canUserAccessMail(mail, username) {
   return (
-    mail.from === username || (Array.isArray(mail.to) && mail.to.includes(username))
+    mail.from === username && !mail.deletedBySender ||
+    (Array.isArray(mail.to) && mail.to.includes(username) &&
+      mail.draft !== true && !mail.deletedByRecipient)
   );
 }
 
 /**
- * checks if a user is the sender of a mail.
- * Throws an error if the user is not the sender.
+ * checks if a user can update a mail.
+ * A user can update a mail only if he is the send and the mail is a draft
  * @param {*} mail - the mail object to check
  * @param {*} username - the username of the user to check access for
+ * @returns 
  */
-function userIsSender(mail, username) {
-  if (mail.from !== username) {
-    throw createError('Only the sender can update this mail', { status: 403 });
+function canUserUpdateMail(mail, username) {
+  if (mail.from !== username || mail.draft !== true) {
+    throw createError('Only the sender of a draft mail can update it', { status: 403 });
   }
+  return true;
 }
+
 
 /**
  * edits a mail object by applying updates to its title and body.
@@ -185,14 +192,29 @@ function editMail(mail, updates) {
 /**
  * deletes a mail by its ID.
  * Throws an error if the mail is not found.
+ * @param {*} user - the user object, used to check if the user is the sender or recipient
  * @param {*} id - the ID of the mail to delete
  */
-function deleteMail(id) {
+function deleteMail(user, id) {
   const index = mails.findIndex(m => m.id === id);
   if (index === -1) {
     throw createError('Mail not found', { status: 404 });
   }
-  mails.splice(index, 1);
+
+  const mail = mails[index];
+  if (mail.from === user.username) {
+    mail.deletedBySender = true;
+  } else if (Array.isArray(mail.to) && mail.to.includes(user.username)) {
+    mail.deletedByRecipient = true;
+  }
+
+  if (mail.deletedBySender && mail.deletedByRecipient) {
+    // If both sender and recipient deleted the mail, remove it from the array
+    mails.splice(index, 1);
+  } else {
+    // update the mail in the array
+    mails[index] = mail;
+  }
 }
 
 /**
@@ -205,14 +227,12 @@ function deleteMail(id) {
 function searchMailsForUser(username, query) {
   const lowerQuery = query.toLowerCase();
 
-  return mails.filter(mail => { const isSenderOrRecipient = mail.from === username ||
-      (Array.isArray(mail.to) && mail.to.includes(username));
-
+  return mails.filter(mail => {
     const matchesContent =
       (mail.title && mail.title.toLowerCase().includes(lowerQuery)) ||
       (mail.body && mail.body.toLowerCase().includes(lowerQuery));
 
-    return isSenderOrRecipient && matchesContent;
+    return canUserAccessMail(mail, username) && matchesContent;
   });
 }
 
@@ -225,7 +245,7 @@ module.exports = {
   getMailsForUser,
   findMailById,
   canUserAccessMail,
-  userIsSender,
+  canUserUpdateMail,
   editMail,
   deleteMail,
   searchMailsForUser

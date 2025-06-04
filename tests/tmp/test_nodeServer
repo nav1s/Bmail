@@ -68,6 +68,18 @@ Expected:
 HTTP/1.1 400 Bad Request  
 {"error":"Missing fields: lastName"}
 
+✅ 1.5 Successful registration
+
+curl -i -X POST http://localhost:8080/api/users \
+-H "Content-Type: application/json" \
+-d '{
+  "firstName": "Bob",
+  "lastName": "Smith",
+  "username": "bob",
+  "password": "imthebobyboten"
+}'
+
+
 ----------------------------------------
  2. USER LOGIN (TOKEN GENERATION)
 ----------------------------------------
@@ -313,6 +325,45 @@ Expected:
 HTTP/1.1 400 Bad Request
 {"error":"mail id not found"}
 
+✅ 4.12 Valid draft creation
+
+curl -i -X POST http://localhost:8080/api/mails \
+-H "Authorization: 1" \
+-H "Content-Type: application/json" \
+-d '{
+  "to": ["bob"], 
+  "title": "Hello again",
+  "body": "This should work",
+  draft: true
+}'
+
+Expected:
+HTTP/1.1 201 Created  
+
+✅ 4.13 Valid draft get by id
+
+curl -i -X GET http://localhost:8080/api/mails/2 \
+-H "Authorization: 1"
+
+Expected:
+HTTP/1.1 200 OK
+{
+  "id": 1,
+  "from": 1,
+  "to": ["bob"],
+  "title": "Hello again",
+  "body": "This should work",
+  "timestamp": "..."
+}
+
+✅ 4.14 invalid draft get by id
+
+curl -i -X GET http://localhost:8080/api/mails/2 \
+-H "Authorization: 2"
+
+Expected:
+HTTP/1.1 200 OK
+[]
 ----------------------------------------
  5. LABELS
 ----------------------------------------

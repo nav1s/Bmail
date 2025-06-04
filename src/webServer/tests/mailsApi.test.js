@@ -18,8 +18,8 @@ async function createTestUserAndReturn() {
     })
     .set('Content-Type', 'application/json')
     .expect(201)
-    // .expect('location', /\/api\/users\/1/)
-  const response = await api
+  // .expect('location', /\/api\/users\/1/)
+  let response = await api
     .get('/api/users/1')
     .expect(200)
     .expect('Content-Type', /application\/json/);
@@ -28,6 +28,28 @@ async function createTestUserAndReturn() {
     firstName: "Alice",
     lastName: "Test",
     username: "alice123"
+  });
+
+  await api
+    .post('/api/users')
+    .send({
+      firstName: "bob",
+      lastName: "smith",
+      username: "bob",
+      password: "imthebobyboten"
+    })
+    .set('Content-Type', 'application/json')
+    .expect(201)
+  // .expect('location', /\/api\/users\/1/)
+  response = await api
+    .get('/api/users/2')
+    .expect(200)
+    .expect('Content-Type', /application\/json/);
+  assert.deepStrictEqual(response.body, {
+    id: 2,
+    firstName: "bob",
+    lastName: "smith",
+    username: "bob"
   });
 }
 
@@ -69,7 +91,7 @@ test('returns 400 when required fields are missing', async () => {
 });
 
 // ✅ 4.3 Valid mail creation
-test('creates a valid mail (4.31)', async () => {
+test('creates a valid mail (4.3)', async () => {
   const response = await api
     .post('/api/mails')
     .set('Authorization', '1')
@@ -87,7 +109,8 @@ test('creates a valid mail (4.31)', async () => {
     to: ["alice123"],
     title: "Hello again",
     body: "This should work: https://good.com https://verygood.com",
-    id: 1
+    id: 1,
+    draft: false
   });
 });
 
@@ -110,7 +133,8 @@ test('creates another valid mail (4.32)', async () => {
     to: ["alice123"],
     title: "Hello Wirtz",
     body: "Sign for Liverpool, via https://liverpool.com, its a great club!",
-    id: 2
+    id: 2,
+    draft: false
   });
 });
 
@@ -146,19 +170,6 @@ test('returns 404 for invalid mail id (4.6)', async () => {
     .expect(404)
     .expect('Content-Type', /application\/json/)
     .expect({ error: 'Mail not found' });
-});
-
-// ✅ 4.8 Valid mail PATCH
-test('updates mail title by id (4.7)', async () => {
-  const response = await api
-    .patch('/api/mails/1')
-    .set('Authorization', '1')
-    .set('Content-Type', 'application/json')
-    .send({ title: "Updated Title" })
-    .expect(200)
-    .expect('Content-Type', /application\/json/);
-
-  assert.strictEqual(response.body.title, "Updated Title");
 });
 
 // ❌ 4.9 Invalid mail PATCH
@@ -204,4 +215,79 @@ test('returns 401 when trying to create mail without login (4.11)', async () => 
     .expect(401)
     .expect('Content-Type', /application\/json/)
     .expect({ error: 'You must be logged in' });
+});
+
+// ✅ 4.12 valid draft creation
+test('4.12 valid draft creation', async () => {
+  const response = await api
+    .post('/api/mails')
+    .set('Authorization', '1')
+    .set('Content-Type', 'application/json')
+    .send({
+      to: ["bob"],
+      title: "Hello again",
+      body: "This should work",
+      draft: true
+    })
+    .expect(201)
+    .expect('Content-Type', /application\/json/);
+
+  assert.deepStrictEqual(response.body, {
+    from: "alice123",
+    to: ["bob"],
+    title: "Hello again",
+    body: "This should work",
+    id: 3,
+    draft: true
+  });
+});
+
+// ✅ 4.13 valid mail PATCH
+test('4.13 valid mail patch', async () => {
+  const response = await api
+    .patch('/api/mails/3')
+    .set('Authorization', '1')
+    .set('Content-Type', 'application/json')
+    .send({ title: "Updated Title" })
+    .expect(200)
+    .expect('Content-Type', /application\/json/);
+
+  assert.strictEqual(response.body.title, "Updated Title");
+});
+
+// ✅ 4.14 invalid mail PATCH
+test('invalid mail patch', async () => {
+   await api
+    .patch('/api/mails/3')
+    .set('Authorization', '2')
+    .set('Content-Type', 'application/json')
+    .send({ title: "Updated Title" })
+    .expect(403)
+});
+
+// ✅ 4.15 Valid draft get by id
+test('4.15 valid draft get by id)', async () => {
+  const response = await api
+    .get('/api/mails/3')
+    .set('Authorization', '1')
+    .expect(200)
+    .expect('Content-Type', /application\/json/);
+
+  assert.deepStrictEqual(response.body, {
+    from: "alice123",
+    to: ["bob"],
+    title: "Updated Title",
+    body: "This should work",
+    id: 3,
+    draft: true
+  });
+});
+
+// ✅ 4.16 invalid draft get by id
+test('4.16 invalid draft get by id)', async () => {
+  await api
+    .get('/api/mails/3')
+    .set('Authorization', '2')
+    .expect(403)
+    .expect('Content-Type', /application\/json/);
 });
