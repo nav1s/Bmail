@@ -208,11 +208,12 @@ function deleteMail(user, id) {
     mail.deletedByRecipient = true;
   }
 
+  // If both sender and recipient deleted the mail or the mail was a draft,
+  // remove it from the array
   if (mail.deletedBySender && mail.deletedByRecipient || mail.draft === true) {
-    // If both sender and recipient deleted the mail, remove it from the array
     mails.splice(index, 1);
   } else {
-    // update the mail in the array
+    // otherwise update the mail in the array
     mails[index] = mail;
   }
 }
