@@ -264,15 +264,26 @@ test('4.12 valid draft creation', async () => {
 
 // ✅ 4.13 valid mail PATCH
 test('4.13 valid mail patch', async () => {
-  const response = await api
+  await api
     .patch('/api/mails/3')
     .set('Authorization', '1')
     .set('Content-Type', 'application/json')
     .send({ title: "Updated Title" })
-    .expect(200)
-    .expect('Content-Type', /application\/json/);
+    .expect(204)
 
-  assert.strictEqual(response.body.title, "Updated Title");
+  const getResponse = await api
+    .get('/api/mails/3')
+    .set('Authorization', '1')
+    .expect(200)
+  assert.deepStrictEqual(getResponse.body, {
+    from: "alice123",
+    to: ["bob"],
+    title: "Updated Title",
+    body: "This should work",
+    id: 3,
+    draft: true
+  });
+
 });
 
 // ❌ 4.14 invalid mail PATCH
@@ -314,18 +325,31 @@ test('4.16 invalid draft get by id)', async () => {
 
 // ✅ 4.17 valid send draft
 test('4.17 send draft', async () => {
-  const response = await api
+  await api
     .patch('/api/mails/3')
     .set('Authorization', '1')
     .set('Content-Type', 'application/json')
     .send({ title: "Updated Title" })
+    .expect(204)
+  
+  const response = await api
+    .get('/api/mails/3')
+    .set('Authorization', '1')
     .expect(200)
     .expect('Content-Type', /application\/json/);
 
-  assert.strictEqual(response.body.draft, true);
+  assert.deepStrictEqual(response.body, {
+    from: "alice123",
+    to: ["bob"],
+    title: "Updated Title",
+    body: "This should work",
+    id: 3,
+    draft: true
+  });
+
 });
 
-// ❌ Receipient cannot delete draft
+// ❌ Recipient cannot delete draft
 test('4.17 recipient cannot delete draft', async () => {
   await api
     .delete('/api/mails/3')
@@ -399,15 +423,27 @@ test('4.21 valid draft get by id)', async () => {
 
 // ✅ 4.22 valid send draft
 test('4.22 send draft', async () => {
-  const response = await api
+  await api
     .patch('/api/mails/4')
     .set('Authorization', '1')
     .set('Content-Type', 'application/json')
     .send({ draft: false })
+    .expect(204)
+  
+  const response = await api
+    .get('/api/mails/4')
+    .set('Authorization', '1')
     .expect(200)
     .expect('Content-Type', /application\/json/);
+  assert.deepStrictEqual(response.body, {
+    from: "alice123",
+    to: ["bob"],
+    title: "Hello again",
+    body: "This should work again",
+    id: 4,
+    draft: false
+  });
 
-  assert.strictEqual(response.body.draft, false);
 });
 
 // ✅ 4.23 valid get sent mail by recipient after sending draft
