@@ -188,7 +188,6 @@ function editMail(mail, updates) {
     }
   }
 
-
   for (const field of editableFields) {
     if (field in updates) {
       if (typeof updates[field] !== 'string') {
@@ -205,7 +204,6 @@ function editMail(mail, updates) {
   }
 
   mails[index] = mail;
-  return mail;
 }
 
 /**
