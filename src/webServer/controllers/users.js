@@ -1,6 +1,6 @@
 const users = require('../models/users.js');
-const { badRequest, notFound, ok, createdWithLocation } = require('../utils/httpResponses');
-const { httpError } = require('../utils/error');
+const { badRequest, ok, createdWithLocation, noContent } = require('../utils/httpResponses');
+const { httpError, forbidden } = require('../utils/error');
 
 
 /**
@@ -31,11 +31,11 @@ exports.createUser = (req, res) => {
   for (const field of requiredFields) {
     userData[field] = req.body[field];
   }
-  
+
   // Trying to create a user, returning bad request with the error if failed
   try {
-  const newUser = users.createUser(userData);
-  return createdWithLocation(res, `/api/users/${newUser.id}`);
+    const newUser = users.createUser(userData);
+    return createdWithLocation(res, `/api/users/${newUser.id}`);
   } catch (err) {
     return httpError(res, err);
   }
@@ -49,14 +49,46 @@ exports.createUser = (req, res) => {
 exports.getUserById = (req, res) => {
   try {
     // searching for user
-  const id = parseInt(req.params.id, 10);
-  const user = users.findUserById(id);
-  
-  // Returning only public user fields
-  const publicUser = users.filterUserByVisibility(user, 'public');
-  return ok(res, publicUser);
+    const id = parseInt(req.params.id, 10);
+    const user = users.findUserById(id);
+
+    // Returning only public user fields
+    const publicUser = users.filterUserByVisibility(user, 'public');
+    return ok(res, publicUser);
   } catch (err) {
     return httpError(res, err);
   }
+};
+
+
+/**
+ * PATCH /api/users/:id
+ * Edits the user with the given ID.
+ * Requires login.
+ *
+ * @param {import('express').Request} req
+ * @param {import('express').Response} res
+ */
+exports.updateUserById = (req, res) => {
+  const id = Number(req.params.id);
+  if (!Number.isInteger(id)) {
+    return badRequest(res, 'User ID must be a valid integer');
+  }
+
+  try {
+    console.log('Updating user with ID:', id);
+    const user = users.findUserById(id);
+
+    if (user.id !== id) {
+      return forbidden(res, 'You are allowed to edit only your own user');
+    }
+    users.updateUserById(user, req.body);
+  }
+  catch (err) {
+    console.error('Error updating user:', err);
+    return httpError(res, err);
+  }
+
+  return noContent(res);
 };
 

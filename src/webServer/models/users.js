@@ -6,12 +6,12 @@ const users = [];
 
 // Centralized user field configuration
 const userFieldConfig = {
-  id: { public: true },
-  username: { public: true, required: true },
-  firstName: { public: true, required: true },
-  lastName: { public: true, required: true },
-  password: { public: false, required: true },
-  //image: { public: true, required: false } // optional future support
+  id: { public: true, editable: false, required: false },
+  username: { public: true, required: true, editable: true },
+  firstName: { public: true, required: true, editable: true },
+  lastName: { public: true, required: true, editable: true },
+  password: { public: false, required: true, editable: true },
+  image: { public: true, required: false, editable: true }
 };
 
 /**
@@ -35,10 +35,10 @@ function login(username, password) {
  * @param userData Object containing username, firstName, lastName, password.
  */
 function createUser(userData) {
-    // Checks username duplication
-    if (users.find(u => u.username === userData.username)) {
-      throw createError('Username already exists', { status: 400, type: 'DUPLICATE' });
-    }
+  // Checks username duplication
+  if (users.find(u => u.username === userData.username)) {
+    throw createError('Username already exists', { status: 400, type: 'DUPLICATE' });
+  }
 
   // add id to the user data
   const newUser = {
@@ -63,6 +63,34 @@ function findUserById(id) {
     throw createError('User not found', { status: 404, type: 'NOT_FOUND' });
   }
   return user;
+}
+
+/**
+ * @brief This function updates a user object with the provided updates.
+ * @param {*} user The user object to update.
+ * @param {*} updates The updates to apply to the user object.
+ */
+function updateUserById(user, updates) {
+  const editableFields = Object.entries(userFieldConfig)
+    .filter(([_, config]) => config.editable)
+    .map(([field]) => field);
+
+  for (const field of editableFields) {
+    if (field in updates) {
+      if (typeof updates[field] !== 'string') {
+        throw createError(`Field "${field}" must be a string`, { status: 400 });
+      }
+      console.log(`Updating field "${field}" for user ${user.username}`);
+      user[field] = updates[field];
+    }
+  }
+
+  // update the user in the array
+  const index = users.findIndex(u => u.id === user.id);
+  if (index === -1) {
+    throw createError('User not found', { status: 404 });
+  }
+  users[index] = user;
 }
 
 
@@ -112,6 +140,7 @@ module.exports = {
   getRequiredFields,
   createUser,
   findUserById,
+  updateUserById,
   findUserByUsername,
   login
 };
