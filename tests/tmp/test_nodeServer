@@ -68,7 +68,7 @@ Expected:
 HTTP/1.1 400 Bad Request  
 {"error":"Missing fields: lastName"}
 
-✅ 1.5 Successful registration
+✅ 1.5 create another user
 
 curl -i -X POST http://localhost:8080/api/users \
 -H "Content-Type: application/json" \
@@ -79,6 +79,17 @@ curl -i -X POST http://localhost:8080/api/users \
   "password": "imthebobyboten"
 }'
 
+✅ 1.6 patch bob
+
+curl -i -X PATCH http://localhost:8080/api/users/1 \
+-H "Content-Type: application/json" \
+-d '{
+  "firstName": "not bob"
+}'
+
+✅ 1.7 check that the patch succeeded
+
+curl -i -X GET http://localhost:8080/api/users/1 -H "Content-Type: application/json" 
 
 ----------------------------------------
  2. USER LOGIN (TOKEN GENERATION)
