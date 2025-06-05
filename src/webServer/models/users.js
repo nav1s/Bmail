@@ -42,8 +42,8 @@ function createUser(userData) {
 
   // add id to the user data
   const newUser = {
-    id: idCounter++,
-    ...userData
+    ...userData,
+    id: idCounter++
   };
 
   // add the new user to the users array
