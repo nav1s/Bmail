@@ -97,8 +97,8 @@ test('1.5 Patch: Successfully update firstName of user', async () => {
     })
     .expect(201);
 
-  const patchRes = await api
-    .patch('/api/users/2')
+  await api
+    .patch('/api/users')
     .set('Authorization', '2')
     .send({ firstName: 'Not Bob' })
     .expect(204);
@@ -118,54 +118,20 @@ test('1.6 Confirm patch persisted', async () => {
 
 // ❌ 1.7 Invalid edit non-editable fields like id
 test('1.7 Invalid edit non-editable fields like id', async () => {
-  const res = await api
-    .patch('/api/users/2')
+  await api
+    .patch('/api/users')
+    .set('Authorization', '2')
     .send({ id: 999 })
     .expect(400);
-
-  assert.notStrictEqual(res.body.id, 999);
-  assert.strictEqual(res.body.id, 2);
 });
 
 // ❌ 1.8 Invalid edit field with non-string value
 test('1.8 Invalid edit field with non-string value', async () => {
   const res = await api
-    .patch('/api/users/2')
+    .patch('/api/users')
+    .set('Authorization', '2')
     .send({ firstName: 12345 })
     .expect(400);
 
   assert.strictEqual(res.body.error, 'Field "firstName" must be a string');
-});
-
-// ❌ 1.9 Invalid Patch user with invalid ID (not found)
-test('1.9 Invalid Patch user with invalid ID (not found)', async () => {
-  const res = await api
-    .patch('/api/users/999')
-    .send({ firstName: 'ghost' })
-    .expect(404);
-
-  assert.strictEqual(res.body.error, 'User not found');
-});
-
-// ❌ 1.10 Invalid Patch user with other user ID
-test('1.10 User cannot edit another user (403 Forbidden)', async () => {
-  // try to update user with id = 2 with token of user who has id = 1 meaning another user.
-  const res = await api
-    .patch('/api/users/2')
-    .set('Authorization', '1') // login with alice = user with id = 1.
-    .send({ firstName: 'HackedName' })
-    .expect(403);
-
-  assert.strictEqual(res.body.error, 'You are allowed to edit only your own user');
-});
-
-// ❌ Invalid patch user with non-numeric ID (400)
-test('1.11 Cannot patch user with non-numeric ID (400)', async () => {
-  const res = await api
-    .patch('/api/users/notanumber')
-    .set('Authorization', '1')
-    .send({ firstName: 'Fail' })
-    .expect(400);
-
-  assert.strictEqual(res.body.error, 'User ID must be a valid integer');
 });

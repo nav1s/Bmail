@@ -81,8 +81,9 @@ curl -i -X POST http://localhost:8080/api/users \
 
 ✅ 1.6 patch bob
 
-curl -i -X PATCH http://localhost:8080/api/users/1 \
+curl -i -X PATCH http://localhost:8080/api/users \
 -H "Content-Type: application/json" \
+-H "Authorization: 1" \
 -d '{
   "firstName": "not bob"
 }'

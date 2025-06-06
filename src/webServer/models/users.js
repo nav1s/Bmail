@@ -74,6 +74,12 @@ function updateUserById(user, updates) {
   const editableFields = Object.entries(userFieldConfig)
     .filter(([_, config]) => config.editable)
     .map(([field]) => field);
+  
+  // check if the updates contain uneditable fields
+  const uneditableFields = Object.keys(updates).filter(field => !editableFields.includes(field));
+  if (uneditableFields.length > 0) {
+    throw createError(`Fields ${uneditableFields.join(', ')} are not editable`, { status: 400 });
+  }
 
   for (const field of editableFields) {
     if (field in updates) {
