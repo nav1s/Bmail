@@ -62,7 +62,7 @@ exports.getUserById = (req, res) => {
 
 
 /**
- * PATCH /api/users/:id
+ * PATCH /api/users
  * Edits the user with the given ID.
  * Requires login.
  *
@@ -70,16 +70,17 @@ exports.getUserById = (req, res) => {
  * @param {import('express').Response} res
  */
 exports.updateUserById = (req, res) => {
-  const id = Number(req.params.id);
-  if (!Number.isInteger(id)) {
+  const uid = parseInt(req.user.id, 10);
+  console.log('Received user ID:', uid);
+  if (!Number.isInteger(uid)) {
     return badRequest(res, 'User ID must be a valid integer');
   }
 
   try {
-    console.log('Updating user with ID:', id);
-    const user = users.findUserById(id);
+    console.log('Updating user with ID:', uid);
+    const user = users.findUserById(uid);
 
-    if (user.id !== id) {
+    if (user.id !== uid) {
       return forbidden(res, 'You are allowed to edit only your own user');
     }
     users.updateUserById(user, req.body);
