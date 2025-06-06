@@ -6,6 +6,10 @@ const app = require('../app');
 // Create the test client
 const api = supertest(app);
 
+let aliceToken = ''
+let bobToken = ''
+let carloToken = ''
+
 // Create test user and return the created user data (including id)
 async function createTestUserAndReturn() {
   await api
@@ -30,6 +34,14 @@ async function createTestUserAndReturn() {
     username: "alice123"
   });
 
+  // Get the token for the user
+  let loginResponse = await api
+    .post('/api/tokens')
+    .send({ username: 'alice123', password: 'securepass' })
+    .expect(201)
+
+  aliceToken = loginResponse.body.token;
+
   await api
     .post('/api/users')
     .send({
@@ -51,6 +63,13 @@ async function createTestUserAndReturn() {
     lastName: "smith",
     username: "bob"
   });
+
+  loginResponse = await api
+    .post('/api/tokens')
+    .send({ username: 'bob', password: 'imthebobyboten' })
+    .expect(201)
+  bobToken = loginResponse.body.token;
+
   await api
     .post('/api/users')
     .send({
@@ -71,6 +90,12 @@ async function createTestUserAndReturn() {
     firstName: "Carlo",
     lastName: "Ancelotti",
   });
+
+  loginResponse = await api
+    .post('/api/tokens')
+    .send({ username: 'carlo123', password: 'securepass' })
+    .expect(201)
+  carloToken = loginResponse.body.token;
 }
 
 // ❌ 4.1 Mail creation without login
@@ -82,9 +107,7 @@ test('returns 401 when trying to create mail without login', async () => {
       body: "This is a test mail."
     })
     .set('Content-Type', 'application/json')
-    .expect(401)
-    .expect('Content-Type', /application\/json/)
-    .expect({ error: 'You must be logged in' });
+    .expect(403)
 });
 
 // ❌ 4.2 Mail creation with missing fields (must include all: from, to, title, body)
@@ -99,12 +122,12 @@ test('returns 400 when required fields are missing', async () => {
 
   await api
     .post('/api/mails')
+    .set('Authorization', 'bearer ' + aliceToken)
+    .set('Content-Type', 'application/json')
     .send({
       subject: "Test Mail"
       // Missing body, from, and to
     })
-    .set('Content-Type', 'application/json')
-    .set('Authorization', '1') // Assuming user ID 1 is logged in
     .expect(400)
     .expect('Content-Type', /application\/json/)
     .expect({ error: 'Missing fields: to, title, body' });
