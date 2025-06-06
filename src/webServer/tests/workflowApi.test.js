@@ -12,7 +12,7 @@ test('full flow: user signup → login → send mail → update → delete → c
   // Login
   const loginRes = await api.post('/api/tokens')
     .send({ username: "aliceX", password: "pass123" })
-    .expect(200);
+    .expect(201);
   const token = loginRes.body.token;
 
   // Create recipient user
@@ -22,7 +22,7 @@ test('full flow: user signup → login → send mail → update → delete → c
 
   // Send mail
   const mailRes = await api.post('/api/mails')
-    .set('Authorization', token)
+    .set('Authorization', 'bearer ' + token)
     .send({
       to: ["bobX"],
       title: "Hello Bob",
@@ -38,23 +38,23 @@ test('full flow: user signup → login → send mail → update → delete → c
 
   // Update mail
   await api.patch(`/api/mails/${mailId}`)
-    .set('Authorization', token)
+    .set('Authorization', 'bearer ' + token)
     .send({ title: "Updated title" })
     .expect(403);
 
   // Delete mail
   await api.delete(`/api/mails/${mailId}`)
-    .set('Authorization', token)
+    .set('Authorization', 'bearer ' + token)
     .expect(204);
 
   // Create label
   const labelRes = await api.post('/api/labels')
-    .set('Authorization', token)
+    .set('Authorization', 'bearer ' + token)
     .send({ name: "Work" })
     .expect(201);
 
   // Delete label
   await api.delete(`/api/labels/${labelRes.body.id}`)
-    .set('Authorization', token)
+    .set('Authorization', 'bearer ' + token)
     .expect(204);
 });

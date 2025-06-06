@@ -61,13 +61,12 @@ test('returns 200 and token when login is successful', async () => {
       password: "securepass"
     })
     .set('Content-Type', 'application/json')
-    .expect(200)
+    .expect(201)
     .expect('Content-Type', /application\/json/);
 
   // Check that the token is returned
   const assert = require('assert');
   assert.ok(response.body.token);
-  assert.strictEqual(response.status, 200);
 });
 
 // ❌ 2.4 Missing password
