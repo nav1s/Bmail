@@ -34,26 +34,17 @@ test('successfully creates a new user when all required fields are provided', as
     .get('/api/users/1')
     .expect(200)
     .expect('Content-Type', /application\/json/);
+
   assert.deepStrictEqual(response.body, {
     id: 1,
     firstName: "Alice",
     lastName: "Test",
-    username: "alice123"});
+    username: "alice123"
+  });
 });
 
 // ❌ 1.3 Invalid existing username create
 test('returns 400 when trying to create a user with an existing username', async () => {
-  // First create a user
-  await api
-    .post('/api/users')
-    .send({
-      firstName: "Alice",
-      lastName: "Test",
-      username: "alice123",
-      password: "securepass"
-    })
-    .set('Content-Type', 'application/json');
-    
   // Try to create another user with the same username
   await api
     .post('/api/users')
@@ -97,9 +88,18 @@ test('1.5 Patch: Successfully update firstName of user', async () => {
     })
     .expect(201);
 
+  // Get the token for the user
+  const loginResponse = await api
+    .post('/api/tokens')
+    .send({ username: 'bob1', password: 'password123' })
+    .expect(201)
+
+  const token = loginResponse.body.token;
+
   await api
     .patch('/api/users')
-    .set('Authorization', '2')
+    .set('Content-Type', 'application/json')
+    .set('Authorization', 'bearer ' + token)
     .send({ firstName: 'Not Bob' })
     .expect(204);
 
@@ -118,18 +118,34 @@ test('1.6 Confirm patch persisted', async () => {
 
 // ❌ 1.7 Invalid edit non-editable fields like id
 test('1.7 Invalid edit non-editable fields like id', async () => {
+  // Get the token for the user
+  const loginResponse = await api
+    .post('/api/tokens')
+    .send({ username: 'bob1', password: 'password123' })
+    .expect(201)
+
+  const token = loginResponse.body.token;
+
   await api
     .patch('/api/users')
-    .set('Authorization', '2')
+    .set('Authorization', 'bearer ' + token)
     .send({ id: 999 })
     .expect(400);
 });
 
 // ❌ 1.8 Invalid edit field with non-string value
 test('1.8 Invalid edit field with non-string value', async () => {
+  // Get the token for the user
+  const loginResponse = await api
+    .post('/api/tokens')
+    .send({ username: 'bob1', password: 'password123' })
+    .expect(201)
+
+  const token = loginResponse.body.token;
+
   const res = await api
     .patch('/api/users')
-    .set('Authorization', '2')
+    .set('Authorization', 'bearer ' + token)
     .send({ firstName: 12345 })
     .expect(400);
 
