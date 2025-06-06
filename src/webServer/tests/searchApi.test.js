@@ -7,6 +7,8 @@ const request = require('supertest');
 // Create the test client
 const api = supertest(app);
 
+let token = ''
+
 // Utility function to create the test user before running search tests
 async function createTestUserAndReturn() {
   await api
@@ -31,6 +33,14 @@ async function createTestUserAndReturn() {
     lastName: "Test",
     username: "alice123"
   });
+
+  // Get the token for the user
+  const loginResponse = await api
+    .post('/api/tokens')
+    .send({ username: 'alice123', password: 'securepass' })
+    .expect(201)
+
+  token = loginResponse.body.token;
 }
 
 // Create initial mails for query tests
@@ -46,7 +56,7 @@ async function createInitialMails() {
   for (const mail of mails) {
     await api
       .post('/api/mails')
-      .set('Authorization', '1')
+      .set('Authorization', 'bearer ' + token)
       .set('Content-Type', 'application/json')
       .send(mail)
       .expect(201);
@@ -63,7 +73,7 @@ test('setup: create user and mails for query tests', async () => {
 test('returns all mails matching "query" in title or body', async () => {
   const response = await request(app)
     .get('/api/mails/search/query')
-    .set('Authorization', '1')
+    .set('Authorization', 'bearer ' + token)
 
   assert.strictEqual(response.status, 200);
   const mails = response.body;
