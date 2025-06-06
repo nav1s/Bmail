@@ -6,6 +6,8 @@ const app = require('../app');
 // Create the test client
 const api = supertest(app);
 
+let token = ''
+
 // Create test user and return its data including id (assuming first user will get id=1)
 async function createTestUserAndReturn() {
   await api
@@ -31,6 +33,14 @@ async function createTestUserAndReturn() {
     lastName: "Test",
     username: "alice123"
   });
+
+  // Get the token for the user
+  const loginResponse = await api
+    .post('/api/tokens')
+    .send({ username: 'alice123', password: 'securepass' })
+    .expect(201)
+
+  token = loginResponse.body.token;
 }
 
 // ✅ 4.11 - Valid label creation
@@ -39,7 +49,7 @@ test('4.11 Valid label create', async () => {
 
   const response = await api
     .post('/api/labels')
-    .set('Authorization', '1')
+    .set('Authorization', 'bearer ' + token)
     .set('Content-Type', 'application/json')
     .send({ name: "Important" })
     .expect(201)
@@ -50,7 +60,7 @@ test('4.11 Valid label create', async () => {
 
   const response2 = await api
     .post('/api/labels')
-    .set('Authorization', '1')
+    .set('Authorization', 'bearer ' + token)
     .set('Content-Type', 'application/json')
     .send({ name: "Too Important" })
     .expect(201)
@@ -66,7 +76,7 @@ test('4.12 Valid label GET by id', async () => {
 
   const response = await api
     .get('/api/labels/1')
-    .set('Authorization', '1')
+    .set('Authorization', 'bearer ' + token)
     .expect(200)
     .expect('Content-Type', /application\/json/);
 
@@ -80,7 +90,7 @@ test('4.12 Valid label GET by id', async () => {
 test('4.13 invalid label GET by id', async () => {
   await api
     .get('/api/labels/5')
-    .set('Authorization', '1')
+    .set('Authorization', 'bearer ' + token)
     .expect(404)
     .expect('Content-Type', /application\/json/)
     .expect({ error: "Label not found" });
@@ -90,7 +100,7 @@ test('4.13 invalid label GET by id', async () => {
 test('4.14 Valid label PATCH by id', async () => {
   const response = await api
     .patch('/api/labels/1')
-    .set('Authorization', '1')
+    .set('Authorization', 'bearer ' + token)
     .set('Content-Type', 'application/json')
     .send({ name: "Very Important" })
     .expect(200)
@@ -105,7 +115,7 @@ test('4.14 Valid label PATCH by id', async () => {
 test('4.15 invalid label PATCH by id', async () => {
   await api
     .patch('/api/labels/555')
-    .set('Authorization', '1')
+    .set('Authorization', 'bearer ' + token)
     .set('Content-Type', 'application/json')
     .send({ name: "NewName" })
     .expect(404)
@@ -117,7 +127,7 @@ test('4.15 invalid label PATCH by id', async () => {
 test('4.16 Valid label DELETE by id', async () => {
   await api
     .delete('/api/labels/1')
-    .set('Authorization', '1')
+    .set('Authorization', 'bearer ' + token)
     .expect(204);
 });
 
@@ -126,14 +136,14 @@ test('4.17 Valid GET all labels', async () => {
   // Re-create a label so GET all labels returns something
   await api
     .post('/api/labels')
-    .set('Authorization', '1')
+    .set('Authorization', 'bearer ' + token)
     .set('Content-Type', 'application/json')
     .send({ name: "Recreated Label" })
     .expect(201);
 
   const response = await api
     .get('/api/labels')
-    .set('Authorization', '1')
+    .set('Authorization', 'bearer ' + token)
     .expect(200)
     .expect('Content-Type', /application\/json/);
 
@@ -147,8 +157,8 @@ test('❌ Try to create duplicate label (should return 400)', async () => {
     // First create a label
     const response = await api
     .post('/api/labels')
-    .set('Authorization', '1')
     .set('Content-Type', 'application/json')
+    .set('Authorization', 'bearer ' + token) 
     .send({ name: "Important" })
     .expect(201)
     .expect('Content-Type', /application\/json/);
@@ -161,7 +171,7 @@ test('❌ Try to create duplicate label (should return 400)', async () => {
   // This should return 400 since the label already exists
   const response2 = await api
     .post('/api/labels')
-    .set('Authorization', '1')
+    .set('Authorization', 'bearer ' + token)
     .set('Content-Type', 'application/json')
     .send({ name: "Important" })
     .expect(400)
