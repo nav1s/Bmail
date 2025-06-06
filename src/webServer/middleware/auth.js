@@ -1,25 +1,31 @@
 const users = require('../models/users');
+const jwt = require("jsonwebtoken")
 
 /**
  * Middleware to authenticate user from Authorization header (user ID).
  */
 function requireAuth(req, res, next) {
-  const token = req.header('Authorization');
+  const key = "Some super secret key shhhhhhhhhhhhhhhhh!!!!!"
 
-  if (!token) {
-    return res.status(401).json({ error: 'You must be logged in' });
+  if (req.headers.authorization) {
+    const token = req.headers.authorization.split(" ")[1];
+    try {
+      const data = jwt.verify(token, key);
+      console.log('The logged in user is: ' + data.username);
+
+      const user = users.findUserByUsername(data.username);
+      req.user = user;
+
+      return next()
+    } catch (err) {
+      return res.status(401).json({ error: 'You must be logged in' });
+    }
   }
-
-  const userId = parseInt(token, 10);
-  try {
-    const user = users.findUserById(userId);
-    req.user = user;
-    next();
-
-  } catch (err) {
-    return res.status(401).json({ error: 'Invalid token or user not found' });
-  }
+  else
+    return res.status(403).send('Token required');
 
 }
+
+
 
 module.exports = { requireAuth };
