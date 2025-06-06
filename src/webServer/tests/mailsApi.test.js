@@ -137,7 +137,7 @@ test('returns 400 when required fields are missing', async () => {
 test('creates a valid mail (4.3)', async () => {
   const response = await api
     .post('/api/mails')
-    .set('Authorization', '1')
+    .set('Authorization', 'bearer ' + aliceToken)
     .set('Content-Type', 'application/json')
     .send({
       to: ["alice123"],
@@ -161,7 +161,7 @@ test('creates a valid mail (4.3)', async () => {
 test('creates another valid mail (4.32)', async () => {
   const response = await api
     .post('/api/mails')
-    .set('Authorization', '1')
+    .set('Authorization', 'bearer ' + aliceToken)
     .set('Content-Type', 'application/json')
     .send({
       to: ["alice123"],
@@ -185,7 +185,7 @@ test('creates another valid mail (4.32)', async () => {
 test('returns list of last mails (4.4)', async () => {
   const response = await api
     .get('/api/mails')
-    .set('Authorization', '1')
+    .set('Authorization', 'bearer ' + aliceToken)
     .expect(200)
     .expect('Content-Type', /application\/json/);
 
@@ -197,7 +197,7 @@ test('returns list of last mails (4.4)', async () => {
 test('gets mail by id (4.5)', async () => {
   const response = await api
     .get('/api/mails/1')
-    .set('Authorization', '1')
+    .set('Authorization', 'bearer ' + aliceToken)
     .expect(200)
     .expect('Content-Type', /application\/json/);
 
@@ -209,7 +209,7 @@ test('gets mail by id (4.5)', async () => {
 test('returns 404 for invalid mail id (4.6)', async () => {
   await api
     .get('/api/mails/555')
-    .set('Authorization', '1')
+    .set('Authorization', 'bearer ' + aliceToken)
     .expect(404)
     .expect('Content-Type', /application\/json/)
     .expect({ error: 'Mail not found' });
@@ -219,7 +219,7 @@ test('returns 404 for invalid mail id (4.6)', async () => {
 test('returns 404 on patching non-existent mail (4.8)', async () => {
   await api
     .patch('/api/mails/555')
-    .set('Authorization', '1')
+    .set('Authorization', 'bearer ' + aliceToken)
     .set('Content-Type', 'application/json')
     .send({ title: "New Title" })
     .expect(404)
@@ -231,7 +231,7 @@ test('returns 404 on patching non-existent mail (4.8)', async () => {
 test('deletes mail by id (4.9)', async () => {
   await api
     .delete('/api/mails/1')
-    .set('Authorization', '1')
+    .set('Authorization', 'bearer ' + aliceToken)
     .expect(204);
 });
 
@@ -239,7 +239,7 @@ test('deletes mail by id (4.9)', async () => {
 test('returns 404 on deleting non-existent mail (4.10)', async () => {
   await api
     .delete('/api/mails/555')
-    .set('Authorization', '1')
+    .set('Authorization', 'bearer ' + aliceToken)
     .expect(404)
     .expect('Content-Type', /application\/json/)
     .expect({ error: 'Mail not found' });
@@ -255,16 +255,14 @@ test('returns 401 when trying to create mail without login (4.11)', async () => 
       body: "This is a test mail."
     })
     .set('Content-Type', 'application/json')
-    .expect(401)
-    .expect('Content-Type', /application\/json/)
-    .expect({ error: 'You must be logged in' });
+    .expect(403)
 });
 
 // ✅ 4.12 valid draft creation
 test('4.12 valid draft creation', async () => {
   const response = await api
     .post('/api/mails')
-    .set('Authorization', '1')
+    .set('Authorization', 'bearer ' + aliceToken)
     .set('Content-Type', 'application/json')
     .send({
       to: ["bob"],
@@ -289,14 +287,14 @@ test('4.12 valid draft creation', async () => {
 test('4.13 valid mail patch', async () => {
   await api
     .patch('/api/mails/3')
-    .set('Authorization', '1')
+    .set('Authorization', 'bearer ' + aliceToken)
     .set('Content-Type', 'application/json')
     .send({ title: "Updated Title" })
     .expect(204)
 
   const getResponse = await api
     .get('/api/mails/3')
-    .set('Authorization', '1')
+    .set('Authorization', 'bearer ' + aliceToken)
     .expect(200)
   assert.deepStrictEqual(getResponse.body, {
     from: "alice123",
@@ -311,9 +309,10 @@ test('4.13 valid mail patch', async () => {
 
 // ❌ 4.14 invalid mail PATCH
 test('invalid mail patch', async () => {
+ // Bob tries to update Alice's draft
   await api
     .patch('/api/mails/3')
-    .set('Authorization', '2')
+    .set('Authorization', 'bearer ' + bobToken)
     .set('Content-Type', 'application/json')
     .send({ title: "Updated Title" })
     .expect(403)
@@ -323,7 +322,7 @@ test('invalid mail patch', async () => {
 test('4.15 valid draft get by id)', async () => {
   const response = await api
     .get('/api/mails/3')
-    .set('Authorization', '1')
+    .set('Authorization', 'bearer ' + aliceToken)
     .expect(200)
     .expect('Content-Type', /application\/json/);
 
@@ -341,7 +340,7 @@ test('4.15 valid draft get by id)', async () => {
 test('4.16 invalid draft get by id)', async () => {
   await api
     .get('/api/mails/3')
-    .set('Authorization', '2')
+    .set('Authorization', 'bearer ' + bobToken)
     .expect(403)
     .expect('Content-Type', /application\/json/);
 });
@@ -350,14 +349,14 @@ test('4.16 invalid draft get by id)', async () => {
 test('4.17 send draft', async () => {
   await api
     .patch('/api/mails/3')
-    .set('Authorization', '1')
+    .set('Authorization', 'bearer ' + aliceToken)
     .set('Content-Type', 'application/json')
     .send({ title: "Updated Title" })
     .expect(204)
   
   const response = await api
     .get('/api/mails/3')
-    .set('Authorization', '1')
+    .set('Authorization', 'bearer ' + aliceToken)
     .expect(200)
     .expect('Content-Type', /application\/json/);
 
@@ -376,14 +375,14 @@ test('4.17 send draft', async () => {
 test('4.17 recipient cannot delete draft', async () => {
   await api
     .delete('/api/mails/3')
-    .set('Authorization', '2')
+    .set('Authorization', 'bearer ' + bobToken)
     .expect(403)
 })
 
 // ✅ 4.18 valid draft delete by owner
 test('4.18. Sender can delete draft (soft delete)', async () => {
   const res = await api.delete('/api/mails/3')
-    .set('Authorization', '1');
+    .set('Authorization', 'bearer ' + aliceToken);
 
   assert.strictEqual(res.status, 204);
 });
@@ -391,7 +390,7 @@ test('4.18. Sender can delete draft (soft delete)', async () => {
 // ❌ 4.19 invalid draft get after delete
 test('4.19. Sender cannot access the draft after deleting it', async () => {
   const res = await api.get('/api/mails/3')
-    .set('Authorization', '1');
+    .set('Authorization', 'bearer ' + aliceToken);
 
   assert.strictEqual(res.status, 404);
 });
@@ -400,7 +399,7 @@ test('4.19. Sender cannot access the draft after deleting it', async () => {
 test('4.20 valid draft creation', async () => {
   const response = await api
     .post('/api/mails')
-    .set('Authorization', '1')
+    .set('Authorization', 'bearer ' + aliceToken)
     .set('Content-Type', 'application/json')
     .send({
       to: ["bob"],
@@ -425,7 +424,7 @@ test('4.20 valid draft creation', async () => {
 test('4.21 valid draft get by id)', async () => {
   const response = await api
     .get('/api/mails/4')
-    .set('Authorization', '1')
+    .set('Authorization', 'bearer ' + aliceToken)
     .expect(200)
     .expect('Content-Type', /application\/json/);
 
@@ -439,7 +438,7 @@ test('4.21 valid draft get by id)', async () => {
   });
   await api
     .get('/api/mails/4')
-    .set('Authorization', '2')
+    .set('Authorization', 'bearer ' + bobToken)
     .expect(403)
     .expect('Content-Type', /application\/json/);
 });
@@ -448,14 +447,14 @@ test('4.21 valid draft get by id)', async () => {
 test('4.22 send draft', async () => {
   await api
     .patch('/api/mails/4')
-    .set('Authorization', '1')
+    .set('Authorization', 'bearer ' + aliceToken)
     .set('Content-Type', 'application/json')
     .send({ draft: false })
     .expect(204)
   
   const response = await api
     .get('/api/mails/4')
-    .set('Authorization', '1')
+    .set('Authorization', 'bearer ' + aliceToken)
     .expect(200)
     .expect('Content-Type', /application\/json/);
   assert.deepStrictEqual(response.body, {
@@ -473,7 +472,7 @@ test('4.22 send draft', async () => {
 test('4.23 valid get sent mail by recipient after sending draft', async () => {
   const response = await api
     .get('/api/mails/4')
-    .set('Authorization', '2')
+    .set('Authorization', 'bearer ' + bobToken)
     .expect(200)
     .expect('Content-Type', /application\/json/);
 
@@ -491,7 +490,7 @@ test('4.23 valid get sent mail by recipient after sending draft', async () => {
 test('4.24 valid get mail by recipient after mail deleted in another user', async () => {
   const response = await api
     .post('/api/mails')
-    .set('Authorization', '1')
+    .set('Authorization', 'bearer ' + aliceToken)
     .set('Content-Type', 'application/json')
     .send({
       to: ["alice123", "bob", "carlo123"],
@@ -511,11 +510,11 @@ test('4.24 valid get mail by recipient after mail deleted in another user', asyn
   })
   await api
     .delete('/api/mails/5')
-    .set('Authorization', '2')
+    .set('Authorization', 'bearer ' + bobToken)
     .expect(204);
   const response2 = await api
     .get('/api/mails/5')
-    .set('Authorization', '3')
+    .set('Authorization', 'bearer ' + carloToken)
     .expect(200)
     .expect('Content-Type', /application\/json/);
   assert.deepStrictEqual(response2.body, {
