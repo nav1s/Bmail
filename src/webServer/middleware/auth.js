@@ -21,8 +21,9 @@ function requireAuth(req, res, next) {
       return res.status(401).json({ error: 'You must be logged in' });
     }
   }
-  else
-    return res.status(403).send('Token required');
+  else {
+    return res.status(401).send('Token required');
+  }
 
 }
 

@@ -107,7 +107,7 @@ test('returns 401 when trying to create mail without login', async () => {
       body: "This is a test mail."
     })
     .set('Content-Type', 'application/json')
-    .expect(403)
+    .expect(401)
 });
 
 // ❌ 4.2 Mail creation with missing fields (must include all: from, to, title, body)
@@ -255,7 +255,7 @@ test('returns 401 when trying to create mail without login (4.11)', async () => 
       body: "This is a test mail."
     })
     .set('Content-Type', 'application/json')
-    .expect(403)
+    .expect(401)
 });
 
 // ✅ 4.12 valid draft creation
