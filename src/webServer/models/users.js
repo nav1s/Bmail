@@ -86,6 +86,11 @@ function updateUserById(user, updates) {
       if (typeof updates[field] !== 'string') {
         throw createError(`Field "${field}" must be a string`, { status: 400 });
       }
+
+      // check if the field is the username and if it already exists
+      if (field === 'username' && users.some(u => u.username === updates[field] && u.id !== user.id)) {
+        throw createError('Username already exists', { status: 400, type: 'DUPLICATE' });
+      }
       console.log(`Updating field "${field}" for user ${user.username}`);
       user[field] = updates[field];
     }

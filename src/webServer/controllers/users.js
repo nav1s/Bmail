@@ -1,6 +1,6 @@
 const users = require('../models/users.js');
 const { badRequest, ok, createdWithLocation, noContent } = require('../utils/httpResponses');
-const { httpError, forbidden } = require('../utils/error');
+const { httpError } = require('../utils/error');
 
 
 /**
