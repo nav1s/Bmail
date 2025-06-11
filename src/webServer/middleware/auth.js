@@ -5,7 +5,11 @@ const jwt = require("jsonwebtoken")
  * Middleware to authenticate user from Authorization header (user ID).
  */
 function requireAuth(req, res, next) {
-  const key = "Some super secret key shhhhhhhhhhhhhhhhh!!!!!"
+  const key = process.env.JWT_SECRET 
+  if (!key) {
+    console.error('JWT_SECRET is not set in environment variables');
+    return res.status(500).json({ error: 'Internal server error' });
+  }
 
   if (req.headers.authorization) {
     const token = req.headers.authorization.split(" ")[1];
