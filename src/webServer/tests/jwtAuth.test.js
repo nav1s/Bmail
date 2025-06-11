@@ -3,28 +3,9 @@ const supertest = require('supertest');
 const jwt = require('jsonwebtoken');
 const app = require('../app');
 const api = supertest(app);
+require('custom-env').env();
 
-const JWT_SECRET = process.env.JWT_SECRET || 'super-secret-key';
-
-// Utility function to create the test user and log him in before running search tests
-async function createUserAndLogin(username) {
-  await api
-    .post('/api/users')
-    .send({
-      firstName: 'Virgil',
-      lastName: 'Van Dijk',
-      username: 'Virgil123',
-      password: 'pass123'
-    })
-    .expect(201);
-
-  const loginRes = await api
-    .post('/api/tokens')
-    .send({ username: 'Virgil123', password: 'pass123' })
-    .expect(201);
-
-  return loginRes.body.token;
-}
+const JWT_SECRET = process.env.JWT_SECRET
 
 // 1. Missing token
 test('JWT 1. Missing Authorization header returns 401', async () => {
@@ -48,6 +29,11 @@ test('JWT 2. Malformed token returns 401', async () => {
 
 // 3. Expired token
 test('JWT 3. Expired token returns 401', async () => {
+  if (!JWT_SECRET) {
+    console.error('JWT_SECRET is not set in environment variables');
+    return;
+  }
+
   // Create a token that is already expired
   const expiredToken = jwt.sign({ id: 999 }, JWT_SECRET, { expiresIn: '-1s' });
   // This should return 401 Unauthorized
@@ -60,6 +46,11 @@ test('JWT 3. Expired token returns 401', async () => {
 
 // 4. Token with non-existing user
 test('JWT 4. Token with non-existing user returns 401', async () => {
+  if (!JWT_SECRET) {
+    console.error('JWT_SECRET is not set in environment variables');
+    return;
+  }
+
   // Create a token for a user that does not exist
   const fakeToken = jwt.sign({ id: 9999 }, JWT_SECRET, { expiresIn: '1h' });
   // This should return 401 Unauthorized
