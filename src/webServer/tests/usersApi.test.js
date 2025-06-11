@@ -151,3 +151,83 @@ test('1.8 Invalid edit field with non-string value', async () => {
 
   assert.strictEqual(res.body.error, 'Field "firstName" must be a string');
 });
+
+// ❌ 1.9 Invalid registration with invalid password format - too short
+test('1.9 Invalid registration with invalid password format', async () => {
+  await api
+    .post('/api/users')
+    .send({
+      firstName: "Alice",
+      lastName: "Test",
+      username: "Alice",
+      password: "Alice1!"
+    })
+    .set('Content-Type', 'application/json')
+    .expect(400)
+    .expect('Content-Type', /application\/json/)
+    .expect({ error: 'Password is not strong enough' });
+});
+
+// ❌ 1.10 Invalid registration with invalid password format - no special char
+test('1.10 Invalid registration with invalid password format - no special char', async () => {
+  await api
+    .post('/api/users')
+    .send({
+      firstName: "Alice",
+      lastName: "Test",
+      username: "Alice",
+      password: "Alice1234"
+    })
+    .set('Content-Type', 'application/json')
+    .expect(400)
+    .expect('Content-Type', /application\/json/)
+    .expect({ error: 'Password is not strong enough' });
+});
+
+// ❌ 1.11 Invalid registration with invalid password format - no uppercase letter
+test('1.11 Invalid registration with invalid password format - no uppercase letter', async () => {
+  await api
+    .post('/api/users')
+    .send({
+      firstName: "Alice",
+      lastName: "Test",
+      username: "alice3!",
+      password: "nouppercase123!"
+    })
+    .set('Content-Type', 'application/json')
+    .expect(400)
+    .expect('Content-Type', /application\/json/)
+    .expect({ error: 'Password is not strong enough' });
+});
+
+// ❌ 1.12 Invalid registration with invalid password format - no lowercase letter
+test('1.12 Invalid registration with invalid password format - no lowercase letter', async () => {
+  await api
+    .post('/api/users')
+    .send({
+      firstName: "Alice",
+      lastName: "Test",
+      username: "Alice4!",
+      password: "NOLOWERCASE123!"
+    })
+    .set('Content-Type', 'application/json')
+    .expect(400)
+    .expect('Content-Type', /application\/json/)
+    .expect({ error: 'Password is not strong enough' });
+});
+
+// ❌ 1.13 Invalid registration with invalid password format - no digit
+test('1.13 Invalid registration with invalid password format - no digit', async () => {
+  await api
+    .post('/api/users')
+    .send({
+      firstName: "Alice",
+      lastName: "Test",
+      username: "Alice5!",
+      password: "NoDigitAtAll!"
+    })
+    .set('Content-Type', 'application/json')
+    .expect(400)
+    .expect('Content-Type', /application\/json/)
+    .expect({ error: 'Password is not strong enough' });
+}); 
