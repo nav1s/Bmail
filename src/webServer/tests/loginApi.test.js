@@ -13,7 +13,7 @@ async function createTestUser() {
       firstName: "Alice",
       lastName: "Test",
       username: "alice123",
-      password: "securepass"
+      password: "Securepass1234!"
     })
     .set('Content-Type', 'application/json');
 }
@@ -24,7 +24,7 @@ test('returns 401 and error message when username does not exist', async () => {
     .post('/api/tokens')
     .send({
       username: "notexists",
-      password: "securepass"
+      password: "Securepass1234!"
     })
     .set('Content-Type', 'application/json')
     .expect(401)
@@ -58,7 +58,7 @@ test('returns 200 and token when login is successful', async () => {
     .post('/api/tokens')
     .send({
       username: "alice123",
-      password: "securepass"
+      password: "Securepass1234!"
     })
     .set('Content-Type', 'application/json')
     .expect(201)

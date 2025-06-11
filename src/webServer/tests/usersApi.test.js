@@ -25,7 +25,7 @@ test('successfully creates a new user when all required fields are provided', as
       firstName: "Alice",
       lastName: "Test",
       username: "alice123",
-      password: "securepass"
+      password: "Securepass123!"
     })
     .set('Content-Type', 'application/json')
     .expect(201)
@@ -52,7 +52,7 @@ test('returns 400 when trying to create a user with an existing username', async
       firstName: "Alice",
       lastName: "Test2",
       username: "alice123",
-      password: "newpass"
+      password: "Securepass123!"
     })
     .set('Content-Type', 'application/json')
     .expect(400)
@@ -68,7 +68,7 @@ test('returns 400 and error message when required fields have empty values', asy
       firstName: "Alice",
       lastName: "",
       username: "alice1234",
-      password: "securepass"
+      password: "Securepass123!"
     })
     .set('Content-Type', 'application/json')
     .expect(400)
@@ -84,14 +84,14 @@ test('1.5 Patch: Successfully update firstName of user', async () => {
       firstName: "Bob",
       lastName: "Marley",
       username: "bob1",
-      password: "password123"
+      password: "Securepass123!"
     })
     .expect(201);
 
   // Get the token for the user
   const loginResponse = await api
     .post('/api/tokens')
-    .send({ username: 'bob1', password: 'password123' })
+    .send({ username: 'bob1', password: 'Securepass123!' })
     .expect(201)
 
   const token = loginResponse.body.token;
@@ -121,7 +121,7 @@ test('1.7 Invalid edit non-editable fields like id', async () => {
   // Get the token for the user
   const loginResponse = await api
     .post('/api/tokens')
-    .send({ username: 'bob1', password: 'password123' })
+    .send({ username: 'bob1', password: 'Securepass123!' })
     .expect(201)
 
   const token = loginResponse.body.token;
@@ -138,7 +138,7 @@ test('1.8 Invalid edit field with non-string value', async () => {
   // Get the token for the user
   const loginResponse = await api
     .post('/api/tokens')
-    .send({ username: 'bob1', password: 'password123' })
+    .send({ username: 'bob1', password: 'Securepass123!' })
     .expect(201)
 
   const token = loginResponse.body.token;

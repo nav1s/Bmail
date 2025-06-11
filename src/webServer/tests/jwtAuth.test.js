@@ -81,16 +81,16 @@ test('JWT 6. User cannot modify another user', async () => {
       username: 'u1',
       firstName: 'a',
       lastName: 'b',
-      password: '1234'
+      password: 'Securepass1234!'
     });
   await api.post('/api/users').send(
-    { username: 'u2', firstName: 'c', lastName: 'd', password: '1234'
+    { username: 'u2', firstName: 'c', lastName: 'd', password: 'Securepass1234!'
     });
 
   // Login as the first user
   const resLogin = await api.post('/api/tokens').send(
     { username: 'u1',
-      password: '1234'
+      password: 'Securepass1234!'
     });
   const token = resLogin.body.token;
 

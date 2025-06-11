@@ -15,7 +15,7 @@ async function createTestUserAndReturn() {
       firstName: "Alice",
       lastName: "Test",
       username: "alice123",
-      password: "securepass"
+      password: "Securepass123!"
     })
     .set('Content-Type', 'application/json')
     .expect(201)
@@ -34,7 +34,7 @@ async function createTestUserAndReturn() {
   // Get the token for the user
   const loginResponse = await api
     .post('/api/tokens')
-    .send({ username: 'alice123', password: 'securepass' })
+    .send({ username: 'alice123', password: 'Securepass123!' })
     .expect(201)
 
   token = loginResponse.body.token;

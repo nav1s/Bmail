@@ -18,7 +18,7 @@ async function createTestUserAndReturn() {
       firstName: "Alice",
       lastName: "Test",
       username: "alice123",
-      password: "securepass"
+      password: "Securep12!"
     })
     .set('Content-Type', 'application/json')
     .expect(201)
@@ -37,7 +37,7 @@ async function createTestUserAndReturn() {
   // Get the token for the user
   let loginResponse = await api
     .post('/api/tokens')
-    .send({ username: 'alice123', password: 'securepass' })
+    .send({ username: 'alice123', password: 'Securep12!' })
     .expect(201)
 
   aliceToken = loginResponse.body.token;
@@ -48,7 +48,7 @@ async function createTestUserAndReturn() {
       firstName: "bob",
       lastName: "smith",
       username: "bob",
-      password: "imthebobyboten"
+      password: "Imthebobyboten12!"
     })
     .set('Content-Type', 'application/json')
     .expect(201)
@@ -66,7 +66,7 @@ async function createTestUserAndReturn() {
 
   loginResponse = await api
     .post('/api/tokens')
-    .send({ username: 'bob', password: 'imthebobyboten' })
+    .send({ username: 'bob', password: 'Imthebobyboten12!' })
     .expect(201)
   bobToken = loginResponse.body.token;
 
@@ -76,7 +76,7 @@ async function createTestUserAndReturn() {
       firstName: "Carlo",
       lastName: "Ancelotti",
       username: "carlo123",
-      password: "securepass"
+      password: "WeWinChampions12!"
     })
     .set('Content-Type', 'application/json')
     .expect(201)
@@ -93,7 +93,7 @@ async function createTestUserAndReturn() {
 
   loginResponse = await api
     .post('/api/tokens')
-    .send({ username: 'carlo123', password: 'securepass' })
+    .send({ username: 'carlo123', password: 'WeWinChampions12!' })
     .expect(201)
   carloToken = loginResponse.body.token;
 }
