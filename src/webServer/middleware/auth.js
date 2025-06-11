@@ -1,5 +1,6 @@
 const users = require('../models/users');
 const jwt = require("jsonwebtoken")
+require('custom-env').env();
 
 /**
  * Middleware to authenticate user from Authorization header (user ID).
