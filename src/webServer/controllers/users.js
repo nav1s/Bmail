@@ -120,6 +120,11 @@ exports.getUserById = (req, res) => {
  * @param {import('express').Response} res
  */
 exports.updateUserById = (req, res) => {
+  // throw an error if res doesn't contain body
+  if ('body' in req === false) {
+    return badRequest(res, 'Request body is required');
+  }
+
   if ('password' in req.body) {
     // Check if the password is strong enough
     if (!isPasswordStrongEnough(req.body.password)) {
