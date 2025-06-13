@@ -25,7 +25,7 @@ test('successfully creates a new user when all required fields are provided', as
       firstName: "Alice",
       lastName: "Test",
       username: "alice123",
-      password: "securepass"
+      password: "Securepass123!"
     })
     .set('Content-Type', 'application/json')
     .expect(201)
@@ -34,25 +34,17 @@ test('successfully creates a new user when all required fields are provided', as
     .get('/api/users/1')
     .expect(200)
     .expect('Content-Type', /application\/json/);
+
   assert.deepStrictEqual(response.body, {
     id: 1,
     firstName: "Alice",
     lastName: "Test",
-    username: "alice123"});
+    username: "alice123"
+  });
 });
 
+// ❌ 1.3 Invalid existing username create
 test('returns 400 when trying to create a user with an existing username', async () => {
-  // First create a user
-  await api
-    .post('/api/users')
-    .send({
-      firstName: "Alice",
-      lastName: "Test",
-      username: "alice123",
-      password: "securepass"
-    })
-    .set('Content-Type', 'application/json');
-    
   // Try to create another user with the same username
   await api
     .post('/api/users')
@@ -60,7 +52,7 @@ test('returns 400 when trying to create a user with an existing username', async
       firstName: "Alice",
       lastName: "Test2",
       username: "alice123",
-      password: "newpass"
+      password: "Securepass123!"
     })
     .set('Content-Type', 'application/json')
     .expect(400)
@@ -76,7 +68,7 @@ test('returns 400 and error message when required fields have empty values', asy
       firstName: "Alice",
       lastName: "",
       username: "alice1234",
-      password: "securepass"
+      password: "Securepass123!"
     })
     .set('Content-Type', 'application/json')
     .expect(400)
@@ -84,3 +76,158 @@ test('returns 400 and error message when required fields have empty values', asy
     .expect({ error: 'Missing fields: lastName' });
 });
 
+// ✅ 1.5 Valid Patch firstName of user
+test('1.5 Patch: Successfully update firstName of user', async () => {
+  await api
+    .post('/api/users')
+    .send({
+      firstName: "Bob",
+      lastName: "Marley",
+      username: "bob1",
+      password: "Securepass123!"
+    })
+    .expect(201);
+
+  // Get the token for the user
+  const loginResponse = await api
+    .post('/api/tokens')
+    .send({ username: 'bob1', password: 'Securepass123!' })
+    .expect(201)
+
+  const token = loginResponse.body.token;
+
+  await api
+    .patch('/api/users')
+    .set('Content-Type', 'application/json')
+    .set('Authorization', 'bearer ' + token)
+    .send({ firstName: 'Not Bob' })
+    .expect(204);
+
+  const res = await api.get('/api/users/2').expect(200);
+  assert.strictEqual(res.body.firstName, 'Not Bob');
+});
+
+// ✅ 1.6 get user by ID after patch
+test('1.6 Confirm patch persisted', async () => {
+  const res = await api
+    .get('/api/users/2')
+    .expect(200);
+
+  assert.strictEqual(res.body.firstName, 'Not Bob');
+});
+
+// ❌ 1.7 Invalid edit non-editable fields like id
+test('1.7 Invalid edit non-editable fields like id', async () => {
+  // Get the token for the user
+  const loginResponse = await api
+    .post('/api/tokens')
+    .send({ username: 'bob1', password: 'Securepass123!' })
+    .expect(201)
+
+  const token = loginResponse.body.token;
+
+  await api
+    .patch('/api/users')
+    .set('Authorization', 'bearer ' + token)
+    .send({ id: 999 })
+    .expect(400);
+});
+
+// ❌ 1.8 Invalid edit field with non-string value
+test('1.8 Invalid edit field with non-string value', async () => {
+  // Get the token for the user
+  const loginResponse = await api
+    .post('/api/tokens')
+    .send({ username: 'bob1', password: 'Securepass123!' })
+    .expect(201)
+
+  const token = loginResponse.body.token;
+
+  const res = await api
+    .patch('/api/users')
+    .set('Authorization', 'bearer ' + token)
+    .send({ firstName: 12345 })
+    .expect(400);
+
+  assert.strictEqual(res.body.error, 'Field "firstName" must be a string');
+});
+
+// ❌ 1.9 Invalid registration with invalid password format - too short
+test('1.9 Invalid registration with invalid password format', async () => {
+  await api
+    .post('/api/users')
+    .send({
+      firstName: "Alice",
+      lastName: "Test",
+      username: "Alice",
+      password: "Alice1!"
+    })
+    .set('Content-Type', 'application/json')
+    .expect(400)
+    .expect('Content-Type', /application\/json/)
+    .expect({ error: 'Password is not strong enough' });
+});
+
+// ❌ 1.10 Invalid registration with invalid password format - no special char
+test('1.10 Invalid registration with invalid password format - no special char', async () => {
+  await api
+    .post('/api/users')
+    .send({
+      firstName: "Alice",
+      lastName: "Test",
+      username: "Alice",
+      password: "Alice1234"
+    })
+    .set('Content-Type', 'application/json')
+    .expect(400)
+    .expect('Content-Type', /application\/json/)
+    .expect({ error: 'Password is not strong enough' });
+});
+
+// ❌ 1.11 Invalid registration with invalid password format - no uppercase letter
+test('1.11 Invalid registration with invalid password format - no uppercase letter', async () => {
+  await api
+    .post('/api/users')
+    .send({
+      firstName: "Alice",
+      lastName: "Test",
+      username: "alice3!",
+      password: "nouppercase123!"
+    })
+    .set('Content-Type', 'application/json')
+    .expect(400)
+    .expect('Content-Type', /application\/json/)
+    .expect({ error: 'Password is not strong enough' });
+});
+
+// ❌ 1.12 Invalid registration with invalid password format - no lowercase letter
+test('1.12 Invalid registration with invalid password format - no lowercase letter', async () => {
+  await api
+    .post('/api/users')
+    .send({
+      firstName: "Alice",
+      lastName: "Test",
+      username: "Alice4!",
+      password: "NOLOWERCASE123!"
+    })
+    .set('Content-Type', 'application/json')
+    .expect(400)
+    .expect('Content-Type', /application\/json/)
+    .expect({ error: 'Password is not strong enough' });
+});
+
+// ❌ 1.13 Invalid registration with invalid password format - no digit
+test('1.13 Invalid registration with invalid password format - no digit', async () => {
+  await api
+    .post('/api/users')
+    .send({
+      firstName: "Alice",
+      lastName: "Test",
+      username: "Alice5!",
+      password: "NoDigitAtAll!"
+    })
+    .set('Content-Type', 'application/json')
+    .expect(400)
+    .expect('Content-Type', /application\/json/)
+    .expect({ error: 'Password is not strong enough' });
+}); 

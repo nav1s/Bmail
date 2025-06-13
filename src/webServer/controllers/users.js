@@ -1,7 +1,48 @@
 const users = require('../models/users.js');
-const { badRequest, notFound, ok, createdWithLocation } = require('../utils/httpResponses');
+const { badRequest, ok, createdWithLocation, noContent } = require('../utils/httpResponses');
 const { httpError } = require('../utils/error');
 
+
+/**
+ * @brief Checks if the provided password is strong enough.
+ * A strong password must:
+ * - Be at least 8 characters long
+ * - Contain at least one uppercase letter
+ * - Contain at least one lowercase letter
+ * - Contain at least one digit
+ * - Contain at least one special character
+ *
+ * @param {string} password - The password to check.
+ * @returns {boolean} True if the password is strong enough, false otherwise.
+ */
+isPasswordStrongEnough = (password) => {
+  // Check if the password is at least 8 characters long
+  if (password.length < 8) {
+    return false;
+  }
+
+  // Check if the password contains at least one uppercase letter
+  if (!/[A-Z]/.test(password)) {
+    return false;
+  }
+
+  // Check if the password contains at least one lowercase letter
+  if (!/[a-z]/.test(password)) {
+    return false;
+  }
+
+  // Check if the password contains at least one digit
+  if (!/\d/.test(password)) {
+    return false;
+  }
+
+  // Check if the password contains at least one special character
+  if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
+    return false;
+  }
+
+  return true;
+}
 
 /**
  * @brief Handles HTTP request to create a new user.
@@ -31,11 +72,17 @@ exports.createUser = (req, res) => {
   for (const field of requiredFields) {
     userData[field] = req.body[field];
   }
-  
+
+  const userPass = req.body.password;
+  // check if the password is strong enough
+  if (!isPasswordStrongEnough(userPass)) {
+    return badRequest(res, 'Password is not strong enough');
+  }
+
   // Trying to create a user, returning bad request with the error if failed
   try {
-  const newUser = users.createUser(userData);
-  return createdWithLocation(res, `/api/users/${newUser.id}`);
+    const newUser = users.createUser(userData);
+    return createdWithLocation(res, `/api/users/${newUser.id}`);
   } catch (err) {
     return httpError(res, err);
   }
@@ -49,14 +96,42 @@ exports.createUser = (req, res) => {
 exports.getUserById = (req, res) => {
   try {
     // searching for user
-  const id = parseInt(req.params.id, 10);
-  const user = users.findUserById(id);
-  
-  // Returning only public user fields
-  const publicUser = users.filterUserByVisibility(user, 'public');
-  return ok(res, publicUser);
+    const id = parseInt(req.params.id, 10);
+    const user = users.findUserById(id);
+
+    // Returning only public user fields
+    const publicUser = users.filterUserByVisibility(user, 'public');
+    return ok(res, publicUser);
   } catch (err) {
     return httpError(res, err);
   }
+};
+
+
+/**
+ * PATCH /api/users
+ * Edits the user with the given ID.
+ * Requires login.
+ *
+ * @param {import('express').Request} req
+ * @param {import('express').Response} res
+ */
+exports.updateUserById = (req, res) => {
+  if ('password' in req.body) {
+    // Check if the password is strong enough
+    if (!isPasswordStrongEnough(req.body.password)) {
+      return badRequest(res, 'Password is not strong enough');
+    }
+  }
+
+  try {
+    users.updateUserById(req.user, req.body);
+  }
+  catch (err) {
+    console.error('Error updating user:', err);
+    return httpError(res, err);
+  }
+
+  return noContent(res);
 };
 

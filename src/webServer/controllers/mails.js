@@ -166,7 +166,6 @@ function getMailById(req, res) {
 /**
  * PATCH /api/mails/:id
  * Edits the title/body of an existing mail with a given ID.
- * Only the sender can update.
  * Requires login.
  *
  * @param {import('express').Request} req
@@ -184,9 +183,9 @@ function updateMailById(req, res) {
   try {
     let mail = findMailById(id);
     canUserUpdateMail(mail, username);
-    mail = editMail(mail, req.body);
+    editMail(mail, req.body);
 
-    return ok(res, filterMailForOutput(mail));
+    return noContent(res);
   } catch (err) {
     return httpError(res, err);
   }

@@ -14,7 +14,7 @@ async function createTestUserAndReturn() {
       firstName: "Alice",
       lastName: "Test",
       username: "alice123",
-      password: "securepass"
+      password: "Securepass123!"
     })
     .set('Content-Type', 'application/json')
     .expect(201)
