@@ -121,7 +121,7 @@ exports.getUserById = (req, res) => {
  */
 exports.updateUserById = (req, res) => {
   // throw an error if res doesn't contain body
-  if ('body' in req === false) {
+  if ('body' in req === false || req.body === undefined) {
     return badRequest(res, 'Request body is required');
   }
 

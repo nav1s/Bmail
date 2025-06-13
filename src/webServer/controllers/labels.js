@@ -33,6 +33,11 @@ function listLabels(req, res) {
  */
 function createLabel(req, res) {
   const userId = req.user.id;
+
+  if ('body' in req === false || req.body === undefined) {
+    return badRequest(res, 'Request body is required');
+  }
+
   const keys = Object.keys(req.body);
 
   // Validating that we get exactly one label and extracting it.
