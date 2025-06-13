@@ -1,6 +1,7 @@
 const users = require('../models/users.js');
 const { badRequest, ok, createdWithLocation, noContent } = require('../utils/httpResponses');
 const { httpError } = require('../utils/error');
+const labels = require('../models/labels.js');
 
 
 /**
@@ -67,7 +68,7 @@ exports.createUser = (req, res) => {
     return badRequest(res, `Missing fields: ${missing.join(', ')}`);
   }
 
-  //parses data into json
+  // parses data into json
   const userData = {};
   for (const field of requiredFields) {
     userData[field] = req.body[field];
@@ -82,6 +83,8 @@ exports.createUser = (req, res) => {
   // Trying to create a user, returning bad request with the error if failed
   try {
     const newUser = users.createUser(userData);
+    // Create default labels for the new user
+    labels.createDefaultLabels(newUser.id);
     return createdWithLocation(res, `/api/users/${newUser.id}`);
   } catch (err) {
     return httpError(res, err);

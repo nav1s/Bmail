@@ -1,7 +1,28 @@
 const { createError } = require('../utils/error');
 const userLabels = {}; // key = userId, value = array of labels [{ id, name }]
+
+const defaultLabelNames = ['Inbox', 'Sent', 'Spam', 'Trash'];
+
 let labelId = 1;
 
+/**
+ * @brief Creates default labels for a user if they do not already exist.
+ * @param {number} userId - The ID of the user for whom to create default labels.
+ */ 
+function createDefaultLabels(userId) {
+
+  // create user labels if they don't exist
+  userLabels[userId] = userLabels[userId] || [];
+
+  // create default labels if they don't exist
+  defaultLabelNames.forEach(name => {
+    if (!labelExistsForUser(userId, name)) {
+      const newLabel = buildLabel(name, labelId++);
+      userLabels[userId].push(newLabel);
+    }
+  });
+
+}
 /**
  * Builds a label object after validating input.
  *
@@ -125,6 +146,11 @@ function updateLabelForUser(userId, labelId, newName) {
     throw createError('Label not found', { type: 'NOT_FOUND', status: 404 });
   }
 
+  // check if label is default
+  if (defaultLabelNames.includes(label.name)) {
+    throw createError('Cannot update default label', { type: 'VALIDATION', status: 400 });
+  }
+
   // Checks if name of label already taken
   const duplicate = labelList.find(l => l.name === newName && l.id !== labelId);
   if (duplicate) {
@@ -149,9 +175,16 @@ function deleteLabelForUser(userId, labelId) {
   if (labelList.length === 0) {
     throw createError('This user does not have any labels', { type: 'NOT_FOUND', status: 404 });
   }
+
   const index = labelList.findIndex(l => l.id === labelId);
+
   if (index === -1) {
     throw createError('Label not found', { type: 'NOT_FOUND', status: 404 });
+  }
+
+  // check if label is default
+  if (defaultLabelNames.includes(labelList[index].name)) {
+    throw createError('Cannot delete default label', { type: 'VALIDATION', status: 400 });
   }
 
   // Deletes label
@@ -167,6 +200,7 @@ module.exports = {
   getAllLabelsForUser,
   getLabelByUserAndId,
   updateLabelForUser,
-  deleteLabelForUser
+  deleteLabelForUser,
+  createDefaultLabels,
 };
 

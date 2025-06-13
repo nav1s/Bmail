@@ -1,5 +1,5 @@
-const { getAllLabelsForUser, addLabelForUser, getLabelByUserAndId, deleteLabelForUser } = require('../models/labels');
-const { created, badRequest, notFound, ok, noContent } = require('../utils/httpResponses');
+const { getAllLabelsForUser, addLabelForUser, getLabelByUserAndId, deleteLabelForUser, updateLabelForUser } = require('../models/labels');
+const { created, badRequest, ok, noContent } = require('../utils/httpResponses');
 const { httpError } = require('../utils/error');
 
 
@@ -18,7 +18,7 @@ function listLabels(req, res) {
     return ok(res, userLabelList);
   } catch (err) {
     return httpError(res, err);
-    }
+  }
 }
 
 /**
@@ -50,7 +50,7 @@ function createLabel(req, res) {
     return created(res, label);
   } catch (err) {
     return httpError(res, err);
-    }
+  }
 }
 
 /**
@@ -80,12 +80,8 @@ function getLabelById(req, res) {
     return ok(res, label);
   } catch (err) {
     return httpError(res, err);
-    }
+  }
 }
-
-
-
-const { updateLabelForUser } = require('../models/labels');
 
 /**
  * PATCH /api/labels/:id
@@ -110,13 +106,13 @@ function updateLabelById(req, res) {
     return badRequest(res, 'Missing "name" field in request body');
   }
 
-  
+
   try {
     const updatedLabel = updateLabelForUser(userId, labelId, newName);
     return ok(res, updatedLabel);
   } catch (err) {
     return httpError(res, err);
-    }
+  }
 }
 
 /**
@@ -142,9 +138,14 @@ function deleteLabelById(req, res) {
     deleteLabelForUser(userId, labelId);
     return noContent(res);
   } catch (err) {
-  return httpError(res, err);
+    return httpError(res, err);
   }
 }
 
+function getMailsByLabelId(req, res) {
+  // This function is not implemented in the original code snippet.
+  // You can implement it based on your application's requirements.
+  return badRequest(res, 'This endpoint is not implemented yet');
+}
 
-module.exports = { listLabels, createLabel, getLabelById, updateLabelById, deleteLabelById };
+module.exports = { listLabels, createLabel, getLabelById, updateLabelById, deleteLabelById, getMailsByLabelId };
