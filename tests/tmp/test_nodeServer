@@ -76,7 +76,7 @@ curl -i -X POST http://localhost:8080/api/users \
   "firstName": "Bob",
   "lastName": "Smith",
   "username": "bob",
-  "password": "imthebobyboten"
+  "password": "aA12345!"
 }'
 
 ✅ 1.6 sign in as bob
@@ -84,14 +84,14 @@ curl -i -X POST http://localhost:8080/api/tokens \
 -H "Content-Type: application/json" \
 -d '{
   "username": "bob",
-  "password": "imthebobyboten"
+  "password": "aA12345!"
 }'
 
 ✅ 1.7 patch bob
 
 curl -i -X PATCH http://localhost:8080/api/users \
 -H "Content-Type: application/json" \
--H "Authorization: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImJvYiIsImlhdCI6MTc0OTE5NjY0Mn0.CJizebVji2m9WOK4lZCavzc9-GOIoWuhhuDNmDfQ77k" \
+-H "Authorization: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImJvYiIsImlhdCI6MTc0OTgzNTkwMX0.xN0UiD-ypO-gUlbkciqmgiuX8-cKHzWfO5aBCBgasoc"
 -d '{
   "firstName": "not bob"
 }'
