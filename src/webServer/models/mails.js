@@ -12,11 +12,12 @@ let mailIdCounter = 1;
  * in the buildMail() function and are not part of this schema.
  */
 const mailInputSchema = {
-  from: { public: true },
-  to: { public: true, normalize: true },
-  title: { public: true },
-  body: { public: true },
-  draft: { public: true, default: false },
+  from: { public: true, required: true },
+  to: { public: true, normalize: true, required: true },
+  title: { public: true, required: true },
+  body: { public: true, required: true },
+  draft: { public: true, default: false, required: false },
+  labels: { public: false, default: [], required: false}
 };
 
 /**
@@ -32,9 +33,11 @@ function validateMailInput(input) {
   const requiredFields = Object.keys(mailInputSchema);
   const inputFields = Object.keys(input);
 
-  // check if draft isn't in the input, if not, set it to the default value
-  if (!inputFields.includes('draft')) {
-    input.draft = mailInputSchema.draft.default;
+  // add default values for fields that aren't required and not in the input
+  for (const field of Object.keys(mailInputSchema)) {
+    if (!(field in input) && !mailInputSchema[field].required) {
+      input[field] = mailInputSchema[field].default;
+    }
   }
 
   // Filtering fields from input
