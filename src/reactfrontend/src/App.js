@@ -16,15 +16,10 @@ function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
 
-        {/* Protected Route */}
-        <Route
-          path="/inbox"
-          element={
-            <ProtectedRoute>
-              <InboxPage />
-            </ProtectedRoute>
-          }
-        />
+        {/* Protected Routes */}
+        <Route element={<ProtectedRoute />}>
+          <Route path="/inbox" element={<InboxPage />} />
+        </Route>
 
         {/* Default Route */}
         <Route
@@ -33,7 +28,7 @@ function App() {
         />
       </Routes>
     </Router>
-  );
+      );
 }
 
 export default App;

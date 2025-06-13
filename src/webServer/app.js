@@ -9,6 +9,16 @@ const { serverError, notFound } = require('./utils/httpResponses');
 const app = express();
 app.use(express.json());
 
+const cors = require("cors");
+
+const corsOptions = {
+  origin: "http://localhost:3000",   // React frontend origin
+  credentials: true,                 // allow cookies/auth headers
+};
+
+app.use(cors(corsOptions));
+
+
 // Tag disable
 app.disable('etag');
 
