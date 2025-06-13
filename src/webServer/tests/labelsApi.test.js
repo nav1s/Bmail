@@ -47,18 +47,26 @@ async function createTestUserAndReturn() {
 test('4.11 Valid label create', async () => {
   await createTestUserAndReturn();
 
-  const response = await api
+  let response = await api
     .post('/api/labels')
     .set('Authorization', 'bearer ' + token)
     .set('Content-Type', 'application/json')
     .send({ name: "Important" })
     .expect(201)
     .expect('Content-Type', /application\/json/);
-
-  assert.strictEqual(response.body.id, 1);
   assert.strictEqual(response.body.name, "Important");
 
-  const response2 = await api
+  let labelId = response.body.id;
+  response = await api
+    .get('/api/labels/' + labelId)
+    .set('Authorization', 'bearer ' + token)
+    .expect(200)
+    .expect('Content-Type', /application\/json/);
+
+  assert.strictEqual(response.body.name, "Important");
+  assert.strictEqual(response.body.id, labelId);
+
+  response = await api
     .post('/api/labels')
     .set('Authorization', 'bearer ' + token)
     .set('Content-Type', 'application/json')
@@ -66,30 +74,22 @@ test('4.11 Valid label create', async () => {
     .expect(201)
     .expect('Content-Type', /application\/json/);
 
-  assert.strictEqual(response2.body.id, 2);
-  assert.strictEqual(response2.body.name, "Too Important");
-});
+  assert.strictEqual(response.body.name, "Too Important");
 
-// ✅ 4.12 - Valid label GET by id
-test('4.12 Valid label GET by id', async () => {
-  // user already created and label 1 exists from previous test
-
-  const response = await api
-    .get('/api/labels/1')
+  labelId = response.body.id;
+  response = await api
+    .get('/api/labels/' + labelId)
     .set('Authorization', 'bearer ' + token)
     .expect(200)
     .expect('Content-Type', /application\/json/);
-
-  assert.deepStrictEqual(response.body, {
-    id: 1,
-    name: "Important"
-  });
+  assert.strictEqual(response.body.name, "Too Important");
+  assert.strictEqual(response.body.id, labelId);
 });
 
 // ✅ ❌ 4.13 - Invalid label GET by id
 test('4.13 invalid label GET by id', async () => {
   await api
-    .get('/api/labels/5')
+    .get('/api/labels/999')
     .set('Authorization', 'bearer ' + token)
     .expect(404)
     .expect('Content-Type', /application\/json/)
