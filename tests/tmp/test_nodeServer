@@ -416,7 +416,7 @@ HTTP/1.1 200 OK
 ✅ 5.1 Valid label create
 
 curl -i -X POST http://localhost:8080/api/labels \
--H "Authorization: 1" \
+-H "Authorization: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImJvYiIsImlhdCI6MTc0OTgzNTkwMX0.xN0UiD-ypO-gUlbkciqmgiuX8-cKHzWfO5aBCBgasoc" \
 -H "Content-Type: application/json" \
 -d '{
   "name": "Important"

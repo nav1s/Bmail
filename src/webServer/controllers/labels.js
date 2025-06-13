@@ -97,6 +97,10 @@ function getLabelById(req, res) {
  * @param {import('express').Response} res - Express response object
  */
 function updateLabelById(req, res) {
+  if ('body' in req === false || req.body === undefined) {
+    return badRequest(res, 'Request body is required');
+  }
+
   const userId = req.user.id;
 
   // Validate fields
