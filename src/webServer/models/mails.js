@@ -260,7 +260,7 @@ function deleteMail(user, id) {
  * @param {string} query - the search query
  * @returns {Array} - array of mails matching the search criteria
  */
-function searchMailsForUser(username, query) {
+function searchMailsForUser(username, query, limit) {
   const lowerQuery = query.toLowerCase();
 
   return mails.filter(mail => {
@@ -270,7 +270,8 @@ function searchMailsForUser(username, query) {
 
     return canUserAccessMail(mail, username) && matchesContent;
   })
-  .reverse();
+  .reverse()
+  .slice(0, limit);
 }
 
 /**

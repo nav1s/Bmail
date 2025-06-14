@@ -3,6 +3,7 @@ const { badRequest, created, ok, noContent, forbidden } = require('../utils/http
 const { httpError, createError } = require('../utils/error');
 const { defaultLabelNames, addMailToLabel, removeMailFromLabel, getLabelByName } = require('../models/labels.js');
 const net = require("net");
+let mailLimit = 50;
 
 /**
  * Checks a list of URLs by sending them to a server for validation.
@@ -152,7 +153,7 @@ async function createMail(req, res) {
 
 /**
  * GET /api/mails
- * Returns the last 50 mails sent to the logged-in user.
+ * Returns the last mailLimit mails sent to the logged-in user.
  * Requires login.
  *
  * @param {import('express').Request} req
@@ -160,7 +161,7 @@ async function createMail(req, res) {
  */
 function listInbox(req, res) {
   const username = req.user.username;
-  const inbox = getMailsForUser(username, 50);
+  const inbox = getMailsForUser(username, mailLimit);
   return res.json(inbox.map(filterMailForOutput));
 }
 
@@ -287,7 +288,7 @@ function searchMails(req, res) {
   }
 
   try {
-    const results = searchMailsForUser(username, query);
+    const results = searchMailsForUser(username, query, mailLimit);
     // Sends the public info of each mail found
     return res.json(results.map(filterMailForOutput));
   } catch (err) {
