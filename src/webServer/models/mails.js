@@ -269,7 +269,8 @@ function searchMailsForUser(username, query) {
       (mail.body && mail.body.toLowerCase().includes(lowerQuery));
 
     return canUserAccessMail(mail, username) && matchesContent;
-  });
+  })
+  .reverse();
 }
 
 /**
