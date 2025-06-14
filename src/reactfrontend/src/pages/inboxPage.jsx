@@ -6,54 +6,48 @@ import BlacklistForm from "../components/common/inbox/BlacklistForm";
 import api from "../services/api";
 import { clearTokenFromCookie } from "../utils/tokenUtils";
 import { useNavigate } from "react-router-dom";
+import MailSentPopup from "../components/common/inbox/MailSentPopup";
+
 
 export default function InboxPage() {
   const [mails, setMails] = useState([]);
   const [query, setQuery] = useState("");
   const [showCompose, setShowCompose] = useState(false);
   const navigate = useNavigate();
+  const [feedback, setFeedback] = useState(null);
+  const [mailSentVisible, setMailSentVisible] = useState(false);
+
+
 
   // Load mails on mount or query change
   useEffect(() => {
-    const fetchMails = async () => {
-      try {
-        const endpoint = query.trim()
-          ? `/mails/search/${encodeURIComponent(query)}`
-          : "/mails";
-        const data = await api.get(endpoint, { auth: true });
-        setMails(data);
-      } catch (err) {
-        console.error(err);
-        alert("Error loading mails: " + err.message);
-        if (err.status === 401) {
-          clearTokenFromCookie();
-          navigate("/login");
-        }
-      }
-    };
-
-    const delayDebounce = setTimeout(fetchMails, 300); // debounce
-
+    const delayDebounce = setTimeout(loadMails, 300); // debounce
     return () => clearTimeout(delayDebounce);
   }, [query]);
 
   const handleDeleteMail = async (id) => {
     try {
       await api.delete(`/mails/${id}`, { auth: true });
-      setMails((prev) => prev.filter((m) => m.id !== id));
+      await loadMails();
+      setFeedback({ type: "success", message: "URL removed from blacklist." });
     } catch (err) {
-      alert("Failed to delete mail: " + err.message);
+      setFeedback({ type: "error", message: err.message });
     }
   };
 
   const handleSendMail = async (formData) => {
     try {
       await api.post("/mails", formData, { auth: true });
-      setQuery(""); // refresh inbox
+      await loadMails();
+      setShowCompose(false); // close modal only on success
+      setMailSentVisible(true);
+      setTimeout(() => setMailSentVisible(false), 2000);
     } catch (err) {
-      alert("Failed to send mail: " + err.message);
+      setFeedback({ type: "error", message: err.message });
     }
   };
+
+
 
   const handleAddURL = async (url) => {
     try {
@@ -78,6 +72,24 @@ export default function InboxPage() {
     navigate("/login");
   };
 
+  const loadMails = async () => {
+  try {
+    const endpoint = query.trim()
+      ? `/mails/search/${encodeURIComponent(query)}`
+      : "/mails";
+    const data = await api.get(endpoint, { auth: true });
+    setMails(data);
+  } catch (err) {
+    console.error(err);
+    alert("Error loading mails: " + err.message);
+    if (err.status === 401) {
+      clearTokenFromCookie();
+      navigate("/login");
+    }
+  }
+  };
+
+
   return (
     <div>
       <h2>Inbox</h2>
@@ -89,6 +101,8 @@ export default function InboxPage() {
       {showCompose && (
         <ComposeModal onSend={handleSendMail} onClose={() => setShowCompose(false)} />
       )}
+      {mailSentVisible && <MailSentPopup onClose={() => setMailSentVisible(false)} />}
     </div>
   );
+
 }
