@@ -12,10 +12,10 @@ router.get('/', requireAuth, listInbox);
 // POST /api/mails → sends a new mail (must be logged in)
 router.post('/', requireAuth, createMail);
 
-// POST /api/mails/labels → attaches a label to a mail
-router.post('/:id/labels', requireAuth, attachLabelToMail);
+// Post /api/mails/:mailId/labels → attaches a label to a mail
+router.post('/:mailId/labels', requireAuth, attachLabelToMail);
 // delete /api/mails/:id/labels/:labelId → removes a label from a mail
-router.delete('/:id/labels/:labelId', requireAuth, detachLabelFromMail);
+router.delete('/:mailId/labels/:labelId', requireAuth, detachLabelFromMail);
 
 // Important: Put /search/:query BEFORE /:id to prevent conflicts
 router.get('/search/:query', requireAuth, searchMails);

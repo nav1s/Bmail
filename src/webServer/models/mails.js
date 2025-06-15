@@ -71,7 +71,7 @@ function buildMail(input) {
     timestamp: new Date().toISOString(),
     deletedBySender: false,
     deletedByRecipient: [],
-    labels: mailInputSchema.labels.default ? [...mailInputSchema.labels.default] : [] // Initialize labels array
+    labels: []
   };
 
   // Filling fields with input according to the schema of newMail
@@ -282,6 +282,7 @@ function addLabelToMail (mailId, labelId, username) {
   }
 
   console.log(`Adding label ${labelId} to mail ${mailId}`);
+  console.log(`Mail before adding label:`, mail);
 
   if (!mail.labels) {
     mail.labels = [];

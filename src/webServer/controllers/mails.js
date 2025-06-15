@@ -103,6 +103,7 @@ async function createMail(req, res) {
     validateMailInput(mailInput);
     mailInput.to = validateRecipients(mailInput.to);
   } catch (err) {
+    console.error('Error validating mail input:', err);
     return httpError(res, err);
   }
 
@@ -286,8 +287,12 @@ function validateRecipients(toField) {
   return existingRecipients;
 }
 
+/**
+ * POST /api/mails/:mailId/labels
+ * attaches a label to a mail.
+ */
 function attachLabelToMail (req, res) {
-  const mailId = Number(req.params.id);
+  const mailId = Number(req.params.mailId);
   const labelId = Number(req.body.labelId);
 
   console.log(`User ${req.user.username} is trying to attach label ${labelId} to mail ${mailId}`);
@@ -311,10 +316,11 @@ function attachLabelToMail (req, res) {
 };
 
 /**
- * @brief This function detaches a label from a mail.
+ * DELETE /api/mails/:mailId/labels/:labelId
+ * detaches a label from a mail.
  */
 function detachLabelFromMail(req, res) {
-  const mailId = Number(req.params.id);
+  const mailId = Number(req.params.mailId);
   const labelId = Number(req.params.labelId);
 
   console.log(`User ${req.user.username} is trying to detach label ${labelId} from mail ${mailId}`);
