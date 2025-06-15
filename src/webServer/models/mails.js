@@ -272,7 +272,7 @@ function searchMailsForUser(username, query) {
  * @param {number} userId - The ID of the user performing the action.
  * @returns {object} The updated mail object.
  */
-exports.addLabelToMail = (mailId, labelId) => {
+function addLabelToMail (mailId, labelId) {
   const mail = findMailById(mailId);
 
   if (!mail.labels) {
@@ -306,5 +306,6 @@ module.exports = {
   canUserUpdateMail,
   editMail,
   deleteMail,
-  searchMailsForUser
+  searchMailsForUser,
+  addLabelToMail
 };

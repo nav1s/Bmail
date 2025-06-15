@@ -287,13 +287,16 @@ function validateRecipients(toField) {
 }
 
 function attachLabelToMail (req, res) {
-  const mailId = Number(req.params.mailId);
-  const labelId = Number(req.params.labelId);
-  const username = req.user.username;
+  const mailId = Number(req.params.id);
+  const labelId = Number(req.body.labelId);
+
+  console.log(`User ${req.user.username} is trying to attach label ${labelId} to mail ${mailId}`);
 
   if (!Number.isInteger(mailId) || !Number.isInteger(labelId)) {
     return badRequest(res, 'Mail ID and Label ID must be valid integers');
   }
+
+  const username = req.user.username;
 
   try {
     addLabelToMail(mailId, labelId);

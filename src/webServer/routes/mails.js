@@ -12,8 +12,8 @@ router.get('/', requireAuth, listInbox);
 // POST /api/mails → sends a new mail (must be logged in)
 router.post('/', requireAuth, createMail);
 
-// POST /api/mails/:mailId/labels/:labelId -> Attaches a label to a mail
-router.post('/:mailId/labels/:labelId', requireAuth, attachLabelToMail);
+// POST /api/mails/labels → attaches a label to a mail
+router.post('/:id/labels', requireAuth, attachLabelToMail);
 
 // Important: Put /search/:query BEFORE /:id to prevent conflicts
 router.get('/search/:query', requireAuth, searchMails);

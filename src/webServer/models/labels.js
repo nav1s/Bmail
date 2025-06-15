@@ -203,7 +203,7 @@ function deleteLabelForUser(userId, labelId) {
  * @param {*} labelId the ID of the label
  * @param {*} mailId  the ID of the mail to add to the label
  */
-exports.addMailToLabel = (userId, labelId, mailId) => {
+function addMailToLabel (userId, labelId, mailId) {
   const labels = userLabels[userId] || [];
   const label = labels.find(l => l.id === labelId);
 
@@ -241,5 +241,6 @@ module.exports = {
   updateLabelForUser,
   deleteLabelForUser,
   createDefaultLabels,
+  addMailToLabel
 };
 
