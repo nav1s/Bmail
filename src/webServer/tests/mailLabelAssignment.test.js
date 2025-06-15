@@ -10,17 +10,18 @@ let labelId;
 
 // 0. Setup
 test('0. Setup: Register, login, create label and mail', async () => {
+  const securePass = 'aA12345!';
   // Register user
   await api.post('/api/users').send({
     username: 'testUser',
     firstName: 'Test',
     lastName: 'User',
-    password: '1234'
+    password: securePass
   }).expect(201);
 
   // Login
   const login = await api.post('/api/tokens')
-    .send({ username: 'testUser', password: '1234' })
+    .send({ username: 'testUser', password: securePass })
     .expect(201);
   token = login.body.token;
 
