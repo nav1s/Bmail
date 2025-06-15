@@ -86,7 +86,7 @@ test('4.11 Valid label create', async () => {
   assert.strictEqual(response.body.id, labelId);
 });
 
-// ✅ ❌ 4.13 - Invalid label GET by id
+// ❌ 4.13 - Invalid label GET by id
 test('4.13 invalid label GET by id', async () => {
   await api
     .get('/api/labels/999')
