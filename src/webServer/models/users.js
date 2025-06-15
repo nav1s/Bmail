@@ -6,7 +6,7 @@ const users = [];
 
 // Centralized user field configuration
 const userFieldConfig = {
-  id: { public: true, editable: false, required: false },
+  id: { public: true, required: false, editable: false  },
   username: { public: true, required: true, editable: true },
   firstName: { public: true, required: true, editable: true },
   lastName: { public: true, required: true, editable: true },

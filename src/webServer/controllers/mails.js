@@ -1,6 +1,7 @@
-const { buildMail, filterMailForOutput, validateMailInput, findMailById, editMail, deleteMail, canUserAccessMail, getMailsForUser, searchMailsForUser, canUserUpdateMail } = require('../models/mails.js');
+const { buildMail, filterMailForOutput, validateMailInput, findMailById, editMail, deleteMail, canUserAccessMail, getMailsForUser, searchMailsForUser, canUserUpdateMail, addLabelToMail } = require('../models/mails.js');
 const { badRequest, created, ok, noContent, forbidden } = require('../utils/httpResponses');
 const { httpError, createError } = require('../utils/error');
+const { addMailToLabel } = require('../models/labels.js');
 const users = require('../models/users.js');
 const net = require("net");
 
@@ -285,6 +286,26 @@ function validateRecipients(toField) {
   return existingRecipients;
 }
 
+function attachLabelToMail (req, res) {
+  const mailId = Number(req.params.mailId);
+  const labelId = Number(req.params.labelId);
+  const username = req.user.username;
+
+  if (!Number.isInteger(mailId) || !Number.isInteger(labelId)) {
+    return badRequest(res, 'Mail ID and Label ID must be valid integers');
+  }
+
+  try {
+    addLabelToMail(mailId, labelId);
+    addMailToLabel(mailId, labelId, username);
+    return noContent(res);
+
+  } catch (err) {
+    console.error(`Error attaching label ${labelId} to mail ${mailId} for user ${username}:`, err);
+    return httpError(res, err);
+  }
+};
+
 
 module.exports = {
   createMail,
@@ -292,5 +313,6 @@ module.exports = {
   getMailById,
   updateMailById,
   deleteMailById,
-  searchMails
+  searchMails,
+  attachLabelToMail
 };

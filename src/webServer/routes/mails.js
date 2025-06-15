@@ -4,13 +4,16 @@ const router = express.Router();
 const { createMail, listInbox } = require('../controllers/mails');
 const { requireAuth } = require('../middleware/auth');
 const { getMailById, updateMailById, deleteMailById } = require('../controllers/mails');
-const { searchMails } = require('../controllers/mails');
+const { searchMails, attachLabelToMail } = require('../controllers/mails');
 
 // GET /api/mails → returns last 50 mails sent/received by the user
 router.get('/', requireAuth, listInbox);
 
 // POST /api/mails → sends a new mail (must be logged in)
 router.post('/', requireAuth, createMail);
+
+// POST /api/mails/:mailId/labels/:labelId -> Attaches a label to a mail
+router.post('/:mailId/labels/:labelId', requireAuth, attachLabelToMail);
 
 // Important: Put /search/:query BEFORE /:id to prevent conflicts
 router.get('/search/:query', requireAuth, searchMails);

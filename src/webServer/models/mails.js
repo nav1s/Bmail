@@ -1,6 +1,7 @@
 const { createError } = require('../utils/error');
+const { getLabelByUserAndId } = require('./labels'); // Import label model function
 
-const mails = []; // [{ id, from, to[], title, body, timestamp }]
+const mails = []; // [{ id, from, to[], title, body, timestamp, labels: [] }]
 let mailIdCounter = 1;
 
 /**
@@ -71,6 +72,7 @@ function buildMail(input) {
     timestamp: new Date().toISOString(),
     deletedBySender: false,
     deletedByRecipient: [],
+    labels: mailInputSchema.labels.default ? [...mailInputSchema.labels.default] : [] // Initialize labels array
   };
 
   // Filling fields with input according to the schema of newMail
@@ -263,6 +265,35 @@ function searchMailsForUser(username, query) {
   });
 }
 
+/**
+ * Attaches a label to a mail for a given user.
+ * @param {number} mailId - The ID of the mail.
+ * @param {number} labelId - The ID of the label.
+ * @param {number} userId - The ID of the user performing the action.
+ * @returns {object} The updated mail object.
+ */
+exports.addLabelToMail = (mailId, labelId) => {
+  const mail = findMailById(mailId);
+
+  if (!mail.labels) {
+    mail.labels = [];
+  }
+
+  if (mail.labels.includes(labelId)) {
+    throw createError('Label already attached to this mail', { status: 400 });
+  }
+
+  mail.labels.push(labelId);
+
+  // Update the mail in the array
+  const index = mails.findIndex(m => m.id === mail.id);
+  if (index !== -1) {
+    mails[index] = mail;
+  } else {
+    // Should not happen if findMailById worked
+    throw createError('Mail not found during update', { status: 404 });
+  }
+}
 
 
 module.exports = {

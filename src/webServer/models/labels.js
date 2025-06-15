@@ -1,6 +1,12 @@
 const { createError } = require('../utils/error');
 const userLabels = {}; // key = userId, value = array of labels [{ id, name }]
 
+const labelInputSchema = {
+  name: { required: true, type: 'string' },
+  id: { required: false, type: 'number' },
+  mails: { required: false, type: 'array' }
+};
+
 const defaultLabelNames = ['Inbox', 'Sent', 'Spam', 'Trash'];
 
 let labelId = 1;
@@ -190,6 +196,39 @@ function deleteLabelForUser(userId, labelId) {
   // Deletes label
   labelList.splice(index, 1);
 }
+
+/**
+ * @brief Adds a mail to a label for a specific user.
+ * @param {*} userId the ID of the user
+ * @param {*} labelId the ID of the label
+ * @param {*} mailId  the ID of the mail to add to the label
+ */
+exports.addMailToLabel = (userId, labelId, mailId) => {
+  const labels = userLabels[userId] || [];
+  const label = labels.find(l => l.id === labelId);
+
+  if (!label) {
+    throw createError('Label not found', { type: 'NOT_FOUND', status: 404 });
+  }
+
+  if (!label.mails) {
+    label.mails = [];
+  }
+
+  if (!label.mails.includes(mailId)) {
+    label.mails.push(mailId);
+  }
+
+  // Update the label in the user's labels
+  const index = labels.findIndex(l => l.id === labelId);
+  if (index !== -1) {
+    labels[index] = label;
+  } else {
+    throw createError('Label not found during update', { type: 'NOT_FOUND', status: 404 });
+  }
+
+  userLabels[userId] = labels;
+};
 
 
 
