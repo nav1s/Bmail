@@ -1,7 +1,7 @@
-const { buildMail, filterMailForOutput, validateMailInput, findMailById, editMail, deleteMail, canUserAccessMail, getMailsForUser, searchMailsForUser, canUserUpdateMail, addLabelToMail } = require('../models/mails.js');
+const { buildMail, filterMailForOutput, validateMailInput, findMailById, editMail, deleteMail, canUserAccessMail, getMailsForUser, searchMailsForUser, canUserUpdateMail, addLabelToMail, removeLabelFromMail } = require('../models/mails.js');
 const { badRequest, created, ok, noContent, forbidden } = require('../utils/httpResponses');
 const { httpError, createError } = require('../utils/error');
-const { addMailToLabel } = require('../models/labels.js');
+const { addMailToLabel, removeMailFromLabel } = require('../models/labels.js');
 const users = require('../models/users.js');
 const net = require("net");
 
@@ -296,11 +296,12 @@ function attachLabelToMail (req, res) {
     return badRequest(res, 'Mail ID and Label ID must be valid integers');
   }
 
+  const uid = req.user.id;
   const username = req.user.username;
 
   try {
-    addLabelToMail(mailId, labelId);
-    addMailToLabel(mailId, labelId, username);
+    addLabelToMail(mailId, labelId, username);
+    addMailToLabel(mailId, labelId, uid);
     return noContent(res);
 
   } catch (err) {
@@ -308,6 +309,34 @@ function attachLabelToMail (req, res) {
     return httpError(res, err);
   }
 };
+
+/**
+ * @brief This function detaches a label from a mail.
+ */
+function detachLabelFromMail(req, res) {
+  const mailId = Number(req.params.id);
+  const labelId = Number(req.params.labelId);
+
+  console.log(`User ${req.user.username} is trying to detach label ${labelId} from mail ${mailId}`);
+
+  if (!Number.isInteger(mailId) || !Number.isInteger(labelId)) {
+    console.warn(`Invalid mailId or labelId: ${mailId}, ${labelId}`);
+    return badRequest(res, 'Mail ID and Label ID must be valid integers');
+  }
+
+  const uid = req.user.id;
+  const username = req.user.username;
+
+  try {
+    removeLabelFromMail(mailId, labelId, username);
+    removeMailFromLabel(mailId, labelId, uid);
+    return noContent(res);
+
+  } catch (err) {
+    console.error(`Error detaching label ${labelId} from mail ${mailId} for user ${username}:`, err);
+    return httpError(res, err);
+  }
+}
 
 
 module.exports = {
@@ -317,5 +346,6 @@ module.exports = {
   updateMailById,
   deleteMailById,
   searchMails,
-  attachLabelToMail
+  attachLabelToMail,
+  detachLabelFromMail
 };

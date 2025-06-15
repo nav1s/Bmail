@@ -1,5 +1,4 @@
 const { createError } = require('../utils/error');
-const { getLabelByUserAndId } = require('./labels'); // Import label model function
 
 const mails = []; // [{ id, from, to[], title, body, timestamp, labels: [] }]
 let mailIdCounter = 1;
@@ -18,7 +17,7 @@ const mailInputSchema = {
   title: { public: true, required: true },
   body: { public: true, required: true },
   draft: { public: true, default: false, required: false },
-  labels: { public: false, default: [], required: false}
+  labels: { public: true, default: [], required: false}
 };
 
 /**
@@ -272,8 +271,17 @@ function searchMailsForUser(username, query) {
  * @param {number} userId - The ID of the user performing the action.
  * @returns {object} The updated mail object.
  */
-function addLabelToMail (mailId, labelId) {
+function addLabelToMail (mailId, labelId, username) {
   const mail = findMailById(mailId);
+  if (!mail) {
+    throw createError('Mail not found', { status: 404 });
+  }
+
+  if (!canUserAccessMail(mail, username)) {
+    throw createError('User does not have access to this mail', { status: 403 });
+  }
+
+  console.log(`Adding label ${labelId} to mail ${mailId}`);
 
   if (!mail.labels) {
     mail.labels = [];
@@ -295,6 +303,38 @@ function addLabelToMail (mailId, labelId) {
   }
 }
 
+/**
+ * @brief Removes a label from a mail for a given user.
+ * @param {number} mailId - The ID of the mail.
+ * @param {number} labelId - The ID of the label to remove.
+ * @throws {Error} If the label is not found on the mail.
+ */
+function removeLabelFromMail(mailId, labelId, username) {
+  const mail = findMailById(mailId);
+  if (!mail) {
+    throw createError('Mail not found', { status: 404 });
+  }
+
+  if (canUserAccessMail(mail, username) === false) {
+    throw createError('User does not have access to this mail', { status: 403 });
+  }
+
+  if (!mail.labels || !mail.labels.includes(labelId)) {
+    throw createError('Label not found on this mail', { status: 404 });
+  }
+
+  // remove the label from the mail
+  mail.labels = mail.labels.filter(l => l !== labelId);
+
+  // Update the mail in the array
+  const index = mails.findIndex(m => m.id === mail.id);
+  if (index !== -1) {
+    mails[index] = mail;
+  } else {
+    throw createError('Mail not found during update', { status: 404 });
+  }
+}
+
 
 module.exports = {
   validateMailInput,
@@ -307,5 +347,6 @@ module.exports = {
   editMail,
   deleteMail,
   searchMailsForUser,
-  addLabelToMail
+  addLabelToMail,
+  removeLabelFromMail
 };

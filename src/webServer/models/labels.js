@@ -43,7 +43,7 @@ function buildLabel(name, id) {
   }
   return {
     id,
-    name,
+    name
   };
 }
 
@@ -203,8 +203,11 @@ function deleteLabelForUser(userId, labelId) {
  * @param {*} labelId the ID of the label
  * @param {*} mailId  the ID of the mail to add to the label
  */
-function addMailToLabel (userId, labelId, mailId) {
+function addMailToLabel (mailId, labelId, userId) {
+  console.log(`Adding mail ${mailId} to label ${labelId} for user ${userId}`);
   const labels = userLabels[userId] || [];
+  console.log(`User ${userId} has labels:`, labels);
+  console.log(`Looking for label with ID ${labelId}`);
   const label = labels.find(l => l.id === labelId);
 
   if (!label) {
@@ -215,9 +218,12 @@ function addMailToLabel (userId, labelId, mailId) {
     label.mails = [];
   }
 
-  if (!label.mails.includes(mailId)) {
-    label.mails.push(mailId);
+  // Check if the mail already exists in the label
+  if(label.mails.includes(mailId)) {
+    throw createError('Mail already exists in label', { type: 'VALIDATION', status: 400 });
   }
+
+  label.mails.push(mailId);
 
   // Update the label in the user's labels
   const index = labels.findIndex(l => l.id === labelId);
@@ -230,6 +236,38 @@ function addMailToLabel (userId, labelId, mailId) {
   userLabels[userId] = labels;
 };
 
+/**
+ * @brief Removes a mail from a label for a specific user.
+ * @param {*} userId the ID of the user
+ * @param {*} labelId the ID of the label
+ * @param {*} mailId  the ID of the mail to remove from the label
+ */
+function removeMailFromLabel(mailId, labelId, userId) {
+  const labels = userLabels[userId] || [];
+  const label = labels.find(l => l.id === labelId);
+
+  if (!label) {
+    throw createError('Label not found', { type: 'NOT_FOUND', status: 404 });
+  }
+
+  if (!label.mails || !label.mails.includes(mailId)) {
+    throw createError('Mail not found in label', { type: 'NOT_FOUND', status: 404 });
+  }
+
+  // Remove the mail from the label
+  label.mails = label.mails.filter(m => m !== mailId);
+
+  // Update the label in the user's labels
+  const index = labels.findIndex(l => l.id === labelId);
+  if (index !== -1) {
+    labels[index] = label;
+  } else {
+    throw createError('Label not found during update', { type: 'NOT_FOUND', status: 404 });
+  }
+
+  userLabels[userId] = labels;
+}
+
 
 
 module.exports = {
@@ -241,6 +279,7 @@ module.exports = {
   updateLabelForUser,
   deleteLabelForUser,
   createDefaultLabels,
-  addMailToLabel
+  addMailToLabel,
+  removeMailFromLabel
 };
 

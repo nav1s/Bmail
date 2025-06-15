@@ -4,7 +4,7 @@ const router = express.Router();
 const { createMail, listInbox } = require('../controllers/mails');
 const { requireAuth } = require('../middleware/auth');
 const { getMailById, updateMailById, deleteMailById } = require('../controllers/mails');
-const { searchMails, attachLabelToMail } = require('../controllers/mails');
+const { searchMails, attachLabelToMail, detachLabelFromMail } = require('../controllers/mails');
 
 // GET /api/mails → returns last 50 mails sent/received by the user
 router.get('/', requireAuth, listInbox);
@@ -14,6 +14,8 @@ router.post('/', requireAuth, createMail);
 
 // POST /api/mails/labels → attaches a label to a mail
 router.post('/:id/labels', requireAuth, attachLabelToMail);
+// delete /api/mails/:id/labels/:labelId → removes a label from a mail
+router.delete('/:id/labels/:labelId', requireAuth, detachLabelFromMail);
 
 // Important: Put /search/:query BEFORE /:id to prevent conflicts
 router.get('/search/:query', requireAuth, searchMails);
