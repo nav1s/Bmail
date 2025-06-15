@@ -83,11 +83,11 @@ test('5. Cannot remove label from mail not owned', async () => {
     username: 'other',
     firstName: 'Other',
     lastName: 'User',
-    password: 'pass'
+    password: 'Securepass1!'
   }).expect(201);
 
   const login = await api.post('/api/tokens')
-    .send({ username: 'other', password: 'pass' })
+    .send({ username: 'other', password: 'Securepass1!' })
     .expect(201);
   const otherToken = login.body.token;
 
