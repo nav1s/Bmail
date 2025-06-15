@@ -54,6 +54,7 @@ async function createInitialMails() {
   ];
 
   for (const mail of mails) {
+    console.log('Creating mail:', mail);
     await api
       .post('/api/mails')
       .set('Authorization', 'bearer ' + token)

@@ -95,6 +95,15 @@ function getAllLabelsForUser(userId) {
   return userLabels[userId] || [];
 }
 
+function getInboxLabelId(userId) {
+  const labels = userLabels[userId] || [];
+  const inboxLabel =  labels.filter(label => label.name === 'Inbox');
+  if (inboxLabel.length === 0) {
+    throw createError('Inbox label not found', { type: 'NOT_FOUND', status: 404 });
+  }
+  return inboxLabel[0].id;
+}
+
 /**
  * Fetches a label for a specific user by label ID.
  *
@@ -280,6 +289,7 @@ module.exports = {
   deleteLabelForUser,
   createDefaultLabels,
   addMailToLabel,
-  removeMailFromLabel
+  removeMailFromLabel,
+  getInboxLabelId
 };
 

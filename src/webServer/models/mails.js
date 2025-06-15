@@ -17,7 +17,7 @@ const mailInputSchema = {
   title: { public: true, required: true },
   body: { public: true, required: true },
   draft: { public: true, default: false, required: false },
-  labels: { public: true, default: [], required: false}
+  labels: { public: true, default: [], required: false }
 };
 
 /**
@@ -32,10 +32,17 @@ function validateMailInput(input) {
   // Parses fields from keys
   const requiredFields = Object.keys(mailInputSchema);
   const inputFields = Object.keys(input);
+  // log the mail input schema and input for debugging
+  console.log('Mail input schema:', mailInputSchema);
 
   // add default values for fields that aren't required and not in the input
   for (const field of Object.keys(mailInputSchema)) {
     if (!(field in input) && !mailInputSchema[field].required) {
+      // check if the default value is an array
+      if (Array.isArray(mailInputSchema[field].default)) {
+        input[field] = [...mailInputSchema[field].default];
+        continue;
+      }
       input[field] = mailInputSchema[field].default;
     }
   }
@@ -73,6 +80,7 @@ function buildMail(input) {
     deletedByRecipient: [],
     labels: []
   };
+  console.log('Building new mail with input:', input);
 
   // Filling fields with input according to the schema of newMail
   for (const field of Object.keys(input)) {
@@ -184,7 +192,7 @@ function editMail(mail, updates) {
   const editableFields = ['title', 'body'];
 
   // check if the update contains draft
-  if('draft' in updates) {
+  if ('draft' in updates) {
     if (mail.draft === true) {
       if (updates.draft === false) {
         mail.draft = false;
@@ -271,7 +279,7 @@ function searchMailsForUser(username, query) {
  * @param {number} userId - The ID of the user performing the action.
  * @returns {object} The updated mail object.
  */
-function addLabelToMail (mailId, labelId, username) {
+function addLabelToMail(mailId, labelId, username) {
   const mail = findMailById(mailId);
   if (!mail) {
     throw createError('Mail not found', { status: 404 });

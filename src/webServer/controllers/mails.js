@@ -1,7 +1,7 @@
 const { buildMail, filterMailForOutput, validateMailInput, findMailById, editMail, deleteMail, canUserAccessMail, getMailsForUser, searchMailsForUser, canUserUpdateMail, addLabelToMail, removeLabelFromMail } = require('../models/mails.js');
 const { badRequest, created, ok, noContent, forbidden } = require('../utils/httpResponses');
 const { httpError, createError } = require('../utils/error');
-const { addMailToLabel, removeMailFromLabel } = require('../models/labels.js');
+const { addMailToLabel, removeMailFromLabel, getInboxLabelId } = require('../models/labels.js');
 const users = require('../models/users.js');
 const net = require("net");
 
@@ -119,6 +119,15 @@ async function createMail(req, res) {
 
   // Build and store the mail
   const newMail = buildMail(mailInput);
+  try {
+    console.log('Mail content:', newMail);
+    const inboxLabelId = getInboxLabelId(req.user.id);
+    addLabelToMail(newMail.id, inboxLabelId, req.user.username);
+    addMailToLabel(newMail.id, inboxLabelId, req.user.id);
+  } catch (err) {
+    console.error('Error adding mail to inbox label:', err);
+    return httpError(res, err);
+  }
   return created(res, filterMailForOutput(newMail));
 }
 
