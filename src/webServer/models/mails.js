@@ -1,6 +1,6 @@
 const { createError } = require('../utils/error');
 
-const mails = []; // [{ id, from, to[], title, body, timestamp, labels: [] }]
+const mails = []; // [{ id, from, to[], title, body, timestamp, labels: [], deletedBySender: false, deletedByRecipient: [] }]
 let mailIdCounter = 1;
 
 /**
