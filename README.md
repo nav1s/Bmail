@@ -4,6 +4,7 @@
 > - Part 1: https://github.com/Binja12/Bmail/tree/part1
 > - Part 2: https://github.com/Binja12/Bmail/tree/part2
 > - Part 3: https://github.com/Binja12/Bmail/tree/part3
+> - Part 4: https://github.com/Binja12/Bmail/tree/part4
 
 Bmail is a mail server application featuring a C++-based Bloom filter for blacklist management and a Node.js web server providing a RESTful API for mail operations.
 
@@ -21,12 +22,21 @@ The project also includes a Python client for interacting with the Bloom filter 
 # Using HTTPS
 git clone https://github.com/binja12/bmail.git
 cd bmail
-git checkout part3
+git checkout part4
 
 # OR using SSH
 git clone git@github.com:binja12/bmail.git
 cd bmail
-git checkout part3
+git checkout part4
+```
+
+### Create an env file
+
+```bash
+# Generate a secure JWT secret token
+node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
+# Create .env file with the JWT token
+echo "JWT_SECRET=your_generated_token_here" > src/webServer/.env.prod
 ```
 
 ### Running the Application
@@ -44,90 +54,6 @@ docker compose down --remove-orphans
 > **if you want to start with a fresh Bloom filter, delete the data file with the following command:**
 ```bash
 rm data/bloomFilter.txt
-```
-
-### Sample curl commands for the api
-
-> **register a new user:**
-
-```bash
-curl -i -X POST http://localhost:8080/api/users \
--H "Content-Type: application/json" \
--d '{
-  "firstName": "Alice",
-  "lastName": "Test",
-  "username": "alice123",
-  "password": "securepass"
-}'
-```
-
-> **login as the new user:**
-```bash
-curl -i -X POST http://localhost:8080/api/tokens \
--H "Content-Type: application/json" \
--d '{
-  "username": "alice123",
-  "password": "securepass"
-}'
-```
-
-> **get the user public info:**
-```bash
-curl -i -X GET http://localhost:8080/api/users/1
-```
-
-> **send a mail:**
-```bash
-curl -i -X POST http://localhost:8080/api/mails \
--H "Authorization: 1" \
--H "Content-Type: application/json" \
--d '{
-  "to": ["alice123"], 
-  "title": "Hello again",
-  "body": "This should work"
-}'
-```
-
-> **create a new label:**
-```bash
-curl -i -X POST http://localhost:8080/api/labels \
--H "Authorization: 1" \
--H "Content-Type: application/json" \
--d '{
-  "name": "Important"
-}'
-```
-
-> **search for a mail:**
-```bash
-curl -i -X GET http://localhost:8080/api/mails/search/This \
--H "Authorization: 1"
-```
-
-> **add a url to the blacklist:**
-```bash
-curl -i -X POST http://localhost:8080/api/blacklist \
--H "Authorization: 1" \
--H "Content-Type: application/json" \
--d '{ "url": "http://bad.com" }'
-```
-
-> **attempt to send a mail with a blacklisted url:**
-```bash
-curl -i -X POST http://localhost:8080/api/mails \
--H "Authorization: 1" \
--H "Content-Type: application/json" \
--d '{
-  "to": ["alice123"],
-  "title": "Try this site",
-  "body": "Check this link: http://bad.com"
-}'
-```
-
-> **remove a url from the blacklist:**
-```bash
-curl -i -X DELETE http://localhost:8080/api/blacklist/http%3A%2F%2Fbad.com \
--H "Authorization: 1"
 ```
 
 ### How SOLID Principles Helped Us Handle Changes Smoothly
