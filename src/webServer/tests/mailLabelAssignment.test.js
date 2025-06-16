@@ -102,3 +102,38 @@ test('6. Remove label from mail (valid)', async () => {
     .set('Authorization', 'bearer ' + token)
     .expect(204);
 });
+
+// 7. Mail is automatically labeled as Inbox
+test('7. Mail is automatically labeled as Inbox', async () => {
+  const mailRes = await api.post('/api/mails')
+    .set('Authorization', 'bearer ' + token)
+    .send({ to: ['testUser'], title: 'Auto Inbox?', body: 'Check default label' })
+    .expect(201);
+
+  const newMailId = mailRes.body.id;
+
+  const getMailRes = await api.get(`/api/mails/${newMailId}`)
+    .set('Authorization', 'bearer ' + token)
+    .expect(200);
+
+  // print the mail for debugging
+  const mail = getMailRes.body;
+  console.log('Test 7 here is the mail: ' + mail.body);
+  assert.ok(Array.isArray(mail.labels));
+  assert.ok(mail.labels.some(label => label.name === 'Inbox'), 'Mail should be labeled as Inbox by default');
+});
+
+// 8. Get mails by label "Inbox" includes new mail
+test('8. Get mails by label "Inbox" includes new mail', async () => {
+  const res = await api.get('/api/mails?label=Inbox')
+    .set('Authorization', 'bearer ' + token)
+    .expect(200);
+
+  // print the mail for debugging
+  const mail = res.body;
+  console.log('Test 8 here is the mail: ' + mail.body);
+  const inboxMails = res.body;
+  assert.ok(Array.isArray(inboxMails));
+  assert.ok(inboxMails.some(m => m.title === 'Auto Inbox?'), 'Expected mail not found in Inbox label');
+});
+
