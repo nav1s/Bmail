@@ -106,6 +106,8 @@ async function createMail(req, res) {
     return httpError(res, err);
   }
 
+  const newMail = buildMail(mailInput);
+
   // check if the mail contains blacklisted URLs
   const msgBody = mailInput.body || '';
   const msgTitle = mailInput.title || '';
@@ -114,7 +116,7 @@ async function createMail(req, res) {
   // move the mail to spam if it contains blacklisted URLs
   if (isBlacklisted) {
     try {
-      const spamLabelId = getLabelByName('Spam');
+      const spamLabelId = getLabelByName(req.user.id,'Spam');
       addLabelToMail(newMail.id, spamLabelId, req.user.username);
       addMailToLabel(newMail.id, spamLabelId, req.user.id);
     }
@@ -125,7 +127,6 @@ async function createMail(req, res) {
   }
 
   // Build and store the mail
-  const newMail = buildMail(mailInput);
   try {
     console.log('Mail content:', newMail);
     const inboxLabelId = getInboxLabelId(req.user.id);
