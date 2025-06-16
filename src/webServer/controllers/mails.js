@@ -1,8 +1,7 @@
 const { buildMail, filterMailForOutput, validateMailInput, findMailById, editMail, deleteMail, canUserAccessMail, getMailsForUser, searchMailsForUser, canUserUpdateMail, addLabelToMail, removeLabelFromMail } = require('../models/mails.js');
 const { badRequest, created, ok, noContent, forbidden } = require('../utils/httpResponses');
 const { httpError, createError } = require('../utils/error');
-const { addMailToLabel, removeMailFromLabel, getInboxLabelId } = require('../models/labels.js');
-const users = require('../models/users.js');
+const { addMailToLabel, removeMailFromLabel, getInboxLabelId, getLabelByName } = require('../models/labels.js');
 const net = require("net");
 
 /**
@@ -112,9 +111,17 @@ async function createMail(req, res) {
   const msgTitle = mailInput.title || '';
   const isBlacklisted = await isMessageValid(msgBody) || await isMessageValid(msgTitle);
 
-  // return an error if blacklisted URLs are found
+  // move the mail to spam if it contains blacklisted URLs
   if (isBlacklisted) {
-    return badRequest(res, 'Mail contains blacklisted URLs');
+    try {
+      const spamLabelId = getLabelByName('Spam');
+      addLabelToMail(newMail.id, spamLabelId, req.user.username);
+      addMailToLabel(newMail.id, spamLabelId, req.user.id);
+    }
+    catch (err) {
+      console.error('Error getting spam label:', err);
+      return httpError(res, err);
+    }
   }
 
   // Build and store the mail
@@ -284,7 +291,7 @@ function validateRecipients(toField) {
  * POST /api/mails/:mailId/labels
  * attaches a label to a mail.
  */
-function attachLabelToMail (req, res) {
+function attachLabelToMail(req, res) {
   const mailId = Number(req.params.mailId);
   const labelId = Number(req.body.labelId);
 

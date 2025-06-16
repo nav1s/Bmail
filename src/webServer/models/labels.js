@@ -95,6 +95,11 @@ function getAllLabelsForUser(userId) {
   return userLabels[userId] || [];
 }
 
+/**
+ * @brief Gets the ID of the "Inbox" label for a specific user.
+ * @param {*} userId - The ID of the user.
+ * @returns  {number} The ID of the "Inbox" label.
+ */
 function getInboxLabelId(userId) {
   const labels = userLabels[userId] || [];
   const inboxLabel =  labels.filter(label => label.name === 'Inbox');
@@ -102,6 +107,23 @@ function getInboxLabelId(userId) {
     throw createError('Inbox label not found', { type: 'NOT_FOUND', status: 404 });
   }
   return inboxLabel[0].id;
+}
+
+/**
+ * @brief Gets a label by name for a specific user.
+ * @param {*} userId - The ID of the user.
+ * @param {*} name - The name of the label to retrieve.
+ * @returns {object} The label object.
+ */
+function getLabelByName(userId, name) {
+  const labels = userLabels[userId] || [];
+  const label = labels.find(l => l.name === name);
+
+  if (!label) {
+    throw createError('Label not found', { type: 'NOT_FOUND', status: 404 });
+  }
+
+  return label;
 }
 
 /**
@@ -290,6 +312,7 @@ module.exports = {
   createDefaultLabels,
   addMailToLabel,
   removeMailFromLabel,
-  getInboxLabelId
+  getInboxLabelId,
+  getLabelByName
 };
 

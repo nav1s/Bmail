@@ -30,7 +30,7 @@ cd bmail
 git checkout part4
 ```
 
-### Create an env file
+### Creating an env file
 
 ```bash
 # Generate a secure JWT secret token
