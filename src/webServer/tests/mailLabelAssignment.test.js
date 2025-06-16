@@ -118,28 +118,37 @@ test('7. Mail is automatically labeled as Inbox', async () => {
 
   // print the mail for debugging
   const mail = getMailRes.body;
-  console.log('Test 7 here is the mail labels: ' + JSON.stringify(mail));
 
   assert.ok(Array.isArray(mail.labels));
 });
 
 // 8. Get mails by label "Inbox" includes new mail
 test('8. Get mails by label "Inbox" includes new mail', async () => {
-  const res = await api.get('/api/mails?label=Inbox')
+  // first create a new mail
+  const mailRes = await api.post('/api/mails')
+    .set('Authorization', 'bearer ' + token)
+    .send({ to: ['testUser'], title: 'Inbox Test', body: 'This should be in Inbox' })
+    .expect(201);
+  const newMailId = mailRes.body.id;
+  const res = await api.get('/api/mails/' + newMailId)
     .set('Authorization', 'bearer ' + token)
     .expect(200);
 
-  const newMailId = res.body.id;
-
-  const getMailRes = await api.get(`/api/mails/${newMailId}`)
+  // print inbox label for debugging
+  const getResponse = await api
+    .get('/api/labels')
+    .set('Authorization', 'bearer ' + token)
+    .expect(200)
+    .expect('Content-Type', /application\/json/);
+  const label = getResponse.body.find(label => label.name === "Inbox");
+  const InboxlabelId = label.id;
+  console.log('Inbox labels:', label);
+  assert.ok(Array.isArray(res.body.labels));
+  // check if the new mail id is in the Inbox label
+  const inboxMails = await api.get('/api/mails/' + InboxlabelId)
     .set('Authorization', 'bearer ' + token)
     .expect(200);
-  
-  // print the mail for debugging
-  const mail = getMailRes.body;
-  console.log('Test 8 here is the mail: ' + mail.body);
-  const inboxMails = res.body;
-  assert.ok(Array.isArray(inboxMails));
-  assert.ok(inboxMails.some(m => m.title === 'Auto Inbox?'), 'Expected mail not found in Inbox label');
+  assert.ok(label.some(m => m.id === newMailId), 'New mail should be in Inbox label');
+  assert.ok(label.some(m => m.labels.includes(InboxlabelId)), 'New mail should have Inbox label');
 });
 
