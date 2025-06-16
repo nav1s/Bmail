@@ -96,10 +96,20 @@ test('4.13 invalid label GET by id', async () => {
     .expect({ error: "Label not found" });
 });
 
-// ✅ 4.14 - Valid label PATCH by id
+// ✅ 4.14 - Valid label PATCH by id - not default label
 test('4.14 Valid label PATCH by id', async () => {
+  // first get the label with name "Too Important" to get its ID
+  const getResponse = await api
+    .get('/api/labels')
+    .set('Authorization', 'bearer ' + token)
+    .expect(200)
+    .expect('Content-Type', /application\/json/);
+  const label = getResponse.body.find(label => label.name === "Too Important");
+  const labelId = label.id;
+  console.log("Label ID to update:", labelId);
+
   const response = await api
-    .patch('/api/labels/1')
+    .patch('/api/labels/' + labelId)
     .set('Authorization', 'bearer ' + token)
     .set('Content-Type', 'application/json')
     .send({ name: "Very Important" })
@@ -107,7 +117,7 @@ test('4.14 Valid label PATCH by id', async () => {
     .expect('Content-Type', /application\/json/);
 
   // owner field expected here
-  assert.strictEqual(response.body.id, 1);
+  assert.strictEqual(response.body.id, labelId);
   assert.strictEqual(response.body.name, "Very Important");
 });
 
@@ -125,8 +135,19 @@ test('4.15 invalid label PATCH by id', async () => {
 
 // ✅ 4.16 - Valid label DELETE by id
 test('4.16 Valid label DELETE by id', async () => {
+  // first get the label with name "Too Important" to get its ID
+  const getResponse = await api
+    .get('/api/labels')
+    .set('Authorization', 'bearer ' + token)
+    .expect(200)
+    .expect('Content-Type', /application\/json/);
+  const label = getResponse.body.find(label => label.name === "Very Important");
+  const labelId = label.id;
+  console.log("Label ID to update:", labelId);
+
   await api
-    .delete('/api/labels/1')
+    .delete('/api/labels/' + labelId)
+    .set('Content-Type', 'application/json')
     .set('Authorization', 'bearer ' + token)
     .expect(204);
 });
@@ -153,29 +174,15 @@ test('4.17 Valid GET all labels', async () => {
 });
 
 // ❌ 4.18 - Invalid Try to create duplicate label (should return 400)
-test('❌ Try to create duplicate label (should return 400)', async () => {
+test('❌ 4.18 Try to create duplicate label (should return 400)', async () => {
     // First create a label
     const response = await api
-    .post('/api/labels')
+    .post('/api/labels/')
     .set('Content-Type', 'application/json')
     .set('Authorization', 'bearer ' + token) 
-    .send({ name: "Important" })
-    .expect(201)
-    .expect('Content-Type', /application\/json/);
-
-
-  assert.strictEqual(response.body.id, 4);
-  assert.strictEqual(response.body.name, "Important");
-
-  // Try to create another label with the same name
-  // This should return 400 since the label already exists
-  const response2 = await api
-    .post('/api/labels')
-    .set('Authorization', 'bearer ' + token)
-    .set('Content-Type', 'application/json')
     .send({ name: "Important" })
     .expect(400)
     .expect('Content-Type', /application\/json/);
 
-  assert.strictEqual(response2.body.error, "Label with this name already exists");
+  assert.strictEqual(response.body.error, "Label with this name already exists");
 });

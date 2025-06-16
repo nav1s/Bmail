@@ -78,16 +78,18 @@ test('1.3 invalid DELETE blacklist - wrong id', async () => {
   });
 });
 
-// ❌ 1.4 invalid POST mail with blacklisted URL
-test('1.4 invalid POST mail with blacklisted URL', async () => {
+// ❌ 1.4 invalid POST mail with blacklisted URL in body
+test('1.4 invalid POST mail with blacklisted URL in body', async () => {
+  // print labels for debugging
+  console.log('Labels before sending mail:', await api.get('/api/labels').set('Authorization', 'bearer ' + token).expect(200).then(res => res.body));
   const response = await api
     .post('/api/mails')
     .set('Authorization', 'bearer ' + token)
     .set('Content-Type', 'application/json')
     .send({
       to: ['alice123'],
-      title: 'Try this site - its http://good.com',
-      body: `Check this link: http://bad.com`
+      title: 'Try this site',
+      body: 'Check this link: http://bad.com'
     });
 
   assert.strictEqual(response.status, 400);
@@ -103,8 +105,8 @@ test('1.5 invalid POST mail with one blacklisted URL and one url that hasn\'t be
     .set('Authorization', 'bearer ' + token)
     .set('Content-Type', 'application/json')
     .send({
-      to: ['alice123'],
-      title: 'Try this site',
+      to: ["alice123"],
+      title: "Try this site",
       body: "Check this link: http://bmail.com and http://bad.com"
     });
 
@@ -120,7 +122,7 @@ test('1.6 invalid POST mail with blacklisted URL in title', async () => {
     .post('/api/mails')
     .set('Authorization', 'bearer ' + token)
     .send({
-      to: ['alice123'],
+      to: ["alice123"],
       title: 'try this site http://bad.com',
       body: 'Check this link:'
     });
