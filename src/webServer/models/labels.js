@@ -117,13 +117,15 @@ function getInboxLabelId(userId) {
  */
 function getLabelByName(userId, name) {
   const labels = userLabels[userId] || [];
+  // log the user labels for debugging
+  console.log(`User ${userId} labels:`, labels);
   const label = labels.find(l => l.name === name);
 
   if (!label) {
     throw createError('Label not found', { type: 'NOT_FOUND', status: 404 });
   }
 
-  return label;
+  return label.id;
 }
 
 /**
