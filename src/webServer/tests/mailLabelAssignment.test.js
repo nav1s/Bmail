@@ -129,8 +129,14 @@ test('8. Get mails by label "Inbox" includes new mail', async () => {
     .set('Authorization', 'bearer ' + token)
     .expect(200);
 
+  const newMailId = res.body.id;
+
+  const getMailRes = await api.get(`/api/mails/${newMailId}`)
+    .set('Authorization', 'bearer ' + token)
+    .expect(200);
+  
   // print the mail for debugging
-  const mail = res.body;
+  const mail = getMailRes.body;
   console.log('Test 8 here is the mail: ' + mail.body);
   const inboxMails = res.body;
   assert.ok(Array.isArray(inboxMails));
