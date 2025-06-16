@@ -277,23 +277,7 @@ function validateRecipients(toField) {
     throw createError('"to" must not contain empty strings', { status: 400 });
   }
 
-  // Filter "to" field to include only existing users
-  const existingRecipients = toField.filter(username => {
-    try {
-      users.findUserByUsername(username);
-      // returning "true" to let .filter know we add the username
-      return true;
-    } catch {
-      // returning "false" to let .filter know to ignore the username
-      return false;
-    }
-  });
-
-  if (existingRecipients.length === 0) {
-    throw createError('No valid recipients found', { status: 400 });
-  }
-
-  return existingRecipients;
+  return toField
 }
 
 /**
