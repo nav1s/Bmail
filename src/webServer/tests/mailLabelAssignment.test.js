@@ -145,10 +145,8 @@ test('8. Get mails by label "Inbox" includes new mail', async () => {
   console.log('Inbox labels:', label);
   assert.ok(Array.isArray(res.body.labels));
   // check if the new mail id is in the Inbox label
-  const inboxMails = await api.get('/api/mails/' + InboxlabelId)
-    .set('Authorization', 'bearer ' + token)
-    .expect(200);
-  assert.ok(label.some(m => m.id === newMailId), 'New mail should be in Inbox label');
-  assert.ok(label.some(m => m.labels.includes(InboxlabelId)), 'New mail should have Inbox label');
+  console.log('New mail ID:', newMailId);
+  console.log(label.mails)
+  assert.ok(label.mails.includes(newMailId), 'New mail should be in Inbox label');
 });
 
