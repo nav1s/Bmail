@@ -116,7 +116,7 @@ async function createMail(req, res) {
   // move the mail to spam if it contains blacklisted URLs
   if (isBlacklisted) {
     try {
-      const spamLabelId = getLabelByName(req.user.id,'Spam');
+      const spamLabelId = getLabelByName(req.user.id, 'Spam');
       addLabelToMail(newMail.id, spamLabelId, req.user.username);
       addMailToLabel(newMail.id, spamLabelId, req.user.id);
     }
@@ -182,6 +182,7 @@ function getMailById(req, res) {
   }
 }
 
+// todo add to blacklist when mail is labeled as spam
 /**
  * PATCH /api/mails/:id
  * Edits the title/body of an existing mail with a given ID.
@@ -345,6 +346,26 @@ function detachLabelFromMail(req, res) {
   }
 }
 
+/**
+ * GET /api/mails/:label
+ * Returns the last 50 mails sent to the user filtered by label.
+ * Requires login.
+ */
+function listMailsByLabel(req, res) {
+  const labelName = req.params.label;
+  const username = req.user.username;
+  let mailLimit = 50;
+
+  try {
+    const labelId = getLabelByName(req.user.id, labelName);
+    const mails = getMailsForUser(username, mailLimit, labelId);
+    return res.json(mails.map(filterMailForOutput));
+  } catch (err) {
+    console.error(`Error retrieving mails for label ${labelName} for user ${username}:`, err);
+    return httpError(res, err);
+  }
+}
+
 
 module.exports = {
   createMail,
@@ -354,5 +375,6 @@ module.exports = {
   deleteMailById,
   searchMails,
   attachLabelToMail,
-  detachLabelFromMail
+  detachLabelFromMail,
+  listMailsByLabel
 };

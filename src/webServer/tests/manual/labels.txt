@@ -40,5 +40,5 @@ curl -i -X POST http://localhost:8080/api/mails/1/labels \
 -d '{"labelId": 5}'
 
 get all mails by label:
-curl -i "http://localhost:8080/api/mails/label?label=Work" \
+curl -i "http://localhost:8080/api/mails/byLabel/Work" \
 -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImFsaWNlIiwiaWF0IjoxNzUwMDkzMjA4fQ.Y_4AuAXFePn2yKy6duHS3es4SJ3O6MhvSssx5nJk78c"
