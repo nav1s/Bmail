@@ -87,6 +87,7 @@ exports.createUser = (req, res) => {
     labels.createDefaultLabels(newUser.id);
     return createdWithLocation(res, `/api/users/${newUser.id}`);
   } catch (err) {
+    console.error('Error creating user:', err);
     return httpError(res, err);
   }
 }
@@ -109,6 +110,28 @@ exports.getUserById = (req, res) => {
     return httpError(res, err);
   }
 };
+
+/**
+ * GET /api/users/:username
+ * Returns public user details for a given username
+ */
+exports.getUserByUsername = (req, res) => {
+  try {
+    // searching for user
+    const username = req.params.username;
+    if (!username) {
+      return badRequest(res, 'Username is required');
+    }
+    const user = users.findUserByUsername(username);
+
+    // Returning only public user fields
+    const publicUser = users.filterUserByVisibility(user, 'public');
+    return ok(res, publicUser);
+  } catch (err) {
+    console.error('Error getting user by username:', err);
+    return httpError(res, err);
+  }
+}
 
 
 /**
