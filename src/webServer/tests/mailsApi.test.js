@@ -281,7 +281,7 @@ test('4.12 valid draft creation', async () => {
     title: "Hello again",
     body: "This should work",
     id: 3,
-    labels: [1],
+    labels: [4],
     draft: true
   });
 });
@@ -305,7 +305,7 @@ test('4.13 valid mail patch', async () => {
     title: "Updated Title",
     body: "This should work",
     id: 3,
-    labels: [1],
+    labels: [4],
     draft: true
   });
 
@@ -336,7 +336,7 @@ test('4.15 valid draft get by id)', async () => {
     title: "Updated Title",
     body: "This should work",
     id: 3,
-    labels: [1],
+    labels: [4],
     draft: true
   });
 });
@@ -350,8 +350,8 @@ test('4.16 invalid draft get by id)', async () => {
     .expect('Content-Type', /application\/json/);
 });
 
-// ✅ 4.17 valid send draft
-test('4.17 send draft', async () => {
+// ✅ 4.17 valid update title
+test('4.17 update title', async () => {
   await api
     .patch('/api/mails/3')
     .set('Authorization', 'bearer ' + aliceToken)
@@ -371,7 +371,7 @@ test('4.17 send draft', async () => {
     title: "Updated Title",
     body: "This should work",
     id: 3,
-    labels: [1],
+    labels: [4],
     draft: true
   });
 
@@ -422,7 +422,7 @@ test('4.20 valid draft creation', async () => {
     title: "Hello again",
     body: "This should work again",
     id: 4,
-    labels: [1],
+    labels: [4],
     draft: true
   });
 });
@@ -441,7 +441,7 @@ test('4.21 valid draft get by id)', async () => {
     title: "Hello again",
     body: "This should work again",
     draft: true,
-    labels: [1],
+    labels: [4],
     id: 4
   });
   await api
