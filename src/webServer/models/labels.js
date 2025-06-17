@@ -7,21 +7,29 @@ const labelInputSchema = {
   mails: { required: false, type: 'array' }
 };
 
-const defaultLabelNames = ['Inbox', 'Sent', 'Spam', 'Trash'];
+const defaultLabelNames = Object.freeze({
+  inbox: 'Inbox',
+  starred: 'Starred',
+  sent: 'Sent',
+  drafts: 'Drafts',
+  spam: 'Spam',
+  trash: 'Trash'
+});
+
 
 let labelId = 1;
 
 /**
  * @brief Creates default labels for a user if they do not already exist.
  * @param {number} userId - The ID of the user for whom to create default labels.
- */ 
+ */
 function createDefaultLabels(userId) {
 
   // create user labels if they don't exist
   userLabels[userId] = userLabels[userId] || [];
 
   // create default labels if they don't exist
-  defaultLabelNames.forEach(name => {
+  Object.values(defaultLabelNames).forEach(name => {
     if (!labelExistsForUser(userId, name)) {
       const newLabel = buildLabel(name, labelId++);
       userLabels[userId].push(newLabel);
@@ -93,20 +101,6 @@ function addLabelForUser(userId, name) {
  */
 function getAllLabelsForUser(userId) {
   return userLabels[userId] || [];
-}
-
-/**
- * @brief Gets the ID of the "Inbox" label for a specific user.
- * @param {*} userId - The ID of the user.
- * @returns  {number} The ID of the "Inbox" label.
- */
-function getInboxLabelId(userId) {
-  const labels = userLabels[userId] || [];
-  const inboxLabel =  labels.filter(label => label.name === 'Inbox');
-  if (inboxLabel.length === 0) {
-    throw createError('Inbox label not found', { type: 'NOT_FOUND', status: 404 });
-  }
-  return inboxLabel[0].id;
 }
 
 /**
@@ -186,7 +180,7 @@ function updateLabelForUser(userId, labelId, newName) {
   }
 
   // check if label is default
-  if (defaultLabelNames.includes(label.name)) {
+  if (Object.values(defaultLabelNames).includes(label.name)) {
     throw createError('Cannot update default label', { type: 'VALIDATION', status: 400 });
   }
 
@@ -209,7 +203,7 @@ function updateLabelForUser(userId, labelId, newName) {
  */
 function deleteLabelForUser(userId, labelId) {
   const labelList = userLabels[userId] || [];
-  
+
   // Searches for label
   if (labelList.length === 0) {
     throw createError('This user does not have any labels', { type: 'NOT_FOUND', status: 404 });
@@ -222,7 +216,7 @@ function deleteLabelForUser(userId, labelId) {
   }
 
   // check if label is default
-  if (defaultLabelNames.includes(labelList[index].name)) {
+  if (Object.values(defaultLabelNames).includes(labelList[index].name)) {
     throw createError('Cannot delete default label', { type: 'VALIDATION', status: 400 });
   }
 
@@ -236,7 +230,7 @@ function deleteLabelForUser(userId, labelId) {
  * @param {*} labelId the ID of the label
  * @param {*} mailId  the ID of the mail to add to the label
  */
-function addMailToLabel (mailId, labelId, userId) {
+function addMailToLabel(mailId, labelId, userId) {
   console.log(`Adding mail ${mailId} to label ${labelId} for user ${userId}`);
   const labels = userLabels[userId] || [];
   console.log(`User ${userId} has labels:`, labels);
@@ -252,7 +246,7 @@ function addMailToLabel (mailId, labelId, userId) {
   }
 
   // Check if the mail already exists in the label
-  if(label.mails.includes(mailId)) {
+  if (label.mails.includes(mailId)) {
     throw createError('Mail already exists in label', { type: 'VALIDATION', status: 400 });
   }
 
@@ -314,7 +308,7 @@ module.exports = {
   createDefaultLabels,
   addMailToLabel,
   removeMailFromLabel,
-  getInboxLabelId,
-  getLabelByName
+  getLabelByName,
+  defaultLabelNames
 };
 

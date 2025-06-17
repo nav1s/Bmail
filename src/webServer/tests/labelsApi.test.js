@@ -105,6 +105,7 @@ test('4.14 Valid label PATCH by id', async () => {
     .expect(200)
     .expect('Content-Type', /application\/json/);
   const label = getResponse.body.find(label => label.name === "Too Important");
+  console.log("Labels available:", getResponse.body);
   const labelId = label.id;
   console.log("Label ID to update:", labelId);
 
@@ -141,8 +142,11 @@ test('4.16 Valid label DELETE by id', async () => {
     .set('Authorization', 'bearer ' + token)
     .expect(200)
     .expect('Content-Type', /application\/json/);
+  console.log("Labels available:", getResponse.body);
+
   const label = getResponse.body.find(label => label.name === "Very Important");
   const labelId = label.id;
+
   console.log("Label ID to update:", labelId);
 
   await api
