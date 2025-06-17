@@ -1,7 +1,7 @@
 const { buildMail, filterMailForOutput, validateMailInput, findMailById, editMail, deleteMail, canUserAccessMail, getMailsForUser, searchMailsForUser, canUserUpdateMail, addLabelToMail, removeLabelFromMail } = require('../models/mails.js');
 const { badRequest, created, ok, noContent, forbidden } = require('../utils/httpResponses');
 const { httpError, createError } = require('../utils/error');
-const { addMailToLabel, removeMailFromLabel, getInboxLabelId, getLabelByName } = require('../models/labels.js');
+const { defaultLabelNames, addMailToLabel, removeMailFromLabel, getLabelByName } = require('../models/labels.js');
 const net = require("net");
 
 /**
@@ -129,9 +129,20 @@ async function createMail(req, res) {
   // Build and store the mail
   try {
     console.log('Mail content:', newMail);
-    const inboxLabelId = getInboxLabelId(req.user.id);
-    addLabelToMail(newMail.id, inboxLabelId, req.user.username);
-    addMailToLabel(newMail.id, inboxLabelId, req.user.id);
+    // check if the mail is draft
+    if (newMail.draft === true) {
+      // get the draft label ID
+      const draftLabelId = getLabelByName(req.user.id, defaultLabelNames.drafts);
+      addLabelToMail(newMail.id, draftLabelId, req.user.username);
+      addMailToLabel(newMail.id, draftLabelId, req.user.id);
+    } else {
+      // get the inbox label ID and add it to the mail
+      const inboxLabelId = getLabelByName(req.user.id, defaultLabelNames.inbox);
+
+      addLabelToMail(newMail.id, inboxLabelId, req.user.username);
+      addMailToLabel(newMail.id, inboxLabelId, req.user.id);
+
+    }
   } catch (err) {
     console.error('Error adding mail to inbox label:', err);
     return httpError(res, err);
@@ -203,10 +214,29 @@ function updateMailById(req, res) {
   try {
     let mail = findMailById(id);
     canUserUpdateMail(mail, username);
+
+    // check if we are sending a draft
+    if (mail.draft === true) {
+      console.log(`Mail ${id} is a draft, updating it...`);
+      if (req.body.draft === false) {
+        // detach the draft label from the mail
+        const draftLabelId = getLabelByName(req.user.id, defaultLabelNames.drafts);
+        removeLabelFromMail(mail.id, draftLabelId, username);
+        removeMailFromLabel(mail.id, draftLabelId, req.user.id);
+
+        // add the inbox label to the mail
+        const inboxLabelId = getLabelByName(req.user.id, defaultLabelNames.inbox);
+        addLabelToMail(mail.id, inboxLabelId, username);
+        addMailToLabel(mail.id, inboxLabelId, req.user.id);
+
+      }
+    }
+
     editMail(mail, req.body);
 
     return noContent(res);
   } catch (err) {
+    console.error(`Error updating mail ${id} for user ${username}:`, err);
     return httpError(res, err);
   }
 }
