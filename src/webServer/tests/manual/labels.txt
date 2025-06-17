@@ -37,7 +37,7 @@ attach to label:
 curl -i -X POST http://localhost:8080/api/mails/1/labels \
 -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImFsaWNlIiwiaWF0IjoxNzUwMDkzMjA4fQ.Y_4AuAXFePn2yKy6duHS3es4SJ3O6MhvSssx5nJk78c" \
 -H "Content-Type: application/json" \
--d '{"labelId": 5}'
+-d '{"labelId": 7}'
 
 get all mails by label:
 curl -i "http://localhost:8080/api/mails/byLabel/Work" \
