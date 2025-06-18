@@ -18,14 +18,12 @@ function App() {
 
         {/* Protected Routes */}
         <Route element={<ProtectedRoute />}>
-          <Route path="/inbox" element={<InboxPage />} />
+          <Route path="/mails" element={<Navigate to="/mails/inbox" replace />} />
+          <Route path="/mails/:label" element={<InboxPage />} />
         </Route>
 
         {/* Default Route */}
-        <Route
-          path="/"
-          element={<Navigate to={isAuthenticated ? "/inbox" : "/login"} />}
-        />
+        <Route path="/" element={<Navigate to={isAuthenticated ? "/mails/inbox" : "/login"} />} />
       </Routes>
     </Router>
       );

@@ -19,7 +19,7 @@ export default function LoginPage() {
   try {
     const data = await login(form.username, form.password);
     saveTokenToCookie(data.token);
-    navigate("/inbox");
+    navigate("/mails/inbox");
   } catch (err) {
     setError(err.message);
   }

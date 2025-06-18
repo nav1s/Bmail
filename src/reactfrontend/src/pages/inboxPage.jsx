@@ -2,68 +2,64 @@ import React, { useEffect, useState } from "react";
 import MailList from "../components/common/inbox/MailList";
 import SearchBar from "../components/common/inbox/SearchBar";
 import ComposeModal from "../components/common/inbox/ComposeModal";
-import BlacklistForm from "../components/common/inbox/BlacklistForm";
+import MailSentPopup from "../components/common/inbox/MailSentPopup";
+import LabelSelector from "../components/common/inbox/LabelSelector";
 import api from "../services/api";
 import { clearTokenFromCookie } from "../utils/tokenUtils";
-import { useNavigate } from "react-router-dom";
-import MailSentPopup from "../components/common/inbox/MailSentPopup";
-
+import { useNavigate, useParams } from "react-router-dom";
+import LabelManager from "../components/common/labels/LabelManager";
 
 export default function InboxPage() {
   const [mails, setMails] = useState([]);
   const [query, setQuery] = useState("");
   const [showCompose, setShowCompose] = useState(false);
-  const navigate = useNavigate();
-  const [feedback, setFeedback] = useState(null);
   const [mailSentVisible, setMailSentVisible] = useState(false);
+  const { label } = useParams();
+  const navigate = useNavigate();
 
-
-
-  // Load mails on mount or query change
   useEffect(() => {
-    const delayDebounce = setTimeout(loadMails, 300); // debounce
+    const delayDebounce = setTimeout(loadMails, 300);
     return () => clearTimeout(delayDebounce);
-  }, [query]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [query, label]);
 
-  const handleDeleteMail = async (id) => {
+  const loadMails = async () => {
     try {
-      await api.delete(`/mails/${id}`, { auth: true });
-      await loadMails();
-      setFeedback({ type: "success", message: "URL removed from blacklist." });
+      const endpoint = query.trim()
+        ? `/mails/search/${encodeURIComponent(query)}`
+        : `/mails/byLabel/${encodeURIComponent(label || "inbox")}`;
+
+      const data = await api.get(endpoint, { auth: true });
+      setMails(data);
     } catch (err) {
-      setFeedback({ type: "error", message: err.message });
+      console.error(err);
+      alert("Error loading mails: " + err.message);
+      if (err.status === 401) {
+        handleLogout();
+      }
     }
   };
+
+  const handleDeleteMail = async (id) => {
+  try {
+    await api.delete(`/mails/${id}`, { auth: true });
+    await loadMails();
+  } catch (err) {
+    console.error("DELETE error:", err.response || err);
+    alert("Delete failed: " + (err.response?.data?.message || err.message));
+  }
+};
+
 
   const handleSendMail = async (formData) => {
     try {
       await api.post("/mails", formData, { auth: true });
       await loadMails();
-      setShowCompose(false); // close modal only on success
+      setShowCompose(false);
       setMailSentVisible(true);
       setTimeout(() => setMailSentVisible(false), 2000);
     } catch (err) {
-      setFeedback({ type: "error", message: err.message });
-    }
-  };
-
-
-
-  const handleAddURL = async (url) => {
-    try {
-      await api.post("/blacklist", { url }, { auth: true });
-      alert("URL added to blacklist.");
-    } catch (err) {
-      alert("Blacklist add failed: " + err.message);
-    }
-  };
-
-  const handleDeleteURL = async (url) => {
-    try {
-      await api.delete(`/blacklist/${encodeURIComponent(url)}`, { auth: true });
-      alert("URL removed from blacklist.");
-    } catch (err) {
-      alert("Blacklist delete failed: " + err.message);
+      alert("Send failed: " + err.message);
     }
   };
 
@@ -72,37 +68,21 @@ export default function InboxPage() {
     navigate("/login");
   };
 
-  const loadMails = async () => {
-  try {
-    const endpoint = query.trim()
-      ? `/mails/search/${encodeURIComponent(query)}`
-      : "/mails";
-    const data = await api.get(endpoint, { auth: true });
-    setMails(data);
-  } catch (err) {
-    console.error(err);
-    alert("Error loading mails: " + err.message);
-    if (err.status === 401) {
-      clearTokenFromCookie();
-      navigate("/login");
-    }
-  }
-  };
-
-
   return (
     <div>
       <h2>Inbox</h2>
       <button onClick={handleLogout}>Logout</button>
       <button onClick={() => setShowCompose(true)}>Compose</button>
+
+      <LabelManager selectedLabel={label} />
+
       <SearchBar query={query} setQuery={setQuery} />
       <MailList mails={mails} onDelete={handleDeleteMail} />
-      <BlacklistForm onAdd={handleAddURL} onDelete={handleDeleteURL} />
+
       {showCompose && (
         <ComposeModal onSend={handleSendMail} onClose={() => setShowCompose(false)} />
       )}
       {mailSentVisible && <MailSentPopup onClose={() => setMailSentVisible(false)} />}
     </div>
   );
-
 }

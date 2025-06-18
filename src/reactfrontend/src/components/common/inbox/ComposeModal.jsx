@@ -16,6 +16,7 @@ export default function ComposeModal({ onClose, onSend }) {
 
 
   return (
+    
     <div style={{ border: "1px solid #000", padding: "16px", background: "#fff", position: "fixed", top: "20%", left: "30%" }}>
       <h3>Compose Mail</h3>
       <form onSubmit={handleSend}>
