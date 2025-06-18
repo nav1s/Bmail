@@ -8,12 +8,12 @@ const labelInputSchema = {
 };
 
 const defaultLabelNames = Object.freeze({
-  inbox: 'Inbox',
-  starred: 'Starred',
-  sent: 'Sent',
-  drafts: 'Drafts',
-  spam: 'Spam',
-  trash: 'Trash'
+  inbox: 'inbox',
+  starred: 'starred',
+  sent: 'sent',
+  drafts: 'drafts',
+  spam: 'spam',
+  trash: 'trash'
 });
 
 
