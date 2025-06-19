@@ -1,32 +1,30 @@
-import React, { useState } from "react";
+import React from "react";
 import LabelsPopup from "./LabelsPopup";
 
-export default function MailItem({ mail, onDelete, onUpdate }) {
-  const [showLabels, setShowLabels] = useState(false);
+export default function MailItem({ mail, onClick, onTrash, onDeletePermanent, isTrashView }) {
+  const handleClick = (e) => {
+    e.stopPropagation();
+    onClick(mail);
+  };
+
+  const handleTrash = (e) => {
+    e.stopPropagation();
+    onTrash(mail.id);
+  };
+
+  const handleDeletePermanent = (e) => {
+    e.stopPropagation();
+    onDeletePermanent(mail.id);
+  };
 
   return (
-    <div style={{ borderBottom: "1px solid #ccc", padding: "8px" }}>
-      <p><strong>From:</strong> {mail.from}</p>
-      <p><strong>To:</strong> {mail.to}</p>
-      <p><strong>Title:</strong> {mail.title}</p>
-      <p><strong>Body:</strong> {mail.body}</p>
-      {mail.labels?.length > 0 && (
-        <p><strong>Labels:</strong> {mail.labels.join(", ")}</p>
-      )}
-
-      <button onClick={() => onDelete(mail.id)}>Delete</button>
-      <button onClick={() => setShowLabels(true)}>Labels</button>
-
-      {showLabels && (
-        <LabelsPopup
-          mail={mail}
-          onClose={() => setShowLabels(false)}
-          onUpdate={(updatedLabels) => {
-            onUpdate({ ...mail, labels: updatedLabels });
-            setShowLabels(false);
-          }}
-        />
-      )}
+    <div
+      onClick={handleClick}
+      style={{ padding: "8px", borderBottom: "1px solid #ccc", cursor: "pointer" }}
+    >
+      <strong>{mail.from}</strong> — {mail.title}
+      {!isTrashView && <button onClick={handleTrash}>Trash</button>}
+      {isTrashView && <button onClick={handleDeletePermanent}>Delete Permanently</button>}
     </div>
   );
 }

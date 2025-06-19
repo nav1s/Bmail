@@ -395,6 +395,10 @@ function listMailsByLabel(req, res) {
 
   try {
     const labelId = getLabelByName(req.user.id, labelName);
+    if (labelName.toLowerCase() === "all") {
+    const mails = getMailsForUser(username, mailLimit);
+    return res.json(mails.map(filterMailForOutput));
+  }
 
     let spamLabelId = getLabelByName(req.user.id, defaultLabelNames.spam);
     let trashLabelId = getLabelByName(req.user.id, defaultLabelNames.trash);
@@ -408,8 +412,10 @@ function listMailsByLabel(req, res) {
 
     const mails = getMailsForUser(username, spamLabelId, trashLabelId, labelId)
       .slice(-mailLimit).reverse();
-    return res.json(mails.map(filterMailForOutput));
-  } catch (err) {
+  const username = req.user.username;
+  const labelName = req.params.label;
+  return res.json(mails.map(filterMailForOutput));
+} catch (err) {
     console.error(`Error retrieving mails for label ${labelName} for user ${username}:`, err);
     return httpError(res, err);
   }

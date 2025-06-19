@@ -55,11 +55,13 @@ export default function LabelManager({ selectedLabel }) {
 
       <LabelList
         title="System Labels"
-        labels={defaultLabels}
+        labels={[...defaultLabels, { id: "all", name: "All Mails" }]}
         selectedLabel={selectedLabel}
         onSelect={handleNavigate}
         showMenu={false}
       />
+
+
 
       <LabelList
         title={customLabels.length ? "Your Labels" : ""}
