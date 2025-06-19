@@ -125,19 +125,25 @@ function filterMailForOutput(newMail) {
 /**
  * Returns the last `limit` mails for a given user.
  * @param {*} username - the username of the user to get mails for
- * @param {*} limit - the number of mails to return
+ * @param {*} spamLabelId - the label id for spam mails
+ * @param {*} trashLabelId - the label id for trash mails
  * @param {*} labelId - the label id to filter mails by
  * @returns 
  */
-function getMailsForUser(username, limit, labelId = null) {
+function getMailsForUser(username, spamLabelId, trashLabelId, labelId = null) {
   return mails
     .filter(mail => {
+      // exclude spam or trash mails
+      if (mail.labels){
+        if (mail.labels.includes(spamLabelId) || mail.labels.includes(trashLabelId)) {
+          return false;
+        }
+      }
+
       const accessible = canUserAccessMail(mail, username);
       const matchesLabel = labelId === null || (mail.labels && mail.labels.includes(labelId));
       return accessible && matchesLabel;
     })
-    .slice(-limit)
-    .reverse();
 }
 
 
@@ -166,11 +172,24 @@ function findMailById(id) {
 function canUserAccessMail(mail, username) {
   console.log(`Checking access for user ${username} on mail ${mail.id}`);
 
-  return (
-    mail.from === username && !mail.deletedBySender ||
-    (Array.isArray(mail.to) && mail.to.includes(username) &&
-      mail.draft === false && mail.deletedByRecipient.includes(username) === false)
-  );
+  if (mail.from === username && !mail.deletedBySender) {
+    console.log(`User ${username} is the sender of mail ${mail.id}`);
+    return true;
+  }
+
+  if (Array.isArray(mail.to)) {
+    if (mail.to.includes(username) &&
+      mail.draft === false && !mail.deletedByRecipient.includes(username)) {
+      // log the deletedByRecipient array for debugging
+      console.log(`User ${username} is a recipient of mail ${mail.id}`);
+      console.log(`Deleted by recipient: ${mail.deletedByRecipient}`);
+
+      return true;
+    }
+  }
+
+  return false;
+
 }
 
 /**
@@ -181,6 +200,7 @@ function canUserAccessMail(mail, username) {
  * @returns 
  */
 function canUserUpdateMail(mail, username) {
+  console.log(`Checking update access for user ${username} on mail ${mail.id}`);
   if (mail.from !== username || mail.draft !== true) {
     throw createError('Only the sender of a draft mail can update it', { status: 403 });
   }
@@ -236,8 +256,10 @@ function deleteMail(user, id) {
   if (index === -1) {
     throw createError('Mail not found', { status: 404 });
   }
+  console.log(`Deleting mail with ID ${id} for user ${user.username}`);
 
   const mail = mails[index];
+  console.log(`Found mail:`, mail);
 
   // If the mail is a draft and the user is the sender, just remove it
   if (mail.draft === true && mail.from === user.username) {
@@ -247,7 +269,9 @@ function deleteMail(user, id) {
 
   if (mail.from === user.username) {
     mail.deletedBySender = true;
-  } else if (Array.isArray(mail.to) && mail.to.includes(user.username)) {
+  }
+
+  if (Array.isArray(mail.to) && mail.to.includes(user.username)) {
     mail.deletedByRecipient.push(user.username);
   }
 
@@ -281,6 +305,36 @@ function searchMailsForUser(username, query, limit) {
   .slice(0, limit);
 }
 
+/** Checks if a user can add a label to a mail.
+ * Throws an error if the label is already attached to the mail or if the user does not have access to the mail.
+ * @param {object} mail - The mail object to check.
+ * @param {number} labelId - The ID of the label to check.
+ * @returns {boolean} - Returns true if the user can add the label, otherwise throws an error.
+ */
+function canUserAddLabelToMail(mailId, labelId) {
+  console.log(`Checking if user can add label ${labelId} to mail ${mailId}`);
+  const mail = findMailById(mailId);
+
+  if (!mail) {
+    throw createError('Mail not found', { status: 404 });
+  }
+  console.log(`Found mail:`, mail);
+
+  // Check if the label is already attached to the mail
+  if (mail.labels) {
+    if (mail.labels.includes(labelId)) {
+      throw createError('Label already attached to this mail', { status: 400 });
+    }
+  }
+
+  // check if the user can access the mail
+  if (!canUserAccessMail(mail, mail.from)) {
+    throw createError('User does not have access to this mail', { status: 403 });
+  }
+  return true;
+
+}
+
 /**
  * Attaches a label to a mail for a given user.
  * @param {number} mailId - The ID of the mail.
@@ -288,14 +342,10 @@ function searchMailsForUser(username, query, limit) {
  * @param {number} userId - The ID of the user performing the action.
  * @returns {object} The updated mail object.
  */
-function addLabelToMail(mailId, labelId, username) {
+function addLabelToMail(mailId, labelId) {
   const mail = findMailById(mailId);
   if (!mail) {
     throw createError('Mail not found', { status: 404 });
-  }
-
-  if (!canUserAccessMail(mail, username)) {
-    throw createError('User does not have access to this mail', { status: 403 });
   }
 
   console.log(`Adding label ${labelId} to mail ${mailId}`);
@@ -366,5 +416,6 @@ module.exports = {
   deleteMail,
   searchMailsForUser,
   addLabelToMail,
-  removeLabelFromMail
+  removeLabelFromMail,
+  canUserAddLabelToMail
 };

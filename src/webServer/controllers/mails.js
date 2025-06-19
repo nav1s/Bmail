@@ -1,10 +1,10 @@
-const { buildMail, filterMailForOutput, validateMailInput, findMailById, editMail, deleteMail, canUserAccessMail, getMailsForUser, searchMailsForUser, canUserUpdateMail, addLabelToMail, removeLabelFromMail } = require('../models/mails.js');
+const { buildMail, filterMailForOutput, validateMailInput, findMailById, editMail, deleteMail, canUserAccessMail, getMailsForUser, searchMailsForUser, canUserUpdateMail, addLabelToMail, removeLabelFromMail, canUserAddLabelToMail } = require('../models/mails.js');
 const { badRequest, created, ok, noContent, forbidden } = require('../utils/httpResponses');
 const { httpError, createError } = require('../utils/error');
-const { defaultLabelNames, addMailToLabel, removeMailFromLabel, getLabelByName } = require('../models/labels.js');
+const { defaultLabelNames, addMailToLabel, removeMailFromLabel, getLabelByName, canUserAddMailToLabel } = require('../models/labels.js');
 const net = require("net");
-let mailLimit = 50;
 
+const mailLimit = 50;
 /**
  * Checks a list of URLs by sending them to a server for validation.
  * @param urls the list of URLs to check
@@ -117,7 +117,7 @@ async function createMail(req, res) {
   // move the mail to spam if it contains blacklisted URLs
   if (isBlacklisted) {
     try {
-      const spamLabelId = getLabelByName(req.user.id, 'Spam');
+      const spamLabelId = getLabelByName(req.user.id, defaultLabelNames.spam);
       addLabelToMail(newMail.id, spamLabelId, req.user.username);
       addMailToLabel(newMail.id, spamLabelId, req.user.id);
     }
@@ -161,7 +161,12 @@ async function createMail(req, res) {
  */
 function listInbox(req, res) {
   const username = req.user.username;
-  const inbox = getMailsForUser(username, mailLimit);
+
+  const spamLabelId = getLabelByName(req.user.id, defaultLabelNames.spam);
+  const trashLabelId = getLabelByName(req.user.id, defaultLabelNames.trash);
+
+  const inbox = getMailsForUser(username, spamLabelId, trashLabelId)
+    .slice(-mailLimit).reverse();
   return res.json(inbox.map(filterMailForOutput));
 }
 
@@ -189,7 +194,7 @@ function getMailById(req, res) {
 
     return ok(res, filterMailForOutput(mail));
   } catch (err) {
-    // console.error(`Error retrieving mail ${id} for user ${username}:`, err);
+    console.error(`Error retrieving mail ${id} for user ${username}:`, err);
     return httpError(res, err);
   }
 }
@@ -266,7 +271,7 @@ function deleteMailById(req, res) {
     deleteMail(req.user, mail.id);
     return noContent(res);
   } catch (err) {
-    // console.error(`Error deleting mail ${id} for user ${username}:`, err);
+    console.error(`Error deleting mail ${id} for user ${username}:`, err);
     return httpError(res, err);
   }
 }
@@ -338,9 +343,11 @@ function attachLabelToMail(req, res) {
   const username = req.user.username;
 
   try {
-    addLabelToMail(mailId, labelId, username);
-    addMailToLabel(mailId, labelId, uid);
-    return noContent(res);
+    if (canUserAddLabelToMail(mailId, labelId) && canUserAddMailToLabel(mailId, labelId)) {
+      addLabelToMail(mailId, labelId, username);
+      addMailToLabel(mailId, labelId, uid);
+      return noContent(res);
+    }
 
   } catch (err) {
     console.error(`Error attaching label ${labelId} to mail ${mailId} for user ${username}:`, err);
@@ -385,11 +392,22 @@ function detachLabelFromMail(req, res) {
 function listMailsByLabel(req, res) {
   const labelName = req.params.label;
   const username = req.user.username;
-  let mailLimit = 50;
 
   try {
     const labelId = getLabelByName(req.user.id, labelName);
-    const mails = getMailsForUser(username, mailLimit, labelId);
+
+    let spamLabelId = getLabelByName(req.user.id, defaultLabelNames.spam);
+    let trashLabelId = getLabelByName(req.user.id, defaultLabelNames.trash);
+    if (labelName === defaultLabelNames.spam) {
+      spamLabelId = -1;
+    }
+
+    if (labelName === defaultLabelNames.trash) {
+      trashLabelId = -1;
+    }
+
+    const mails = getMailsForUser(username, spamLabelId, trashLabelId, labelId)
+      .slice(-mailLimit).reverse();
     return res.json(mails.map(filterMailForOutput));
   } catch (err) {
     console.error(`Error retrieving mails for label ${labelName} for user ${username}:`, err);

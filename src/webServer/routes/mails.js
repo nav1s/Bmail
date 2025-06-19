@@ -24,6 +24,8 @@ router.get('/search/:query', requireAuth, searchMails);
 
 router.get('/:id', requireAuth, getMailById);
 router.patch('/:id', requireAuth, updateMailById);
+
+// todo fix route
 router.delete('/:id', requireAuth, deleteMailById);
 
 module.exports = router;
