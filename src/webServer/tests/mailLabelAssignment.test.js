@@ -57,6 +57,32 @@ test('2. Add label to mail (nonexistent label)', async () => {
   assert.strictEqual(res.body.error, 'Label not found');
 });
 
+// 2.1 attempt to add non-attachable label to mail
+test('2.1 Attempt to add non-attachable label to mail', async () => {
+  // get all labels
+  const labelsRes = await api.get('/api/labels')
+    .set('Authorization', 'bearer ' + token)
+    .expect(200);
+  const labels = labelsRes.body;
+  // print the labels for debugging
+  console.log('Labels:', labels);
+  // find all non attachable labels
+  const nonAttachableLabels = labels.filter(label => label.isAttachable === false);
+
+  // print the non-attached label for debugging
+  console.log('Non-attached label:', nonAttachableLabels);
+  // loop through all non attachable labels
+  for (const label of nonAttachableLabels) {
+    const res = await api.post(`/api/mails/${mailId}/labels`)
+      .set('Authorization', 'bearer ' + token)
+      .send({ labelId: label.id })
+      .expect(400);
+    assert.strictEqual(res.body.error, 'Label is not attachable');
+  }
+
+});
+
+
 // 3. Add label to non-existent mail
 test('3. Add label to non-existent mail', async () => {
   const res = await api.post(`/api/mails/9999/labels`)
