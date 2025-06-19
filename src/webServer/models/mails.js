@@ -126,12 +126,18 @@ function filterMailForOutput(newMail) {
  * Returns the last `limit` mails for a given user.
  * @param {*} username - the username of the user to get mails for
  * @param {*} limit - the number of mails to return
+ * @param {*} labelId - the label id to filter mails by
  * @returns 
  */
-function getMailsForUser(username, limit) {
+function getMailsForUser(username, limit, labelId = null) {
   return mails
-    .filter(mail => canUserAccessMail(mail, username))
-    .slice(-limit).reverse();
+    .filter(mail => {
+      const accessible = canUserAccessMail(mail, username);
+      const matchesLabel = labelId === null || (mail.labels && mail.labels.includes(labelId));
+      return accessible && matchesLabel;
+    })
+    .slice(-limit)
+    .reverse();
 }
 
 /**
@@ -174,6 +180,7 @@ function canUserAccessMail(mail, username) {
  * @returns 
  */
 function canUserUpdateMail(mail, username) {
+  console.log(`Checking update access for user ${username} on mail ${mail.id}`);
   if (mail.from !== username || mail.draft !== true) {
     throw createError('Only the sender of a draft mail can update it', { status: 403 });
   }

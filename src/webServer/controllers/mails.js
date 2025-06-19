@@ -157,6 +157,7 @@ async function createMail(req, res) {
  *
  * @param {import('express').Request} req
  * @param {import('express').Response} res
+ * todo send all default labels except for trash 
  */
 function listInbox(req, res) {
   const username = req.user.username;

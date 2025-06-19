@@ -7,6 +7,7 @@ const labelInputSchema = {
   mails: { required: false, type: 'array' }
 };
 
+// todo make sent and draft non attachable
 const defaultLabelNames = Object.freeze({
   inbox: 'Inbox',
   starred: 'Starred',
@@ -49,11 +50,15 @@ function buildLabel(name, id) {
   if (!name) {
     throw createError('Label name is required', { type: 'VALIDATION', status: 400 });
   }
+  const isDefault = Object.values(defaultLabelNames).includes(name.toLowerCase());
+
   return {
     id,
-    name
+    name,
+    isDefault,
   };
 }
+
 
 /**
  * Checks whether a label with the given name already exists for the user.
