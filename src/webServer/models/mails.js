@@ -165,11 +165,24 @@ function findMailById(id) {
 function canUserAccessMail(mail, username) {
   console.log(`Checking access for user ${username} on mail ${mail.id}`);
 
-  return (
-    mail.from === username && !mail.deletedBySender ||
-    (Array.isArray(mail.to) && mail.to.includes(username) &&
-      mail.draft === false && mail.deletedByRecipient.includes(username) === false)
-  );
+  if (mail.from === username && !mail.deletedBySender) {
+    console.log(`User ${username} is the sender of mail ${mail.id}`);
+    return true;
+  }
+
+  if (Array.isArray(mail.to)) {
+    if (mail.to.includes(username) &&
+      mail.draft === false && !mail.deletedByRecipient.includes(username)) {
+      // log the deletedByRecipient array for debugging
+      console.log(`User ${username} is a recipient of mail ${mail.id}`);
+      console.log(`Deleted by recipient: ${mail.deletedByRecipient}`);
+
+      return true;
+    }
+  }
+
+  return false;
+
 }
 
 /**
@@ -236,8 +249,10 @@ function deleteMail(user, id) {
   if (index === -1) {
     throw createError('Mail not found', { status: 404 });
   }
+  console.log(`Deleting mail with ID ${id} for user ${user.username}`);
 
   const mail = mails[index];
+  console.log(`Found mail:`, mail);
 
   // If the mail is a draft and the user is the sender, just remove it
   if (mail.draft === true && mail.from === user.username) {
@@ -247,7 +262,9 @@ function deleteMail(user, id) {
 
   if (mail.from === user.username) {
     mail.deletedBySender = true;
-  } else if (Array.isArray(mail.to) && mail.to.includes(user.username)) {
+  }
+
+  if (Array.isArray(mail.to) && mail.to.includes(user.username)) {
     mail.deletedByRecipient.push(user.username);
   }
 

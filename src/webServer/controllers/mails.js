@@ -157,7 +157,7 @@ async function createMail(req, res) {
  *
  * @param {import('express').Request} req
  * @param {import('express').Response} res
- * todo send all default labels except for trash 
+ * todo send all default labels except for trash and spam
  */
 function listInbox(req, res) {
   const username = req.user.username;
@@ -189,7 +189,7 @@ function getMailById(req, res) {
 
     return ok(res, filterMailForOutput(mail));
   } catch (err) {
-    // console.error(`Error retrieving mail ${id} for user ${username}:`, err);
+    console.error(`Error retrieving mail ${id} for user ${username}:`, err);
     return httpError(res, err);
   }
 }
@@ -266,7 +266,7 @@ function deleteMailById(req, res) {
     deleteMail(req.user, mail.id);
     return noContent(res);
   } catch (err) {
-    // console.error(`Error deleting mail ${id} for user ${username}:`, err);
+    console.error(`Error deleting mail ${id} for user ${username}:`, err);
     return httpError(res, err);
   }
 }

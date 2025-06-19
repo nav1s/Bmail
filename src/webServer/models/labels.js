@@ -7,7 +7,6 @@ const labelInputSchema = {
   mails: { required: false, type: 'array' }
 };
 
-// todo make sent and draft non attachable
 const defaultLabelNames = Object.freeze({
   inbox: 'inbox',
   starred: 'starred',
