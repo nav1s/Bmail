@@ -49,11 +49,16 @@ function buildLabel(name, id) {
   if (!name) {
     throw createError('Label name is required', { type: 'VALIDATION', status: 400 });
   }
+
+  const isDefault = Object.values(defaultLabelNames).includes(name.toLowerCase());
+
   return {
     id,
-    name
+    name,
+    isDefault,
   };
 }
+
 
 /**
  * Checks whether a label with the given name already exists for the user.

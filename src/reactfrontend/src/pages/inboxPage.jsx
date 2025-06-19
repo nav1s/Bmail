@@ -52,16 +52,19 @@ export default function InboxPage() {
 
 
   const handleSendMail = async (formData) => {
-    try {
-      await api.post("/mails", formData, { auth: true });
-      await loadMails();
-      setShowCompose(false);
+  try {
+    await api.post("/mails", formData, { auth: true });
+    await loadMails();
+    setShowCompose(false);
+    if (!formData.draft) {
       setMailSentVisible(true);
       setTimeout(() => setMailSentVisible(false), 2000);
-    } catch (err) {
-      alert("Send failed: " + err.message);
     }
-  };
+  } catch (err) {
+    alert("Send failed: " + err.message);
+  }
+};
+
 
   const handleLogout = () => {
     clearTokenFromCookie();

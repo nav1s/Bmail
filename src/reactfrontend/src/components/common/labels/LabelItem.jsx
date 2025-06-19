@@ -9,7 +9,9 @@ export default function LabelItem({ label, selected, onSelect, onMenu, showMenu 
       >
         {label.name}
       </button>
-      {showMenu && <button onClick={() => onMenu(label)}>⋮</button>}
+      {showMenu && !label.isDefault && (
+  <button onClick={() => onMenu(label)}>⋮</button>
+)}
     </li>
   );
 }

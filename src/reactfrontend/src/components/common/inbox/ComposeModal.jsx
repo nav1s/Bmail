@@ -7,11 +7,11 @@ export default function ComposeModal({ onClose, onSend }) {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSend = (e) => {
-  e.preventDefault();
+  const handleSend = (e, isDraft = false) => {
+  if (e) e.preventDefault();
   const toList = form.to.split(",").map((s) => s.trim()).filter((s) => s.length > 0);
-  const finalForm = { ...form, to: toList };
-  onSend(finalForm); // only pass data
+  const finalForm = { ...form, to: toList, draft: isDraft };
+  onSend(finalForm);
 };
 
 
@@ -24,6 +24,7 @@ export default function ComposeModal({ onClose, onSend }) {
         <input name="title" placeholder="Title" value={form.title} onChange={handleChange} required />
         <textarea name="body" placeholder="Body" value={form.body} onChange={handleChange} required />
         <button type="submit">Send</button>
+        <button type="button" onClick={() => handleSend(null, true)}>Save as Draft</button>
         <button type="button" onClick={onClose}>Cancel</button>
       </form>
     </div>
