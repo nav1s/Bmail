@@ -235,6 +235,14 @@ test('deletes mail by id (4.9)', async () => {
     .delete('/api/mails/1')
     .set('Authorization', 'bearer ' + aliceToken)
     .expect(204);
+  // Verify the mail is deleted
+  await api
+    .get('/api/mails/1')
+    .set('Authorization', 'bearer ' + aliceToken)
+    .expect(404)
+    .expect('Content-Type', /application\/json/)
+    .expect({ error: 'Mail not found' });
+    
 });
 
 // ❌ 4.10 Invalid mail DELETE
