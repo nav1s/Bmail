@@ -4,6 +4,8 @@ const { httpError, createError } = require('../utils/error');
 const { defaultLabelNames, addMailToLabel, removeMailFromLabel, getLabelByName, canUserAddMailToLabel } = require('../models/labels.js');
 const net = require("net");
 
+const mailLimit = 50;
+
 /**
  * Checks a list of URLs by sending them to a server for validation.
  * @param urls the list of URLs to check
@@ -157,11 +159,15 @@ async function createMail(req, res) {
  *
  * @param {import('express').Request} req
  * @param {import('express').Response} res
- * todo send all default labels except for trash and spam
  */
 function listInbox(req, res) {
   const username = req.user.username;
-  const inbox = getMailsForUser(username, 50);
+
+  const spamLabelId = getLabelByName(req.user.id, defaultLabelNames.spam);
+  const trashLabelId = getLabelByName(req.user.id, defaultLabelNames.trash);
+
+  const inbox = getMailsForUser(username, spamLabelId, trashLabelId)
+    .slice(-mailLimit).reverse();
   return res.json(inbox.map(filterMailForOutput));
 }
 
@@ -387,11 +393,22 @@ function detachLabelFromMail(req, res) {
 function listMailsByLabel(req, res) {
   const labelName = req.params.label;
   const username = req.user.username;
-  let mailLimit = 50;
 
   try {
     const labelId = getLabelByName(req.user.id, labelName);
-    const mails = getMailsForUser(username, mailLimit, labelId);
+
+    let spamLabelId = getLabelByName(req.user.id, defaultLabelNames.spam);
+    let trashLabelId = getLabelByName(req.user.id, defaultLabelNames.trash);
+    if (labelName === defaultLabelNames.spam) {
+      spamLabelId = -1;
+    }
+
+    if (labelName === defaultLabelNames.trash) {
+      trashLabelId = -1;
+    }
+
+    const mails = getMailsForUser(username, spamLabelId, trashLabelId, labelId)
+      .slice(-mailLimit).reverse();
     return res.json(mails.map(filterMailForOutput));
   } catch (err) {
     console.error(`Error retrieving mails for label ${labelName} for user ${username}:`, err);

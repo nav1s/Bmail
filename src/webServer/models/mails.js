@@ -125,19 +125,25 @@ function filterMailForOutput(newMail) {
 /**
  * Returns the last `limit` mails for a given user.
  * @param {*} username - the username of the user to get mails for
- * @param {*} limit - the number of mails to return
+ * @param {*} spamLabelId - the label id for spam mails
+ * @param {*} trashLabelId - the label id for trash mails
  * @param {*} labelId - the label id to filter mails by
  * @returns 
  */
-function getMailsForUser(username, limit, labelId = null) {
+function getMailsForUser(username, spamLabelId, trashLabelId, labelId = null) {
   return mails
     .filter(mail => {
+      // exclude spam or trash mails
+      if (mail.labels){
+        if (mail.labels.includes(spamLabelId) || mail.labels.includes(trashLabelId)) {
+          return false;
+        }
+      }
+
       const accessible = canUserAccessMail(mail, username);
       const matchesLabel = labelId === null || (mail.labels && mail.labels.includes(labelId));
       return accessible && matchesLabel;
     })
-    .slice(-limit)
-    .reverse();
 }
 
 /**

@@ -6,7 +6,6 @@ const { requireAuth } = require('../middleware/auth');
 const { getMailById, updateMailById, deleteMailById } = require('../controllers/mails');
 const { searchMails, attachLabelToMail, detachLabelFromMail, listMailsByLabel } = require('../controllers/mails');
 
-// todo add mails from all labels except spam and trash
 // GET /api/mails → returns last 50 mails sent/received by the user
 router.get('/', requireAuth, listInbox);
 // GET /api/mails/byLabel/:label → returns last 50 mails filtered by label
@@ -25,6 +24,7 @@ router.get('/search/:query', requireAuth, searchMails);
 
 router.get('/:id', requireAuth, getMailById);
 router.patch('/:id', requireAuth, updateMailById);
+
 // todo fix route
 router.delete('/:id', requireAuth, deleteMailById);
 
