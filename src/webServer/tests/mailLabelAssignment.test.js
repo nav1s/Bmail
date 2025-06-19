@@ -140,9 +140,11 @@ test('8. Get mails by label "Inbox" includes new mail', async () => {
     .set('Authorization', 'bearer ' + token)
     .expect(200)
     .expect('Content-Type', /application\/json/);
-  const label = getResponse.body.find(label => label.name === "Inbox");
-  const InboxlabelId = label.id;
+  console.log('Labels:', getResponse.body);
+
+  const label = getResponse.body.find(label => label.name === "inbox");
   console.log('Inbox labels:', label);
+
   assert.ok(Array.isArray(res.body.labels));
   // check if the new mail id is in the Inbox label
   console.log('New mail ID:', newMailId);

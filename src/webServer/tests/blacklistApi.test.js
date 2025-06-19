@@ -107,7 +107,7 @@ test('1.4 POST mail with blacklisted URL in body - should be moved to spam', asy
     .expect(200);
   assert.strictEqual(spamLabelResponse.status, 200);
 
-  const spamLabel = spamLabelResponse.body.find(label => label.name === 'Spam');
+  const spamLabel = spamLabelResponse.body.find(label => label.name === 'spam');
   spamLabelId = spamLabel.id;
   assert.ok(spamLabelId, 'Spam label should exist');
 

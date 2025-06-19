@@ -116,7 +116,7 @@ async function createMail(req, res) {
   // move the mail to spam if it contains blacklisted URLs
   if (isBlacklisted) {
     try {
-      const spamLabelId = getLabelByName(req.user.id, 'Spam');
+      const spamLabelId = getLabelByName(req.user.id, defaultLabelNames.spam);
       addLabelToMail(newMail.id, spamLabelId, req.user.username);
       addMailToLabel(newMail.id, spamLabelId, req.user.id);
     }
