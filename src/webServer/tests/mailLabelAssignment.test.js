@@ -150,3 +150,60 @@ test('8. Get mails by label "Inbox" includes new mail', async () => {
   assert.ok(label.mails.includes(newMailId), 'New mail should be in Inbox label');
 });
 
+// 9. Cannot add label with missing labelId
+test('9. Missing labelId in request returns 400', async () => {
+  await api.post(`/api/mails/${mailId}/labels`)
+    .set('Authorization', 'bearer ' + token)
+    .send({})
+    .expect(400)
+    .expect('Content-Type', /application\/json/)
+    .expect({ error: 'Missing fields: labelId' });
+});
+
+// 10. Removing a label not attached to the mail should return 204 or 404
+test('10 Removing a label not attached to the mail should return 204 or 404', async () => {
+  const newLabelRes = await api
+    .post('/api/labels')
+    .set('Authorization', 'bearer ' + token)
+    .send({ name: 'TempToRemove' })
+    .expect(201);
+
+  const unusedLabelId = newLabelRes.body.id;
+
+  const res = await api
+    .delete(`/api/mails/${mailId}/labels/${unusedLabelId}`)
+    .set('Authorization', 'bearer ' + token);
+
+  assert.ok(
+    [204, 404].includes(res.status),
+    `Expected status 204 or 404, but got ${res.status}`
+  );
+});
+
+// 11. Get mails by nonexistent label should return 404
+test('11. Get mails by nonexistent label returns 404', async () => {
+  await api.get('/api/mails/byLabel/DoesNotExist')
+    .set('Authorization', 'bearer ' + token)
+    .expect(404);
+});
+
+// 12. Adding the same label twice should not create duplicates
+test('12. Add same label twice should not duplicate', async () => {
+  await api.post(`/api/mails/${mailId}/labels`)
+    .set('Authorization', 'bearer ' + token)
+    .send({ labelId })
+    .expect(204);
+
+  await api.post(`/api/mails/${mailId}/labels`)
+    .set('Authorization', 'bearer ' + token)
+    .send({ labelId })
+    .expect(204);
+
+  const mail = await api.get(`/api/mails/${mailId}`)
+    .set('Authorization', 'bearer ' + token)
+    .expect(200);
+
+  const count = mail.body.labels.filter(id => id === labelId).length;
+  assert.strictEqual(count, 1, 'Label should not be duplicated');
+});
+
