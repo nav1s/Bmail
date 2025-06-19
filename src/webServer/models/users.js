@@ -65,6 +65,19 @@ function findUserById(id) {
   return user;
 }
 
+// /**
+//  * @brief Finds a user by their username.
+//  * @param {*} username 
+//  * @returns {Object} The user object if found.
+//  */
+// function findUserByUsername(username) {
+//   const user = users.find(user => user.username === username);
+//   if (!user) {
+//     throw createError('User not found', { status: 404, type: 'NOT_FOUND' });
+//   }
+//   return user;
+// }
+
 /**
  * @brief This function updates a user object with the provided updates.
  * @param {*} user The user object to update.

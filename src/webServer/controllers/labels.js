@@ -120,6 +120,7 @@ function updateLabelById(req, res) {
     const updatedLabel = updateLabelForUser(userId, labelId, newName);
     return ok(res, updatedLabel);
   } catch (err) {
+    console.error('Error updating label:', err);
     return httpError(res, err);
   }
 }

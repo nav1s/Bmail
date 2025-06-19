@@ -7,21 +7,29 @@ const labelInputSchema = {
   mails: { required: false, type: 'array' }
 };
 
-const defaultLabelNames = ['Inbox', 'Sent', 'Spam', 'Trash'];
+const defaultLabelNames = Object.freeze({
+  inbox: 'inbox',
+  starred: 'starred',
+  sent: 'sent',
+  drafts: 'drafts',
+  spam: 'spam',
+  trash: 'trash'
+});
+
 
 let labelId = 1;
 
 /**
  * @brief Creates default labels for a user if they do not already exist.
  * @param {number} userId - The ID of the user for whom to create default labels.
- */ 
+ */
 function createDefaultLabels(userId) {
 
   // create user labels if they don't exist
   userLabels[userId] = userLabels[userId] || [];
 
   // create default labels if they don't exist
-  defaultLabelNames.forEach(name => {
+  Object.values(defaultLabelNames).forEach(name => {
     if (!labelExistsForUser(userId, name)) {
       const newLabel = buildLabel(name, labelId++);
       userLabels[userId].push(newLabel);
@@ -41,11 +49,21 @@ function buildLabel(name, id) {
   if (!name) {
     throw createError('Label name is required', { type: 'VALIDATION', status: 400 });
   }
+
+  const isDefault = Object.values(defaultLabelNames).includes(name.toLowerCase());
+
+  // make sent and drafts non-attachable
+  const isAttachable = name.toLowerCase() !== defaultLabelNames.sent
+    && name.toLowerCase() !== defaultLabelNames.drafts;
+
   return {
     id,
-    name
+    name,
+    isDefault,
+    isAttachable
   };
 }
+
 
 /**
  * Checks whether a label with the given name already exists for the user.
@@ -93,20 +111,6 @@ function addLabelForUser(userId, name) {
  */
 function getAllLabelsForUser(userId) {
   return userLabels[userId] || [];
-}
-
-/**
- * @brief Gets the ID of the "Inbox" label for a specific user.
- * @param {*} userId - The ID of the user.
- * @returns  {number} The ID of the "Inbox" label.
- */
-function getInboxLabelId(userId) {
-  const labels = userLabels[userId] || [];
-  const inboxLabel =  labels.filter(label => label.name === 'Inbox');
-  if (inboxLabel.length === 0) {
-    throw createError('Inbox label not found', { type: 'NOT_FOUND', status: 404 });
-  }
-  return inboxLabel[0].id;
 }
 
 /**
@@ -186,7 +190,7 @@ function updateLabelForUser(userId, labelId, newName) {
   }
 
   // check if label is default
-  if (defaultLabelNames.includes(label.name)) {
+  if (Object.values(defaultLabelNames).includes(label.name)) {
     throw createError('Cannot update default label', { type: 'VALIDATION', status: 400 });
   }
 
@@ -209,7 +213,7 @@ function updateLabelForUser(userId, labelId, newName) {
  */
 function deleteLabelForUser(userId, labelId) {
   const labelList = userLabels[userId] || [];
-  
+
   // Searches for label
   if (labelList.length === 0) {
     throw createError('This user does not have any labels', { type: 'NOT_FOUND', status: 404 });
@@ -222,7 +226,7 @@ function deleteLabelForUser(userId, labelId) {
   }
 
   // check if label is default
-  if (defaultLabelNames.includes(labelList[index].name)) {
+  if (Object.values(defaultLabelNames).includes(labelList[index].name)) {
     throw createError('Cannot delete default label', { type: 'VALIDATION', status: 400 });
   }
 
@@ -230,30 +234,49 @@ function deleteLabelForUser(userId, labelId) {
   labelList.splice(index, 1);
 }
 
-/**
- * @brief Adds a mail to a label for a specific user.
- * @param {*} userId the ID of the user
- * @param {*} labelId the ID of the label
- * @param {*} mailId  the ID of the mail to add to the label
+/** * Checks if a user can add a mail to a label.
+ * @param {number} userId - The ID of the user.
+ * @param {number} labelId - The ID of the label.
+ * @param {number} mailId - The ID of the mail to be added
+ * @throws {Error} If the label does not exist or the mail already exists in the label.
  */
-function addMailToLabel (mailId, labelId, userId) {
-  console.log(`Adding mail ${mailId} to label ${labelId} for user ${userId}`);
+function canUserAddMailToLabel(userId, labelId) {
   const labels = userLabels[userId] || [];
-  console.log(`User ${userId} has labels:`, labels);
-  console.log(`Looking for label with ID ${labelId}`);
   const label = labels.find(l => l.id === labelId);
 
   if (!label) {
     throw createError('Label not found', { type: 'NOT_FOUND', status: 404 });
   }
 
-  if (!label.mails) {
-    label.mails = [];
+  // Check if the mail already exists in the label
+  if (label.mails) {
+    if (label.mails.includes(mailId)) {
+      throw createError('Mail already exists in label', { type: 'VALIDATION', status: 400 });
+    }
+  }
+  // check if label is attachable
+  if (!label.isAttachable) {
+    throw createError('Label is not attachable', { type: 'VALIDATION', status: 400 });
   }
 
-  // Check if the mail already exists in the label
-  if(label.mails.includes(mailId)) {
-    throw createError('Mail already exists in label', { type: 'VALIDATION', status: 400 });
+  return true;
+
+}
+/**
+ * @brief Adds a mail to a label for a specific user.
+ * @param {*} userId the ID of the user
+ * @param {*} labelId the ID of the label
+ * @param {*} mailId  the ID of the mail to add to the label
+ */
+function addMailToLabel(mailId, labelId, userId) {
+  console.log(`Adding mail ${mailId} to label ${labelId} for user ${userId}`);
+  const labels = userLabels[userId] || [];
+  console.log(`User ${userId} has labels:`, labels);
+  console.log(`Looking for label with ID ${labelId}`);
+  const label = labels.find(l => l.id === labelId);
+
+  if (!label.mails) {
+    label.mails = [];
   }
 
   label.mails.push(mailId);
@@ -314,7 +337,8 @@ module.exports = {
   createDefaultLabels,
   addMailToLabel,
   removeMailFromLabel,
-  getInboxLabelId,
-  getLabelByName
+  getLabelByName,
+  defaultLabelNames,
+  canUserAddMailToLabel,
 };
 

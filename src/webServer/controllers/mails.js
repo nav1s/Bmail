@@ -1,8 +1,10 @@
-const { buildMail, filterMailForOutput, validateMailInput, findMailById, editMail, deleteMail, canUserAccessMail, getMailsForUser, searchMailsForUser, canUserUpdateMail, addLabelToMail, removeLabelFromMail } = require('../models/mails.js');
+const { buildMail, filterMailForOutput, validateMailInput, findMailById, editMail, deleteMail, canUserAccessMail, getMailsForUser, searchMailsForUser, canUserUpdateMail, addLabelToMail, removeLabelFromMail, canUserAddLabelToMail } = require('../models/mails.js');
 const { badRequest, created, ok, noContent, forbidden } = require('../utils/httpResponses');
 const { httpError, createError } = require('../utils/error');
-const { addMailToLabel, removeMailFromLabel, getInboxLabelId, getLabelByName } = require('../models/labels.js');
+const { defaultLabelNames, addMailToLabel, removeMailFromLabel, getLabelByName, canUserAddMailToLabel } = require('../models/labels.js');
 const net = require("net");
+
+const mailLimit = 50;
 
 /**
  * Checks a list of URLs by sending them to a server for validation.
@@ -116,7 +118,7 @@ async function createMail(req, res) {
   // move the mail to spam if it contains blacklisted URLs
   if (isBlacklisted) {
     try {
-      const spamLabelId = getLabelByName(req.user.id,'Spam');
+      const spamLabelId = getLabelByName(req.user.id, defaultLabelNames.spam);
       addLabelToMail(newMail.id, spamLabelId, req.user.username);
       addMailToLabel(newMail.id, spamLabelId, req.user.id);
     }
@@ -129,9 +131,20 @@ async function createMail(req, res) {
   // Build and store the mail
   try {
     console.log('Mail content:', newMail);
-    const inboxLabelId = getInboxLabelId(req.user.id);
-    addLabelToMail(newMail.id, inboxLabelId, req.user.username);
-    addMailToLabel(newMail.id, inboxLabelId, req.user.id);
+    // check if the mail is draft
+    if (newMail.draft === true) {
+      // get the draft label ID
+      const draftLabelId = getLabelByName(req.user.id, defaultLabelNames.drafts);
+      addLabelToMail(newMail.id, draftLabelId, req.user.username);
+      addMailToLabel(newMail.id, draftLabelId, req.user.id);
+    } else {
+      // get the inbox label ID and add it to the mail
+      const inboxLabelId = getLabelByName(req.user.id, defaultLabelNames.inbox);
+
+      addLabelToMail(newMail.id, inboxLabelId, req.user.username);
+      addMailToLabel(newMail.id, inboxLabelId, req.user.id);
+
+    }
   } catch (err) {
     console.error('Error adding mail to inbox label:', err);
     return httpError(res, err);
@@ -149,7 +162,12 @@ async function createMail(req, res) {
  */
 function listInbox(req, res) {
   const username = req.user.username;
-  const inbox = getMailsForUser(username, 50);
+
+  const spamLabelId = getLabelByName(req.user.id, defaultLabelNames.spam);
+  const trashLabelId = getLabelByName(req.user.id, defaultLabelNames.trash);
+
+  const inbox = getMailsForUser(username, spamLabelId, trashLabelId)
+    .slice(-mailLimit).reverse();
   return res.json(inbox.map(filterMailForOutput));
 }
 
@@ -177,11 +195,12 @@ function getMailById(req, res) {
 
     return ok(res, filterMailForOutput(mail));
   } catch (err) {
-    // console.error(`Error retrieving mail ${id} for user ${username}:`, err);
+    console.error(`Error retrieving mail ${id} for user ${username}:`, err);
     return httpError(res, err);
   }
 }
 
+// todo add to blacklist when mail is labeled as spam
 /**
  * PATCH /api/mails/:id
  * Edits the title/body of an existing mail with a given ID.
@@ -202,10 +221,29 @@ function updateMailById(req, res) {
   try {
     let mail = findMailById(id);
     canUserUpdateMail(mail, username);
+
+    // check if we are sending a draft
+    if (mail.draft === true) {
+      console.log(`Mail ${id} is a draft, updating it...`);
+      if (req.body.draft === false) {
+        // detach the draft label from the mail
+        const draftLabelId = getLabelByName(req.user.id, defaultLabelNames.drafts);
+        removeLabelFromMail(mail.id, draftLabelId, username);
+        removeMailFromLabel(mail.id, draftLabelId, req.user.id);
+
+        // add the inbox label to the mail
+        const inboxLabelId = getLabelByName(req.user.id, defaultLabelNames.inbox);
+        addLabelToMail(mail.id, inboxLabelId, username);
+        addMailToLabel(mail.id, inboxLabelId, req.user.id);
+
+      }
+    }
+
     editMail(mail, req.body);
 
     return noContent(res);
   } catch (err) {
+    console.error(`Error updating mail ${id} for user ${username}:`, err);
     return httpError(res, err);
   }
 }
@@ -234,7 +272,7 @@ function deleteMailById(req, res) {
     deleteMail(req.user, mail.id);
     return noContent(res);
   } catch (err) {
-    // console.error(`Error deleting mail ${id} for user ${username}:`, err);
+    console.error(`Error deleting mail ${id} for user ${username}:`, err);
     return httpError(res, err);
   }
 }
@@ -306,9 +344,11 @@ function attachLabelToMail(req, res) {
   const username = req.user.username;
 
   try {
-    addLabelToMail(mailId, labelId, username);
-    addMailToLabel(mailId, labelId, uid);
-    return noContent(res);
+    if (canUserAddLabelToMail(mailId, labelId) && canUserAddMailToLabel(mailId, labelId)) {
+      addLabelToMail(mailId, labelId, username);
+      addMailToLabel(mailId, labelId, uid);
+      return noContent(res);
+    }
 
   } catch (err) {
     console.error(`Error attaching label ${labelId} to mail ${mailId} for user ${username}:`, err);
@@ -345,6 +385,37 @@ function detachLabelFromMail(req, res) {
   }
 }
 
+/**
+ * GET /api/mails/:label
+ * Returns the last 50 mails sent to the user filtered by label.
+ * Requires login.
+ */
+function listMailsByLabel(req, res) {
+  const labelName = req.params.label;
+  const username = req.user.username;
+
+  try {
+    const labelId = getLabelByName(req.user.id, labelName);
+
+    let spamLabelId = getLabelByName(req.user.id, defaultLabelNames.spam);
+    let trashLabelId = getLabelByName(req.user.id, defaultLabelNames.trash);
+    if (labelName === defaultLabelNames.spam) {
+      spamLabelId = -1;
+    }
+
+    if (labelName === defaultLabelNames.trash) {
+      trashLabelId = -1;
+    }
+
+    const mails = getMailsForUser(username, spamLabelId, trashLabelId, labelId)
+      .slice(-mailLimit).reverse();
+    return res.json(mails.map(filterMailForOutput));
+  } catch (err) {
+    console.error(`Error retrieving mails for label ${labelName} for user ${username}:`, err);
+    return httpError(res, err);
+  }
+}
+
 
 module.exports = {
   createMail,
@@ -354,5 +425,6 @@ module.exports = {
   deleteMailById,
   searchMails,
   attachLabelToMail,
-  detachLabelFromMail
+  detachLabelFromMail,
+  listMailsByLabel
 };

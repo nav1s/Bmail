@@ -7,6 +7,9 @@ const api = supertest(app);
 let token;
 let mailId;
 let labelId;
+let nonAttachableLabels;
+let spamLabelId;
+let trashLabelId;
 
 // 0. Setup
 test('0. Setup: Register, login, create label and mail', async () => {
@@ -38,6 +41,27 @@ test('0. Setup: Register, login, create label and mail', async () => {
     .send({ to: ['testUser'], title: 'Hello', body: 'world' })
     .expect(201);
   mailId = mailRes.body.id;
+
+  // get all labels
+  const labelsRes = await api.get('/api/labels')
+    .set('Authorization', 'bearer ' + token)
+    .expect(200);
+
+  const labels = labelsRes.body;
+  // print the labels for debugging
+  console.log('Labels:', labels);
+  // find all non attachable labels
+  nonAttachableLabels = labels.filter(label => label.isAttachable === false);
+
+  // print the non-attached label for debugging
+  console.log('Non-attached label:', nonAttachableLabels);
+
+  trashLabelId = labels.find(label => label.name === 'trash').id;
+  spamLabelId = labels.find(label => label.name === 'spam').id;
+
+  console.log('Trash Label ID:', trashLabelId);
+  console.log('Spam Label ID:', spamLabelId);
+
 });
 
 // 1. Add label to mail (valid)
@@ -56,6 +80,19 @@ test('2. Add label to mail (nonexistent label)', async () => {
     .expect(404);
   assert.strictEqual(res.body.error, 'Label not found');
 });
+
+// 2.1 attempt to add non-attachable label to mail
+test('2.1 Attempt to add non-attachable label to mail', async () => {
+  // loop through all non attachable labels
+  for (const label of nonAttachableLabels) {
+    const res = await api.post(`/api/mails/${mailId}/labels`)
+      .set('Authorization', 'bearer ' + token)
+      .send({ labelId: label.id })
+      .expect(400);
+    assert.strictEqual(res.body.error, 'Label is not attachable');
+  }
+});
+
 
 // 3. Add label to non-existent mail
 test('3. Add label to non-existent mail', async () => {
@@ -140,9 +177,11 @@ test('8. Get mails by label "Inbox" includes new mail', async () => {
     .set('Authorization', 'bearer ' + token)
     .expect(200)
     .expect('Content-Type', /application\/json/);
-  const label = getResponse.body.find(label => label.name === "Inbox");
-  const InboxlabelId = label.id;
+  console.log('Labels:', getResponse.body);
+
+  const label = getResponse.body.find(label => label.name === "inbox");
   console.log('Inbox labels:', label);
+
   assert.ok(Array.isArray(res.body.labels));
   // check if the new mail id is in the Inbox label
   console.log('New mail ID:', newMailId);
