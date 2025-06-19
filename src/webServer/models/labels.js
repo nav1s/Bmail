@@ -50,12 +50,18 @@ function buildLabel(name, id) {
   if (!name) {
     throw createError('Label name is required', { type: 'VALIDATION', status: 400 });
   }
+
   const isDefault = Object.values(defaultLabelNames).includes(name.toLowerCase());
+
+  // make sent and drafts non-attachable
+  const isAttachable = name.toLowerCase() !== defaultLabelNames.sent
+    && name.toLowerCase() !== defaultLabelNames.drafts;
 
   return {
     id,
     name,
     isDefault,
+    isAttachable
   };
 }
 
@@ -229,6 +235,34 @@ function deleteLabelForUser(userId, labelId) {
   labelList.splice(index, 1);
 }
 
+/** * Checks if a user can add a mail to a label.
+ * @param {number} userId - The ID of the user.
+ * @param {number} labelId - The ID of the label.
+ * @param {number} mailId - The ID of the mail to be added
+ * @throws {Error} If the label does not exist or the mail already exists in the label.
+ */
+function canUserAddMailToLabel(userId, labelId) {
+  const labels = userLabels[userId] || [];
+  const label = labels.find(l => l.id === labelId);
+
+  if (!label) {
+    throw createError('Label not found', { type: 'NOT_FOUND', status: 404 });
+  }
+
+  // Check if the mail already exists in the label
+  if (label.mails) {
+    if (label.mails.includes(mailId)) {
+      throw createError('Mail already exists in label', { type: 'VALIDATION', status: 400 });
+    }
+  }
+  // check if label is attachable
+  if (!label.isAttachable) {
+    throw createError('Label is not attachable', { type: 'VALIDATION', status: 400 });
+  }
+
+  return true;
+
+}
 /**
  * @brief Adds a mail to a label for a specific user.
  * @param {*} userId the ID of the user
@@ -242,17 +276,8 @@ function addMailToLabel(mailId, labelId, userId) {
   console.log(`Looking for label with ID ${labelId}`);
   const label = labels.find(l => l.id === labelId);
 
-  if (!label) {
-    throw createError('Label not found', { type: 'NOT_FOUND', status: 404 });
-  }
-
   if (!label.mails) {
     label.mails = [];
-  }
-
-  // Check if the mail already exists in the label
-  if (label.mails.includes(mailId)) {
-    throw createError('Mail already exists in label', { type: 'VALIDATION', status: 400 });
   }
 
   label.mails.push(mailId);
@@ -314,6 +339,7 @@ module.exports = {
   addMailToLabel,
   removeMailFromLabel,
   getLabelByName,
-  defaultLabelNames
+  defaultLabelNames,
+  canUserAddMailToLabel,
 };
 

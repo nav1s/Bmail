@@ -1,7 +1,7 @@
-const { buildMail, filterMailForOutput, validateMailInput, findMailById, editMail, deleteMail, canUserAccessMail, getMailsForUser, searchMailsForUser, canUserUpdateMail, addLabelToMail, removeLabelFromMail } = require('../models/mails.js');
+const { buildMail, filterMailForOutput, validateMailInput, findMailById, editMail, deleteMail, canUserAccessMail, getMailsForUser, searchMailsForUser, canUserUpdateMail, addLabelToMail, removeLabelFromMail, canUserAddLabelToMail } = require('../models/mails.js');
 const { badRequest, created, ok, noContent, forbidden } = require('../utils/httpResponses');
 const { httpError, createError } = require('../utils/error');
-const { defaultLabelNames, addMailToLabel, removeMailFromLabel, getLabelByName } = require('../models/labels.js');
+const { defaultLabelNames, addMailToLabel, removeMailFromLabel, getLabelByName, canUserAddMailToLabel } = require('../models/labels.js');
 const net = require("net");
 
 /**
@@ -338,9 +338,11 @@ function attachLabelToMail(req, res) {
   const username = req.user.username;
 
   try {
-    addLabelToMail(mailId, labelId, username);
-    addMailToLabel(mailId, labelId, uid);
-    return noContent(res);
+    if (canUserAddLabelToMail(mailId, labelId) && canUserAddMailToLabel(mailId, labelId)) {
+      addLabelToMail(mailId, labelId, username);
+      addMailToLabel(mailId, labelId, uid);
+      return noContent(res);
+    }
 
   } catch (err) {
     console.error(`Error attaching label ${labelId} to mail ${mailId} for user ${username}:`, err);

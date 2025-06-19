@@ -279,6 +279,36 @@ function searchMailsForUser(username, query) {
   });
 }
 
+/** Checks if a user can add a label to a mail.
+ * Throws an error if the label is already attached to the mail or if the user does not have access to the mail.
+ * @param {object} mail - The mail object to check.
+ * @param {number} labelId - The ID of the label to check.
+ * @returns {boolean} - Returns true if the user can add the label, otherwise throws an error.
+ */
+function canUserAddLabelToMail(mailId, labelId) {
+  console.log(`Checking if user can add label ${labelId} to mail ${mailId}`);
+  const mail = findMailById(mailId);
+
+  if (!mail) {
+    throw createError('Mail not found', { status: 404 });
+  }
+  console.log(`Found mail:`, mail);
+
+  // Check if the label is already attached to the mail
+  if (mail.labels) {
+    if (mail.labels.includes(labelId)) {
+      throw createError('Label already attached to this mail', { status: 400 });
+    }
+  }
+
+  // check if the user can access the mail
+  if (!canUserAccessMail(mail, mail.from)) {
+    throw createError('User does not have access to this mail', { status: 403 });
+  }
+  return true;
+
+}
+
 /**
  * Attaches a label to a mail for a given user.
  * @param {number} mailId - The ID of the mail.
@@ -286,14 +316,10 @@ function searchMailsForUser(username, query) {
  * @param {number} userId - The ID of the user performing the action.
  * @returns {object} The updated mail object.
  */
-function addLabelToMail(mailId, labelId, username) {
+function addLabelToMail(mailId, labelId) {
   const mail = findMailById(mailId);
   if (!mail) {
     throw createError('Mail not found', { status: 404 });
-  }
-
-  if (!canUserAccessMail(mail, username)) {
-    throw createError('User does not have access to this mail', { status: 403 });
   }
 
   console.log(`Adding label ${labelId} to mail ${mailId}`);
@@ -364,5 +390,6 @@ module.exports = {
   deleteMail,
   searchMailsForUser,
   addLabelToMail,
-  removeLabelFromMail
+  removeLabelFromMail,
+  canUserAddLabelToMail
 };
