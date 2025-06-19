@@ -190,3 +190,52 @@ test('❌ 4.18 Try to create duplicate label (should return 400)', async () => {
 
   assert.strictEqual(response.body.error, "Label with this name already exists");
 });
+
+// ✅ 4.19 - Check default labels exist for new user
+test('4.19 Default labels (Starred, Drafts) should exist', async () => {
+  const response = await api
+    .get('/api/labels')
+    .set('Authorization', 'bearer ' + token)
+    .expect(200);
+
+  const names = response.body.map(label => label.name.toLowerCase());
+  assert.ok(names.includes("drafts"));
+  assert.ok(names.includes("starred"));
+});
+
+// ✅ 4.20 - Create mail with default label and fetch by label
+test('4.20 Create mail with label and fetch by label', async () => {
+  // Get labelId of "Drafts"
+  const res = await api
+    .get('/api/labels')
+    .set('Authorization', 'bearer ' + token)
+    .expect(200);
+
+  const draftsLabel = res.body.find(l => l.name.toLowerCase() === "drafts");
+  assert.ok(draftsLabel);
+  const labelId = draftsLabel.id;
+
+  // Create mail with that label
+  const mailRes = await api
+    .post('/api/mails')
+    .set('Authorization', 'bearer ' + token)
+    .set('Content-Type', 'application/json')
+    .send({
+      to: ['alice123'],
+      title: 'Draft Mail',
+      body: 'This is a draft email',
+      labels: [labelId]
+    })
+    .expect(201);
+
+  const mailId = mailRes.body.id;
+
+  // Fetch mails by label
+  const byLabelRes = await api
+    .get(`/api/mails//${mailId}/labels/${labelId}`)
+    .set('Authorization', 'bearer ' + token)
+    .expect(200);
+
+  assert.ok(Array.isArray(byLabelRes.body));
+  assert.ok(byLabelRes.body.some(mail => mail.id === mailId));
+});
