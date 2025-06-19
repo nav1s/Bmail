@@ -126,13 +126,20 @@ function filterMailForOutput(newMail) {
  * Returns the last `limit` mails for a given user.
  * @param {*} username - the username of the user to get mails for
  * @param {*} limit - the number of mails to return
+ * @param {*} labelId - the label id to filter mails by
  * @returns 
  */
-function getMailsForUser(username, limit) {
+function getMailsForUser(username, limit, labelId = null) {
   return mails
-    .filter(mail => canUserAccessMail(mail, username))
-    .slice(-limit).reverse();
+    .filter(mail => {
+      const accessible = canUserAccessMail(mail, username);
+      const matchesLabel = labelId === null || (mail.labels && mail.labels.includes(labelId));
+      return accessible && matchesLabel;
+    })
+    .slice(-limit)
+    .reverse();
 }
+
 
 /**
  * finds a mail by its ID.
