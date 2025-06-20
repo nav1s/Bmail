@@ -141,16 +141,11 @@ test('4. Draft mail is labeled as draft', async () => {
 // 5. Draft label removed when draft is sent
 test('5. Draft label removed after sending draft', async () => {
   // create a draft mail
-  const draftRes = await api.post('/api/mails/drafts')
+  const draftRes = await api.post('/api/mails')
     .set('Authorization', 'bearer ' + senderToken)
-    .send({ to: ['addresseeUser'], title: 'Send from draft', body: 'go' })
+    .send({ to: [recipientUsername], title: 'Send from draft', body: 'go', draft: false })
     .expect(201);
   const draftId = draftRes.body.id;
-
-  // send the draft mail
-  await api.post(`/api/mails/${draftId}/send`)
-    .set('Authorization', 'bearer ' + senderToken)
-    .expect(200);
 
   const labelsRes = await api.get('/api/labels')
     .set('Authorization', 'bearer ' + senderToken)
