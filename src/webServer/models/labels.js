@@ -240,9 +240,12 @@ function deleteLabelForUser(userId, labelId) {
  * @param {number} mailId - The ID of the mail to be added
  * @throws {Error} If the label does not exist or the mail already exists in the label.
  */
-function canUserAddMailToLabel(userId, labelId) {
+function canUserAddMailToLabel(userId, labelId, mailId) {
   const labels = userLabels[userId] || [];
   const label = labels.find(l => l.id === labelId);
+  // log the labels for debugging
+  console.log(`User ${userId} labels:`, labels);
+  console.log(`Looking for label with ID ${labelId}`);
 
   if (!label) {
     throw createError('Label not found', { type: 'NOT_FOUND', status: 404 });
