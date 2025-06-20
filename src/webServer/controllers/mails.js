@@ -138,13 +138,12 @@ async function createMail(req, res) {
       addLabelToMail(newMail.id, draftLabelId, req.user.username);
       addMailToLabel(newMail.id, draftLabelId, req.user.id);
     } else {
-      // get the inbox label ID and add it to the mail
-      const inboxLabelId = getLabelByName(req.user.id, defaultLabelNames.inbox);
-
-      addLabelToMail(newMail.id, inboxLabelId, req.user.username);
-      addMailToLabel(newMail.id, inboxLabelId, req.user.id);
-
+      // add sent label to the mail
+      const sentLabelId = getLabelByName(req.user.id, defaultLabelNames.sent);
+      addLabelToMail(newMail.id, sentLabelId, req.user.username);
+      addMailToLabel(newMail.id, sentLabelId, req.user.id);
     }
+
   } catch (err) {
     console.error('Error adding mail to inbox label:', err);
     return httpError(res, err);
@@ -400,8 +399,8 @@ function listMailsByLabel(req, res) {
     let trashLabelId = getLabelByName(req.user.id, defaultLabelNames.trash);
 
     if (labelName.toLowerCase() === "all") {
-    const mails = getMailsForUser(username, spamLabelId, trashLabelId)
-      .slice(-mailLimit).reverse();
+      const mails = getMailsForUser(username, spamLabelId, trashLabelId)
+        .slice(-mailLimit).reverse();
       return res.json(mails.map(filterMailForOutput));
     }
 
