@@ -153,7 +153,7 @@ test('creates a valid mail (4.3)', async () => {
     title: "Hello again",
     body: "This should work: https://good.com https://verygood.com",
     id: 1,
-    labels: [1],
+    labels: [3, 1],
     draft: false
   });
 });
