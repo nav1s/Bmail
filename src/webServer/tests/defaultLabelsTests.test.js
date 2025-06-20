@@ -1,21 +1,14 @@
-
-// todo add test that mail is assigned to the sender's sent labels
-// todo add test that the mail is assigned to the recipient's inbox label
-// todo add test that when mail is starred it is assigned to the starred label
-// todo add test that drafts are assigned to the drafts label
-// todo add test that draft label are unassigned when mail is sent
-// todo add test for /api/username/:username route
-
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const supertest = require('supertest');
 const app = require('../app');
 const api = supertest(app);
 
-let sendertoken;
-let addresseetoken;
+let senderToken;
+let recipientToken;
 const senderUsername = 'senderUser';
 const addresseeUsername = 'addresseeUser';
+
 let mailId;
 let labelId;
 let nonAttachableLabels;
