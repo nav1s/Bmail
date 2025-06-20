@@ -343,7 +343,7 @@ function attachLabelToMail(req, res) {
   const username = req.user.username;
 
   try {
-    if (canUserAddLabelToMail(mailId, labelId) && canUserAddMailToLabel(mailId, labelId)) {
+    if (canUserAddLabelToMail(mailId, labelId) && canUserAddMailToLabel(uid, labelId, mailId)) {
       addLabelToMail(mailId, labelId, username);
       addMailToLabel(mailId, labelId, uid);
       return noContent(res);
