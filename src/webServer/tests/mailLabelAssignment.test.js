@@ -14,10 +14,18 @@ let trashLabelId;
 // 0. Setup
 test('0. Setup: Register, login, create label and mail', async () => {
   const securePass = 'aA12345!';
-  // Register user
+  // Register sender user
   await api.post('/api/users').send({
     username: 'testUser',
-    firstName: 'Test',
+    firstName: 'sender',
+    lastName: 'User',
+    password: securePass
+  }).expect(201);
+
+  // Register receipient user
+  await api.post('/api/users').send({
+    username: 'receipientUser',
+    firstName: 'receipient',
     lastName: 'User',
     password: securePass
   }).expect(201);
