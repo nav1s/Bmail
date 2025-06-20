@@ -3,6 +3,7 @@ const { badRequest, created, ok, noContent, forbidden } = require('../utils/http
 const { httpError, createError } = require('../utils/error');
 const { defaultLabelNames, addMailToLabel, removeMailFromLabel, getLabelByName, canUserAddMailToLabel } = require('../models/labels.js');
 const net = require("net");
+const { findUserByUsername } = require('../models/users.js');
 
 const mailLimit = 50;
 
@@ -142,6 +143,8 @@ async function createMail(req, res) {
       const sentLabelId = getLabelByName(req.user.id, defaultLabelNames.sent);
       addLabelToMail(newMail.id, sentLabelId, req.user.username);
       addMailToLabel(newMail.id, sentLabelId, req.user.id);
+      // add the mail to the inbox label for the recipients
+      addInboxLabelToRecipients(newMail);
     }
 
   } catch (err) {
@@ -149,6 +152,31 @@ async function createMail(req, res) {
     return httpError(res, err);
   }
   return created(res, filterMailForOutput(newMail));
+}
+
+/**
+ * @brief Adds the inbox label to all recipients of a mail.
+ * @param {*} mail the mail object to add the inbox label to
+ */
+function addInboxLabelToRecipients(mail) {
+  for (const recipientUsername of mail.to) {
+    // check if the recipient is registered
+    try {
+      recipient = findUserByUsername(recipientUsername);
+    } catch (err) {
+      console.log(`Recipient ${recipientUsername} not found, skipping...`);
+      continue; 
+    }
+
+    // print the recipient for debugging
+    console.log(`Adding mail ${mail.id} to inbox of recipient ${recipient.username}`);
+    // get the inbox label ID for the recipient
+    const recipientInboxLabelId = getLabelByName(recipient.id, defaultLabelNames.inbox);
+
+    // add the mail to the recipient's inbox
+    addLabelToMail(mail.id, recipientInboxLabelId);
+    addMailToLabel(mail.id, recipientInboxLabelId, recipient.id);
+  }
 }
 
 /**
