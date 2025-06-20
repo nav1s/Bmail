@@ -233,9 +233,12 @@ test('4.20 Create mail with label and fetch by label', async () => {
 
   // Fetch mails by label
   const byLabelRes = await api
-    .get(`/api/mails//${mailId}/labels/${labelId}`)
+    .get(`/api/mails/byLabel/drafts`)
     .set('Authorization', 'bearer ' + token)
-    .expect(200);
+    .expect(200)
+
+  // log the mails returned by label
+  console.log("Mails by label:", byLabelRes.body);
 
   assert.ok(Array.isArray(byLabelRes.body));
   assert.ok(byLabelRes.body.some(mail => mail.id === mailId));
