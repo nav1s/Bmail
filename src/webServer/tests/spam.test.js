@@ -134,3 +134,83 @@ test('List mails by spam label should not include the mail', async () => {
     // check if the mail is not in the spam label
     assert(!mails.some(mail => mail.id === mailId), 'Spam label should not include the mail');
 });
+
+// 7. Marking mail as spam adds its URLs to the blacklist
+test('Marking mail as spam adds its URLs to the blacklist', async () => {
+    const mailBody = 'Suspicious link: http://badlink.com';
+
+    const res = await api.post('/api/mails')
+        .set('Authorization', 'bearer ' + token)
+        .send({ to: ['testUser'], title: 'Spam Link', body: mailBody })
+        .expect(201);
+    const newMailId = res.body.id;
+
+    await api.post(`/api/mails/${newMailId}/labels`)
+        .set('Authorization', 'bearer ' + token)
+        .send({ labelId: spamLabelId })
+        .expect(204);
+
+    const blacklistRes = await api.get('/api/blacklist')
+        .set('Authorization', 'bearer ' + token)
+        .expect(200);
+
+    console.log('Blacklist:', blacklistRes.body);
+    assert(blacklistRes.body.includes('http://badlink.com'), 'Link should be in blacklist after spam label added');
+});
+
+// 8. Removing spam label removes URLs from the blacklist
+test('Removing spam label removes URLs from the blacklist', async () => {
+    const mailBody = 'Another spammy link: http://removeme.com';
+
+    const res = await api.post('/api/mails')
+        .set('Authorization', 'bearer ' + token)
+        .send({ to: ['testUser'], title: 'Spam Removal', body: mailBody })
+        .expect(201);
+    const mailToUnspam = res.body.id;
+
+    // Add spam label
+    await api.post(`/api/mails/${mailToUnspam}/labels`)
+        .set('Authorization', 'bearer ' + token)
+        .send({ labelId: spamLabelId })
+        .expect(204);
+
+    // Remove spam label
+    await api.delete(`/api/mails/${mailToUnspam}/labels/${spamLabelId}`)
+        .set('Authorization', 'bearer ' + token)
+        .expect(204);
+
+    // Check blacklist
+    const blacklistRes = await api.get('/api/blacklist')
+        .set('Authorization', 'bearer ' + token)
+        .expect(200);
+
+    console.log('Blacklist after removal:', blacklistRes.body);
+    assert(!blacklistRes.body.includes('http://removeme.com'), 'Link should be removed from blacklist');
+});
+
+// 9. Mail with blacklisted URL is automatically marked as spam
+test('Mail with blacklisted URL is automatically marked as spam', async () => {
+    const blacklistedUrl = 'http://autospam.com';
+
+    // Manually add to blacklist
+    await api.post('/api/blacklist')
+        .set('Authorization', 'bearer ' + token)
+        .send({ url: blacklistedUrl })
+        .expect(201);
+
+    // Create mail that contains the blacklisted URL
+    const res = await api.post('/api/mails')
+        .set('Authorization', 'bearer ' + token)
+        .send({ to: ['testUser'], title: 'Auto Spam', body: `Hey check this: ${blacklistedUrl}` })
+        .expect(201);
+    const autoSpamMailId = res.body.id;
+
+    // Get mails by spam label
+    const spamMailsRes = await api.get('/api/mails/byLabel/spam')
+        .set('Authorization', 'bearer ' + token)
+        .expect(200);
+
+    console.log('Spam label mails:', spamMailsRes.body);
+    assert(spamMailsRes.body.some(mail => mail.id === autoSpamMailId),
+        'Mail with blacklisted URL should be marked as spam automatically');
+});

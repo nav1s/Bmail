@@ -2,6 +2,7 @@ const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const supertest = require('supertest');
 const app = require('../app');
+const { title } = require('node:process');
 
 // Create the test client
 const api = supertest(app);
@@ -189,4 +190,101 @@ test('❌ 4.18 Try to create duplicate label (should return 400)', async () => {
     .expect('Content-Type', /application\/json/);
 
   assert.strictEqual(response.body.error, "Label with this name already exists");
+});
+
+// ✅ 4.19 - Check default labels exist for new user
+test('4.19 Default labels (Starred, Drafts) should exist', async () => {
+  const response = await api
+    .get('/api/labels')
+    .set('Authorization', 'bearer ' + token)
+    .expect(200);
+
+  const names = response.body.map(label => label.name.toLowerCase());
+  assert.ok(names.includes("drafts"));
+  assert.ok(names.includes("starred"));
+});
+
+// ✅ 4.20 - Create mail with default label and fetch by label
+test('4.20 Create mail with label and fetch by label', async () => {
+  // Get labelId of "Drafts"
+  const res = await api
+    .get('/api/labels')
+    .set('Authorization', 'bearer ' + token)
+    .expect(200);
+
+  const draftsLabel = res.body.find(l => l.name.toLowerCase() === "drafts");
+  assert.ok(draftsLabel);
+  const labelId = draftsLabel.id;
+
+  // Create mail with that label
+  const mailRes = await api
+    .post('/api/mails')
+    .set('Authorization', 'bearer ' + token)
+    .set('Content-Type', 'application/json')
+    .send({
+      to: ['alice123'],
+      title: 'Draft Mail',
+      body: 'This is a draft email',
+      labels: [labelId]
+    })
+    .expect(201);
+
+  const mailId = mailRes.body.id;
+
+  // Fetch mails by label
+  const byLabelRes = await api
+    .get(`/api/mails/byLabel/drafts`)
+    .set('Authorization', 'bearer ' + token)
+    .expect(200)
+
+  // log the mails returned by label
+  console.log("Mails by label:", byLabelRes.body);
+
+  assert.ok(Array.isArray(byLabelRes.body));
+  assert.ok(byLabelRes.body.some(mail => mail.id === mailId));
+});
+
+// ✅ 4.21 - if more than 50 mails exist, only 50 latest are returned
+test('4.21 GET /api/mails/byLabel returns only last 50 mails', async () => {
+  const labelName = 'TestLabelForOverflow';
+
+  const labelRes = await api
+    .post('/api/labels')
+    .set('Authorization', 'bearer ' + token)
+    .send({ name: labelName })
+    .expect(201);
+
+  const labelId = labelRes.body.id;
+
+  // Create 55 mails with this label
+  for (let i = 1; i <= 55; i++) {
+    await api
+      .post('/api/mails')
+      .set('Authorization', 'bearer ' + token)
+      .send({
+        to: ['alice123'],
+        title: `Overflow mail ${i}`,
+        body: 'This is mail number ' + i,
+        labels: [labelId]
+      })
+      .expect(201);
+  }
+
+  const res = await api
+    .get(`/api/mails/byLabel/${labelName}`)
+    .set('Authorization', 'bearer ' + token)
+    .expect(200);
+
+  assert.strictEqual(res.body.length, 50);
+  // Check that the first mail is the latest one
+});
+
+// ❌ 4.23 - GET /api/mails/byLabel/:label returns 404 if label doesn't exist
+test('4.23 GET /api/mails/byLabel/:label returns 404 for invalid label', async () => {
+  const res = await api
+    .get('/api/mails/byLabel/999999') // label ID that doesn't exist
+    .set('Authorization', 'bearer ' + token)
+    .expect(404);
+
+  assert.strictEqual(res.body.error.toLowerCase(), "label not found");
 });

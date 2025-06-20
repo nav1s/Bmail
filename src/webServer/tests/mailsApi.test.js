@@ -153,7 +153,7 @@ test('creates a valid mail (4.3)', async () => {
     title: "Hello again",
     body: "This should work: https://good.com https://verygood.com",
     id: 1,
-    labels: [1],
+    labels: [3, 1],
     draft: false
   });
 });
@@ -178,7 +178,7 @@ test('creates another valid mail (4.32)', async () => {
     title: "Hello Wirtz",
     body: "Sign for Liverpool, via https://liverpool.com, its a great club!",
     id: 2,
-    labels: [1],
+    labels: [3, 1],
     draft: false
   });
 });
@@ -524,7 +524,12 @@ test('4.24 valid get mail by recipient after mail deleted in another user', asyn
     title: "Hello again friends",
     body: "This should work: https://good.com https://verygood.com",
     draft: false,
-    labels: [1],
+    labels: [
+      3,
+      1,
+      7,
+      13
+    ],
     id: 5
   })
   await api
@@ -542,7 +547,12 @@ test('4.24 valid get mail by recipient after mail deleted in another user', asyn
     title: "Hello again friends",
     body: "This should work: https://good.com https://verygood.com",
     draft: false,
-    labels: [1],
+    labels: [
+      3,
+      1,
+      7,
+      13
+    ],
     id: 5
   })
 })
