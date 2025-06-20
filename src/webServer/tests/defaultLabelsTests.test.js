@@ -9,11 +9,7 @@ let recipientToken;
 const senderUsername = 'senderUser';
 const recipientUsername = 'addresseeUser';
 
-let mailId;
-let labelId;
-let nonAttachableLabels;
-let spamLabelId;
-let trashLabelId;
+let starLabelId;
 const securePass = 'aA12345!';
 
 // 0. Setup
@@ -46,39 +42,14 @@ test('0. Setup: Register, login, create label and mail', async () => {
     .expect(201);
   recipientToken = login.body.token;
 
-  // Create label
-  const labelRes = await api.post('/api/labels')
-    .set('Authorization', 'bearer ' + senderToken)
-    .send({ name: 'Work' })
-    .expect(201);
-  labelId = labelRes.body.id;
-
-  // Create mail
-  const mailRes = await api.post('/api/mails')
-    .set('Authorization', 'bearer ' + senderToken)
-    .send({ to: ['addresseeUser'], title: 'Hello', body: 'world' })
-    .expect(201);
-  mailId = mailRes.body.id;
-
   // get all labels
   const labelsRes = await api.get('/api/labels')
     .set('Authorization', 'bearer ' + senderToken)
     .expect(200);
 
   const labels = labelsRes.body;
-  // print the labels for debugging
-  console.log('Labels:', labels);
-  // find all non attachable labels
-  nonAttachableLabels = labels.filter(label => label.isAttachable === false);
-
-  // print the non-attached label for debugging
-  console.log('Non-attached label:', nonAttachableLabels);
-
-  trashLabelId = labels.find(label => label.name === 'trash').id;
-  spamLabelId = labels.find(label => label.name === 'spam').id;
-
-  console.log('Trash Label ID:', trashLabelId);
-  console.log('Spam Label ID:', spamLabelId);
+  starLabelId = labels.find(label => label.name === 'starred').id;
+  console.log('Star Label ID:', starLabelId);
 
 });
 
@@ -128,15 +99,16 @@ test('2. Mail is assigned to recipient\'s inbox label', async () => {
 
 // 3. Starring a mail adds it to the starred label
 test('3. Starring a mail assigns it to starred label', async () => {
-  const res = await api.post('/api/mails')
+  let res = await api.post('/api/mails')
     .set('Authorization', 'bearer ' + senderToken)
-    .send({ to: ['addresseeUser'], title: 'Star me', body: 'star test' })
+    .send({ to: [recipientUsername], title: 'Star me', body: 'star test' })
     .expect(201);
   const starMailId = res.body.id;
 
-  await api.post(`/api/mails/${starMailId}/starred`)
+  res = await api.post(`/api/mails/${starMailId}/labels`)
     .set('Authorization', 'bearer ' + senderToken)
-    .expect(201);
+    .send({ labelId: starLabelId })
+    .expect(204);
 
   const labelsRes = await api.get('/api/labels')
     .set('Authorization', 'bearer ' + senderToken)
