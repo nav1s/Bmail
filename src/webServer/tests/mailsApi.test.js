@@ -178,7 +178,7 @@ test('creates another valid mail (4.32)', async () => {
     title: "Hello Wirtz",
     body: "Sign for Liverpool, via https://liverpool.com, its a great club!",
     id: 2,
-    labels: [1],
+    labels: [3, 1],
     draft: false
   });
 });
