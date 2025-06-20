@@ -1,5 +1,4 @@
 import React from "react";
-import LabelsPopup from "./LabelsPopup";
 
 export default function MailItem({ mail, onClick, onTrash, onDeletePermanent, isTrashView }) {
   const handleClick = (e) => {

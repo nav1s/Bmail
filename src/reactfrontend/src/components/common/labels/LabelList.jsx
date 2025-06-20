@@ -4,28 +4,25 @@ import LabelItem from "./LabelItem";
 export default function LabelList({
   title,
   labels,
-  selectedLabel,
+  selected,
   onSelect,
   onEdit,
   onDelete,
-  onMenuOpen,
-  showMenu
+  onMenuClick,
+  showMenu,
 }) {
   return (
     <div>
       {title && <p>{title}</p>}
       <ul>
-        {labels.map((label) => (
+        {labels.map((l) => (
           <LabelItem
-            key={label.id}
-            label={label}
-            selected={selectedLabel}
+            key={l.name}
+            label={l}
+            selected={selected}
             onSelect={onSelect}
-            onMenu={(l) => {
-              if (onMenuOpen) onMenuOpen(l);
-              if (onEdit) onEdit(l); // fallback
-            }}
-            showMenu={showMenu}
+            onMenu={onMenuClick}
+            showMenu={Boolean(onMenuClick)}
           />
         ))}
       </ul>

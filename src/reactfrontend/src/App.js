@@ -3,11 +3,11 @@ import LoginPage from "./pages/loginPage";
 import RegisterPage from "./pages/registerPage";
 import InboxPage from "./pages/inboxPage";
 import ProtectedRoute from "./components/routes/protectedRoute";
-import { getTokenFromCookie } from "./utils/tokenUtils";
+import { getToken } from "./utils/tokenUtils";
 
 function App() {
   // checking for auth-cookie
-  const isAuthenticated = !!getTokenFromCookie();
+  const isAuthenticated = !!getToken();
 
   return (
     <Router>

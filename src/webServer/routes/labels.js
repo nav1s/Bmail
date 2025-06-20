@@ -10,6 +10,5 @@ router.post('/', requireAuth, createLabel);
 router.get('/:id', requireAuth, getLabelById);
 router.patch('/:id', requireAuth, updateLabelById);
 router.delete('/:id', requireAuth, deleteLabelById);
-// todo add ability to empty trash 
 
 module.exports = router;

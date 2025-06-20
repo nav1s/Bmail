@@ -1,7 +1,14 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { register } from "../services/authService";
+import useRegister from "../hooks/useRegister";
+import RegisterForm from "../components/auth/RegisterForm";
 
+/**
+ * Page for user registration.
+ * Uses:
+ * - useRegister: handles registration logic
+ * - RegisterForm: handles UI layout
+ */
 export default function RegisterPage() {
   const [form, setForm] = useState({
     username: "",
@@ -10,45 +17,33 @@ export default function RegisterPage() {
     firstName: "",
     lastName: "",
   });
-  const [error, setError] = useState("");
+
+  const { handleRegister, error } = useRegister();
   const navigate = useNavigate();
 
+  /**
+   * Updates form state as user types.
+   */
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
+  /**
+   * Submits the form via custom hook.
+   * Redirects on success.
+   */
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    // validation for password confirmation
-    if (form.password !== form.confirmPassword) {
-      setError("Passwords do not match");
-      return;
-    }
-
-    // Remove confirmPassword before sending to backend
-    const { confirmPassword, ...registerData } = form;
-
-    try {
-      await register(registerData);
+    const success = await handleRegister(form);
+    if (success) {
       navigate("/login");
-    } catch (err) {
-      setError(err.message);
     }
   };
 
   return (
     <div>
       <h2>Register</h2>
-      <form onSubmit={handleSubmit}>
-        <input name="username" value={form.username} onChange={handleChange} placeholder="Username" required />
-        <input name="password" type="password" value={form.password} onChange={handleChange} placeholder="Password" required />
-        <input name="confirmPassword" type="password" value={form.confirmPassword} onChange={handleChange} placeholder="Confirm Password" required />
-        <input name="firstName" value={form.firstName} onChange={handleChange} placeholder="First Name" required />
-        <input name="lastName" value={form.lastName} onChange={handleChange} placeholder="Last Name" required />
-        <button type="submit">Register</button>
-      </form>
-      {error && <p style={{ color: "red" }}>{error}</p>}
+      <RegisterForm form={form} onChange={handleChange} onSubmit={handleSubmit} error={error} />
       <Link to="/login">Already have an account? Login</Link>
     </div>
   );

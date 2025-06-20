@@ -1,8 +1,8 @@
 import { Navigate, Outlet } from "react-router-dom";
-import { getTokenFromCookie } from "../../utils/tokenUtils";
+import { getToken } from "../../utils/tokenUtils";
 
 export default function ProtectedRoute() {
-  const token = getTokenFromCookie();
+  const token = getToken();
 
   if (!token) {
     return <Navigate to="/login" replace />;

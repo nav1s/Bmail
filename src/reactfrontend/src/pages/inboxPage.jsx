@@ -1,100 +1,56 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
+import Header from "../components/layout/Header";
 import MailList from "../components/common/inbox/MailList";
 import SearchBar from "../components/common/inbox/SearchBar";
-import ComposeModal from "../components/common/inbox/ComposeModal";
-import MailSentPopup from "../components/common/inbox/MailSentPopup";
-import LabelSelector from "../components/common/inbox/LabelSelector";
-import MailViewerModal from "../components/common/inbox/MailViewerModal";
-import api from "../services/api";
-import { useNavigate, useParams } from "react-router-dom";
+import ComposePopup from "../components/common/popup/ComposePopup";
+import MailSentPopup from "../components/common/popup/MailSentPopup";
+import MailViewerPopup from "../components/common/popup/MailViewerPopup";
 import LabelManager from "../components/common/labels/LabelManager";
-import Header from "../components/layout/Header";
+import AccountPopup from "../components/common/popup/AccountPopup";
+import useInboxMails from "../hooks/useInboxMails";
+import { useParams, useNavigate } from "react-router-dom";
 
 export default function InboxPage() {
-  const [mails, setMails] = useState([]);
   const [query, setQuery] = useState("");
-  const [showCompose, setShowCompose] = useState(false);
-  const [mailSentVisible, setMailSentVisible] = useState(false);
-  const [openedMail, setOpenedMail] = useState(null);
+  const [showAccount, setShowAccount] = useState(false);
   const { label } = useParams();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const delayDebounce = setTimeout(loadMails, 300);
-    return () => clearTimeout(delayDebounce);
-  }, [query, label]);
-
-  const loadMails = async () => {
-    try {
-      let endpoint = "";
-      if (query.trim()) {
-        endpoint = `/mails/search/${encodeURIComponent(query)}`;
-      } else if (label.toLowerCase() === "all mails") {
-        endpoint = "/mails";
-      } else {
-        endpoint = `/mails/byLabel/${encodeURIComponent(label)}`;
-      }
-
-      const data = await api.get(endpoint, { auth: true });
-      setMails(data);
-    } catch (err) {
-      console.error(err);
-      alert("Error loading mails: " + err.message);
-      if (err.status === 401) {
-        navigate("/login");
-      }
-    }
-  };
-
-  const handleTrashMail = async (mailId) => {
-    try {
-      const allLabels = await api.get("/labels", { auth: true });
-      const trashLabel = allLabels.find((l) => l.name.toLowerCase() === "trash");
-      if (!trashLabel) throw new Error("Trash label not found");
-
-      await api.post(`/mails/${mailId}/labels`, { labelId: trashLabel.id }, { auth: true });
-      await loadMails();
-    } catch (err) {
-      console.error(err);
-      alert("Failed to move to trash: " + err.message);
-    }
-  };
-
-  const handleDeleteMail = async (id) => {
-    try {
-      await api.delete(`/mails/${id}`, { auth: true });
-      await loadMails();
-    } catch (err) {
-      console.error("DELETE error:", err.response || err);
-      alert("Delete failed: " + (err.response?.data?.message || err.message));
-    }
-  };
-
-  const handleSendMail = async (formData) => {
-    try {
-      await api.post("/mails", formData, { auth: true });
-      await loadMails();
-      setShowCompose(false);
-      if (!formData.draft) {
-        setMailSentVisible(true);
-        setTimeout(() => setMailSentVisible(false), 2000);
-      }
-    } catch (err) {
-      alert("Send failed: " + err.message);
-    }
-  };
-
-  const isDraftMail = (mail) =>
-    Array.isArray(mail.labels) && mail.labels.includes(3);
+  const {
+    mails,
+    showCompose,
+    setShowCompose,
+    mailSentVisible,
+    setMailSentVisible,
+    openedMail,
+    setOpenedMail,
+    handleSendMail,
+    handleTrashMail,
+    handleDeleteMail,
+    isDraftMail
+  } = useInboxMails(label, query);
 
   return (
     <div>
-      <Header /> {/* ✅ Using new header */}
+      {/* Top-level layout: Header with Dark Mode, Profile & Logout */}
+      <Header />
 
+      {/* Account Popup: shows greeting + logout */}
+      {showAccount && (
+        <AccountPopup onClose={() => setShowAccount(false)} />
+      )}
+
+      {/* Compose Button - opens new mail draft popup */}
       <button onClick={() => setShowCompose(true)}>Compose</button>
 
-      <LabelManager selectedLabel={label} />
+      {/* Label Sidebar - shows and manages user-created labels */}
+      <LabelManager selectedLabel={label}
+      onSelect={(name) => navigate(`/mails/${name}`)} />
+
+      {/* Mail Search - filters mails by query */}
       <SearchBar query={query} setQuery={setQuery} />
+
+      {/* Mail List - displays mails matching current label or query */}
       <MailList
         mails={mails}
         onDelete={handleDeleteMail}
@@ -104,20 +60,32 @@ export default function InboxPage() {
         selectedLabel={label}
       />
 
+      {/* Compose Popup - for writing a new mail or editing a draft */}
       {showCompose && (
-        <ComposeModal onSend={handleSendMail} onClose={() => setShowCompose(false)} />
+        <ComposePopup
+          onSend={handleSendMail}
+          onClose={() => setShowCompose(false)}
+        />
       )}
-      {mailSentVisible && <MailSentPopup onClose={() => setMailSentVisible(false)} />}
 
+      {/* Popup Confirmation - shows "Mail Sent" message for 2 sec */}
+      {mailSentVisible && (
+        <MailSentPopup onClose={() => setMailSentVisible(false)} />
+      )}
+
+      {/* Mail Viewer or Draft Editor - opens based on selected mail */}
       {openedMail &&
         (isDraftMail(openedMail) ? (
-          <ComposeModal
+          <ComposePopup
             onSend={handleSendMail}
             onClose={() => setOpenedMail(null)}
             prefill={openedMail}
           />
         ) : (
-          <MailViewerModal mail={openedMail} onClose={() => setOpenedMail(null)} />
+          <MailViewerPopup
+            mail={openedMail}
+            onClose={() => setOpenedMail(null)}
+          />
         ))}
     </div>
   );
