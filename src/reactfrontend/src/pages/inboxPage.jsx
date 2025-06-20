@@ -6,9 +6,9 @@ import MailSentPopup from "../components/common/inbox/MailSentPopup";
 import LabelSelector from "../components/common/inbox/LabelSelector";
 import MailViewerModal from "../components/common/inbox/MailViewerModal";
 import api from "../services/api";
-import { clearTokenFromCookie } from "../utils/tokenUtils";
 import { useNavigate, useParams } from "react-router-dom";
 import LabelManager from "../components/common/labels/LabelManager";
+import Header from "../components/layout/Header";
 
 export default function InboxPage() {
   const [mails, setMails] = useState([]);
@@ -30,7 +30,7 @@ export default function InboxPage() {
       if (query.trim()) {
         endpoint = `/mails/search/${encodeURIComponent(query)}`;
       } else if (label.toLowerCase() === "all mails") {
-        endpoint = "/mails"; // special route for all
+        endpoint = "/mails";
       } else {
         endpoint = `/mails/byLabel/${encodeURIComponent(label)}`;
       }
@@ -41,27 +41,24 @@ export default function InboxPage() {
       console.error(err);
       alert("Error loading mails: " + err.message);
       if (err.status === 401) {
-        handleLogout();
+        navigate("/login");
       }
     }
   };
 
   const handleTrashMail = async (mailId) => {
-  try {
-    // First, get the Trash label ID
-    const allLabels = await api.get("/labels", { auth: true });
-    const trashLabel = allLabels.find(l => l.name.toLowerCase() === "trash");
+    try {
+      const allLabels = await api.get("/labels", { auth: true });
+      const trashLabel = allLabels.find((l) => l.name.toLowerCase() === "trash");
+      if (!trashLabel) throw new Error("Trash label not found");
 
-    if (!trashLabel) throw new Error("Trash label not found");
-
-    await api.post(`/mails/${mailId}/labels`, { labelId: trashLabel.id }, { auth: true });
-    await loadMails();
-  } catch (err) {
-    console.error(err);
-    alert("Failed to move to trash: " + err.message);
-  }
-};
-
+      await api.post(`/mails/${mailId}/labels`, { labelId: trashLabel.id }, { auth: true });
+      await loadMails();
+    } catch (err) {
+      console.error(err);
+      alert("Failed to move to trash: " + err.message);
+    }
+  };
 
   const handleDeleteMail = async (id) => {
     try {
@@ -87,45 +84,41 @@ export default function InboxPage() {
     }
   };
 
-  const handleLogout = () => {
-    clearTokenFromCookie();
-    navigate("/login");
-  };
-
   const isDraftMail = (mail) =>
-    Array.isArray(mail.labels) && mail.labels.includes(3); // label id 3 = DRAFT
+    Array.isArray(mail.labels) && mail.labels.includes(3);
 
   return (
     <div>
-      <h2>Inbox</h2>
-      <button onClick={handleLogout}>Logout</button>
+      <Header /> {/* ✅ Using new header */}
+
       <button onClick={() => setShowCompose(true)}>Compose</button>
 
       <LabelManager selectedLabel={label} />
       <SearchBar query={query} setQuery={setQuery} />
-      <MailList mails={mails} onDelete={handleDeleteMail} onMailClick={setOpenedMail} onTrash={handleTrashMail} onDeletePermanent={handleDeleteMail} selectedLabel={label}
-/>
-
+      <MailList
+        mails={mails}
+        onDelete={handleDeleteMail}
+        onMailClick={setOpenedMail}
+        onTrash={handleTrashMail}
+        onDeletePermanent={handleDeleteMail}
+        selectedLabel={label}
+      />
 
       {showCompose && (
         <ComposeModal onSend={handleSendMail} onClose={() => setShowCompose(false)} />
       )}
       {mailSentVisible && <MailSentPopup onClose={() => setMailSentVisible(false)} />}
 
-      {openedMail && (
-        isDraftMail(openedMail) ? (
+      {openedMail &&
+        (isDraftMail(openedMail) ? (
           <ComposeModal
             onSend={handleSendMail}
             onClose={() => setOpenedMail(null)}
             prefill={openedMail}
           />
         ) : (
-          <MailViewerModal
-            mail={openedMail}
-            onClose={() => setOpenedMail(null)}
-          />
-        )
-      )}
+          <MailViewerModal mail={openedMail} onClose={() => setOpenedMail(null)} />
+        ))}
     </div>
   );
 }

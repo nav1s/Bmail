@@ -6,6 +6,7 @@ export default function RegisterPage() {
   const [form, setForm] = useState({
     username: "",
     password: "",
+    confirmPassword: "",
     firstName: "",
     lastName: "",
   });
@@ -18,11 +19,21 @@ export default function RegisterPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // validation for password confirmation
+    if (form.password !== form.confirmPassword) {
+      setError("Passwords do not match");
+      return;
+    }
+
+    // Remove confirmPassword before sending to backend
+    const { confirmPassword, ...registerData } = form;
+
     try {
-      await register(form);
+      await register(registerData);
       navigate("/login");
-        } catch (err) {
-    setError(err.message);
+    } catch (err) {
+      setError(err.message);
     }
   };
 
@@ -32,9 +43,9 @@ export default function RegisterPage() {
       <form onSubmit={handleSubmit}>
         <input name="username" value={form.username} onChange={handleChange} placeholder="Username" required />
         <input name="password" type="password" value={form.password} onChange={handleChange} placeholder="Password" required />
+        <input name="confirmPassword" type="password" value={form.confirmPassword} onChange={handleChange} placeholder="Confirm Password" required />
         <input name="firstName" value={form.firstName} onChange={handleChange} placeholder="First Name" required />
         <input name="lastName" value={form.lastName} onChange={handleChange} placeholder="Last Name" required />
-        <input disabled placeholder="Profile Picture (coming soon)" />
         <button type="submit">Register</button>
       </form>
       {error && <p style={{ color: "red" }}>{error}</p>}

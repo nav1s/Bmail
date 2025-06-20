@@ -412,8 +412,6 @@ function listMailsByLabel(req, res) {
 
     const mails = getMailsForUser(username, spamLabelId, trashLabelId, labelId)
       .slice(-mailLimit).reverse();
-  const username = req.user.username;
-  const labelName = req.params.label;
   return res.json(mails.map(filterMailForOutput));
 } catch (err) {
     console.error(`Error retrieving mails for label ${labelName} for user ${username}:`, err);
