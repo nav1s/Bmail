@@ -234,7 +234,7 @@ test('11. Add same label twice should not duplicate', async () => {
   await api.post(`/api/mails/${mailId}/labels`)
     .set('Authorization', 'bearer ' + token)
     .send({ labelId })
-    .expect(204);
+    .expect(400);
 
   const mail = await api.get(`/api/mails/${mailId}`)
     .set('Authorization', 'bearer ' + token)
