@@ -80,7 +80,7 @@ test('0. Setup: Register, login, create label and mail', async () => {
 test('1. Mail is assigned to sender\'s sent label', async () => {
   const res = await api.post('/api/mails')
     .set('Authorization', 'bearer ' + senderToken)
-    .send({ to: ['addresseeUser'], title: 'Check Sent', body: 'Hello Sent' })
+    .send({ to: [recipientUsername], title: 'Check Sent', body: 'Hello Sent' })
     .expect(201);
 
   const sentMailId = res.body.id;
