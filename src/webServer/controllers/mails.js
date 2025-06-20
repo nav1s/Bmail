@@ -396,9 +396,15 @@ function listMailsByLabel(req, res) {
 
   try {
     const labelId = getLabelByName(req.user.id, labelName);
-
     let spamLabelId = getLabelByName(req.user.id, defaultLabelNames.spam);
     let trashLabelId = getLabelByName(req.user.id, defaultLabelNames.trash);
+
+    if (labelName.toLowerCase() === "all") {
+    const mails = getMailsForUser(username, spamLabelId, trashLabelId)
+      .slice(-mailLimit).reverse();
+      return res.json(mails.map(filterMailForOutput));
+    }
+
     if (labelName === defaultLabelNames.spam) {
       spamLabelId = -1;
     }
