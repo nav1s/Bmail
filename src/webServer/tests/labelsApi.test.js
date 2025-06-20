@@ -246,10 +246,12 @@ test('4.20 Create mail with label and fetch by label', async () => {
 
 // ✅ 4.21 - if more than 50 mails exist, only 50 latest are returned
 test('4.21 GET /api/mails/byLabel returns only last 50 mails', async () => {
+  const labelName = 'TestLabelForOverflow';
+
   const labelRes = await api
     .post('/api/labels')
     .set('Authorization', 'bearer ' + token)
-    .send({ name: "OverflowLabel" })
+    .send({ name: labelName })
     .expect(201);
 
   const labelId = labelRes.body.id;
@@ -269,7 +271,7 @@ test('4.21 GET /api/mails/byLabel returns only last 50 mails', async () => {
   }
 
   const res = await api
-    .get(`/api/mails/byLabel/${labelId}`)
+    .get(`/api/mails/byLabel/${labelName}`)
     .set('Authorization', 'bearer ' + token)
     .expect(200);
 
