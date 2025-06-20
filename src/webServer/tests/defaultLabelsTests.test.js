@@ -121,9 +121,9 @@ test('3. Starring a mail assigns it to starred label', async () => {
 
 // 4. Draft mail is labeled as draft
 test('4. Draft mail is labeled as draft', async () => {
-  const res = await api.post('/api/mails/drafts')
+  const res = await api.post('/api/mails')
     .set('Authorization', 'bearer ' + senderToken)
-    .send({ to: ['addresseeUser'], title: 'Draft 1', body: 'Unsent' })
+    .send({ to: [recipientUsername], title: 'Draft 1', body: 'Unsent', draft:true })
     .expect(201);
   const draftMailId = res.body.id;
 
@@ -131,6 +131,9 @@ test('4. Draft mail is labeled as draft', async () => {
     .set('Authorization', 'bearer ' + senderToken)
     .expect(200);
   const draftsLabel = labelsRes.body.find(l => l.name === 'drafts');
+  // log the draft label for debugging
+  console.log('Drafts Label:', draftsLabel);
+
   assert.ok(draftsLabel, 'Drafts label should exist');
   assert.ok(draftsLabel.mails.includes(draftMailId), 'Draft should be in drafts label');
 });
