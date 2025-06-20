@@ -34,11 +34,17 @@ test('0. Setup: Register, login, create label and mail', async () => {
     password: securePass
   }).expect(201);
 
-  // Login
-  const login = await api.post('/api/tokens')
+  // get the sender token
+  let login = await api.post('/api/tokens')
     .send({ username: senderUsername, password: securePass })
     .expect(201);
   senderToken = login.body.token;
+
+  // get the recipient token
+  login = await api.post('/api/tokens')
+    .send({ username: recipientUsername, password: securePass })
+    .expect(201);
+  recipientToken = login.body.token;
 
   // Create label
   const labelRes = await api.post('/api/labels')
@@ -100,20 +106,17 @@ test('2. Mail is assigned to recipient\'s inbox label', async () => {
   // create a mail from sender to recipient
   const res = await api.post('/api/mails')
     .set('Authorization', 'bearer ' + senderToken)
-    .send({ to: ['addresseeUser'], title: 'Inbox Check', body: 'Hello inbox' })
+    .send({ to: [recipientUsername], title: 'Inbox Check', body: 'Hello inbox' })
     .expect(201);
   const mailId = res.body.id;
-
-  // Login as the recipient
-  const login = await api.post('/api/tokens')
-    .send({ username: 'addresseeUser', password: securePass })
-    .expect(201);
-  recipientToken = login.body.token;
 
   // get mails by inbox label for the recipient
   const inboxMailsRes = await api.get('/api/mails/byLabel/inbox')
     .set('Authorization', 'bearer ' + recipientToken)
     .expect(200);
+  
+  // log the inbox mails for debugging
+  console.log('Inbox Mails:', inboxMailsRes.body);
 
   // check that the mail appears in the inbox label
   assert.ok(
