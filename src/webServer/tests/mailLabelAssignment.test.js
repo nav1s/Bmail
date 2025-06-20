@@ -22,10 +22,10 @@ test('0. Setup: Register, login, create label and mail', async () => {
     password: securePass
   }).expect(201);
 
-  // Register receipient user
+  // Register recipient user
   await api.post('/api/users').send({
-    username: 'receipientUser',
-    firstName: 'receipient',
+    username: 'recipientUser',
+    firstName: 'recipient',
     lastName: 'User',
     password: securePass
   }).expect(201);
