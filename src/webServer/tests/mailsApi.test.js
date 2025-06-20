@@ -524,7 +524,12 @@ test('4.24 valid get mail by recipient after mail deleted in another user', asyn
     title: "Hello again friends",
     body: "This should work: https://good.com https://verygood.com",
     draft: false,
-    labels: [1],
+    labels: [
+      3,
+      1,
+      7,
+      13
+    ],
     id: 5
   })
   await api
@@ -542,7 +547,12 @@ test('4.24 valid get mail by recipient after mail deleted in another user', asyn
     title: "Hello again friends",
     body: "This should work: https://good.com https://verygood.com",
     draft: false,
-    labels: [1],
+    labels: [
+      3,
+      1,
+      7,
+      13
+    ],
     id: 5
   })
 })
