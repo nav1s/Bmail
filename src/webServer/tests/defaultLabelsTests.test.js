@@ -7,7 +7,7 @@ const api = supertest(app);
 let senderToken;
 let recipientToken;
 const senderUsername = 'senderUser';
-const addresseeUsername = 'addresseeUser';
+const recipientUsername = 'addresseeUser';
 
 let mailId;
 let labelId;
@@ -20,43 +20,43 @@ const securePass = 'aA12345!';
 test('0. Setup: Register, login, create label and mail', async () => {
   // Register sender user
   await api.post('/api/users').send({
-    username: 'senderUser',
-    firstName: 'sender',
-    lastName: 'User',
+    username: senderUsername,
+    firstName: senderUsername,
+    lastName: senderUsername,
     password: securePass
   }).expect(201);
 
-  // Register receipient user
+  // Register recipient user
   await api.post('/api/users').send({
-    username: 'addresseeUser',
-    firstName: 'addressee',
-    lastName: 'User',
+    username: recipientUsername,
+    firstName: recipientUsername,
+    lastName: recipientUsername,
     password: securePass
   }).expect(201);
 
   // Login
   const login = await api.post('/api/tokens')
-    .send({ username: 'senderUser', password: securePass })
+    .send({ username: senderUsername, password: securePass })
     .expect(201);
-  sendertoken = login.body.token;
+  senderToken = login.body.token;
 
   // Create label
   const labelRes = await api.post('/api/labels')
-    .set('Authorization', 'bearer ' + sendertoken)
+    .set('Authorization', 'bearer ' + senderToken)
     .send({ name: 'Work' })
     .expect(201);
   labelId = labelRes.body.id;
 
   // Create mail
   const mailRes = await api.post('/api/mails')
-    .set('Authorization', 'bearer ' + sendertoken)
+    .set('Authorization', 'bearer ' + senderToken)
     .send({ to: ['addresseeUser'], title: 'Hello', body: 'world' })
     .expect(201);
   mailId = mailRes.body.id;
 
   // get all labels
   const labelsRes = await api.get('/api/labels')
-    .set('Authorization', 'bearer ' + sendertoken)
+    .set('Authorization', 'bearer ' + senderToken)
     .expect(200);
 
   const labels = labelsRes.body;
@@ -79,14 +79,14 @@ test('0. Setup: Register, login, create label and mail', async () => {
 // 1. Mail is assigned to sender's sent label
 test('1. Mail is assigned to sender\'s sent label', async () => {
   const res = await api.post('/api/mails')
-    .set('Authorization', 'bearer ' + sendertoken)
+    .set('Authorization', 'bearer ' + senderToken)
     .send({ to: ['addresseeUser'], title: 'Check Sent', body: 'Hello Sent' })
     .expect(201);
 
   const sentMailId = res.body.id;
 
   const mailsBySentLabelRes = await api.get('/api/mails/byLabel/sent')
-    .set('Authorization', 'bearer ' + sendertoken)
+    .set('Authorization', 'bearer ' + senderToken)
     .expect(200);
 
   assert.ok(
@@ -99,7 +99,7 @@ test('1. Mail is assigned to sender\'s sent label', async () => {
 test('2. Mail is assigned to recipient\'s inbox label', async () => {
   // create a mail from sender to recipient
   const res = await api.post('/api/mails')
-    .set('Authorization', 'bearer ' + sendertoken)
+    .set('Authorization', 'bearer ' + senderToken)
     .send({ to: ['addresseeUser'], title: 'Inbox Check', body: 'Hello inbox' })
     .expect(201);
   const mailId = res.body.id;
@@ -108,11 +108,11 @@ test('2. Mail is assigned to recipient\'s inbox label', async () => {
   const login = await api.post('/api/tokens')
     .send({ username: 'addresseeUser', password: securePass })
     .expect(201);
-  addresseetoken = login.body.token;
+  recipientToken = login.body.token;
 
   // get mails by inbox label for the recipient
   const inboxMailsRes = await api.get('/api/mails/byLabel/inbox')
-    .set('Authorization', 'bearer ' + addresseetoken)
+    .set('Authorization', 'bearer ' + recipientToken)
     .expect(200);
 
   // check that the mail appears in the inbox label
@@ -126,17 +126,17 @@ test('2. Mail is assigned to recipient\'s inbox label', async () => {
 // 3. Starring a mail adds it to the starred label
 test('3. Starring a mail assigns it to starred label', async () => {
   const res = await api.post('/api/mails')
-    .set('Authorization', 'bearer ' + sendertoken)
+    .set('Authorization', 'bearer ' + senderToken)
     .send({ to: ['addresseeUser'], title: 'Star me', body: 'star test' })
     .expect(201);
   const starMailId = res.body.id;
 
   await api.post(`/api/mails/${starMailId}/starred`)
-    .set('Authorization', 'bearer ' + sendertoken)
+    .set('Authorization', 'bearer ' + senderToken)
     .expect(201);
 
   const labelsRes = await api.get('/api/labels')
-    .set('Authorization', 'bearer ' + sendertoken)
+    .set('Authorization', 'bearer ' + senderToken)
     .expect(200);
 
   const starredLabel = labelsRes.body.find(l => l.name === 'starred');
@@ -147,13 +147,13 @@ test('3. Starring a mail assigns it to starred label', async () => {
 // 4. Draft mail is labeled as draft
 test('4. Draft mail is labeled as draft', async () => {
   const res = await api.post('/api/mails/drafts')
-    .set('Authorization', 'bearer ' + sendertoken)
+    .set('Authorization', 'bearer ' + senderToken)
     .send({ to: ['addresseeUser'], title: 'Draft 1', body: 'Unsent' })
     .expect(201);
   const draftMailId = res.body.id;
 
   const labelsRes = await api.get('/api/labels')
-    .set('Authorization', 'bearer ' + sendertoken)
+    .set('Authorization', 'bearer ' + senderToken)
     .expect(200);
   const draftsLabel = labelsRes.body.find(l => l.name === 'drafts');
   assert.ok(draftsLabel, 'Drafts label should exist');
@@ -164,18 +164,18 @@ test('4. Draft mail is labeled as draft', async () => {
 test('5. Draft label removed after sending draft', async () => {
   // create a draft mail
   const draftRes = await api.post('/api/mails/drafts')
-    .set('Authorization', 'bearer ' + sendertoken)
+    .set('Authorization', 'bearer ' + senderToken)
     .send({ to: ['addresseeUser'], title: 'Send from draft', body: 'go' })
     .expect(201);
   const draftId = draftRes.body.id;
 
   // send the draft mail
   await api.post(`/api/mails/${draftId}/send`)
-    .set('Authorization', 'bearer ' + sendertoken)
+    .set('Authorization', 'bearer ' + senderToken)
     .expect(200);
 
   const labelsRes = await api.get('/api/labels')
-    .set('Authorization', 'bearer ' + sendertoken)
+    .set('Authorization', 'bearer ' + senderToken)
     .expect(200);
 
   const draftsLabel = labelsRes.body.find(l => l.name === 'drafts');
@@ -185,12 +185,12 @@ test('5. Draft label removed after sending draft', async () => {
 
 // 6. GET /api/username/:username returns user info
 test('6. GET /api/username/:username returns correct user data', async () => {
-  const res = await api.get('/api/username/senderUser')
-    .set('Authorization', 'bearer ' + sendertoken)
+  const res = await api.get(`/api/users/username/${senderUsername}`)
+    .set('Authorization', 'bearer ' + senderToken)
     .expect(200);
 
-  assert.strictEqual(res.body.username, 'senderUser');
-  assert.strictEqual(res.body.firstName, 'Test');
-  assert.strictEqual(res.body.lastName, 'User');
+  assert.strictEqual(res.body.username, senderUsername, 'Username should match');
+  assert.strictEqual(res.body.firstName, senderUsername, 'First name should match');
+  assert.strictEqual(res.body.lastName, senderUsername, 'Last name should match');
 });
 
