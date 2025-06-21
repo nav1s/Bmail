@@ -4,6 +4,13 @@ import EditLabelPopup from "../popup/EditLabelPopup";
 import ConfirmDeletePopup from "../popup/ConfirmDeletePopup";
 import LabelMenuPopup from "../popup/LabelMenuPopup";
 
+export const ALL_LABEL = {
+  id: "all",
+  name: "all",
+  isDefault: true,
+  isAttachable: false,
+};
+
 /**
  * LabelManagerView
  * Pure UI layout with all subcomponents.
@@ -25,7 +32,8 @@ export default function LabelManagerView({
   menuLabel,
   setMenuLabel,
 }) {
-  const defaultLabels = labels.filter((l) => l.isDefault);
+  let defaultLabels = [labels.filter((l) => l.isDefault)];
+  defaultLabels = [...labels, ALL_LABEL];
   const customLabels = labels.filter((l) => !l.isDefault);
 
   return (

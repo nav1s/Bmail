@@ -17,7 +17,7 @@ export default function useInboxMails(label, query) {
       let endpoint = "";
       if (query.trim()) {
         endpoint = `/mails/search/${encodeURIComponent(query)}`;
-      } else if (label.toLowerCase() === "all mails") {
+      } else if (label?.toLowerCase() === "all") {
         endpoint = "/mails";
       } else {
         endpoint = `/mails/byLabel/${encodeURIComponent(label)}`;
