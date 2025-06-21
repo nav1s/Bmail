@@ -33,6 +33,7 @@ export default function MailItem({
 
   const hasLabel = (labelId) => mail.labels?.includes(labelId);
   const isStarred = hasLabel(labelMap?.starred);
+  const isInboxed = hasLabel(labelMap?.inbox);
 
 
   return (
@@ -47,13 +48,24 @@ export default function MailItem({
       <div>
         {!isTrashView && (
           <>
-            <ToggableButton
-              mailId={mail.id}
-              labelId={labelMap?.starred}
-              labelName="starred"
-              initialState={isStarred}
-              onLabelChange={loadMails}
-            />
+            {labelMap?.starred !== undefined && (
+              <ToggableButton
+                mailId={mail.id}
+                labelId={labelMap.starred}
+                labelName="starred"
+                initialState={isStarred}
+                onLabelChange={loadMails}
+              />
+            )}
+            {labelMap?.inbox !== undefined && (
+              <ToggableButton
+                mailId={mail.id}
+                labelId={labelMap.inbox}
+                labelName="inbox"
+                initialState={hasLabel(labelMap.inbox)}
+                onLabelChange={loadMails}
+              />
+            )}
             <button onClick={handleTrash}>Trash</button>
           </>
         )}
