@@ -108,8 +108,8 @@ export default function useInboxMails(label, query) {
     }
   };
 
-  const isDraftMail = (mail) =>
-    Array.isArray(mail.labels) && mail.labels.includes(3);
+   const isDraftMail = (mail) =>Array.isArray(mail.labels) && labelMap.drafts && mail.labels.includes(labelMap.drafts);
+
 
   return {
     mails,

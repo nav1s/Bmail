@@ -84,6 +84,7 @@ export default function InboxPage() {
           <MailViewerPopup
             mail={openedMail}
             onClose={() => setOpenedMail(null)}
+            loadMails={loadMails}
           />
         ))}
     </div>

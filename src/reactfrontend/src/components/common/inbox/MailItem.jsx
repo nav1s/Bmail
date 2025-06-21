@@ -57,7 +57,7 @@ export default function MailItem({
                 onLabelChange={loadMails}
               />
             )}
-            {labelMap?.inbox !== undefined && (
+            {labelMap?.inbox !== undefined && !mail.draft && (
               <ToggableButton
                 mailId={mail.id}
                 labelId={labelMap.inbox}

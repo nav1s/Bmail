@@ -1,23 +1,19 @@
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import Popup from "./Popup";
 import MailViewerContent from "./forms/MailViewerContent";
-import LabelsPopupContent from "./forms/LabelsPopupContent";
-import useMailViewerPopup from "../hooks/useMailViewerPopup";
+import LabelsPopup from "./LabelsPopup";
 
 /**
  * MailViewerPopup
  * Combines the mail viewer with the label popup logic.
  */
-export default function MailViewerPopup({ mail, onClose }) {
-  const {
-    showLabels,
-    toggleLabels,
-    labels,
-    selectedLabels,
-    toggleLabel,
-    saveLabels,
-    labelsRef
-  } = useMailViewerPopup(mail);
+export default function MailViewerPopup({ mail, onClose, loadMails }) {
+  const [showLabels, setShowLabels] = useState(false);
+  const labelsRef = useRef(null);
+
+  const toggleLabels = () => {
+    setShowLabels((prev) => !prev);
+  };
 
   return (
     <Popup onClose={onClose} extraRefs={[labelsRef]}>
@@ -29,12 +25,10 @@ export default function MailViewerPopup({ mail, onClose }) {
       <MailViewerContent mail={mail} />
 
       {showLabels && (
-        <LabelsPopupContent
-          labels={labels}
-          selected={selectedLabels}
-          onToggle={toggleLabel}
-          onSave={saveLabels}
+        <LabelsPopup
+          mailId={mail.id}
           onClose={toggleLabels}
+          onLabelChange={loadMails} 
         />
       )}
     </Popup>

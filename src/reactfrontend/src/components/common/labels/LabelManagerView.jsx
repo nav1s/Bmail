@@ -32,8 +32,7 @@ export default function LabelManagerView({
   menuLabel,
   setMenuLabel,
 }) {
-  let defaultLabels = [labels.filter((l) => l.isDefault)];
-  defaultLabels = [...labels, ALL_LABEL];
+  const defaultLabels = [...labels.filter((l) => l.isDefault), ALL_LABEL];
   const customLabels = labels.filter((l) => !l.isDefault);
 
   return (
