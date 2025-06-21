@@ -2,6 +2,7 @@
  * LabelsPopupContent
  * Pure UI for showing label options and toggling them
  */
+
 export default function LabelsPopupContent({
   labels,
   selected,
@@ -9,11 +10,16 @@ export default function LabelsPopupContent({
   onSave,
   onClose,
 }) {
+  // Filter out the 'trash' label to avoid showing it in the list
+  const visibleLabels = labels.filter(
+    (label) => label.name.toLowerCase() !== "trash"
+  );
+
   return (
     <div>
       <h4>Assign Labels</h4>
       <ul style={{ listStyle: "none", paddingLeft: 0 }}>
-        {labels.map((label) => (
+        {visibleLabels.map((label) => (
           <li key={label.id}>
             <label>
               <input

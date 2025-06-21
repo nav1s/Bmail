@@ -10,20 +10,24 @@ import { useRef, useEffect } from "react";
  * @param {function} onClose - Function to call when popup should close
  * @param {string} className - Optional extra class for popup-content container
  * @param {ReactNode} children - Inner popup content
+ * @param {Array} extraRefs - Additional refs to include in outside click check
  */
-export default function Popup({ onClose, className = "", children }) {
+export default function Popup({ onClose, className = "", children, extraRefs = [] }) {
   const popupRef = useRef();
 
-  // Close on outside click
   useEffect(() => {
     const handleClickOutside = (e) => {
-      if (popupRef.current && !popupRef.current.contains(e.target)) {
-        onClose();
-      }
+      const clickedOutsideAll =
+        popupRef.current &&
+        !popupRef.current.contains(e.target) &&
+        extraRefs.every((ref) => !ref?.current?.contains(e.target));
+
+      if (clickedOutsideAll) onClose();
     };
+
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [onClose]);
+  }, [onClose, extraRefs]);
 
   return (
     <div className="popup-backdrop">
@@ -36,7 +40,6 @@ export default function Popup({ onClose, className = "", children }) {
         >
           ×
         </button>
-
         {children}
       </div>
     </div>
