@@ -6,7 +6,10 @@ export default function MailList({
   onMailClick,
   onTrash,
   onDeletePermanent,
+  onRestore,
   selectedLabel,
+  labelMap,
+  loadMails,
 }) {
   return (
     <div>
@@ -17,7 +20,10 @@ export default function MailList({
           onClick={onMailClick}
           onTrash={onTrash}
           onDeletePermanent={onDeletePermanent}
+          onRestore={onRestore}
           isTrashView={selectedLabel?.toLowerCase() === "trash"}
+          labelMap={labelMap}
+          loadMails={loadMails}
         />
       ))}
     </div>

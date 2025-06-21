@@ -1,36 +1,19 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api";
+import { getLabels } from "../services/labelService";
 
-/**
- * Handles all inbox-related data and state:
- * - loading mails
- * - sending mail
- * - deleting/trashing mail
- * - controlling compose and sent state
- */
 export default function useInboxMails(label, query) {
   const [mails, setMails] = useState([]);
   const [showCompose, setShowCompose] = useState(false);
   const [mailSentVisible, setMailSentVisible] = useState(false);
   const [openedMail, setOpenedMail] = useState(null);
+  const [labelMap, setLabelMap] = useState({});
 
   const navigate = useNavigate();
 
-  /**
-   * reloads mails when label or query changes
-   */
-  useEffect(() => {
-    const delay = setTimeout(loadMails, 1);
-    return () => clearTimeout(delay);
-  }, [query, label]);
-
-  /**
-   * Loads mail for the current label or query
-   */
   const loadMails = async () => {
     try {
-        // filter different endpoints according to request
       let endpoint = "";
       if (query.trim()) {
         endpoint = `/mails/search/${encodeURIComponent(query)}`;
@@ -51,16 +34,37 @@ export default function useInboxMails(label, query) {
     }
   };
 
-  /**
-   * Sends a new mail or draft
-   */
+  useEffect(() => {
+  const fetchLabels = async () => {
+    try {
+      console.log("📡 Fetching labels...");
+      const res = await getLabels();
+      const map = {};
+
+      res.forEach(label => {
+        map[label.name.toLowerCase()] = label.id;
+      });
+      setLabelMap(map);
+    } catch (err) {
+      console.error("❌ Failed to load labels:", err);
+    }
+  };
+
+  fetchLabels();
+}, []);
+
+
+  useEffect(() => {
+    const delay = setTimeout(loadMails, 1);
+    return () => clearTimeout(delay);
+  }, [query, label]);
+
   const handleSendMail = async (formData) => {
     try {
       await api.post("/mails", formData, { auth: true });
       await loadMails();
       setShowCompose(false);
 
-      // Show popup if not draft
       if (!formData.draft) {
         setMailSentVisible(true);
         setTimeout(() => setMailSentVisible(false), 2000);
@@ -70,16 +74,11 @@ export default function useInboxMails(label, query) {
     }
   };
 
-  /**
-   * Moves a mail to Trash label
-   */
   const handleTrashMail = async (mailId) => {
     try {
-      const allLabels = await api.get("/labels", { auth: true });
-      const trashLabel = allLabels.find((l) => l.name.toLowerCase() === "trash");
-      if (!trashLabel) throw new Error("Trash label not found");
-      await api.post(`/mails/${mailId}/labels`, { labelId: 6 }, { auth: true });
-      //await api.post(`/mails/${mailId}/labels`, { labelId: trashLabel.id }, { auth: true });
+      const trashId = labelMap["trash"];
+      if (!trashId) throw new Error("Trash label ID not loaded");
+      await api.post(`/mails/${mailId}/labels`, { labelId: trashId }, { auth: true });
       await loadMails();
     } catch (err) {
       console.error(err);
@@ -87,9 +86,6 @@ export default function useInboxMails(label, query) {
     }
   };
 
-  /**
-   * Permanently deletes a mail
-   */
   const handleDeleteMail = async (id) => {
     try {
       await api.delete(`/mails/${id}`, { auth: true });
@@ -100,9 +96,18 @@ export default function useInboxMails(label, query) {
     }
   };
 
-  /**
-   * Determines if a mail is a draft (labelId 3 = DRAFT)
-   */
+  const handleRestoreMail = async (mailId) => {
+    try {
+      const trashId = labelMap["trash"];
+      if (!trashId) throw new Error("Trash label ID not loaded");
+      await api.delete(`/mails/${mailId}/labels/${trashId}`, { auth: true });
+      await loadMails();
+    } catch (err) {
+      console.error("Restore failed:", err);
+      alert("Could not restore mail: " + err.message);
+    }
+  };
+
   const isDraftMail = (mail) =>
     Array.isArray(mail.labels) && mail.labels.includes(3);
 
@@ -118,6 +123,8 @@ export default function useInboxMails(label, query) {
     handleSendMail,
     handleTrashMail,
     handleDeleteMail,
-    isDraftMail
+    handleRestoreMail,
+    isDraftMail,
+    labelMap
   };
 }

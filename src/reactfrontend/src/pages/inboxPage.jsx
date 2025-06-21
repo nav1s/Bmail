@@ -27,40 +27,41 @@ export default function InboxPage() {
     handleSendMail,
     handleTrashMail,
     handleDeleteMail,
-    isDraftMail
+    handleRestoreMail,
+    isDraftMail,
+    labelMap,
+    loadMails
   } = useInboxMails(label, query);
 
   return (
     <div>
-      {/* Top-level layout: Header with Dark Mode, Profile & Logout */}
       <Header />
 
-      {/* Account Popup: shows greeting + logout */}
       {showAccount && (
         <AccountPopup onClose={() => setShowAccount(false)} />
       )}
 
-      {/* Compose Button - opens new mail draft popup */}
       <button onClick={() => setShowCompose(true)}>Compose</button>
 
-      {/* Label Sidebar - shows and manages user-created labels */}
-      <LabelManager selectedLabel={label}
-      onSelect={(name) => navigate(`/mails/${name}`)} />
+      <LabelManager
+        selectedLabel={label}
+        onSelect={(name) => navigate(`/mails/${name}`)}
+      />
 
-      {/* Mail Search - filters mails by query */}
       <SearchBar query={query} setQuery={setQuery} />
 
-      {/* Mail List - displays mails matching current label or query */}
       <MailList
         mails={mails}
         onDelete={handleDeleteMail}
         onMailClick={setOpenedMail}
         onTrash={handleTrashMail}
         onDeletePermanent={handleDeleteMail}
+        onRestore={handleRestoreMail}
         selectedLabel={label}
+        labelMap={labelMap}
+        loadMails={loadMails}
       />
 
-      {/* Compose Popup - for writing a new mail or editing a draft */}
       {showCompose && (
         <ComposePopup
           onSend={handleSendMail}
@@ -68,12 +69,10 @@ export default function InboxPage() {
         />
       )}
 
-      {/* Popup Confirmation - shows "Mail Sent" message for 2 sec */}
       {mailSentVisible && (
         <MailSentPopup onClose={() => setMailSentVisible(false)} />
       )}
 
-      {/* Mail Viewer or Draft Editor - opens based on selected mail */}
       {openedMail &&
         (isDraftMail(openedMail) ? (
           <ComposePopup

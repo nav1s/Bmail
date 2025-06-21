@@ -4,6 +4,7 @@ import api from "./api";
  * Fetches all labels for the current user.
  */
 export function getLabels() {
+  console.log("📡 Fetching labels...");
   return api.get("/labels", { auth: true });
 }
 
