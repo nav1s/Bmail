@@ -254,3 +254,87 @@ test('Mail removed from spam appears again in inbox', async () => {
     assert(inboxRes.body.some(mail => mail.id === mailId), 'Mail should appear in inbox again');
 });
 
+test('URL remains blacklisted if still present in another spam mail', async () => {
+    const url = 'http://sharedlink.com';
+
+    const res1 = await api.post('/api/mails')
+        .set('Authorization', 'bearer ' + token)
+        .send({ to: ['testUser'], title: 'Spam1', body: `link: ${url}` })
+        .expect(201);
+    const mail1 = res1.body.id;
+
+    const res2 = await api.post('/api/mails')
+        .set('Authorization', 'bearer ' + token)
+        .send({ to: ['testUser'], title: 'Spam2', body: `check this: ${url}` })
+        .expect(201);
+    const mail2 = res2.body.id;
+
+    await api.post(`/api/mails/${mail1}/labels`)
+        .set('Authorization', 'bearer ' + token)
+        .send({ labelId: spamLabelId })
+        .expect(204);
+
+    await api.post(`/api/mails/${mail2}/labels`)
+        .set('Authorization', 'bearer ' + token)
+        .send({ labelId: spamLabelId })
+        .expect(204);
+
+    await api.delete(`/api/mails/${mail1}/labels/${spamLabelId}`)
+        .set('Authorization', 'bearer ' + token)
+        .expect(204);
+
+    const isBlacklisted = await isUrlBlacklistedViaSpamMails(url);
+    assert(isBlacklisted, 'URL should still be blacklisted because it is still in another spam mail');
+});
+
+test('URL is removed from blacklist when no spam mails contain it anymore', async () => {
+    const url = 'http://fullyremoved.com';
+
+    const res1 = await api.post('/api/mails')
+        .set('Authorization', 'bearer ' + token)
+        .send({ to: ['testUser'], title: 'Spam1', body: `link: ${url}` })
+        .expect(201);
+    const mail1 = res1.body.id;
+
+    const res2 = await api.post('/api/mails')
+        .set('Authorization', 'bearer ' + token)
+        .send({ to: ['testUser'], title: 'Spam2', body: `check this out: ${url}` })
+        .expect(201);
+    const mail2 = res2.body.id;
+
+    await api.post(`/api/mails/${mail1}/labels`)
+        .set('Authorization', 'bearer ' + token)
+        .send({ labelId: spamLabelId })
+        .expect(204);
+
+    await api.post(`/api/mails/${mail2}/labels`)
+        .set('Authorization', 'bearer ' + token)
+        .send({ labelId: spamLabelId })
+        .expect(204);
+
+    await api.delete(`/api/mails/${mail1}/labels/${spamLabelId}`)
+        .set('Authorization', 'bearer ' + token)
+        .expect(204);
+
+    await api.delete(`/api/mails/${mail2}/labels/${spamLabelId}`)
+        .set('Authorization', 'bearer ' + token)
+        .expect(204);
+
+    const isStillBlacklisted = await isUrlBlacklistedViaSpamMails(url);
+    assert(!isStillBlacklisted, 'URL should be removed from blacklist after all spam mails with it were unmarked');
+
+    const res3 = await api.post('/api/mails')
+        .set('Authorization', 'bearer ' + token)
+        .send({ to: ['testUser'], title: 'Fresh Mail', body: `Here is the link again: ${url}` })
+        .expect(201);
+    const freshMailId = res3.body.id;
+
+    const spamMails = await api.get('/api/mails/byLabel/spam')
+        .set('Authorization', 'bearer ' + token)
+        .expect(200);
+    
+    assert(
+        !spamMails.body.some(mail => mail.id === freshMailId),
+        'Mail with removed URL should not be auto-marked as spam'
+    );
+});
