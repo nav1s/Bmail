@@ -4,29 +4,37 @@ import RegisterPage from "./pages/registerPage";
 import InboxPage from "./pages/inboxPage";
 import ProtectedRoute from "./components/routes/protectedRoute";
 import { getToken } from "./utils/tokenUtils";
+import { UserProvider } from "./contexts/UserContext";
 
+/**
+ * App
+ * Entry point for the application.
+ * Routes are wrapped in React Router and global user context.
+ */
 function App() {
-  // checking for auth-cookie
+  // Determine if a token is present (user is authenticated)
   const isAuthenticated = !!getToken();
 
   return (
-    <Router>
-      <Routes>
-        {/* Public Routes */}
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
+    <UserProvider>
+      <Router>
+        <Routes>
+          {/* Public Routes */}
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
 
-        {/* Protected Routes */}
-        <Route element={<ProtectedRoute />}>
-          <Route path="/mails" element={<Navigate to="/mails/inbox" replace />} />
-          <Route path="/mails/:label" element={<InboxPage />} />
-        </Route>
+          {/* Protected Routes */}
+          <Route element={<ProtectedRoute />}>
+            <Route path="/mails" element={<Navigate to="/mails/inbox" replace />} />
+            <Route path="/mails/:label" element={<InboxPage />} />
+          </Route>
 
-        {/* Default Route */}
-        <Route path="/" element={<Navigate to={isAuthenticated ? "/mails/inbox" : "/login"} />} />
-      </Routes>
-    </Router>
-      );
+          {/* Default Route */}
+          <Route path="/" element={<Navigate to={isAuthenticated ? "/mails/inbox" : "/login"} />} />
+        </Routes>
+      </Router>
+    </UserProvider>
+  );
 }
 
 export default App;

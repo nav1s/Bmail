@@ -2,16 +2,17 @@ import { useState } from "react";
 import { login } from "../services/authService";
 import { getUserByUsername } from "../services/userService";
 import { saveToken } from "../utils/tokenUtils";
-import { saveUser } from "../utils/userUtils";
+import { useUser } from "../contexts/UserContext";
 
 /**
  * Custom hook that handles the login process:
  * - authenticates user
- * - saves token and user data
- * - exposes error state and login function
+ * - saves token
+ * - updates global user context
  */
 export default function useLogin() {
   const [error, setError] = useState("");
+  const { login: setUser } = useUser();
 
   /**
    * Handles login logic with username and password.
@@ -27,9 +28,11 @@ export default function useLogin() {
 
       // Fetch user info
       const userInfo = await getUserByUsername(username);
-      saveUser(userInfo);
 
-      setError(""); // Clear previous error
+      // Update context
+      setUser(userInfo);
+
+      setError("");
       return true;
     } catch (err) {
       setError(err.message || "Login failed");
