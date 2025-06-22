@@ -7,11 +7,11 @@ const upload = multer({ dest: 'uploads/' });
 
 // POST /api/users - Create a new user
 router.post('/', upload.single('file'), users.createUser);
-// GET /api/users/:id - Get user by ID
-router.get('/:id', users.getUserById);
 // GET /api/users/username/:username - Get user by username
 router.get('/username/:username', users.getUserByUsername);
+// GET /api/users/:id - Get user by ID
+router.get('/:id', users.getUserById);
 // PATCH /api/users - Update user by ID
-router.patch('/', requireAuth, users.updateUserById);
+router.patch('/', requireAuth, upload.single('file'), users.updateUserById);
 
 module.exports = router;
