@@ -5,6 +5,16 @@ export async function login(username, password) {
   return res;
 }
 
-export async function register(userData) {
-  return api.post("/users", userData);
-}
+export const register = async (formData) => {
+  const res = await fetch("/api/users", {
+    method: "POST",
+    body: formData // FormData, no need for headers
+  });
+
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.message || "Registration failed");
+  }
+
+  return res;
+};

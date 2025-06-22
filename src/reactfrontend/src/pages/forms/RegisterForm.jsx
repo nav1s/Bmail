@@ -2,15 +2,17 @@ import React from "react";
 
 /**
  * Presentational component for the registration form.
+ *
  * Props:
  * - form: form state object
- * - onChange: input change handler
- * - onSubmit: submit handler
- * - error: error string
+ * - onChange: input change handler for text fields
+ * - onFileChange: input change handler for profile image file
+ * - onSubmit: submit handler for form submission
+ * - error: optional error message string
  */
-export default function RegisterForm({ form, onChange, onSubmit, error }) {
+export default function RegisterForm({ form, onChange, onFileChange, onSubmit, error }) {
   return (
-    <form onSubmit={onSubmit}>
+    <form onSubmit={onSubmit} encType="multipart/form-data">
       <input
         name="username"
         value={form.username}
@@ -48,7 +50,19 @@ export default function RegisterForm({ form, onChange, onSubmit, error }) {
         placeholder="Last Name"
         required
       />
+
+      {/* Profile image upload field */}
+      <label>
+        Profile Photo:
+        <input
+          type="file"
+          accept="image/*"
+          onChange={onFileChange}
+        />
+      </label>
+
       <button type="submit">Register</button>
+
       {error && <p style={{ color: "red" }}>{error}</p>}
     </form>
   );
