@@ -63,6 +63,11 @@ async function checkBlacklistedUrl(urls) {
   });
 }
 
+/**
+ * @brief Extracts URLs from a message body or title.
+ * @param {*} msg The message body or title to extract URLs from.
+ * @returns the list of URLs found in the message.
+ */
 function extractUrlsFromMessage(msg) {
   const urlRegex = /\bhttps?:\/\/(?:www\.)?[a-zA-Z0-9\-]+\.[a-zA-Z]{2,}(?:\.[a-zA-Z]{2,})?(?:\/[^\s]*)?\b/g;
   return msg.match(urlRegex) || [];
