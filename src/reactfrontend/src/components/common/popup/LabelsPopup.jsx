@@ -1,47 +1,30 @@
-import React, { useEffect, useState } from "react";
-import api from "../../../services/api";
-import LabelList from "../labels/LabelList";
-
-export default function LabelsPopup({ mailId, onClose, onLabelChange }) {
-  const [labels, setLabels] = useState([]);
-
-  useEffect(() => {
-    const fetchLabels = async () => {
-      try {
-        const res = await api.get("/labels", { auth: true });
-
-        const customAttachable = res.filter((l) => l.isAttachable && !l.isDefault);
-        setLabels(customAttachable);
-      } catch (err) {
-        console.error("Failed to load labels", err);
-      }
-    };
-
-    fetchLabels();
-  }, []);
-
-  const handleSelectLabel = async (labelId) => {
-  try {
-    await api.post(`/mails/${mailId}/labels`, { labelId }, { auth: true });
-    if (onLabelChange) onLabelChange();
-  } catch (err) {
-    console.error("Failed to attach label", err);
-  }
-};
+import React from "react";
+import useLabelsPopup from "../hooks/useLabelsPopup";
+import ToggableButton from "../labels/ToggableButton";
 
 
+export default function LabelsPopup({ mail, onClose, onLabelChange }) {
+  const {
+    customLabels,
+    selectedLabels,
+    toggleLabel,
+  } = useLabelsPopup(mail, onLabelChange);
+  console.log("📌 customLabels:", customLabels);
   return (
-    <div style={{ padding: "1rem" }}>
-      <h3>Attach Labels</h3>
-      <LabelList
-        mailId={mailId}
-        labels={labels}
-        onLabelChange={onLabelChange}
-        onSelect={handleSelectLabel}
-      />
-      <button style={{ marginTop: "1rem" }} onClick={onClose}>
-        Close
-      </button>
+    <div>
+      <ul>
+        {customLabels.map(label => (
+          <li key={label.id}>
+            <ToggableButton
+              mailId={mail.id}
+              labelId={label.id}
+              labelName={label.name}
+              initialState={selectedLabels.includes(label.id)}
+              onLabelChange={onLabelChange}
+            />
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }

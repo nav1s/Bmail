@@ -26,7 +26,7 @@ export default function MailViewerPopup({ mail, onClose, loadMails }) {
 
       {showLabels && (
         <LabelsPopup
-          mailId={mail.id}
+          mail={mail}
           onClose={toggleLabels}
           onLabelChange={loadMails} 
         />
