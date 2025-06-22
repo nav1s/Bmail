@@ -388,7 +388,7 @@ async function attachLabelToMail(req, res) {
         const urls = extractUrlsFromMessage(msgBody).concat(extractUrlsFromMessage(msgTitle));
 
         if (urls.length >= 1) {
-          await addUrlsToBlacklist(urls, res);
+          await addUrlsToBlacklist(urls);
         }
       }
 
