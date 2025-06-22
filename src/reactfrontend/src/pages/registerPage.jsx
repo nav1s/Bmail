@@ -1,15 +1,22 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
+
+// Layout
+import AppLayout from "../components/layout/AppLayout";
+
+// Auth logic and UI
 import useRegister from "../hooks/useRegister";
-import RegisterForm from "../components/auth/RegisterForm";
+import RegisterForm from "./forms/RegisterForm";
 
 /**
- * Page for user registration.
- * Uses:
- * - useRegister: handles registration logic
- * - RegisterForm: handles UI layout
+ * RegisterPage
+ *
+ * Displays the user registration form.
+ * Uses AppLayout to provide shared layout (Header, dark mode toggle).
+ * Delegates form rendering to RegisterForm and handles logic via useRegister hook.
  */
 export default function RegisterPage() {
+  // Form state for controlled inputs
   const [form, setForm] = useState({
     username: "",
     password: "",
@@ -18,19 +25,21 @@ export default function RegisterPage() {
     lastName: "",
   });
 
+  // Registration logic (API call, validation, etc.)
   const { handleRegister, error } = useRegister();
+
+  // Router for redirecting after success
   const navigate = useNavigate();
 
   /**
-   * Updates form state as user types.
+   * Updates form fields on input change.
    */
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
   /**
-   * Submits the form via custom hook.
-   * Redirects on success.
+   * Submits the form and redirects to login on success.
    */
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -41,10 +50,21 @@ export default function RegisterPage() {
   };
 
   return (
-    <div>
-      <h2>Register</h2>
-      <RegisterForm form={form} onChange={handleChange} onSubmit={handleSubmit} error={error} />
-      <Link to="/login">Already have an account? Login</Link>
-    </div>
+    <AppLayout>
+      <div style={{ padding: "1rem" }}>
+        <h2>Register</h2>
+
+        <RegisterForm
+          form={form}
+          onChange={handleChange}
+          onSubmit={handleSubmit}
+          error={error}
+        />
+
+        <Link to="/login" style={{ display: "block", marginTop: "1rem" }}>
+          Already have an account? Login
+        </Link>
+      </div>
+    </AppLayout>
   );
 }

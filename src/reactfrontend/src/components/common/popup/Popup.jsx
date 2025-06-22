@@ -29,6 +29,16 @@ export default function Popup({ onClose, className = "", children, extraRefs = [
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [onClose, extraRefs]);
 
+  useEffect(() => {
+  const handleEscape = (e) => {
+    if (e.key === "Escape") onClose();
+  };
+
+  document.addEventListener("keydown", handleEscape);
+  return () => document.removeEventListener("keydown", handleEscape);
+}, [onClose]);
+
+
   return (
     <div className="popup-backdrop">
       <div ref={popupRef} className={`popup-content ${className}`}>

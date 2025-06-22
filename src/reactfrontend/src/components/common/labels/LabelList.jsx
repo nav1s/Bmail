@@ -6,10 +6,7 @@ export default function LabelList({
   labels,
   selected,
   onSelect,
-  onEdit,
-  onDelete,
   onMenuClick,
-  showMenu,
 }) {
   return (
     <div>

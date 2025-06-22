@@ -1,23 +1,37 @@
+// services/labelService.js
 import api from "./api";
 
 /**
- * Fetches all labels for the current user.
+ * Fetch all labels for the current user.
  */
 export function getLabels() {
-  console.log("📡 Fetching labels...");
   return api.get("/labels", { auth: true });
 }
 
 /**
- * Attach a label to a mail.
+ * Get a specific label.
  */
-export function attachLabel(mailId, labelId) {
-  return api.post(`/mails/${mailId}/labels`, { labelId }, { auth: true });
+export function getLabelById(labelId) {
+  return api.get(`/labels/${labelId}`, { auth: true });
 }
 
 /**
- * Detach a label from a mail.
+ * Create a new label.
  */
-export function detachLabel(mailId, labelId) {
-  return api.delete(`/mails/${mailId}/labels/${labelId}`, { auth: true });
+export function createLabel(labelData) {
+  return api.post("/labels", labelData, { auth: true });
+}
+
+/**
+ * Update an existing label.
+ */
+export function updateLabel(labelId, updatedData) {
+  return api.patch(`/labels/${labelId}`, updatedData, { auth: true });
+}
+
+/**
+ * Delete a label.
+ */
+export function deleteLabel(labelId) {
+  return api.delete(`/labels/${labelId}`, { auth: true });
 }

@@ -1,47 +1,18 @@
-import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import api from "../../services/api";
 import LabelList from "./LabelList";
+import useLabelSelector from "../../hooks/useLabelSelector";
 
 /**
  * LabelSelector
- * Fetches labels from the backend and renders a selectable list.
- * Clicking a label updates the URL using react-router navigation.
+ * Renders the label list UI using logic from useLabelSelector hook.
  */
 export default function LabelSelector() {
-  const [labels, setLabels] = useState([]);
-  const { labelName } = useParams();
-  const navigate = useNavigate();
-
-  /**
-   * Fetches all available labels on mount.
-   */
-  useEffect(() => {
-    const loadLabels = async () => {
-      try {
-        const res = await api.get("/labels");
-        setLabels(res.data);
-      } catch (err) {
-        console.error("Failed to load labels", err);
-      }
-    };
-
-    loadLabels();
-  }, []);
-
-  /**
-   * Navigates to the selected label view.
-   * @param {string} labelName - The name of the selected label.
-   */
-  const handleSelect = (labelName) => {
-    navigate(`/mails/${labelName}`);
-  };
+  const { labels, selectedLabel, handleSelect } = useLabelSelector();
 
   return (
     <div>
       <LabelList
         labels={labels}
-        selected={labelName}
+        selected={selectedLabel}
         onSelect={handleSelect}
       />
     </div>

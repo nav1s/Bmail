@@ -1,33 +1,45 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 /**
  * EditLabelContent
- * Pure UI for editing a label name.
+ * Form for editing a label's name.
  */
 export default function EditLabelContent({ label, onSave, onClose }) {
-  const [newName, setNewName] = useState(label.name);
+  const [newName, setNewName] = useState("");
 
-  const handleSubmit = () => {
-    if (newName.trim()) {
-      onSave(newName);
+  // Update the input value whenever a new label is received
+  useEffect(() => {
+    if (label?.name) {
+      setNewName(label.name);
+    }
+  }, [label]);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const trimmed = newName.trim();
+    if (trimmed) {
+      onSave({ ...label, name: trimmed });
     }
   };
 
   return (
-    <div>
+    <form onSubmit={handleSubmit}>
       <h3>Edit Label</h3>
+
       <label>
         Label name:
         <input
           type="text"
           value={newName}
           onChange={(e) => setNewName(e.target.value)}
+          autoFocus
         />
       </label>
+
       <div style={{ marginTop: "10px" }}>
-        <button onClick={onClose}>Cancel</button>
-        <button onClick={handleSubmit} style={{ marginLeft: "10px" }}>Save</button>
+        <button type="button" onClick={onClose}>Cancel</button>
+        <button type="submit" style={{ marginLeft: "10px" }}>Save</button>
       </div>
-    </div>
+    </form>
   );
 }

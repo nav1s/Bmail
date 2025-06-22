@@ -1,8 +1,20 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import useLogin from "../hooks/useLogin";
-import LoginForm from "../components/auth/LoginForm";
 
+// Layout
+import AppLayout from "../components/layout/AppLayout";
+
+// Login logic and UI
+import useLogin from "../hooks/useLogin";
+import LoginForm from "./forms/LoginForm";
+
+/**
+ * LoginPage
+ *
+ * Displays the login form for user authentication.
+ * Uses AppLayout to provide shared layout (Header, dark mode toggle).
+ * Handles user input, form state, and login logic via custom hook.
+ */
 export default function LoginPage() {
   // Form state for controlled inputs
   const [form, setForm] = useState({ username: "", password: "" });
@@ -35,19 +47,23 @@ export default function LoginPage() {
   };
 
   return (
-    <div>
-      <h2>Login</h2>
+    <AppLayout>
+      <div style={{ padding: "1rem" }}>
+        <h2>Login</h2>
 
-      {/* Renders the login form UI with fields and submit button */}
-      <LoginForm
-        form={form}
-        onChange={handleChange}
-        onSubmit={handleSubmit}
-        error={error}
-      />
+        {/* Login form UI */}
+        <LoginForm
+          form={form}
+          onChange={handleChange}
+          onSubmit={handleSubmit}
+          error={error}
+        />
 
-      {/* Link to registration page */}
-      <Link to="/register">Don't have an account? Register</Link>
-    </div>
+        {/* Navigation link to registration */}
+        <Link to="/register" style={{ display: "block", marginTop: "1rem" }}>
+          Don't have an account? Register
+        </Link>
+      </div>
+    </AppLayout>
   );
 }

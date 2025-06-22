@@ -7,9 +7,7 @@ export default function LabelsPopup({ mail, onClose, onLabelChange }) {
   const {
     customLabels,
     selectedLabels,
-    toggleLabel,
   } = useLabelsPopup(mail, onLabelChange);
-  console.log("📌 customLabels:", customLabels);
   return (
     <div>
       <ul>

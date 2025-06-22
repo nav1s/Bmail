@@ -1,5 +1,6 @@
 import React from "react";
 import ToggableButton from "../labels/ToggableButton";
+import useMailItem from "../hooks/useMailItem";
 
 export default function MailItem({
   mail,
@@ -11,30 +12,16 @@ export default function MailItem({
   labelMap,
   loadMails
 }) {
-  const handleClick = (e) => {
-    e.stopPropagation();
-    onClick(mail);
-  };
+  const {
+    handleClick,
+    handleTrash,
+    handleDeletePermanent,
+    handleRestore,
+    hasLabel
+  } = useMailItem(mail, { onClick, onTrash, onDeletePermanent, onRestore });
 
-  const handleTrash = (e) => {
-    e.stopPropagation();
-    onTrash(mail.id);
-  };
-
-  const handleDeletePermanent = (e) => {
-    e.stopPropagation();
-    onDeletePermanent(mail.id);
-  };
-
-  const handleRestore = (e) => {
-    e.stopPropagation();
-    onRestore(mail.id);
-  };
-
-  const hasLabel = (labelId) => mail.labels?.includes(labelId);
   const isStarred = hasLabel(labelMap?.starred);
   const isInboxed = hasLabel(labelMap?.inbox);
-
 
   return (
     <div
@@ -62,7 +49,7 @@ export default function MailItem({
                 mailId={mail.id}
                 labelId={labelMap.inbox}
                 labelName="inbox"
-                initialState={hasLabel(labelMap.inbox)}
+                initialState={isInboxed}
                 onLabelChange={loadMails}
               />
             )}
