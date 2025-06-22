@@ -1,26 +1,29 @@
 const { serverError, badRequest, noContent, notFound } = require("../utils/httpResponses");
 const net = require("net");
 
-/**
- * This function handles the addition of a URL to the blacklist.
- * @param req the request object containing the URL to be blacklisted
- * @param res the response object used to send the response back to the client
- */
-exports.addToBlacklist = (req, res) => {
-    console.log('Received request to add URL to blacklist:', req.body);
+exports.addUrlsToBlacklist = async (urls, res) => {
+    let urlIndex = 0;
+
+    console.log('Received request to add URLs to blacklist:', urls);
     // check if the request has the required parameters
-    if (!req.body || !req.body.url) {
-        console.error('Missing fields in request body:', req.body);
-        return badRequest(res, 'Missing fields: url');
+    if (!urls){
+        console.error('Missing or invalid fields in request body:', urls);
+        return serverError(res, 'unexpected response from server');
+    }
+    if (!Array.isArray(urls)){
+        console.error('Missing or invalid fields in request body:', urls);
+        return serverError(res, 'unexpected response from server');
     }
 
-    const url = req.body.url;
+    if (urls.length === 0) {
+        console.error('No URLs provided in request body:', urls);
+        return serverError(res, 'unexpected response from server');
+    }
+
     const client = net.createConnection({ host: 'bloom-filter', port: 12345 }, () => {
         console.log('Connected to server');
-        // send the request to add the URL to the blacklist
-        client.write(`POST ${url}\n`);
-
-        console.log(`Request sent to add URL: ${url}`);
+        client.write(`POST ${urls[urlIndex]}\n`);
+        urlIndex++;
     });
 
     // handle the response from the server
@@ -28,21 +31,45 @@ exports.addToBlacklist = (req, res) => {
         console.log('Received data from server:', data.toString());
 
         // check if the response indicates success
-        if (data.toString() === '201 Created') {
-            console.log('Successfully added to blacklist');
-            res.status(201).end();
-        } else {
-            // otherwise, send an error
-            serverError(res, 'unexpected response from server');
+        if (data.toString() !== '201 Created') {
+            client.destroy();
+            return serverError(res, 'unexpected response from server');
         }
-        client.destroy();
+
+        if (urlIndex < urls.length) {
+            // if there are more URLs to add, send the next one
+            client.write(`POST ${urls[urlIndex]}\n`);
+            urlIndex++;
+        }
+        else {
+            // if all URLs have been added, end the connection
+            console.log('Successfully added all URLs to blacklist');
+            client.destroy();
+            return res.status(201).json({ message: 'Successfully added URLs to blacklist' });
+        }
     });
 
     // return a server error if there is an error connecting to the server
     client.on('error', (error) => {
         console.error('error connecting to server:', error);
-        serverError(res, 'error connecting to server');
+        return serverError(res, 'unexpected response from server');
     });
+}
+
+/**
+ * This function handles the addition of a URL to the blacklist.
+ * @param req the request object containing the URL to be blacklisted
+ * @param res the response object used to send the response back to the client
+ */
+exports.addToBlacklist = async (req, res) => {
+    console.log('Received request to add URL to blacklist:', req.body);
+    // check if the request has the required parameters
+    if (!req.body || !req.body.url) {
+        console.error('Missing fields in request body:', req.body);
+        return badRequest(res, 'Missing fields: url');
+    }
+
+    await exports.addUrlsToBlacklist([req.body.url], res);
 }
 
 /**
@@ -59,7 +86,7 @@ exports.removeFromBlacklist = (req, res) => {
     // save the URL to a variable
     const url = req.params.id;
 
-    const client = net.createConnection({ host:'bloom-filter', port: 12345 }, ()  => {
+    const client = net.createConnection({ host: 'bloom-filter', port: 12345 }, () => {
         console.log('Connected to server');
         // send the request to delete the URL from the blacklist
         client.write(`DELETE ${url}\n`);
