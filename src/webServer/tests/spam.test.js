@@ -145,7 +145,7 @@ test('List mails by spam label should not include the mail', async () => {
     assert(!mails.some(mail => mail.id === mailId), 'Spam label should not include the mail');
 });
 
-// 7. Marking mail as spam adds its URLs to the blacklist
+// Marking mail as spam adds its URLs to the blacklist
 test('Marking mail as spam adds its URLs to the blacklist', async () => {
     let url = 'http://badlink.com';
     // remove the url from the blacklist if it exists
@@ -167,7 +167,7 @@ test('Marking mail as spam adds its URLs to the blacklist', async () => {
         .expect(204);
 });
 
-// 8. Removing spam label removes URLs from the blacklist
+// Removing spam label removes URLs from the blacklist
 test('Removing spam label removes URLs from the blacklist', async () => {
     const url = 'http://removeme.com';
     const mailBody = `Another spammy link: ${url}`;
@@ -200,7 +200,7 @@ test('Removing spam label removes URLs from the blacklist', async () => {
     assert(!isBlacklisted, 'URL should be removed from blacklist after removing spam label');
 });
 
-// 9. Mail with blacklisted URL is automatically marked as spam
+// Mail with blacklisted URL is automatically marked as spam
 test('Mail with blacklisted URL is automatically marked as spam', async () => {
     const blacklistedUrl = 'http://autospam.com';
 
@@ -226,3 +226,31 @@ test('Mail with blacklisted URL is automatically marked as spam', async () => {
     assert(spamMailsRes.body.some(mail => mail.id === autoSpamMailId),
         'Mail with blacklisted URL should be marked as spam automatically');
 });
+
+test('Mail removed from spam appears again in inbox', async () => {
+    const res = await api.post('/api/mails')
+        .set('Authorization', 'bearer ' + token)
+        .send({ to: ['testUser'], title: 'Test Spam Exit', body: 'http://badlink.com' })
+        .expect(201);
+    const mailId = res.body.id;
+
+    let spamRes = await api.get('/api/mails/byLabel/spam')
+        .set('Authorization', 'bearer ' + token)
+        .expect(200);
+    assert(spamRes.body.some(mail => mail.id === mailId), 'Mail should appear in spam');
+
+    await api.delete(`/api/mails/${mailId}/labels/${spamLabelId}`)
+        .set('Authorization', 'bearer ' + token)
+        .expect(204);
+    
+    spamRes = await api.get('/api/mails/byLabel/spam')
+        .set('Authorization', 'bearer ' + token)
+        .expect(200);
+    assert(!spamRes.body.some(mail => mail.id === mailId), 'Mail should not appear in spam anymore');
+
+    const inboxRes = await api.get('/api/mails')
+        .set('Authorization', 'bearer ' + token)
+        .expect(200);
+    assert(inboxRes.body.some(mail => mail.id === mailId), 'Mail should appear in inbox again');
+});
+
