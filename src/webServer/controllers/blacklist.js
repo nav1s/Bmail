@@ -1,58 +1,61 @@
 const { serverError, badRequest, noContent, notFound } = require("../utils/httpResponses");
 const net = require("net");
 
-exports.addUrlsToBlacklist = async (urls, res) => {
-    let urlIndex = 0;
+exports.addUrlsToBlacklist = async (urls) => {
+    return new Promise((resolve, reject) => {
+        let urlIndex = 0;
 
-    console.log('Received request to add URLs to blacklist:', urls);
-    // check if the request has the required parameters
-    if (!urls){
-        console.error('Missing or invalid fields in request body:', urls);
-        return serverError(res, 'unexpected response from server');
-    }
-    if (!Array.isArray(urls)){
-        console.error('Missing or invalid fields in request body:', urls);
-        return serverError(res, 'unexpected response from server');
-    }
-
-    if (urls.length === 0) {
-        console.error('No URLs provided in request body:', urls);
-        return serverError(res, 'unexpected response from server');
-    }
-
-    const client = net.createConnection({ host: 'bloom-filter', port: 12345 }, () => {
-        console.log('Connected to server');
-        client.write(`POST ${urls[urlIndex]}\n`);
-        urlIndex++;
-    });
-
-    // handle the response from the server
-    client.on('data', (data) => {
-        console.log('Received data from server:', data.toString());
-
-        // check if the response indicates success
-        if (data.toString() !== '201 Created') {
-            client.destroy();
-            return serverError(res, 'unexpected response from server');
+        console.log('Received request to add URLs to blacklist:', urls);
+        // check if the request has the required parameters
+        if (!urls) {
+            console.error('Missing or invalid fields in request body:', urls);
+            return resolve(false);
+        }
+        if (!Array.isArray(urls)) {
+            console.error('Missing or invalid fields in request body:', urls);
+            return resolve(false);
         }
 
-        if (urlIndex < urls.length) {
+        if (urls.length === 0) {
+            console.error('No URLs provided in request body:', urls);
+            return resolve(false);
+        }
+
+        const client = net.createConnection({ host: 'bloom-filter', port: 12345 }, () => {
+            console.log('Connected to server');
+            client.write(`POST ${urls[urlIndex]}\n`);
+            urlIndex++;
+        });
+
+        // handle the response from the server
+        client.on('data', (data) => {
+            console.log('Received data from server:', data.toString());
+
+            // check if the response indicates success
+            if (data.toString() !== '201 Created') {
+                console.error('Unexpected response from server:', data.toString());
+                client.destroy();
+                return serverError(res, 'unexpected response from server');
+            }
+
+            if (urlIndex >= urls.length) {
+                // if all URLs have been added, end the connection
+                console.log('Successfully added all URLs to blacklist');
+                client.destroy();
+                return resolve(true);
+            }
+
+
             // if there are more URLs to add, send the next one
             client.write(`POST ${urls[urlIndex]}\n`);
             urlIndex++;
-        }
-        else {
-            // if all URLs have been added, end the connection
-            console.log('Successfully added all URLs to blacklist');
-            client.destroy();
-            return res.status(201).json({ message: 'Successfully added URLs to blacklist' });
-        }
-    });
+        });
 
-    // return a server error if there is an error connecting to the server
-    client.on('error', (error) => {
-        console.error('error connecting to server:', error);
-        return serverError(res, 'unexpected response from server');
+        // return a server error if there is an error connecting to the server
+        client.on('error', (error) => {
+            console.error('error connecting to server:', error);
+            return reject(error);
+        });
     });
 }
 
@@ -69,7 +72,12 @@ exports.addToBlacklist = async (req, res) => {
         return badRequest(res, 'Missing fields: url');
     }
 
-    await exports.addUrlsToBlacklist([req.body.url], res);
+    try {
+        await exports.addUrlsToBlacklist([req.body.url]);
+        return res.status(201).json({ message: 'Successfully added URL to blacklist' });
+    } catch (error) {
+        return serverError(res, error.message);
+    }
 }
 
 /**
