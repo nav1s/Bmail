@@ -59,6 +59,10 @@ isPasswordStrongEnough = (password) => {
  *   - 400 Bad Request if required fields are missing or username already exists.
  */
 exports.createUser = (req, res) => {
+  if ('file' in req){
+    console.log('File upload detected:', req.file);
+  }
+
   // Validate that the request body contains all required fields
   const requiredFields = users.getRequiredFields();
   const missing = requiredFields.filter(field => !req.body[field]);
