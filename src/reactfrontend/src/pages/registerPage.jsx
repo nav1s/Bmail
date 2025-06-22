@@ -1,22 +1,20 @@
-import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
-
-// Layout
-import AppLayout from "../components/layout/AppLayout";
-
-// Auth logic and UI
-import useRegister from "../hooks/useRegister";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import RegisterForm from "./forms/RegisterForm";
+import useRegister from "../hooks/useRegister";
 
 /**
- * RegisterPage
+ * registerPage
  *
- * Displays the user registration form.
- * Uses AppLayout to provide shared layout (Header, dark mode toggle).
- * Delegates form rendering to RegisterForm and handles logic via useRegister hook.
+ * Renders the user registration page.
+ * Manages local state for form fields and file input.
+ * Delegates validation and API interaction to useRegister().
  */
 export default function RegisterPage() {
-  // Form state for controlled inputs
+  const navigate = useNavigate();
+  const { handleRegister, error } = useRegister();
+
+  // Form state
   const [form, setForm] = useState({
     username: "",
     password: "",
@@ -25,46 +23,45 @@ export default function RegisterPage() {
     lastName: "",
   });
 
-  // Registration logic (API call, validation, etc.)
-  const { handleRegister, error } = useRegister();
-
-  // Router for redirecting after success
-  const navigate = useNavigate();
+  // File state for profile photo
+  const [file, setFile] = useState(null);
 
   /**
-   * Updates form fields on input change.
+   * Handles text input changes and updates form state
    */
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
   };
 
   /**
-   * Submits the form and redirects to login on success.
+   * Handles profile image file selection
+   */
+  const handleFileChange = (e) => {
+    setFile(e.target.files[0]);
+  };
+
+  /**
+   * Handles form submission and calls the registration hook
    */
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const success = await handleRegister(form);
+    const success = await handleRegister(form, file);
     if (success) {
       navigate("/login");
     }
   };
 
   return (
-    <AppLayout>
-      <div style={{ padding: "1rem" }}>
-        <h2>Register</h2>
-
-        <RegisterForm
-          form={form}
-          onChange={handleChange}
-          onSubmit={handleSubmit}
-          error={error}
-        />
-
-        <Link to="/login" style={{ display: "block", marginTop: "1rem" }}>
-          Already have an account? Login
-        </Link>
-      </div>
-    </AppLayout>
+    <div>
+      <h2>Register</h2>
+      <RegisterForm
+        form={form}
+        onChange={handleChange}
+        onFileChange={handleFileChange}
+        onSubmit={handleSubmit}
+        error={error}
+      />
+    </div>
   );
 }

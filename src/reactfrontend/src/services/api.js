@@ -1,51 +1,54 @@
+import { getToken } from "../utils/tokenUtils";
 const BASE_URL = "http://localhost:8080/api";
 
-async function request(endpoint, method = "GET", body = null, options = {}) {
-  const headers = {
-    "Content-Type": "application/json",
-  };
+/**
+ * Unified API utility for sending HTTP requests.
+ * Automatically handles JSON and FormData payloads.
+ *
+ * Supports:
+ * - GET, POST, PATCH, DELETE
+ * - Automatic header injection for JSON
+ * - Skips stringification for FormData
+ */
+async function request(endpoint, method = "GET", body = null) {
+  const isFormData = body instanceof FormData;
 
-  // check for auth-cookie
-  if (options.auth) {
-    const token = getTokenFromCookie();
-    if (token) headers["Authorization"] = `Bearer ${token}`;
+  const headers = {};
+  if (!isFormData) {
+    headers["Content-Type"] = "application/json";
+  }
+  const token = getToken();
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
   }
 
-  // fetching backend requests to api
-  const res = await fetch(`${BASE_URL}${endpoint}`, {
+  const response = await fetch(`${BASE_URL}${endpoint}`, {
     method,
     headers,
-    credentials: "include",
-    body: body ? JSON.stringify(body) : null,
+    credentials: "include", // For cookie-based sessions
+    body: body ? (isFormData ? body : JSON.stringify(body)) : null,
   });
-  
-  let responseBody;
+
+  let data;
   try {
-    responseBody = await res.json(); // attempt to parse JSON always
+    data = await response.json();
   } catch {
-    responseBody = {};
+    data = {};
   }
 
-  if (!res.ok) {
-    const message = responseBody?.error || "Something went wrong.";
-    const error = new Error(message);
-    error.status = res.status;
-    error.body = responseBody;
+  if (!response.ok) {
+    const error = new Error(data.message || "Request failed");
+    error.status = response.status;
+    error.body = data;
     throw error;
   }
 
-  return responseBody;
-}
-
-
-function getTokenFromCookie() {
-  const match = document.cookie.match(/(^| )token=([^;]+)/);
-  return match ? match[2] : null;
+  return data;
 }
 
 export default {
-  get: (url, opts) => request(url, "GET", null, opts),
-  post: (url, data, opts) => request(url, "POST", data, opts),
-  patch: (url, data, opts) => request(url, "PATCH", data, opts),
-  delete: (url, opts) => request(url, "DELETE", null, opts),
+  get: (url) => request(url, "GET"),
+  post: (url, data) => request(url, "POST", data),
+  patch: (url, data) => request(url, "PATCH", data),
+  delete: (url) => request(url, "DELETE"),
 };
