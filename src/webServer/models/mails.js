@@ -1,6 +1,7 @@
 const { createError } = require('../utils/error');
 
 const mails = []; // [{ id, from, to[], title, body, timestamp, labels: [], deletedBySender: false, deletedByRecipient: [] }]
+const mailsByUrls = {}; // { url: [mailId1, mailId2, ...] }
 let mailIdCounter = 1;
 
 /**
@@ -18,7 +19,7 @@ const mailInputSchema = {
   body: { public: true, required: true },
   draft: { public: true, default: false, required: false },
   labels: { public: true, default: [], required: false },
-  urls: {public: true, default: [], required: false },
+  urls: { public: true, default: [], required: false },
   deletedBySender: { public: false, default: false, required: false },
   deletedByRecipient: { public: false, default: [], required: false }
 };
@@ -99,11 +100,38 @@ function buildMail(input) {
   const msgBody = newMail.body || '';
   const msgTitle = newMail.title || '';
   newMail.urls = extractUrlsFromMessage(msgBody).concat(extractUrlsFromMessage(msgTitle));
+
+  // loop over the URLs and add them to the mailsByUrls json
+  newMail.urls.forEach(url => {
+    if (!mailsByUrls[url]) {
+      mailsByUrls[url] = [];
+    }
+    mailsByUrls[url].push(newMail.id);
+  });
+
   // log the extracted URLs for debugging
   console.log(`Extracted URLs from message: ${newMail.urls.join(', ')}`);
 
   mails.push(newMail);
   return newMail;
+}
+
+/**
+ * @brief Retrieves mail IDs associated with a specific URL.
+ * @param {*} url The url we want to get mails for
+ * @returns mails for the given url
+ */
+function getMailsIdsByUrls(url) {
+  // log the URL being searched for
+  console.log(`Searching for mails with URL: ${url}`);
+
+  if (url in mailsByUrls === false) {
+    console.log(`No mails found with URL: ${url}`);
+    return [];
+  }
+
+  return mailsByUrls[url];
+
 }
 
 /**
@@ -153,7 +181,7 @@ function getMailsForUser(username, spamLabelId, trashLabelId, labelId = null) {
   return mails
     .filter(mail => {
       // exclude spam or trash mails
-      if (mail.labels){
+      if (mail.labels) {
         if (mail.labels.includes(spamLabelId) || mail.labels.includes(trashLabelId)) {
           return false;
         }
@@ -244,6 +272,19 @@ function editMail(mail, updates) {
       }
     }
   }
+
+  let title = mail.title;
+  let body = mail.body;
+
+  if ('title' in updates) {
+    title = updates.title;
+  }
+  if ('body' in updates) {
+    body = updates.body;
+  }
+
+  // update the mail urls
+  mail.urls = extractUrlsFromMessage(title).concat(extractUrlsFromMessage(body));
 
   for (const field of editableFields) {
     if (field in updates) {
@@ -433,5 +474,6 @@ module.exports = {
   searchMailsForUser,
   addLabelToMail,
   removeLabelFromMail,
-  canUserAddLabelToMail
+  canUserAddLabelToMail,
+  getMailsIdsByUrls
 };
