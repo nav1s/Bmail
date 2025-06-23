@@ -48,8 +48,7 @@ export default function RegisterForm({ form, onChange, onFileChange, onSubmit, e
           />
 
           <label>
-            <span>Profile</span><br />
-            <span>Photo:</span>
+            <div>Profile Photo:</div>
             <input
               type="file"
               accept="image/*"

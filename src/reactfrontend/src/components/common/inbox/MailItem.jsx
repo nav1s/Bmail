@@ -1,6 +1,7 @@
 import React from "react";
 import ToggableButton from "../labels/ToggableButton";
 import useMailItem from "../hooks/useMailItem";
+import "../../../styles/MailItem.css";
 
 export default function MailItem({
   mail,
@@ -24,14 +25,15 @@ export default function MailItem({
   const isInboxed = hasLabel(labelMap?.inbox);
 
   return (
-    <div className={`mail-list-item ${mail.read ? "read" : ""}`} onClick={handleClick}>
+    <div className="mail-item" onClick={handleClick}>
       <div className="mail-header">
-        <strong className="mail-from">{mail.from}</strong>
+        <span className="mail-from">{mail.from}</span>
         <span className="mail-title">{mail.title}</span>
       </div>
+      <div className="mail-body">{mail.body?.slice(0, 100)}...</div>
 
       <div className="mail-actions">
-        {!isTrashView && (
+        {!isTrashView ? (
           <>
             {labelMap?.starred !== undefined && (
               <ToggableButton
@@ -51,14 +53,21 @@ export default function MailItem({
                 onLabelChange={loadMails}
               />
             )}
-            <button className="btn small danger" onClick={(e) => { e.stopPropagation(); handleTrash(); }}>Trash</button>
+            <button onClick={(e) => {
+              e.stopPropagation();
+              handleTrash();
+            }}>🗑️</button>
           </>
-        )}
-
-        {isTrashView && (
+        ) : (
           <>
-            <button className="btn small" onClick={(e) => { e.stopPropagation(); handleRestore(); }}>Restore</button>
-            <button className="btn small danger" onClick={(e) => { e.stopPropagation(); handleDeletePermanent(); }}>Delete Permanently</button>
+            <button onClick={(e) => {
+              e.stopPropagation();
+              handleRestore();
+            }}>↩️</button>
+            <button onClick={(e) => {
+              e.stopPropagation();
+              handleDeletePermanent();
+            }}>❌</button>
           </>
         )}
       </div>

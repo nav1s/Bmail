@@ -1,5 +1,6 @@
 // src/components/auth/LoginForm.jsx
 import React from "react";
+import { Link } from "react-router-dom";
 
 /**
  * Pure presentational component: renders login form UI
@@ -28,6 +29,13 @@ export default function LoginForm({ form, onChange, onSubmit, error }) {
           <button type="submit">Login</button>
 
           {error && <p>{error}</p>}
+          <div className="auth-link">
+          <p>
+            Don’t have an account?{" "}
+            <Link to="/register">Register</Link>
+          </p>
+        </div>
+
         </form>
       </div>
     </div>

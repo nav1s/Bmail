@@ -97,15 +97,11 @@ export default function InboxPage() {
               prefill={openedMail}
             />
           ) : (
-            <div className="mail-popup-overlay">
-              <div className="mail-popup-content">
                 <MailViewerPopup
                   mail={openedMail}
                   onClose={() => setOpenedMail(null)}
                   loadMails={loadMails}
                 />
-              </div>
-            </div>
           ))}
       </div>
     </AppLayout>

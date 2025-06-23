@@ -1,4 +1,5 @@
 import { useRef, useEffect } from "react";
+import "../../../styles/Popup.css";
 
 /**
  * Popup
@@ -37,6 +38,21 @@ export default function Popup({ onClose, className = "", children, extraRefs = [
   document.addEventListener("keydown", handleEscape);
   return () => document.removeEventListener("keydown", handleEscape);
 }, [onClose]);
+
+useEffect(() => {
+    const originalStyle = window.getComputedStyle(document.body).overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = originalStyle;
+    };
+  }, []);
+
+useEffect(() => {
+  document.body.style.position = 'relative';
+  return () => {
+    document.body.style.position = '';
+  };
+}, []);
 
 
   return (

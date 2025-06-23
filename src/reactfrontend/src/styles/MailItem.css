@@ -1,0 +1,62 @@
+.mail-item {
+  padding: 16px 20px;
+  border-bottom: 1px solid #e0e0e0;
+  cursor: pointer;
+  background-color: white;
+  transition: background-color 0.2s ease;
+}
+
+.mail-item:hover {
+  background-color: #f5f8fd;
+}
+
+.mail-header {
+  display: flex;
+  justify-content: space-between;
+  font-weight: 600;
+  font-size: 15px;
+  color: #202124;
+}
+
+.mail-from {
+  color: #1a73e8;
+  width: 30%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mail-title {
+  width: 70%;
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mail-body {
+  margin-top: 6px;
+  color: #5f6368;
+  font-size: 14px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mail-actions {
+  margin-top: 10px;
+  display: flex;
+  gap: 12px;
+}
+
+.mail-actions button {
+  background: none;
+  border: none;
+  font-size: 16px;
+  cursor: pointer;
+  color: #5f6368;
+}
+
+.mail-actions button:hover {
+  color: #202124;
+}
