@@ -1,0 +1,66 @@
+/* Main container that centers the auth card vertically and horizontally */
+.auth-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh; /* Full height of the screen */
+  background: linear-gradient(to right, #f1f3f4, #e8eaed); /* Gmail-like background */
+  font-family: "Segoe UI", Roboto, sans-serif;
+}
+
+/* The card that wraps the form - white background and subtle shadow */
+.auth-card {
+  background: white;
+  padding: 2.5rem 3rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 400px; /* Prevents stretching on large screens */
+}
+
+/* Title inside the card */
+.auth-card h2 {
+  text-align: center;
+  color: #202124;
+  margin-bottom: 1.5rem;
+}
+
+/* Input fields (text/password/file) */
+.auth-card input[type="text"],
+.auth-card input[type="password"],
+.auth-card input[type="file"] {
+  width: 100%;
+  padding: 0.75rem;
+  margin-bottom: 1rem;
+  border: 1px solid #dadce0;
+  border-radius: 6px;
+  font-size: 1rem;
+  box-sizing: border-box;
+}
+
+/* Submit button */
+.auth-card button {
+  width: 100%;
+  padding: 0.75rem;
+  background-color: #1a73e8; /* Gmail blue */
+  color: white;
+  font-weight: bold;
+  font-size: 1rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out;
+}
+
+/* Hover effect for the button */
+.auth-card button:hover {
+  background-color: #155ab6;
+}
+
+/* Error message */
+.auth-card p {
+  color: red;
+  text-align: center;
+  margin-top: 0.5rem;
+}

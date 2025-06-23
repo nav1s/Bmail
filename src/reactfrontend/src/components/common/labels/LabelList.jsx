@@ -10,20 +10,18 @@ export default function LabelList({
 }) {
   return (
     <div>
-      {title && <p>{title}</p>}
-      <ul>
-         <ul>
-          {labels.map((l) => (
-            <LabelItem
-              key={l.name}
-              label={l}
-              selected={selected}
-              onSelect={onSelect}
-              onMenu={onMenuClick}
-              showMenu={Boolean(onMenuClick)}
-            />
-          ))}
-        </ul>
+      {title && <p className="label-section-title">{title}</p>}
+      <ul className="label-list">
+        {labels.map((l) => (
+          <LabelItem
+            key={l.name}
+            label={l}
+            selected={selected}
+            onSelect={onSelect}
+            onMenu={onMenuClick}
+            showMenu={Boolean(onMenuClick)}
+          />
+        ))}
       </ul>
     </div>
   );

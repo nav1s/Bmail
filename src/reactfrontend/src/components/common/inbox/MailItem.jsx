@@ -10,29 +10,27 @@ export default function MailItem({
   onRestore,
   isTrashView,
   labelMap,
-  loadMails
+  loadMails,
 }) {
   const {
     handleClick,
     handleTrash,
     handleDeletePermanent,
     handleRestore,
-    hasLabel
+    hasLabel,
   } = useMailItem(mail, { onClick, onTrash, onDeletePermanent, onRestore });
 
   const isStarred = hasLabel(labelMap?.starred);
   const isInboxed = hasLabel(labelMap?.inbox);
 
   return (
-    <div
-      onClick={handleClick}
-      style={{ padding: "8px", borderBottom: "1px solid #ccc", cursor: "pointer" }}
-    >
-      <div>
-        <strong>{mail.from}</strong> — {mail.title}
+    <div className={`mail-list-item ${mail.read ? "read" : ""}`} onClick={handleClick}>
+      <div className="mail-header">
+        <strong className="mail-from">{mail.from}</strong>
+        <span className="mail-title">{mail.title}</span>
       </div>
 
-      <div>
+      <div className="mail-actions">
         {!isTrashView && (
           <>
             {labelMap?.starred !== undefined && (
@@ -53,14 +51,14 @@ export default function MailItem({
                 onLabelChange={loadMails}
               />
             )}
-            <button onClick={handleTrash}>Trash</button>
+            <button className="btn small danger" onClick={(e) => { e.stopPropagation(); handleTrash(); }}>Trash</button>
           </>
         )}
 
         {isTrashView && (
           <>
-            <button onClick={handleRestore}>Restore</button>
-            <button onClick={handleDeletePermanent}>Delete Permanently</button>
+            <button className="btn small" onClick={(e) => { e.stopPropagation(); handleRestore(); }}>Restore</button>
+            <button className="btn small danger" onClick={(e) => { e.stopPropagation(); handleDeletePermanent(); }}>Delete Permanently</button>
           </>
         )}
       </div>

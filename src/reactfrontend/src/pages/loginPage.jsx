@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 
+import "../styles/AuthForm.css";
+
 // Layout
 import AppLayout from "../components/layout/AppLayout";
 
@@ -47,23 +49,18 @@ export default function LoginPage() {
   };
 
   return (
-    <AppLayout>
-      <div style={{ padding: "1rem" }}>
-        <h2>Login</h2>
+    <>
+      <LoginForm
+        form={form}
+        onChange={handleChange}
+        onSubmit={handleSubmit}
+        error={error}
+      />
 
-        {/* Login form UI */}
-        <LoginForm
-          form={form}
-          onChange={handleChange}
-          onSubmit={handleSubmit}
-          error={error}
-        />
-
-        {/* Navigation link to registration */}
-        <Link to="/register" style={{ display: "block", marginTop: "1rem" }}>
-          Don't have an account? Register
-        </Link>
+      {/* Link to registration page */}
+      <div style={{ textAlign: "center" }}>
+        <Link to="/register">Don't have an account? Register</Link>
       </div>
-    </AppLayout>
+    </>
   );
 }

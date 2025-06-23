@@ -12,7 +12,7 @@ export default function MailList({
   loadMails,
 }) {
   return (
-    <div>
+    <div className="mail-list">
       {mails.map((mail) => (
         <MailItem
           key={mail.id}

@@ -1,20 +1,23 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+
+// Import styling
+import "../styles/AuthForm.css";
+
 import RegisterForm from "./forms/RegisterForm";
 import useRegister from "../hooks/useRegister";
 
 /**
- * registerPage
+ * RegisterPage
  *
- * Renders the user registration page.
- * Manages local state for form fields and file input.
- * Delegates validation and API interaction to useRegister().
+ * Displays the user registration page.
+ * Uses RegisterForm for UI, and manages form state + submission.
  */
 export default function RegisterPage() {
   const navigate = useNavigate();
   const { handleRegister, error } = useRegister();
 
-  // Form state
+  // Form state for text inputs
   const [form, setForm] = useState({
     username: "",
     password: "",
@@ -23,27 +26,21 @@ export default function RegisterPage() {
     lastName: "",
   });
 
-  // File state for profile photo
+  // Profile photo file input
   const [file, setFile] = useState(null);
 
-  /**
-   * Handles text input changes and updates form state
-   */
+  // Handle typing into text fields
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  /**
-   * Handles profile image file selection
-   */
+  // Handle image file selection
   const handleFileChange = (e) => {
     setFile(e.target.files[0]);
   };
 
-  /**
-   * Handles form submission and calls the registration hook
-   */
+  // Handle registration form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     const success = await handleRegister(form, file);
@@ -53,15 +50,12 @@ export default function RegisterPage() {
   };
 
   return (
-    <div>
-      <h2>Register</h2>
-      <RegisterForm
-        form={form}
-        onChange={handleChange}
-        onFileChange={handleFileChange}
-        onSubmit={handleSubmit}
-        error={error}
-      />
-    </div>
+    <RegisterForm
+      form={form}
+      onChange={handleChange}
+      onFileChange={handleFileChange}
+      onSubmit={handleSubmit}
+      error={error}
+    />
   );
 }

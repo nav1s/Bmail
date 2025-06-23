@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import "../styles/InboxPage.css";
 
 // Layout
 import AppLayout from "../components/layout/AppLayout";
@@ -20,24 +21,16 @@ import { useParams, useNavigate } from "react-router-dom";
 /**
  * InboxPage
  *
- * The primary interface for logged-in users to manage emails.
- * This page:
- * - Loads and filters emails by selected label and search query
- * - Manages state and logic for mail operations using `useInboxMails`
- * - Displays popups for composing, reading, and confirming actions
- * - Renders the application layout via `AppLayout`, which includes Header and account popup
+ * Main mail management interface. Displays:
+ * - Sidebar with labels and compose
+ * - Search bar and mail list
+ * - Compose, viewer, and sent popups
  */
 export default function InboxPage() {
-  // Search input state
   const [query, setQuery] = useState("");
-
-  // Label from route param (e.g. inbox/starred/custom)
   const { label } = useParams();
-
-  // Navigation handler
   const navigate = useNavigate();
 
-  // Mailbox state and handlers from custom logic hook
   const {
     mails,
     showCompose,
@@ -52,57 +45,69 @@ export default function InboxPage() {
     handleRestoreMail,
     isDraftMail,
     labelMap,
-    loadMails
+    loadMails,
   } = useInboxMails(label, query);
 
   return (
     <AppLayout>
-      <button onClick={() => setShowCompose(true)}>Compose</button>
+      <div className="inbox-page">
+        <div className="inbox-main-content">
+          {/* Sidebar */}
+          <aside className="sidebar">
+            <button className="compose-btn" onClick={() => setShowCompose(true)}>
+              Compose
+            </button>
 
-      <LabelManager
-        selectedLabel={label}
-        onSelect={(name) => navigate(`/mails/${name}`)}
-      />
+            <LabelManager
+              selectedLabel={label}
+              onSelect={(name) => navigate(`/mails/${name}`)}
+            />
+          </aside>
 
-      <SearchBar query={query} setQuery={setQuery} />
+          {/* Main content */}
+          <section className="mail-list-section">
+            <SearchBar query={query} setQuery={setQuery} />
 
-      <MailList
-        mails={mails}
-        onDelete={handleDeleteMail}
-        onMailClick={setOpenedMail}
-        onTrash={handleTrashMail}
-        onDeletePermanent={handleDeleteMail}
-        onRestore={handleRestoreMail}
-        selectedLabel={label}
-        labelMap={labelMap}
-        loadMails={loadMails}
-      />
+            <MailList
+              mails={mails}
+              onDelete={handleDeleteMail}
+              onMailClick={setOpenedMail}
+              onTrash={handleTrashMail}
+              onDeletePermanent={handleDeleteMail}
+              onRestore={handleRestoreMail}
+              selectedLabel={label}
+              labelMap={labelMap}
+              loadMails={loadMails}
+            />
+          </section>
+        </div>
 
-      {showCompose && (
-        <ComposePopup
-          onSend={handleSendMail}
-          onClose={() => setShowCompose(false)}
-        />
-      )}
+        {/* Popups */}
+        {showCompose && (
+          <ComposePopup onSend={handleSendMail} onClose={() => setShowCompose(false)} />
+        )}
 
-      {mailSentVisible && (
-        <MailSentPopup onClose={() => setMailSentVisible(false)} />
-      )}
+        {mailSentVisible && <MailSentPopup onClose={() => setMailSentVisible(false)} />}
 
-      {openedMail &&
-        (isDraftMail(openedMail) ? (
-          <ComposePopup
-            onSend={handleSendMail}
-            onClose={() => setOpenedMail(null)}
-            prefill={openedMail}
-          />
-        ) : (
-          <MailViewerPopup
-            mail={openedMail}
-            onClose={() => setOpenedMail(null)}
-            loadMails={loadMails}
-          />
-        ))}
+        {openedMail &&
+          (isDraftMail(openedMail) ? (
+            <ComposePopup
+              onSend={handleSendMail}
+              onClose={() => setOpenedMail(null)}
+              prefill={openedMail}
+            />
+          ) : (
+            <div className="mail-popup-overlay">
+              <div className="mail-popup-content">
+                <MailViewerPopup
+                  mail={openedMail}
+                  onClose={() => setOpenedMail(null)}
+                  loadMails={loadMails}
+                />
+              </div>
+            </div>
+          ))}
+      </div>
     </AppLayout>
   );
 }

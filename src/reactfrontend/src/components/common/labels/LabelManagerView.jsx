@@ -11,10 +11,6 @@ export const ALL_LABEL = {
   isAttachable: false,
 };
 
-/**
- * LabelManagerView
- * Pure UI layout with all subcomponents.
- */
 export default function LabelManagerView({
   labels,
   newLabelName,
@@ -36,8 +32,8 @@ export default function LabelManagerView({
   const customLabels = labels.filter((l) => !l.isDefault);
 
   return (
-    <div>
-      <h4>Labels</h4>
+    <div className="label-sidebar">
+      <h4 className="label-title">Labels</h4>
 
       <LabelInput
         value={newLabelName}
@@ -45,19 +41,20 @@ export default function LabelManagerView({
         onAdd={handleAddLabel}
       />
 
-      <LabelList
-        labels={defaultLabels}
-        selected={selectedLabel}
-        onSelect={onSelect}
-      />
+      <div className="label-section">
+        <LabelList
+          labels={defaultLabels}
+          selected={selectedLabel}
+          onSelect={onSelect}
+        />
 
-      <LabelList
-        labels={customLabels}
-        selected={selectedLabel}
-        onSelect={onSelect}
-        onMenuClick={setMenuLabel}
-      />
-
+        <LabelList
+          labels={customLabels}
+          selected={selectedLabel}
+          onSelect={onSelect}
+          onMenuClick={setMenuLabel}
+        />
+      </div>
 
       {showEdit && selectedLabel && (
         <EditLabelPopup

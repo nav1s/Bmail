@@ -6,25 +6,30 @@ import React from "react";
  */
 export default function LoginForm({ form, onChange, onSubmit, error }) {
   return (
-    <form onSubmit={onSubmit}>
-      <input
-        name="username"
-        value={form.username}
-        onChange={onChange}
-        placeholder="Username"
-        required
-      />
-      <input
-        name="password"
-        type="password"
-        value={form.password}
-        onChange={onChange}
-        placeholder="Password"
-        required
-      />
-      <button type="submit">Login</button>
+    <div className="auth-container">
+      <div className="auth-card">
+        <h2>Login</h2>
+        <form onSubmit={onSubmit}>
+          <input
+            name="username"
+            value={form.username}
+            onChange={onChange}
+            placeholder="Username"
+            required
+          />
+          <input
+            name="password"
+            type="password"
+            value={form.password}
+            onChange={onChange}
+            placeholder="Password"
+            required
+          />
+          <button type="submit">Login</button>
 
-      {error && <p>{error}</p>}
-    </form>
+          {error && <p>{error}</p>}
+        </form>
+      </div>
+    </div>
   );
 }
