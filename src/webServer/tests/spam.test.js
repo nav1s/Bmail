@@ -151,7 +151,6 @@ test('Marking mail as spam adds its URLs to the blacklist', async () => {
     // remove the url from the blacklist if it exists
     await api.delete(`/api/blacklist/${encodeURIComponent(url)}`)
         .set('Authorization', 'bearer ' + token)
-        .expect(204);
 
     const mailBody = `Suspicious link: ${url}`;
 

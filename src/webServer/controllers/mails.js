@@ -370,6 +370,8 @@ async function attachLabelToMail(req, res) {
       addMailToLabel(mailId, labelId, uid);
       // Check if the label is a spam label
       if (labelId === getLabelByName(uid, defaultLabelNames.spam)) {
+        const mail = findMailById(mailId);
+
         // add the urls to the blacklist
         const urls = mail.urls || [];
 
