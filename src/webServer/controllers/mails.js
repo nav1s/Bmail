@@ -64,26 +64,14 @@ async function checkBlacklistedUrl(urls) {
 }
 
 /**
- * @brief Extracts URLs from a message body or title.
- * @param {*} msg The message body or title to extract URLs from.
- * @returns the list of URLs found in the message.
- */
-function extractUrlsFromMessage(msg) {
-  const urlRegex = /\bhttps?:\/\/(?:www\.)?[a-zA-Z0-9\-]+\.[a-zA-Z]{2,}(?:\.[a-zA-Z]{2,})?(?:\/[^\s]*)?\b/g;
-  return msg.match(urlRegex) || [];
-}
-
-/**
  * This function checks if a message contains any blacklisted URLs.
  * @param msg The message body or title to check for blacklisted URLs.
  * @returns true if any blacklisted URLs are found, false otherwise.
  */
-async function isMessageValid(msg) {
-  const urls = extractUrlsFromMessage(msg);
-
+async function areUrlsBlacklisted(urls) {
   let isInvalid = false;
   if (urls !== null)
-    if (urls.length > 0) {
+    if (urls.length >= 1) {
       // Check if any of the URLs are blacklisted
       try {
         isInvalid = await checkBlacklistedUrl(urls);
@@ -93,7 +81,6 @@ async function isMessageValid(msg) {
     }
 
   return isInvalid;
-
 }
 
 /**
@@ -120,9 +107,8 @@ async function createMail(req, res) {
   const newMail = buildMail(mailInput);
 
   // check if the mail contains blacklisted URLs
-  const msgBody = mailInput.body || '';
-  const msgTitle = mailInput.title || '';
-  const isBlacklisted = await isMessageValid(msgBody) || await isMessageValid(msgTitle);
+  const urls = newMail.urls
+  const isBlacklisted = await areUrlsBlacklisted(urls);
 
   // move the mail to spam if it contains blacklisted URLs
   if (isBlacklisted) {
@@ -236,7 +222,6 @@ function getMailById(req, res) {
   }
 }
 
-// todo add to blacklist when mail is labeled as spam
 /**
  * PATCH /api/mails/:id
  * Edits the title/body of an existing mail with a given ID.
@@ -386,11 +371,7 @@ async function attachLabelToMail(req, res) {
       // Check if the label is a spam label
       if (labelId === getLabelByName(uid, defaultLabelNames.spam)) {
         // add the urls to the blacklist
-        const mail = findMailById(mailId);
-        const msgBody = mail.body || '';
-        const msgTitle = mail.title || '';
-        // get all URLs from the mail body and title
-        const urls = extractUrlsFromMessage(msgBody).concat(extractUrlsFromMessage(msgTitle));
+        const urls = mail.urls || [];
 
         if (urls.length >= 1) {
           await addUrlsToBlacklist(urls);

@@ -17,7 +17,10 @@ const mailInputSchema = {
   title: { public: true, required: true },
   body: { public: true, required: true },
   draft: { public: true, default: false, required: false },
-  labels: { public: true, default: [], required: false }
+  labels: { public: true, default: [], required: false },
+  urls: {public: true, default: [], required: false },
+  deletedBySender: { public: false, default: false, required: false },
+  deletedByRecipient: { public: false, default: [], required: false }
 };
 
 /**
@@ -93,8 +96,24 @@ function buildMail(input) {
     }
   }
 
+  const msgBody = newMail.body || '';
+  const msgTitle = newMail.title || '';
+  newMail.urls = extractUrlsFromMessage(msgBody).concat(extractUrlsFromMessage(msgTitle));
+  // log the extracted URLs for debugging
+  console.log(`Extracted URLs from message: ${newMail.urls.join(', ')}`);
+
   mails.push(newMail);
   return newMail;
+}
+
+/**
+ * @brief Extracts URLs from a message body or title.
+ * @param {*} msg The message body or title to extract URLs from.
+ * @returns the list of URLs found in the message.
+ */
+function extractUrlsFromMessage(msg) {
+  const urlRegex = /\bhttps?:\/\/(?:www\.)?[a-zA-Z0-9\-]+\.[a-zA-Z]{2,}(?:\.[a-zA-Z]{2,})?(?:\/[^\s]*)?\b/g;
+  return msg.match(urlRegex) || [];
 }
 
 
