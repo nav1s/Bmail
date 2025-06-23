@@ -85,7 +85,7 @@ exports.createUser = (req, res) => {
     const newUser = users.createUser(userData);
     // Create default labels for the new user
     labels.createDefaultLabels(newUser.id);
-    return createdWithLocation(res, `/api/users/${newUser.id}`);
+    return res.status(201).json({id: newUser.id});
   } catch (err) {
     console.error('Error creating user:', err);
     return httpError(res, err);
