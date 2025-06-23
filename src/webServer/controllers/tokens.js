@@ -24,7 +24,7 @@ function login(req, res) {
 
     const data = { username: user.username }
     const token = jwt.sign(data, key)
-    res.status(201).json({ token });
+    res.status(201).json({ token, id: user.id });
 
 
   } catch (err) {
