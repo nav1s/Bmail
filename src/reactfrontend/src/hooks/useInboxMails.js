@@ -60,19 +60,30 @@ export default function useInboxMails(label, query) {
   }, [query, label]);
 
   const handleSendMail = async (formData) => {
-    try {
-      await api.post("/mails", formData, { auth: true });
-      await loadMails();
-      setShowCompose(false);
+  try {
+    const isUpdate = formData.id != null;
+    const { id, ...data } = formData;
 
-      if (!formData.draft) {
-        setMailSentVisible(true);
-        setTimeout(() => setMailSentVisible(false), 2000);
-      }
-    } catch (err) {
-      alert("Send failed: " + err.message);
+    if (isUpdate) {
+      // Update existing draft or sent mail
+      await api.patch(`/mails/${id}`, { ...data, draft: formData.draft }, { auth: true });
+    } else {
+      // Create new mail (draft or sent)
+      await api.post("/mails", { ...data, draft: formData.draft }, { auth: true });
     }
-  };
+
+    await loadMails();
+    setShowCompose(false);
+
+    if (!formData.draft) {
+      setMailSentVisible(true);
+      setTimeout(() => setMailSentVisible(false), 2000);
+    }
+  } catch (err) {
+    alert("Send failed: " + err.message);
+  }
+};
+
 
   const handleTrashMail = async (mailId) => {
     try {

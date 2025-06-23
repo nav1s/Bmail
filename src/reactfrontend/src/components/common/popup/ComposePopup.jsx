@@ -1,34 +1,27 @@
-import Popup from "./Popup";
-import ComposePopupForm from "./forms/ComposePopupForm";
 import useComposePopup from "../hooks/useComposePopup";
 
-/**
- * ComposePopup
- * Orchestrates logic + UI to send or draft an email via popup.
- */
-export default function ComposePopup({ onClose, onSend, prefill }) {
-  const { form, handleChange, parseForm } = useComposePopup(prefill);
+export default function ComposePopup({ prefill, onSend, onClose }) {
+  const { form, handleChange, handleFileChange, parseForm } = useComposePopup(prefill);
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSend(parseForm(false));
+    onSend(parseForm(false)); // Send mail
     onClose();
   };
 
   const handleDraft = () => {
-    onSend(parseForm(true));
+    onSend(parseForm(true)); // Save draft
+    onClose();
   };
 
   return (
-    <Popup onClose={onClose} className="compose-popup">
-      <h3>Compose Mail</h3>
-      <ComposePopupForm
-        form={form}
-        onChange={handleChange}
-        onSend={handleSubmit}
-        onDraft={handleDraft}
-        onCancel={onClose}
-      />
-    </Popup>
+    <form onSubmit={handleSubmit}>
+      <input name="to" value={form.to} onChange={handleChange} placeholder="To" />
+      <input name="title" value={form.title} onChange={handleChange} placeholder="Title" />
+      <textarea name="body" value={form.body} onChange={handleChange} placeholder="Body" />
+      <input type="file" onChange={handleFileChange} />
+      <button type="submit">Send</button>
+      <button type="button" onClick={handleDraft}>Save Draft</button>
+    </form>
   );
 }
