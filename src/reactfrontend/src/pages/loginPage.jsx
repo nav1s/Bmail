@@ -56,11 +56,6 @@ export default function LoginPage() {
         onSubmit={handleSubmit}
         error={error}
       />
-
-      {/* Link to registration page */}
-      <div style={{ textAlign: "center" }}>
-        <Link to="/register">Don't have an account? Register</Link>
-      </div>
     </>
   );
 }
