@@ -27,9 +27,7 @@
 }
 
 /* Input fields (text/password/file) */
-.auth-card input[type="text"],
-.auth-card input[type="password"],
-.auth-card input[type="file"] {
+.auth-card input {
   width: 100%;
   padding: 0.75rem;
   margin-bottom: 1rem;
