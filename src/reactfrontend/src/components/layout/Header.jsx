@@ -9,7 +9,7 @@ export default function Header({ onAvatarClick }) {
     return first + last || "?";
   };
 
-  return (
+ return (
     <header
       style={{
         display: "flex",
@@ -36,7 +36,7 @@ export default function Header({ onAvatarClick }) {
                 height: "35px",
                 borderRadius: "50%",
                 objectFit: "cover",
-                cursor: "pointer"
+                cursor: "pointer",
               }}
               onClick={onAvatarClick}
             />

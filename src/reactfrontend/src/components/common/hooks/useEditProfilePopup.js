@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { updateUser } from "../../../services/userService";
 import { useUser } from "../../../contexts/UserContext";
+import { BASE_URL } from "../../../services/api";
 
 
 
@@ -16,6 +17,9 @@ export default function useEditProfile() {
 
     try {
       const updated = await updateUser(user.id, formData);
+      if (updated.image && !updated.imageUrl) {
+        updated.imageUrl = `${BASE_URL.replace("/api", "")}${updated.image}`;
+      }
       update(updated);
       return true;
     } catch (err) {

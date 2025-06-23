@@ -3,6 +3,7 @@ import { login } from "../services/authService";
 import { getUserById } from "../services/userService";
 import { saveToken } from "../utils/tokenUtils";
 import { useUser } from "../contexts/UserContext";
+import { BASE_URL } from "../services/api";
 
 /**
  * Custom hook that handles the login process:
@@ -20,25 +21,26 @@ export default function useLogin() {
    * @param {string} password
    * @returns {Promise<boolean>} success
    */
-  const handleLogin = async (username, password) => {
-    try {
-      // Auth call → returns token
-      const data = await login(username, password);
-      saveToken(data.token);
+const handleLogin = async (username, password) => {
+  try {
+    const data = await login(username, password);
+    saveToken(data.token);
 
-      // Fetch user info
-      const userInfo = await getUserById(data.id);
+    let userInfo = await getUserById(data.id);
 
-      // Update context
-      setUser(userInfo);
-
-      setError("");
-      return true;
-    } catch (err) {
-      setError(err.message || "Login failed");
-      return false;
+     if (userInfo.image && !userInfo.imageUrl) {
+      userInfo.imageUrl = `${BASE_URL.replace("/api", "")}${userInfo.image}`;
     }
-  };
+
+    setUser(userInfo);
+    setError("");
+    return true;
+  } catch (err) {
+    setError(err.message || "Login failed");
+    return false;
+  }
+};
+
 
   return { handleLogin, error };
 }

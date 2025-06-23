@@ -1,5 +1,5 @@
 import { getToken } from "../utils/tokenUtils";
-const BASE_URL = "http://localhost:8080/api";
+export const BASE_URL = "http://localhost:8080/api";
 
 /**
  * Unified API utility for sending HTTP requests.
