@@ -1,13 +1,13 @@
-import { loadUser } from "../../utils/userUtils";
+import { useUser } from "../../contexts/UserContext";
 
-/**
- * Header
- *
- * Displays app title, dark mode toggle, and user avatar.
- * Avatar opens account menu via `onAvatarClick`.
- */
 export default function Header({ onAvatarClick }) {
-  const user = loadUser();
+  const { user } = useUser();
+
+  const getInitials = (user) => {
+    const first = user?.firstName?.[0]?.toUpperCase() ?? "";
+    const last = user?.lastName?.[0]?.toUpperCase() ?? "";
+    return first + last || "?";
+  };
 
   return (
     <header
@@ -27,24 +27,38 @@ export default function Header({ onAvatarClick }) {
         </button>
 
         {user && (
-          <div
-            onClick={onAvatarClick}
-            style={{
-              backgroundColor: "#555",
-              color: "#fff",
-              borderRadius: "50%",
-              width: "35px",
-              height: "35px",
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              fontWeight: "bold",
-              cursor: "pointer",
-            }}
-          >
-            {user.firstName?.[0]?.toUpperCase() ?? "?"}
-            {user.lastName?.[0]?.toUpperCase() ?? ""}
-          </div>
+          user.imageUrl ? (
+            <img
+              src={`${user.imageUrl}?t=${new Date().getTime()}`}
+              alt="avatar"
+              style={{
+                width: "35px",
+                height: "35px",
+                borderRadius: "50%",
+                objectFit: "cover",
+                cursor: "pointer"
+              }}
+              onClick={onAvatarClick}
+            />
+          ) : (
+            <div
+              onClick={onAvatarClick}
+              style={{
+                backgroundColor: "#555",
+                color: "#fff",
+                borderRadius: "50%",
+                width: "35px",
+                height: "35px",
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                fontWeight: "bold",
+                cursor: "pointer",
+              }}
+            >
+              {getInitials(user)}
+            </div>
+          )
         )}
       </div>
     </header>

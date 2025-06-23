@@ -9,6 +9,6 @@ export async function getUserById(id) {
 }
 
 export async function updateUser(id, formData) {
-  await api.patch(`/users/${id}`, formData);
+  await api.patch(`/users`, formData);
   return getUserById(id);
 }
