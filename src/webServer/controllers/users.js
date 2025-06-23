@@ -162,6 +162,13 @@ exports.updateUserById = (req, res) => {
     }
   }
 
+  if ('file' in req) {
+    console.log('File upload detected:', req.file);
+    imageUrl = `/uploads/${req.file.filename}`;
+    console.log('Image URL:', imageUrl);
+    req.body.image = imageUrl;
+  }
+
   try {
     users.updateUserById(req.user, req.body);
   }

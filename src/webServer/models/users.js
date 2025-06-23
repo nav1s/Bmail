@@ -88,6 +88,11 @@ function updateUserById(user, updates) {
     .filter(([_, config]) => config.editable)
     .map(([field]) => field);
   
+  // log the editable fields for debugging
+  console.log('Editable fields:', editableFields);
+  // log the updates for debugging
+  console.log('Updates:', updates);
+  
   // check if the updates contain uneditable fields
   const uneditableFields = Object.keys(updates).filter(field => !editableFields.includes(field));
   if (uneditableFields.length > 0) {
