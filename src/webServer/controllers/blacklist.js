@@ -1,25 +1,16 @@
-const { serverError, badRequest, noContent, notFound } = require("../utils/httpResponses");
+const { serverError, badRequest } = require("../utils/httpResponses");
 const net = require("net");
 
+/**
+ * @brief This function adds a list of URLs to the blacklist.
+ * @param {*} urls the urls to be added to the blacklist
+ * @returns promise that resolves to true if the URLs were successfully added, false otherwise
+ */
 exports.addUrlsToBlacklist = async (urls) => {
     return new Promise((resolve, reject) => {
         let urlIndex = 0;
 
         console.log('Received request to add URLs to blacklist:', urls);
-        // check if the request has the required parameters
-        if (!urls) {
-            console.error('Missing or invalid fields in request body:', urls);
-            return resolve(false);
-        }
-        if (!Array.isArray(urls)) {
-            console.error('Missing or invalid fields in request body:', urls);
-            return resolve(false);
-        }
-
-        if (urls.length === 0) {
-            console.error('No URLs provided in request body:', urls);
-            return resolve(false);
-        }
 
         const client = net.createConnection({ host: 'bloom-filter', port: 12345 }, () => {
             console.log('Connected to server');
@@ -81,11 +72,61 @@ exports.addToBlacklist = async (req, res) => {
 }
 
 /**
+ * @brief This function adds a list of URLs to the blacklist.
+ * @param {*} urls the urls to be added to the blacklist
+ * @returns promise that resolves to true if the URLs were successfully added, false otherwise
+ */
+exports.removeUrlsToBlacklist = async (urls) => {
+    return new Promise((resolve, reject) => {
+        let urlIndex = 0;
+        let success = true;
+
+        const client = net.createConnection({ host: 'bloom-filter', port: 12345 }, () => {
+            console.log('Connected to server');
+            client.write(`DELETE ${urls[urlIndex]}\n`);
+            urlIndex++;
+        });
+
+        // handle the response from the server
+        client.on('data', (data) => {
+            console.log('Received data from server:', data.toString());
+
+            if (data.toString() === '204 No Content') {
+                console.log('Successfully removed from blacklist');
+            } // check if the response indicates that the URL was not found
+            else if (data.toString() === '404 Not Found') {
+                console.log('URL not found in blacklist');
+                success = false;
+            }
+            else {
+                return reject(new Error('unexpected response from server'));
+            }
+
+            if (urlIndex >= urls.length) {
+                client.destroy();
+                return resolve(success);
+            }
+
+
+            // if there are more URLs to add, send the next one
+            client.write(`DELETE ${urls[urlIndex]}\n`);
+            urlIndex++;
+        });
+
+        // return a server error if there is an error connecting to the server
+        client.on('error', (error) => {
+            console.error('error connecting to server:', error);
+            return reject(error);
+        });
+    });
+}
+
+/**
  * This function handles the removal of a URL from the blacklist.
  * @param req the request object containing the URL to be removed
  * @param res the response object used to send the response back to the client
  */
-exports.removeFromBlacklist = (req, res) => {
+exports.removeFromBlacklist = async (req, res) => {
     // check if the request has the required parameters
     if (!req.params || !req.params.id) {
         return badRequest(res, 'Missing fields: id');
@@ -94,38 +135,13 @@ exports.removeFromBlacklist = (req, res) => {
     // save the URL to a variable
     const url = req.params.id;
 
-    const client = net.createConnection({ host: 'bloom-filter', port: 12345 }, () => {
-        console.log('Connected to server');
-        // send the request to delete the URL from the blacklist
-        client.write(`DELETE ${url}\n`);
-
-        console.log(`Request sent to delete URL: ${url}`);
-    });
-
-    // handle the response from the server
-    client.on('data', (data) => {
-        console.log('Received data from server:', data.toString());
-
-        // check if the response indicates success
-        if (data.toString() === '204 No Content') {
-            console.log('Successfully removed from blacklist');
-            noContent(res);
-        } // check if the response indicates that the URL was not found
-        else if (data.toString() === '404 Not Found') {
-            console.log('URL not found in blacklist');
-            notFound(res, 'URL not found in blacklist');
-        }  // otherwise, return an error
-        else {
-            return serverError(res, 'unexpected response from server');
+    try {
+        const success = await exports.removeUrlsToBlacklist([url]);
+        if (success === true) {
+            return res.status(204).json({ message: 'Successfully added URL to blacklist' });
         }
-
-        client.destroy();
-    });
-
-    // return a server error if there is an error connecting to the server
-    client.on('error', (error) => {
-        console.error('error connecting to server:', error);
-        serverError(res, 'error connecting to server');
-    });
-
+        return res.status(404).json({ error: 'URL not found in blacklist' });
+    } catch (error) {
+        return serverError(res, error.message);
+    }
 }
