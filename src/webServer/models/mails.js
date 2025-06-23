@@ -1,7 +1,6 @@
 const { createError } = require('../utils/error');
 
 const mails = []; // [{ id, from, to[], title, body, timestamp, labels: [], deletedBySender: false, deletedByRecipient: [] }]
-const mailsByUrls = {}; // { url: [mailId1, mailId2, ...] }
 let mailIdCounter = 1;
 
 /**
@@ -101,37 +100,11 @@ function buildMail(input) {
   const msgTitle = newMail.title || '';
   newMail.urls = extractUrlsFromMessage(msgBody).concat(extractUrlsFromMessage(msgTitle));
 
-  // loop over the URLs and add them to the mailsByUrls json
-  newMail.urls.forEach(url => {
-    if (!mailsByUrls[url]) {
-      mailsByUrls[url] = [];
-    }
-    mailsByUrls[url].push(newMail.id);
-  });
-
   // log the extracted URLs for debugging
   console.log(`Extracted URLs from message: ${newMail.urls.join(', ')}`);
 
   mails.push(newMail);
   return newMail;
-}
-
-/**
- * @brief Retrieves mail IDs associated with a specific URL.
- * @param {*} url The url we want to get mails for
- * @returns mails for the given url
- */
-function getMailsIdsByUrls(url) {
-  // log the URL being searched for
-  console.log(`Searching for mails with URL: ${url}`);
-
-  if (url in mailsByUrls === false) {
-    console.log(`No mails found with URL: ${url}`);
-    return [];
-  }
-
-  return mailsByUrls[url];
-
 }
 
 /**
@@ -475,5 +448,4 @@ module.exports = {
   addLabelToMail,
   removeLabelFromMail,
   canUserAddLabelToMail,
-  getMailsIdsByUrls
 };

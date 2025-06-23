@@ -8,6 +8,20 @@ const net = require("net");
  */
 exports.addUrlsToBlacklist = async (urls) => {
     return new Promise((resolve, reject) => {
+        if (!urls){
+            console.error('No URLs provided to add to blacklist');
+            return reject(new Error('No URLs provided'));
+        }
+
+        if (!Array.isArray(urls)) {
+            console.error('Invalid URL list provided to add to blacklist:', urls);
+            return reject(new Error('Invalid URL list provided'));
+        }
+        if (urls.length === 0) {
+            console.error('Empty URL list provided to add to blacklist');
+            return resolve(true); // nothing to add, resolve as success
+        }
+
         let urlIndex = 0;
 
         console.log('Received request to add URLs to blacklist:', urls);
@@ -76,10 +90,28 @@ exports.addToBlacklist = async (req, res) => {
  * @param {*} urls the urls to be added to the blacklist
  * @returns promise that resolves to true if the URLs were successfully added, false otherwise
  */
-exports.removeUrlsToBlacklist = async (urls) => {
+exports.removeUrlsFromBlacklist = async (urls) => {
     return new Promise((resolve, reject) => {
+        if (!urls){
+            console.error('No URLs provided to add to blacklist');
+            return reject(new Error('No URLs provided'));
+        }
+
+        if (!Array.isArray(urls)) {
+            console.error('Invalid URL list provided to add to blacklist:', urls);
+            return reject(new Error('Invalid URL list provided'));
+        }
+        if (urls.length === 0) {
+            console.error('Empty URL list provided to add to blacklist');
+            return resolve(true); // nothing to add, resolve as success
+        }
+
         let urlIndex = 0;
         let success = true;
+
+
+        // log the received URLs
+        console.log('Received request to remove URLs from blacklist:', urls);
 
         const client = net.createConnection({ host: 'bloom-filter', port: 12345 }, () => {
             console.log('Connected to server');
@@ -106,7 +138,6 @@ exports.removeUrlsToBlacklist = async (urls) => {
                 client.destroy();
                 return resolve(success);
             }
-
 
             // if there are more URLs to add, send the next one
             client.write(`DELETE ${urls[urlIndex]}\n`);
@@ -136,12 +167,13 @@ exports.removeFromBlacklist = async (req, res) => {
     const url = req.params.id;
 
     try {
-        const success = await exports.removeUrlsToBlacklist([url]);
+        const success = await exports.removeUrlsFromBlacklist([url]);
         if (success === true) {
             return res.status(204).json({ message: 'Successfully added URL to blacklist' });
         }
         return res.status(404).json({ error: 'URL not found in blacklist' });
     } catch (error) {
+        console.error('Error removing URL from blacklist:', error);
         return serverError(res, error.message);
     }
 }
