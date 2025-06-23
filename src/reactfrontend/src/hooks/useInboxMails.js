@@ -23,7 +23,13 @@ export default function useInboxMails(label, query) {
         endpoint = `/mails/byLabel/${encodeURIComponent(label)}`;
       }
 
-      const data = await api.get(endpoint, { auth: true });
+      let data = await api.get(endpoint, { auth: true });
+      console.log(`📬 [${label}] Loaded mails:`, data);
+      const spamId = labelMap["spam"];
+
+      if (label?.toLowerCase() === "inbox" && spamId) {
+        data = data.filter(mail => !mail.labels.includes(spamId));
+      }
       setMails(data);
     } catch (err) {
       console.error(err);
@@ -108,6 +114,19 @@ export default function useInboxMails(label, query) {
     }
   };
 
+  const handleUnspamMail = async (mailId) => {
+  try {
+    const spamId = labelMap["spam"];
+    if (!spamId) throw new Error("Spam label ID not loaded");
+    await api.delete(`/mails/${mailId}/labels/${spamId}`, { auth: true });
+    await loadMails();
+  } catch (err) {
+    console.error("Unspam failed:", err);
+    alert("Could not remove spam label: " + err.message);
+  }
+};
+
+
    const isDraftMail = (mail) =>Array.isArray(mail.labels) && labelMap.drafts && mail.labels.includes(labelMap.drafts);
 
 
@@ -125,6 +144,7 @@ export default function useInboxMails(label, query) {
     handleDeleteMail,
     handleRestoreMail,
     isDraftMail,
-    labelMap
+    labelMap,
+    handleUnspamMail
   };
 }

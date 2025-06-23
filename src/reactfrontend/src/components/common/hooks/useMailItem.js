@@ -1,5 +1,6 @@
 // useMailItem.js
-export default function useMailItem(mail, { onClick, onTrash, onDeletePermanent, onRestore }) {
+export default function useMailItem(mail, { onClick, onTrash, onDeletePermanent, onRestore, onUnspam }) {
+
   const handleClick = (e) => {
     e.stopPropagation();
     onClick(mail);
@@ -19,6 +20,10 @@ export default function useMailItem(mail, { onClick, onTrash, onDeletePermanent,
     e.stopPropagation();
     onRestore(mail.id);
   };
+  const handleUnspam = (e) => {
+    e.stopPropagation();
+    onUnspam(mail.id);
+  };
 
   const hasLabel = (labelId) => mail.labels?.includes(labelId);
 
@@ -27,6 +32,7 @@ export default function useMailItem(mail, { onClick, onTrash, onDeletePermanent,
     handleTrash,
     handleDeletePermanent,
     handleRestore,
+    handleUnspam,
     hasLabel
   };
 }

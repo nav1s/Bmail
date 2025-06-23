@@ -17,11 +17,14 @@ export default function MailItem({
     handleTrash,
     handleDeletePermanent,
     handleRestore,
+    handleUnspam,
+    isSpamView,
     hasLabel
   } = useMailItem(mail, { onClick, onTrash, onDeletePermanent, onRestore });
 
   const isStarred = hasLabel(labelMap?.starred);
   const isInboxed = hasLabel(labelMap?.inbox);
+  const isSpam = hasLabel(labelMap.spam);
 
   return (
     <div
@@ -44,12 +47,21 @@ export default function MailItem({
                 onLabelChange={loadMails}
               />
             )}
-            {labelMap?.inbox !== undefined && !mail.draft && (
+            {labelMap?.inbox !== undefined && !mail.draft && !isSpam &&(
               <ToggableButton
                 mailId={mail.id}
                 labelId={labelMap.inbox}
                 labelName="inbox"
                 initialState={isInboxed}
+                onLabelChange={loadMails}
+              />
+            )}
+            {labelMap?.spam !== undefined && !mail.draft && (
+              <ToggableButton
+                mailId={mail.id}
+                labelId={labelMap.spam}
+                labelName="spam"
+                initialState={isSpam}
                 onLabelChange={loadMails}
               />
             )}
@@ -60,6 +72,13 @@ export default function MailItem({
         {isTrashView && (
           <>
             <button onClick={handleRestore}>Restore</button>
+            <button onClick={handleDeletePermanent}>Delete Permanently</button>
+          </>
+        )}
+
+        {isSpamView && (
+          <>
+            <button onClick={handleUnspam}>Unspam</button>
             <button onClick={handleDeletePermanent}>Delete Permanently</button>
           </>
         )}
