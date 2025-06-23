@@ -72,7 +72,9 @@ exports.createUser = (req, res) => {
   const userData = {};
   for (const field of requiredFields) {
     userData[field] = req.body[field];
+  }
 
+  if ('file' in req) {
     console.log('File upload detected:', req.file);
     imageUrl = `/uploads/${req.file.filename}`;
     console.log('Image URL:', imageUrl);
