@@ -183,6 +183,12 @@ test('Removing spam label removes URLs from the blacklist', async () => {
         .expect(201);
     const mailId = res.body.id;
 
+    // add the spam label to the mail
+    await api.post(`/api/mails/${mailId}/labels`)
+        .set('Authorization', 'bearer ' + token)
+        .send({ labelId: spamLabelId })
+        .expect(204);
+
     // ensure the url is blacklisted
     isBlacklisted = await isUrlBlacklistedViaSpamMails(url);
     assert(isBlacklisted, 'URL should be blacklisted after mail creation with spam link');
