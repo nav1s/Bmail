@@ -24,12 +24,6 @@ export default function useInboxMails(label, query) {
       }
 
       let data = await api.get(endpoint, { auth: true });
-      console.log(`📬 [${label}] Loaded mails:`, data);
-      const spamId = labelMap["spam"];
-
-      if (label?.toLowerCase() === "inbox" && spamId) {
-        data = data.filter(mail => !mail.labels.includes(spamId));
-      }
       setMails(data);
     } catch (err) {
       console.error(err);
