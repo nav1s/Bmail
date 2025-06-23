@@ -1,7 +1,18 @@
-import { useUser } from "../../contexts/UserContext";
+import { useEffect, useState } from "react";
+import { useUser } from "../../contexts/UserContext"; 
 
-export default function Header({ onAvatarClick }) {
+export default function Header({ onAvatarClick, showUser = true }) {
   const { user } = useUser();
+  const [isDark, setIsDark] = useState(false);
+
+  useEffect(() => {
+    setIsDark(document.body.classList.contains("dark"));
+  }, []);
+
+  const toggleDark = () => {
+    document.body.classList.toggle("dark");
+    setIsDark(!isDark);
+  };
 
   const getInitials = (user) => {
     const first = user?.firstName?.[0]?.toUpperCase() ?? "";
@@ -9,7 +20,7 @@ export default function Header({ onAvatarClick }) {
     return first + last || "?";
   };
 
- return (
+  return (
     <header
       style={{
         display: "flex",
@@ -22,11 +33,11 @@ export default function Header({ onAvatarClick }) {
       <h1>Inbox</h1>
 
       <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-        <button onClick={() => document.body.classList.toggle("dark")}>
-          🌙 Dark Mode
+        <button onClick={toggleDark}>
+          {isDark ? "☀️ Light Mode" : "🌙 Dark Mode"}
         </button>
 
-        {user && (
+        {showUser && user && (
           user.imageUrl ? (
             <img
               src={`${user.imageUrl}?t=${new Date().getTime()}`}

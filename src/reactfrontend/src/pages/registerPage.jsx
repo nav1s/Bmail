@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import RegisterForm from "./forms/RegisterForm";
 import useRegister from "../hooks/useRegister";
+import AppLayout from "../components/layout/AppLayout";
 
 /**
  * registerPage
@@ -52,8 +53,8 @@ export default function RegisterPage() {
     }
   };
 
-  return (
-    <div>
+   return (
+    <AppLayout>
       <h2>Register</h2>
       <RegisterForm
         form={form}
@@ -62,6 +63,11 @@ export default function RegisterPage() {
         onSubmit={handleSubmit}
         error={error}
       />
-    </div>
+      <div style={{ marginTop: "1rem", textAlign: "center" }}>
+        <button onClick={() => navigate("/login")}>
+          Already have an account? Log in
+        </button>
+      </div>
+    </AppLayout>
   );
 }

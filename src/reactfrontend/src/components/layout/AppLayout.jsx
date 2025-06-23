@@ -1,6 +1,7 @@
 import { useState } from "react";
 import Header from "./Header";
 import AccountPopup from "../common/popup/AccountPopup";
+import { useUser } from "../../contexts/UserContext"; 
 
 /**
  * AppLayout
@@ -12,11 +13,16 @@ import AccountPopup from "../common/popup/AccountPopup";
  * - children: Page content to render under layout
  */
 export default function AppLayout({ children }) {
+  const { user } = useUser();
   const [showAccount, setShowAccount] = useState(false);
 
   return (
     <div>
-      <Header onAvatarClick={() => setShowAccount(true)} />
+      <Header
+        onAvatarClick={() => setShowAccount(true)}
+        showUser={!!user}
+      />
+
 
       {showAccount && (
         <AccountPopup onClose={() => setShowAccount(false)} />
