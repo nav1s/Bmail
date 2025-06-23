@@ -1,6 +1,7 @@
 import Popup from "./Popup";
 import AccountPopupContent from "./forms/AccountPopupContent";
 import useAccountPopup from "../hooks/useAccountPopup";
+import "../../../styles/AccountPopup.css";
 
 /**
  * AccountPopup
@@ -13,8 +14,10 @@ export default function AccountPopup({ onClose }) {
   const { username, handleLogout } = useAccountPopup();
 
   return (
-    <Popup onClose={onClose} className="account-popup">
-      <AccountPopupContent username={username} onLogout={handleLogout} />
+    <Popup onClose={onClose}>
+      <div className="account-popup">
+        <AccountPopupContent username={username} onLogout={handleLogout} />
+      </div>
     </Popup>
   );
 }

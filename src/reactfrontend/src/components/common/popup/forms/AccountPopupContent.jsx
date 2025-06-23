@@ -38,7 +38,9 @@ export default function AccountPopupContent({ onLogout }) {
 
   return (
     <div className="account-popup-content">
-      <p>Hello, <strong>{user?.username || "User"}</strong></p>
+      <h3>Hello, <strong>{user?.username || "User"}</strong></h3>
+      <p className="email">{user?.email}</p>
+
       <button onClick={onLogout}>Logout</button>
       <button onClick={() => setShowEdit(true)}>Edit Profile</button>
 

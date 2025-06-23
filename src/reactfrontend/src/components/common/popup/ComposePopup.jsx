@@ -1,6 +1,7 @@
 import Popup from "./Popup";
 import ComposePopupForm from "./forms/ComposePopupForm";
 import useComposePopup from "../hooks/useComposePopup";
+import "../../../styles/ComposePopup.css";
 
 /**
  * ComposePopup
@@ -20,15 +21,17 @@ export default function ComposePopup({ onClose, onSend, prefill }) {
   };
 
   return (
-    <Popup onClose={onClose} className="compose-popup">
-      <h3>Compose Mail</h3>
-      <ComposePopupForm
-        form={form}
-        onChange={handleChange}
-        onSend={handleSubmit}
-        onDraft={handleDraft}
-        onCancel={onClose}
-      />
+    <Popup onClose={onClose}>
+      <div className="compose-form">
+        <h3>Compose Mail</h3>
+        <ComposePopupForm
+          form={form}
+          onChange={handleChange}
+          onSend={handleSubmit}
+          onDraft={handleDraft}
+          onCancel={onClose}
+        />
+      </div>
     </Popup>
   );
 }
