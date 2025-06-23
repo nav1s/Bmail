@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { updateUser } from "../../../services/userService";
-import { clearUser, saveUser } from "../../../utils/userUtils";
 import { useUser } from "../../../contexts/UserContext";
 
 
@@ -16,7 +15,7 @@ export default function useEditProfile() {
     if (file) formData.append("image", file);
 
     try {
-      const updated = await updateUser(formData);
+      const updated = await updateUser(useUser.id, formData);
       update(updated);
       return true;
     } catch (err) {

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { login } from "../services/authService";
-import { getUserByUsername } from "../services/userService";
+import { getUserById } from "../services/userService";
 import { saveToken } from "../utils/tokenUtils";
 import { useUser } from "../contexts/UserContext";
 
@@ -27,7 +27,7 @@ export default function useLogin() {
       saveToken(data.token);
 
       // Fetch user info
-      const userInfo = await getUserByUsername(username);
+      const userInfo = await getUserById(data.id);
 
       // Update context
       setUser(userInfo);

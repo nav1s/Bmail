@@ -1,5 +1,4 @@
 import api from "./api";
-import { saveToken } from "../utils/tokenUtils";
 
 /**
  * register
@@ -26,6 +25,5 @@ export const register = async (formData) => {
  */
 export async function login(username, password) {
   const res = await api.post("/tokens", { username, password });
-  saveToken(res);
   return res;
 }
