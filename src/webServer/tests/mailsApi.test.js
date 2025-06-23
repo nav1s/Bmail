@@ -135,6 +135,10 @@ test('returns 400 when required fields are missing', async () => {
 
 // ✅ 4.3 Valid mail creation
 test('creates a valid mail (4.3)', async () => {
+  const url1 = 'https://good.com';
+  const url2 = 'https://verygood.com';
+  const msgBody = `This should work: ${url1} ${url2}`;
+
   const response = await api
     .post('/api/mails')
     .set('Authorization', 'bearer ' + aliceToken)
@@ -142,7 +146,7 @@ test('creates a valid mail (4.3)', async () => {
     .send({
       to: ["alice123"],
       title: "Hello again",
-      body: "This should work: https://good.com https://verygood.com"
+      body: msgBody,
     })
     .expect(201)
     .expect('Content-Type', /application\/json/);
@@ -151,15 +155,18 @@ test('creates a valid mail (4.3)', async () => {
     from: "alice123",
     to: ["alice123"],
     title: "Hello again",
-    body: "This should work: https://good.com https://verygood.com",
+    body: msgBody,
     id: 1,
     labels: [3, 1],
-    draft: false
+    draft: false,
+    urls: [url1, url2]
   });
 });
 
 // ✅ 4.4 Another valid mail creation
 test('creates another valid mail (4.32)', async () => {
+  const url1 = 'https://liverpool.com';
+  const msgBody = `Sign for Liverpool, via ${url1}, its a great club!`;
   const response = await api
     .post('/api/mails')
     .set('Authorization', 'bearer ' + aliceToken)
@@ -167,7 +174,7 @@ test('creates another valid mail (4.32)', async () => {
     .send({
       to: ["alice123"],
       title: "Hello Wirtz",
-      body: "Sign for Liverpool, via https://liverpool.com, its a great club!"
+      body: msgBody,
     })
     .expect(201)
     .expect('Content-Type', /application\/json/);
@@ -176,10 +183,11 @@ test('creates another valid mail (4.32)', async () => {
     from: "alice123",
     to: ["alice123"],
     title: "Hello Wirtz",
-    body: "Sign for Liverpool, via https://liverpool.com, its a great club!",
+    body: msgBody,
     id: 2,
     labels: [3, 1],
-    draft: false
+    draft: false,
+    urls: [url1]
   });
 });
 
@@ -290,7 +298,8 @@ test('4.12 valid draft creation', async () => {
     body: "This should work",
     id: 3,
     labels: [4],
-    draft: true
+    draft: true,
+    urls: []
   });
 });
 
@@ -314,7 +323,8 @@ test('4.13 valid mail patch', async () => {
     body: "This should work",
     id: 3,
     labels: [4],
-    draft: true
+    draft: true,
+    urls: []
   });
 
 });
@@ -345,7 +355,8 @@ test('4.15 valid draft get by id)', async () => {
     body: "This should work",
     id: 3,
     labels: [4],
-    draft: true
+    draft: true,
+    urls: []
   });
 });
 
@@ -380,7 +391,8 @@ test('4.17 update title', async () => {
     body: "This should work",
     id: 3,
     labels: [4],
-    draft: true
+    draft: true,
+    urls: []
   });
 
 });
@@ -431,7 +443,8 @@ test('4.20 valid draft creation', async () => {
     body: "This should work again",
     id: 4,
     labels: [4],
-    draft: true
+    draft: true,
+    urls: []
   });
 });
 
@@ -450,7 +463,8 @@ test('4.21 valid draft get by id)', async () => {
     body: "This should work again",
     draft: true,
     labels: [4],
-    id: 4
+    id: 4,
+    urls: []
   });
   await api
     .get('/api/mails/4')
@@ -480,7 +494,8 @@ test('4.22 send draft', async () => {
     body: "This should work again",
     id: 4,
     labels: [1],
-    draft: false
+    draft: false,
+    urls: []
   });
 
 });
@@ -500,12 +515,17 @@ test('4.23 valid get sent mail by recipient after sending draft', async () => {
     body: "This should work again",
     id: 4,
     labels: [1],
-    draft: false
+    draft: false,
+    urls: []
   });
 });
 
 // ✅ 4.24 valid get mail by recipient after mail deleted in another user
 test('4.24 valid get mail by recipient after mail deleted in another user', async () => {
+  const url1 = 'http://good.com';
+  const url2 = 'http://verygood.com';
+  const msgBody = `This should work: ${url1} ${url2}`;
+
   const response = await api
     .post('/api/mails')
     .set('Authorization', 'bearer ' + aliceToken)
@@ -513,7 +533,7 @@ test('4.24 valid get mail by recipient after mail deleted in another user', asyn
     .send({
       to: ["alice123", "bob", "carlo123"],
       title: "Hello again friends",
-      body: "This should work: https://good.com https://verygood.com"
+      body: msgBody,
     })
     .expect(201)
     .expect('Content-Type', /application\/json/);
@@ -522,7 +542,7 @@ test('4.24 valid get mail by recipient after mail deleted in another user', asyn
     from: "alice123",
     to: ["alice123", "bob", "carlo123"],
     title: "Hello again friends",
-    body: "This should work: https://good.com https://verygood.com",
+    body: msgBody,
     draft: false,
     labels: [
       3,
@@ -530,7 +550,8 @@ test('4.24 valid get mail by recipient after mail deleted in another user', asyn
       7,
       13
     ],
-    id: 5
+    id: 5,
+    urls:[url1, url2]
   })
   await api
     .delete('/api/mails/5')
@@ -545,7 +566,7 @@ test('4.24 valid get mail by recipient after mail deleted in another user', asyn
     from: "alice123",
     to: ["alice123", "bob", "carlo123"],
     title: "Hello again friends",
-    body: "This should work: https://good.com https://verygood.com",
+    body: msgBody,
     draft: false,
     labels: [
       3,
@@ -553,6 +574,7 @@ test('4.24 valid get mail by recipient after mail deleted in another user', asyn
       7,
       13
     ],
-    id: 5
+    id: 5,
+    urls:[url1, url2]
   })
 })
