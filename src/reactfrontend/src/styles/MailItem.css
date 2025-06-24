@@ -1,13 +1,14 @@
 .mail-item {
   padding: 16px 20px;
-  border-bottom: 1px solid #e0e0e0;
+  border-bottom: 1px solid var(--border-color);
   cursor: pointer;
-  background-color: white;
+  background-color: var(--card-bg);
   transition: background-color 0.2s ease;
+  color: var(--text-color);
 }
 
 .mail-item:hover {
-  background-color: #f5f8fd;
+  background-color: var(--bg-color);
 }
 
 .mail-header {
@@ -15,7 +16,7 @@
   justify-content: space-between;
   font-weight: 600;
   font-size: 15px;
-  color: #202124;
+  color: var(--text-color);
 }
 
 .mail-from {
@@ -36,7 +37,7 @@
 
 .mail-body {
   margin-top: 6px;
-  color: #5f6368;
+  color: var(--text-color);
   font-size: 14px;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -54,9 +55,9 @@
   border: none;
   font-size: 16px;
   cursor: pointer;
-  color: #5f6368;
+  color: var(--text-color);
 }
 
 .mail-actions button:hover {
-  color: #202124;
+  color: #1a73e8;
 }

@@ -14,7 +14,8 @@
 
 /* Popup window styling */
 .popup-content {
-  background: white;
+  background: var(--card-bg);
+  color: var(--text-color);
   border-radius: 12px;
   box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
   padding: 24px;

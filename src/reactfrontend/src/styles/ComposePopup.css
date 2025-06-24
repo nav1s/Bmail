@@ -1,11 +1,14 @@
 .compose-form input,
 .compose-form textarea {
-  width: 100%;
-  padding: 12px 16px;
-  margin-bottom: 12px;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  font-size: 15px;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+}
+
+.compose-form .draft-btn,
+.compose-form .cancel-btn {
+  background-color: var(--card-bg);
+  color: var(--text-color);
 }
 
 .compose-form textarea {
@@ -32,13 +35,4 @@
 .compose-form .button-row .send-btn {
   background-color: #1a73e8;
   color: white;
-}
-
-.compose-form .button-row .draft-btn {
-  background-color: #e8f0fe;
-  color: #1a73e8;
-}
-
-.compose-form .button-row .cancel-btn {
-  background-color: #f1f3f4;
 }
