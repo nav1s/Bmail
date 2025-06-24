@@ -76,3 +76,24 @@
 .auth-link a:hover {
   text-decoration: underline;
 }
+
+.custom-file-upload {
+  display: inline-block;
+  padding: 10px 20px;
+  border-radius: 8px;
+  background-color: #1a73e8;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  text-align: center;
+  transition: background-color 0.2s ease;
+}
+
+.custom-file-upload:hover {
+  background-color: #155ab6;
+}
+
+.custom-file-upload input[type="file"] {
+  display: none;
+}
+

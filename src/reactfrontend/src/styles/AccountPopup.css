@@ -37,3 +37,35 @@
 .account-popup button:hover {
   background-color: #155ab6;
 }
+
+.custom-file-upload {
+  display: inline-block;
+  padding: 10px 20px;
+  border-radius: 8px;
+  background-color: #1a73e8;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  text-align: center;
+  transition: background-color 0.2s ease;
+}
+
+.custom-file-upload:hover {
+  background-color: #155ab6;
+}
+
+.custom-file-upload input[type="file"] {
+  display: none;
+}
+
+.account-popup-full {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  padding: 24px;
+  box-sizing: border-box;
+}

@@ -49,11 +49,10 @@ export default function RegisterForm({ form, onChange, onFileChange, onSubmit, e
 
           <label>
             <div>Profile Photo:</div>
-            <input
-              type="file"
-              accept="image/*"
-              onChange={onFileChange}
-            />
+            <label className="custom-file-upload">
+            <input type="file" accept="image/*" onChange={onFileChange} />
+            📁 Upload Profile Picture
+            </label>
           </label>
 
           <button type="submit">Register</button>
