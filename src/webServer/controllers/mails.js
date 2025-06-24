@@ -134,12 +134,7 @@ async function createMail(req, res) {
       addLabelToMail(newMail.id, draftLabelId, req.user.username);
       addMailToLabel(newMail.id, draftLabelId, req.user.id);
     } else {
-      // add sent label to the mail
-      const sentLabelId = getLabelByName(req.user.id, defaultLabelNames.sent);
-      addLabelToMail(newMail.id, sentLabelId, req.user.username);
-      addMailToLabel(newMail.id, sentLabelId, req.user.id);
-      // add the mail to the inbox label for the recipients
-      addInboxLabelToRecipients(newMail);
+      addLabelsForNewMail(newMail, req.user);
     }
 
   } catch (err) {
@@ -147,6 +142,25 @@ async function createMail(req, res) {
     return httpError(res, err);
   }
   return created(res, filterMailForOutput(newMail));
+}
+
+/**
+ * @brief Adds the sent label to the mail and adds the mail to the inbox label for the recipients.
+ * @param {number} mailId the ID of the mail to add labels to
+ * @param {object} user the user object of the sender
+ * @throws {Error} if the mail cannot be found or if the user is not registered
+ */
+function addLabelsForNewMail(mail, user) {
+  const uid = user.id;
+  const mailId = mail.id;
+
+  // add sent label to the mail
+  const sentLabelId = getLabelByName(uid, defaultLabelNames.sent);
+  addLabelToMail(mailId, sentLabelId, user.username);
+  addMailToLabel(mailId, sentLabelId, uid);
+
+  // add the mail to the inbox label for the recipients
+  addInboxLabelToRecipients(mail);
 }
 
 /**
@@ -252,11 +266,8 @@ function updateMailById(req, res) {
         removeLabelFromMail(mail.id, draftLabelId, username);
         removeMailFromLabel(mail.id, draftLabelId, req.user.id);
 
-        // add the inbox label to the mail
-        const inboxLabelId = getLabelByName(req.user.id, defaultLabelNames.inbox);
-        addLabelToMail(mail.id, inboxLabelId, username);
-        addMailToLabel(mail.id, inboxLabelId, req.user.id);
-
+        // add the sent label to the mail and add the mail to the inbox label for the recipients
+        addLabelsForNewMail(mail, req.user);
       }
     }
 
