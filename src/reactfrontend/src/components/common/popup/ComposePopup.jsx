@@ -1,27 +1,27 @@
 import useComposePopup from "../hooks/useComposePopup";
+import ComposePopupForm from "./forms/ComposePopupForm";
 
 export default function ComposePopup({ prefill, onSend, onClose }) {
-  const { form, handleChange, handleFileChange, parseForm } = useComposePopup(prefill);
+  const { form, handleChange, parseForm } = useComposePopup(prefill);
 
-  const handleSubmit = (e) => {
+  const handleSend = (e) => {
     e.preventDefault();
-    onSend(parseForm(false)); // Send mail
+    onSend(parseForm(false));
     onClose();
   };
 
   const handleDraft = () => {
-    onSend(parseForm(true)); // Save draft
+    onSend(parseForm(true));
     onClose();
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <input name="to" value={form.to} onChange={handleChange} placeholder="To" />
-      <input name="title" value={form.title} onChange={handleChange} placeholder="Title" />
-      <textarea name="body" value={form.body} onChange={handleChange} placeholder="Body" />
-      <input type="file" onChange={handleFileChange} />
-      <button type="submit">Send</button>
-      <button type="button" onClick={handleDraft}>Save Draft</button>
-    </form>
+    <ComposePopupForm
+      form={form}
+      onChange={handleChange}
+      onSend={handleSend}
+      onDraft={handleDraft}
+      onCancel={onClose}
+    />
   );
 }
