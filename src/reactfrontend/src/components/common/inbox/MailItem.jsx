@@ -53,10 +53,7 @@ export default function MailItem({
                 onLabelChange={loadMails}
               />
             )}
-            <button onClick={(e) => {
-              e.stopPropagation();
-              handleTrash();
-            }}>🗑️</button>
+            <button onClick={handleTrash}>🗑️</button>
           </>
         ) : (
           <>
