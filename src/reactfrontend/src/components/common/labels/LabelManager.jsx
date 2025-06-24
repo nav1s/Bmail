@@ -1,5 +1,6 @@
 import useLabelManager from "../hooks/useLabelManager";
 import LabelManagerView from "./LabelManagerView";
+import "../../../styles/Labels.css";
 
 /**
  * LabelManager

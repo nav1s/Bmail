@@ -298,3 +298,22 @@
   gap: 12px;
 }
 
+.inbox-title {
+  font-size: 28px;
+  font-weight: 600;
+  color: #1a73e8;
+  text-align: center;
+  margin: 2rem 0 1rem 0;
+  font-family: "Segoe UI", Roboto, sans-serif;
+  position: relative;
+}
+
+.inbox-title::after {
+  content: "";
+  display: block;
+  width: 40px;
+  height: 3px;
+  background-color: #1a73e8;
+  margin: 8px auto 0;
+  border-radius: 2px;
+}

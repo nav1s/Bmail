@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { loadUser } from "../../utils/userUtils";
 
 /**
@@ -8,6 +9,18 @@ import { loadUser } from "../../utils/userUtils";
  */
 export default function Header({ onAvatarClick }) {
   const user = loadUser();
+  const [darkMode, setDarkMode] = useState(() => {
+    return localStorage.getItem("theme") === "dark";
+  });
+
+  useEffect(() => {
+    if (darkMode) {
+      document.body.classList.add("dark");
+    } else {
+      document.body.classList.remove("dark");
+    }
+    localStorage.setItem("theme", darkMode ? "dark" : "light");
+  }, [darkMode]);
 
   return (
     <header
@@ -16,14 +29,24 @@ export default function Header({ onAvatarClick }) {
         justifyContent: "space-between",
         alignItems: "center",
         padding: "1rem",
-        borderBottom: "1px solid #ccc",
+        borderBottom: "1px solid var(--border-color)",
+        backgroundColor: "var(--card-bg)",
+        color: "var(--text-color)",
       }}
     >
-      <h1>Inbox</h1>
-
       <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-        <button onClick={() => document.body.classList.toggle("dark")}>
-          🌙 Dark Mode
+        <button
+          onClick={() => setDarkMode(!darkMode)}
+          style={{
+            padding: "6px 12px",
+            backgroundColor: "transparent",
+            border: "1px solid var(--border-color)",
+            borderRadius: "8px",
+            cursor: "pointer",
+            color: "var(--text-color)",
+          }}
+        >
+          {darkMode ? "☀️ Light Mode" : "🌙 Dark Mode"}
         </button>
 
         {user && (

@@ -1,0 +1,41 @@
+.labels-popup {
+  padding: 24px;
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  min-width: 320px;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.labels-title {
+  font-size: 20px;
+  margin-bottom: 8px;
+  color: #202124;
+  text-align: center;
+}
+
+.labels-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.labels-list li {
+  margin-bottom: 6px;
+}
+
+.labels-close-btn {
+  margin-top: 16px;
+  align-self: center;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  background-color: #f1f3f4;
+  cursor: pointer;
+}
+.labels-close-btn:hover {
+  background-color: #dadce0;
+}

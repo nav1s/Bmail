@@ -3,6 +3,7 @@ import LabelList from "./LabelList";
 import EditLabelPopup from "../popup/EditLabelPopup";
 import ConfirmDeletePopup from "../popup/ConfirmDeletePopup";
 import LabelMenuPopup from "../popup/LabelMenuPopup";
+import "../../../styles/Labels.css";
 
 export const ALL_LABEL = {
   id: "all",
@@ -32,8 +33,8 @@ export default function LabelManagerView({
   const customLabels = labels.filter((l) => !l.isDefault);
 
   return (
-    <div className="label-sidebar">
-      <h4 className="label-title">Labels</h4>
+    <div className="labels-container">
+      <h2>Labels</h2>
 
       <LabelInput
         value={newLabelName}
@@ -41,20 +42,19 @@ export default function LabelManagerView({
         onAdd={handleAddLabel}
       />
 
-      <div className="label-section">
+      <ul>
         <LabelList
           labels={defaultLabels}
           selected={selectedLabel}
           onSelect={onSelect}
         />
-
         <LabelList
           labels={customLabels}
           selected={selectedLabel}
           onSelect={onSelect}
           onMenuClick={setMenuLabel}
         />
-      </div>
+      </ul>
 
       {showEdit && selectedLabel && (
         <EditLabelPopup

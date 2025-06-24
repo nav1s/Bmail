@@ -18,14 +18,6 @@ import useInboxMails from "../hooks/useInboxMails";
 // Routing
 import { useParams, useNavigate } from "react-router-dom";
 
-/**
- * InboxPage
- *
- * Main mail management interface. Displays:
- * - Sidebar with labels and compose
- * - Search bar and mail list
- * - Compose, viewer, and sent popups
- */
 export default function InboxPage() {
   const [query, setQuery] = useState("");
   const { label } = useParams();
@@ -66,6 +58,7 @@ export default function InboxPage() {
 
           {/* Main content */}
           <section className="mail-list-section">
+            <h1 className="inbox-title">{label ? label : "Inbox"}</h1>
             <SearchBar query={query} setQuery={setQuery} />
 
             <MailList
@@ -97,11 +90,11 @@ export default function InboxPage() {
               prefill={openedMail}
             />
           ) : (
-                <MailViewerPopup
-                  mail={openedMail}
-                  onClose={() => setOpenedMail(null)}
-                  loadMails={loadMails}
-                />
+            <MailViewerPopup
+              mail={openedMail}
+              onClose={() => setOpenedMail(null)}
+              loadMails={loadMails}
+            />
           ))}
       </div>
     </AppLayout>
