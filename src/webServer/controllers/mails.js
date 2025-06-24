@@ -1,9 +1,10 @@
-const { buildMail, filterMailForOutput, validateMailInput, findMailById, editMail, deleteMail, canUserAccessMail, getMailsForUser, searchMailsForUser, canUserUpdateMail, addLabelToMail, removeLabelFromMail, canUserAddLabelToMail } = require('../models/mails.js');
+const { buildMail, filterMailForOutput, validateMailInput, findMailById, editMail, deleteMail, canUserAccessMail, getMailsForUser, searchMailsForUser, canUserUpdateMail, addLabelToMail, removeLabelFromMail, canUserAddLabelToMail, getMailsIdsByUrls } = require('../models/mails.js');
 const { badRequest, created, ok, noContent, forbidden } = require('../utils/httpResponses');
 const { httpError, createError } = require('../utils/error');
 const { defaultLabelNames, addMailToLabel, removeMailFromLabel, getLabelByName, canUserAddMailToLabel } = require('../models/labels.js');
 const net = require("net");
 const { findUserByUsername } = require('../models/users.js');
+const { addUrlsToBlacklist, removeUrlsFromBlacklist } = require('./blacklist.js');
 
 const mailLimit = 50;
 /**
@@ -66,15 +67,10 @@ async function checkBlacklistedUrl(urls) {
  * @param msg The message body or title to check for blacklisted URLs.
  * @returns true if any blacklisted URLs are found, false otherwise.
  */
-async function isMessageValid(msg) {
-  const urlRegex = /\bhttps?:\/\/(?:www\.)?[a-zA-Z0-9\-]+\.[a-zA-Z]{2,}(?:\.[a-zA-Z]{2,})?(?:\/[^\s]*)?\b/g;
-
-  // Extract URLs from the mail body using the regex
-  const urls = msg.match(urlRegex);
-
+async function areUrlsBlacklisted(urls) {
   let isInvalid = false;
   if (urls !== null)
-    if (urls.length > 0) {
+    if (urls.length >= 1) {
       // Check if any of the URLs are blacklisted
       try {
         isInvalid = await checkBlacklistedUrl(urls);
@@ -84,7 +80,6 @@ async function isMessageValid(msg) {
     }
 
   return isInvalid;
-
 }
 
 /**
@@ -111,13 +106,13 @@ async function createMail(req, res) {
   const newMail = buildMail(mailInput);
 
   // check if the mail contains blacklisted URLs
-  const msgBody = mailInput.body || '';
-  const msgTitle = mailInput.title || '';
-  const isBlacklisted = await isMessageValid(msgBody) || await isMessageValid(msgTitle);
+  const urls = newMail.urls
+  const isBlacklisted = await areUrlsBlacklisted(urls);
 
   // move the mail to spam if it contains blacklisted URLs
   if (isBlacklisted) {
     try {
+      console.warn(`Mail ${newMail.id} contains blacklisted URLs, moving to spam`);
       const spamLabelId = getLabelByName(req.user.id, defaultLabelNames.spam);
       addLabelToMail(newMail.id, spamLabelId, req.user.username);
       addMailToLabel(newMail.id, spamLabelId, req.user.id);
@@ -164,7 +159,7 @@ function addInboxLabelToRecipients(mail) {
       recipient = findUserByUsername(recipientUsername);
     } catch (err) {
       console.log(`Recipient ${recipientUsername} not found, skipping...`);
-      continue; 
+      continue;
     }
 
     // print the recipient for debugging
@@ -226,7 +221,6 @@ function getMailById(req, res) {
   }
 }
 
-// todo add to blacklist when mail is labeled as spam
 /**
  * PATCH /api/mails/:id
  * Edits the title/body of an existing mail with a given ID.
@@ -353,10 +347,30 @@ function validateRecipients(toField) {
 }
 
 /**
+ * @brief This function processes urls from spam mail and adds them to the blacklist.
+ * @param {*} mailId the mail ID to handle spam for
+ */
+async function handleSpamMail(mailId) {
+  const mail = findMailById(mailId);
+
+  // add the urls to the blacklist
+  const urls = mail.urls || [];
+  // if there are no urls, skip
+  if (!urls || urls.length === 0) {
+    console.log(`Mail ${mailId} has no URLs, skipping spam handling...`);
+    return;
+  }
+
+  // add the urls to the blacklist
+  await addUrlsToBlacklist(urls);
+}
+
+
+/**
  * POST /api/mails/:mailId/labels
  * attaches a label to a mail.
  */
-function attachLabelToMail(req, res) {
+async function attachLabelToMail(req, res) {
   const mailId = Number(req.params.mailId);
   const labelId = Number(req.body.labelId);
 
@@ -370,11 +384,17 @@ function attachLabelToMail(req, res) {
   const username = req.user.username;
 
   try {
+
     if (canUserAddLabelToMail(mailId, labelId) && canUserAddMailToLabel(uid, labelId, mailId)) {
       addLabelToMail(mailId, labelId, username);
       addMailToLabel(mailId, labelId, uid);
-      return noContent(res);
+      // Check if the label is a spam label
+      if (labelId === getLabelByName(uid, defaultLabelNames.spam)) {
+        handleSpamMail(mailId)
+      }
     }
+
+    return noContent(res);
 
   } catch (err) {
     console.error(`Error attaching label ${labelId} to mail ${mailId} for user ${username}:`, err);
@@ -386,7 +406,7 @@ function attachLabelToMail(req, res) {
  * DELETE /api/mails/:mailId/labels/:labelId
  * detaches a label from a mail.
  */
-function detachLabelFromMail(req, res) {
+async function detachLabelFromMail(req, res) {
   const mailId = Number(req.params.mailId);
   const labelId = Number(req.params.labelId);
 
@@ -403,6 +423,22 @@ function detachLabelFromMail(req, res) {
   try {
     removeLabelFromMail(mailId, labelId, username);
     removeMailFromLabel(mailId, labelId, uid);
+    if (labelId === getLabelByName(uid, defaultLabelNames.spam)) {
+      // get the mail 
+      const mail = findMailById(mailId);
+      // get the urls from the mail
+      const urls = mail.urls || [];
+
+      if (!urls || urls.length === 0) {
+        console.log(`Mail ${mailId} has no URLs, skipping spam handling...`);
+        return noContent(res);
+      }
+      // log the urls being removed from the blacklist
+      console.log(`Removing URLs from blacklist for mail ${mailId}:`, urls);
+
+      // remove the urls from the blacklist
+      await removeUrlsFromBlacklist(urls);
+    }
     return noContent(res);
 
   } catch (err) {
