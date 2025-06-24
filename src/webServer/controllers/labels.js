@@ -152,10 +152,4 @@ function deleteLabelById(req, res) {
   }
 }
 
-function getMailsByLabelId(req, res) {
-  // This function is not implemented in the original code snippet.
-  // You can implement it based on your application's requirements.
-  return badRequest(res, 'This endpoint is not implemented yet');
-}
-
-module.exports = { listLabels, createLabel, getLabelById, updateLabelById, deleteLabelById, getMailsByLabelId };
+module.exports = { listLabels, createLabel, getLabelById, updateLabelById, deleteLabelById };
