@@ -1,28 +1,43 @@
-import React from "react";
-
+/**
+ * LabelItem
+ * Represents a single label item in the list.
+ *
+ * Props:
+ * - label: the label object
+ * - selected: currently selected label name
+ * - onSelect: function(labelName)
+ * - onMenu: function(label)
+ * - showMenu: boolean — whether to show the menu (⋮)
+ */
 export default function LabelItem({ label, selected, onSelect, onMenu, showMenu }) {
-  const isSelected = selected === label.name;
+  const isSelected = selected?.id === label.id;
+
+  const className = [
+    "label-tab",
+    label.isDefault ? "default-label" : "custom-label",
+    isSelected ? "active" : ""
+  ].join(" ");
 
   return (
     <li
-      className={`label-item ${isSelected ? "selected" : ""}`}
-      onClick={() => onSelect(label.name)}
+      className={className}
+      onClick={() => onSelect?.(label)}
     >
       <span className="label-name">{label.name}</span>
 
-      {/* Show menu button only for non-default labels if needed */}
       {showMenu && !label.isDefault && (
-        <button
-          className="label-menu-btn"
+        <span
+          className="more-icon"
           onClick={(e) => {
-            e.stopPropagation(); // Prevent parent onClick
-            onMenu(label);
+            e.stopPropagation();
+            onMenu?.(label);
           }}
           title="Label options"
         >
           ⋮
-        </button>
+        </span>
       )}
     </li>
   );
 }
+

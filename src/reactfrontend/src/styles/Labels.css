@@ -11,7 +11,6 @@
   letter-spacing: 0.5px;
 }
 
-/* Label Input wrapper */
 .label-input-wrapper {
   display: flex;
   flex-direction: column;
@@ -22,7 +21,6 @@
   padding: 0 8px;
 }
 
-/* Text input for new label */
 .label-input {
   padding: 10px 12px;
   font-size: 14px;
@@ -33,7 +31,6 @@
   color: var(--text-color);
 }
 
-/* Add button */
 .label-add-btn {
   padding: 8px 16px;
   font-size: 14px;
@@ -50,7 +47,6 @@
   background-color: #155ab6;
 }
 
-/* List of all labels */
 .label-list {
   display: flex;
   flex-direction: column;
@@ -58,7 +54,6 @@
   padding: 0 8px;
 }
 
-/* Label item */
 .label-tab {
   display: flex;
   justify-content: space-between;
@@ -68,6 +63,7 @@
   cursor: pointer;
   transition: background-color 0.2s ease, color 0.2s ease;
   color: var(--text-color);
+  background-color: transparent;
   width: 100%;
 }
 
@@ -76,21 +72,12 @@
   color: var(--text-color);
 }
 
-.dark .label-tab:hover {
-  background-color: #3a3b3c;
-  color: #e4e6eb;
-}
-
 .label-tab.active {
   background-color: #d2e3fc;
   font-weight: 600;
+  color: #202124;
 }
 
-.dark .label-tab.active {
-  background-color: #31363b;
-}
-
-/* Label name */
 .label-tab .label-name {
   color: inherit;
   font-weight: 500;
@@ -100,7 +87,6 @@
   text-overflow: ellipsis;
 }
 
-/* Icon button (3 dots) */
 .label-tab .more-icon {
   color: #5f6368;
   transition: color 0.2s ease;
@@ -111,6 +97,37 @@
   color: #1a73e8;
 }
 
+/* === DARK MODE === */
+.dark .label-tab {
+  color: var(--text-color);
+  background-color: transparent;
+}
+
+.dark .label-tab:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
 .dark .label-tab:hover .more-icon {
   color: #8ab4f8;
+}
+
+.dark .label-tab.active {
+  background-color: #31363b;
+  color: #000000;
+}
+
+/* Distinct default label styling */
+.dark .label-tab.default-label {
+  color: #000000;
+  background-color: transparent;
+}
+
+.dark .label-tab.default-label:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #000000;
+}
+
+.dark .label-tab.default-label.active {
+  background-color: #3a3b3c;
+  color: #000000;
 }

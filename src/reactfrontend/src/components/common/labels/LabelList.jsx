@@ -1,4 +1,3 @@
-import React from "react";
 import LabelItem from "./LabelItem";
 
 /**
@@ -6,11 +5,11 @@ import LabelItem from "./LabelItem";
  * Displays a list of labels.
  *
  * Props:
- * - title: optional title above the list
+ * - title: optional string
  * - labels: array of label objects
- * - selected: currently selected label
- * - onSelect: function(label) — called when a label is selected
- * - onMenuClick: function(label) — called when menu icon is clicked
+ * - selected: currently selected label (object)
+ * - onSelect: function(label)
+ * - onMenuClick: function(label)
  */
 export default function LabelList({
   title,
@@ -23,31 +22,16 @@ export default function LabelList({
     <div>
       {title && <p className="label-section-title">{title}</p>}
       <ul className="label-list">
-        {labels.map((label) => {
-          const isActive = selected?.id === label.id;
-
-          return (
-            <li
-              key={label.id}
-              className={`label-tab ${isActive ? "active" : ""}`}
-              onClick={() => onSelect?.(label)}
-            >
-              <span className="label-name">{label.name}</span>
-
-              {onMenuClick && (
-                <span
-                  className="more-icon"
-                  onClick={(e) => {
-                    e.stopPropagation(); // Prevent selecting the label
-                    onMenuClick(label);
-                  }}
-                >
-                  ⋮
-                </span>
-              )}
-            </li>
-          );
-        })}
+        {labels.map((label) => (
+          <LabelItem
+            key={label.id}
+            label={label}
+            selected={selected}
+            onSelect={onSelect}
+            onMenu={onMenuClick}
+            showMenu={!!onMenuClick}
+          />
+        ))}
       </ul>
     </div>
   );

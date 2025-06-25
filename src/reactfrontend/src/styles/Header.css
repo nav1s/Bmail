@@ -41,7 +41,7 @@
 }
 
 .dark-mode-toggle:hover {
-  background-color: var(--hover-bg, #d2e3fc);
+  background-color: var(--hover-bg, #1a73e8);
   border-color: #a5c3f0;
 }
 

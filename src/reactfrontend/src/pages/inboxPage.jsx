@@ -57,7 +57,8 @@ export default function InboxPage() {
             <button className="compose-btn" onClick={() => setShowCompose(true)}>
               Compose
             </button>
-            <div className="system-labels">
+            <ul className="label-list">
+              <div className="system-labels">
               {SYSTEM_LABELS.map(({ id, icon, label: text }) => (
                 <div
                   key={id}
@@ -75,6 +76,7 @@ export default function InboxPage() {
               onSelect={(name) => navigate(`/mails/${name}`)}
               hideDefaults={true}
             />
+            </ul>
           </aside>
 
           <section className="mail-list-section">
