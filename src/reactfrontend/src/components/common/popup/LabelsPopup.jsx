@@ -7,22 +7,26 @@ export default function LabelsPopup({ mail, onClose, onLabelChange }) {
   const { customLabels, selectedLabels } = useLabelsPopup(mail, onLabelChange);
 
   return (
-    <div className="labels-popup">
-      <h3 className="labels-title">Assign Labels</h3>
-      <ul className="labels-list">
-        {customLabels.map((label) => (
-          <li key={label.id}>
-            <ToggableButton
-              mailId={mail.id}
-              labelId={label.id}
-              labelName={label.name}
-              initialState={selectedLabels.includes(label.id)}
-              onLabelChange={onLabelChange}
-            />
-          </li>
-        ))}
-      </ul>
-      <button onClick={onClose} className="labels-close-btn">Close</button>
+    <div className="popup-backdrop">
+      <div className="popup-content labels-popup">
+        <h2 className="popup-title">Assign Labels</h2>
+        <ul className="label-list">
+          {customLabels.map((label) => (
+            <li className="label-item" key={label.id}>
+              <ToggableButton
+                mailId={mail.id}
+                labelId={label.id}
+                labelName={label.name}
+                initialState={selectedLabels.includes(label.id)}
+                onLabelChange={onLabelChange}
+              />
+            </li>
+          ))}
+        </ul>
+        <button className="labels-close-btn" onClick={onClose}>
+          Close
+        </button>
+      </div>
     </div>
   );
 }

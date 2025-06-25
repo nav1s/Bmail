@@ -108,3 +108,79 @@
 .label-item input {
   margin-right: 8px;
 }
+
+.popup-backdrop {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(32, 33, 36, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.popup-content {
+  background: var(--card-bg);
+  color: var(--text-color);
+  border-radius: 12px;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
+  padding: 24px;
+  width: 400px;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+}
+
+.label-menu-backdrop {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.3);
+  z-index: 9999;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.label-menu-popup {
+  background-color: var(--card-bg, #fff);
+  border-radius: 12px;
+  padding: 20px;
+  min-width: 240px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  color: var(--text-color, #000);
+}
+
+.label-menu-title {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 4px;
+  text-align: center;
+  color: var(--text-color);
+}
+
+.label-menu-btn {
+  padding: 10px 16px;
+  font-size: 14px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  background-color: #f1f3f4;
+  color: #202124;
+  text-align: center;
+}
+
+.label-menu-btn:hover {
+  background-color: #d2e3fc;
+}
+
+.label-menu-btn.cancel {
+  background-color: #e8e8e8;
+}
+
+.label-menu-btn.cancel:hover {
+  background-color: #d0d0d0;
+}

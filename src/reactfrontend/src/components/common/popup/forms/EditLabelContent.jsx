@@ -17,7 +17,7 @@ export default function EditLabelContent({ label, onSave, onClose }) {
     e.preventDefault();
     const trimmed = newName.trim();
     if (trimmed) {
-      onSave({ ...label, name: trimmed });
+      onSave(trimmed);
     }
   };
 
