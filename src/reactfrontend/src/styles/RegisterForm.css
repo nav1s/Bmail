@@ -1,0 +1,35 @@
+.file-upload {
+  margin-bottom: 1rem;
+  display: block;
+  font-size: 0.9rem;
+  color: #444;
+  width: 100%;
+}
+
+.file-upload input {
+  margin-top: 0.5rem;
+}
+
+.custom-file-upload {
+  margin-top: 12px;
+  margin-bottom: 12px;
+  display: block;
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background-color: #f9f9f9;
+  cursor: pointer;
+  color: #333;
+  font-size: 0.95rem;
+  text-align: center;
+  transition: background-color 0.2s ease;
+}
+
+.custom-file-upload:hover {
+  background-color: #eee;
+}
+
+.auth-card button[type="submit"] {
+  margin-top: 16px;
+}
