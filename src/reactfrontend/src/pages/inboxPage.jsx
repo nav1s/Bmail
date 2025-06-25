@@ -22,7 +22,7 @@ const SYSTEM_LABELS = [
   { id: "inbox", icon: "📥", label: "Inbox" },
   { id: "starred", icon: "⭐", label: "Starred" },
   { id: "sent", icon: "📤", label: "Sent" },
-  { id: "draft", icon: "📝", label: "Drafts" },
+  { id: "drafts", icon: "📝", label: "Drafts" },
   { id: "spam", icon: "🚫", label: "Spam" },
   { id: "trash", icon: "🗑️", label: "Trash" },
 ];
