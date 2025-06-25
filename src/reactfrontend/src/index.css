@@ -30,3 +30,18 @@ body.dark {
   --card-bg: #1e1e1e;
   --border-color: #444;
 }
+
+.dark-mode-toggle {
+  background-color: #202124;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 9999px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.dark-mode-toggle:hover {
+  background-color: #3c4043;
+}

@@ -1,0 +1,44 @@
+.app-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  border-bottom: 1px solid var(--border-color);
+  background-color: var(--card-bg);
+  color: var(--text-color);
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.dark-mode-toggle {
+  padding: 8px 16px;
+  background-color: var(--btn-bg, #e8f0fe);
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+  border-radius: 9999px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.dark-mode-toggle:hover {
+  background-color: var(--hover-bg, #d2e3fc);
+  border-color: #a5c3f0;
+}
+
+.user-avatar {
+  background-color: #555;
+  color: #fff;
+  border-radius: 50%;
+  width: 35px;
+  height: 35px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: bold;
+  cursor: pointer;
+}
