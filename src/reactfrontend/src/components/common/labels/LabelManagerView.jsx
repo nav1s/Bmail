@@ -28,13 +28,23 @@ export default function LabelManagerView({
   handleDeleteLabel,
   menuLabel,
   setMenuLabel,
+  hideDefaults = false,
 }) {
   const defaultLabels = [...labels.filter((l) => l.isDefault), ALL_LABEL];
   const customLabels = labels.filter((l) => !l.isDefault);
 
   return (
     <div className="labels-container">
-      <h2>Labels</h2>
+      {!hideDefaults && (
+        <>
+          <LabelList
+            labels={defaultLabels}
+            selected={selectedLabel}
+            onSelect={onSelect}
+          />
+          <div style={{ height: "12px" }} />
+        </>
+      )}
 
       <LabelInput
         value={newLabelName}
@@ -42,19 +52,12 @@ export default function LabelManagerView({
         onAdd={handleAddLabel}
       />
 
-      <ul>
-        <LabelList
-          labels={defaultLabels}
-          selected={selectedLabel}
-          onSelect={onSelect}
-        />
-        <LabelList
-          labels={customLabels}
-          selected={selectedLabel}
-          onSelect={onSelect}
-          onMenuClick={setMenuLabel}
-        />
-      </ul>
+      <LabelList
+        labels={customLabels}
+        selected={selectedLabel}
+        onSelect={onSelect}
+        onMenuClick={setMenuLabel}
+      />
 
       {showEdit && selectedLabel && (
         <EditLabelPopup

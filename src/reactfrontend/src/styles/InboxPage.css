@@ -20,7 +20,7 @@
   border-radius: 9999px;
   cursor: pointer;
   width: 180px;
-  margin-bottom: 24px;
+  margin-bottom: 16px;
   box-shadow: 0 4px 12px rgba(26, 115, 232, 0.5);
   transition: background-color 0.3s ease, box-shadow 0.3s ease;
 }

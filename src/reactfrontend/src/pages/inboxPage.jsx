@@ -18,6 +18,8 @@ import useInboxMails from "../hooks/useInboxMails";
 // Routing
 import { useParams, useNavigate } from "react-router-dom";
 
+const SYSTEM_LABELS = ["inbox", "starred", "sent", "draft", "spam", "trash"];
+
 export default function InboxPage() {
   const [query, setQuery] = useState("");
   const { label } = useParams();
@@ -44,19 +46,32 @@ export default function InboxPage() {
     <AppLayout>
       <div className="inbox-page">
         <div className="inbox-main-content">
-          {/* Sidebar */}
           <aside className="sidebar">
             <button className="compose-btn" onClick={() => setShowCompose(true)}>
               Compose
             </button>
 
+            <div className="system-labels">
+              {SYSTEM_LABELS.map((lbl) => (
+                <div
+                  key={lbl}
+                  className={`label-item ${label === lbl ? "selected" : ""}`}
+                  onClick={() => navigate(`/mails/${lbl}`)}
+                >
+                  {lbl.charAt(0).toUpperCase() + lbl.slice(1)}
+                </div>
+              ))}
+            </div>
+
+            <div className="custom-labels-title">Labels</div>
+
             <LabelManager
               selectedLabel={label}
               onSelect={(name) => navigate(`/mails/${name}`)}
+              hideDefaults={true}
             />
           </aside>
 
-          {/* Main content */}
           <section className="mail-list-section">
             <h1 className="inbox-title">{label ? label : "Inbox"}</h1>
             <SearchBar query={query} setQuery={setQuery} />
@@ -75,7 +90,6 @@ export default function InboxPage() {
           </section>
         </div>
 
-        {/* Popups */}
         {showCompose && (
           <ComposePopup onSend={handleSendMail} onClose={() => setShowCompose(false)} />
         )}

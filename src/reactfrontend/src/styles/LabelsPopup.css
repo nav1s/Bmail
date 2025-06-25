@@ -13,9 +13,13 @@
 
 .labels-title {
   font-size: 20px;
-  margin-bottom: 8px;
-  color: var(--text-color);
-  text-align: center;
+  font-weight: 700;
+  color: #5f6368;
+  padding: 8px 12px 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  border-top: 1px solid #e0e0e0;
+  margin-top: 16px;
 }
 
 .labels-close-btn {
