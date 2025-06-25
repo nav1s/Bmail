@@ -18,15 +18,13 @@ import useInboxMails from "../hooks/useInboxMails";
 // Routing
 import { useParams, useNavigate } from "react-router-dom";
 
-import { MdInbox, MdStar, MdSend, MdDrafts, MdReport, MdDelete } from "react-icons/md";
-
 const SYSTEM_LABELS = [
-  { id: "inbox", icon: <MdInbox />, label: "Inbox" },
-  { id: "starred", icon: <MdStar />, label: "Starred" },
-  { id: "sent", icon: <MdSend />, label: "Sent" },
-  { id: "draft", icon: <MdDrafts />, label: "Drafts" },
-  { id: "spam", icon: <MdReport />, label: "Spam" },
-  { id: "trash", icon: <MdDelete />, label: "Trash" },
+  { id: "inbox", icon: "📥", label: "Inbox" },
+  { id: "starred", icon: "⭐", label: "Starred" },
+  { id: "sent", icon: "📤", label: "Sent" },
+  { id: "draft", icon: "📝", label: "Drafts" },
+  { id: "spam", icon: "🚫", label: "Spam" },
+  { id: "trash", icon: "🗑️", label: "Trash" },
 ];
 
 export default function InboxPage() {
@@ -67,8 +65,7 @@ export default function InboxPage() {
                   onClick={() => navigate(`/mails/${id}`)}
                 >
                   <span style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                    {icon}
-                    {text}
+                    {icon} {text}
                   </span>
                 </div>
               ))}

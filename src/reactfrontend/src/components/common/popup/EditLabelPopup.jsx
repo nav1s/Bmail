@@ -1,25 +1,27 @@
-import Popup from "./Popup";
+import { useEffect } from "react";
 import EditLabelContent from "./forms/EditLabelContent";
+import "../../../styles/LabelsPopup.css";
 
 /**
  * EditLabelPopup
- *
- * A wrapper modal for label editing logic.
- * Uses EditLabelContent as the form inside a popup dialog.
- *
- * Props:
- * - label: the label to edit (must contain at least id and name)
- * - onSave: function(label) — called with updated label object
- * - onClose: function() — closes the popup
+ * A centered modal for editing a label.
  */
 export default function EditLabelPopup({ label, onSave, onClose }) {
+  useEffect(() => {
+    const handleKey = (e) => {
+      if (e.key === "Escape") {
+        onClose();
+      }
+    };
+    document.addEventListener("keydown", handleKey);
+    return () => document.removeEventListener("keydown", handleKey);
+  }, [onClose]);
+
   return (
-    <Popup onClose={onClose} className="edit-label-popup">
-      <EditLabelContent
-        label={label}
-        onSave={onSave}
-        onClose={onClose}
-      />
-    </Popup>
+    <div className="popup-backdrop">
+      <div className="popup-content" style={{ maxWidth: "400px" }}>
+        <EditLabelContent label={label} onSave={onSave} onClose={onClose} />
+      </div>
+    </div>
   );
 }

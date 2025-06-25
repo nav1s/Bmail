@@ -23,7 +23,9 @@ export default function Header({ onAvatarClick }) {
 
   return (
     <header className="app-header">
-      <div className="header-left">
+      <div className="app-title">📧 Bmail</div>
+
+      <div className="header-right">
         <button
           className="dark-mode-toggle"
           onClick={() => setDarkMode(!darkMode)}

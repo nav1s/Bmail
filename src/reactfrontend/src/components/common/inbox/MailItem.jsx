@@ -22,51 +22,37 @@ export default function MailItem({
   } = useMailItem(mail, { onClick, onTrash, onDeletePermanent, onRestore });
 
   const isStarred = hasLabel(labelMap?.starred);
-  const isInboxed = hasLabel(labelMap?.inbox);
 
   return (
-    <div className="mail-item" onClick={handleClick}>
-      <div className="mail-header">
-        <span className="mail-from">{mail.from}</span>
-        <span className="mail-title">{mail.title}</span>
-      </div>
-      <div className="mail-body">{mail.body?.slice(0, 100)}...</div>
+    <div className="mail-list-item" onClick={handleClick}>
+      <div className="mail-content-line">
+        <div className="mail-actions">
+          {labelMap?.starred !== undefined && (
+            <ToggableButton
+              mailId={mail.id}
+              labelId={labelMap.starred}
+              labelName="starred"
+              initialState={isStarred}
+              onLabelChange={loadMails}
+            />
+          )}
+          <button onClick={(e) => handleTrash(e)}>🗑️</button>
+        </div>
 
-      <div className="mail-actions">
-        {!isTrashView ? (
-          <>
-            {labelMap?.starred !== undefined && (
-              <ToggableButton
-                mailId={mail.id}
-                labelId={labelMap.starred}
-                labelName="starred"
-                initialState={isStarred}
-                onLabelChange={loadMails}
-              />
-            )}
-            {labelMap?.inbox !== undefined && !mail.draft && (
-              <ToggableButton
-                mailId={mail.id}
-                labelId={labelMap.inbox}
-                labelName="inbox"
-                initialState={isInboxed}
-                onLabelChange={loadMails}
-              />
-            )}
-            <button onClick={handleTrash}>🗑️</button>
-          </>
-        ) : (
-          <>
-            <button onClick={(e) => {
-              e.stopPropagation();
-              handleRestore();
-            }}>↩️</button>
-            <button onClick={(e) => {
-              e.stopPropagation();
-              handleDeletePermanent();
-            }}>❌</button>
-          </>
-        )}
+        <div className="mail-details">
+          <span className="mail-from">{mail.from}</span>
+          <span className="mail-title">{mail.title}</span>
+          <span className="mail-body">{mail.body?.slice(0, 50)}...</span>
+        </div>
+
+        <span className="mail-date">
+          {mail.createdAt
+            ? new Date(mail.createdAt).toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+              })
+            : ""}
+        </span>
       </div>
     </div>
   );
