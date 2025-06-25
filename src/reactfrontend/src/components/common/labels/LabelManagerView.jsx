@@ -41,6 +41,7 @@ export default function LabelManagerView({
             labels={defaultLabels}
             selected={selectedLabel}
             onSelect={onSelect}
+            onMenuClick={setMenuLabel}
           />
           <div style={{ height: "12px" }} />
         </>
