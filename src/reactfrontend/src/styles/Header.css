@@ -25,6 +25,11 @@
   transition: all 0.3s ease;
 }
 
+.dark .search-bar {
+  background-color: #303134;
+  border: 1px solid #5f6368;
+}
+
 .dark-mode-toggle:hover {
   background-color: var(--hover-bg, #d2e3fc);
   border-color: #a5c3f0;
