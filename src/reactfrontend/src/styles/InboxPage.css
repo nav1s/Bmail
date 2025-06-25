@@ -70,7 +70,7 @@
 /* Label Items */
 .label-item {
   display: flex;
-  align-items: center;
+  align-items: left;
   justify-content: space-between;
   padding: 12px 16px;
   border-radius: 20px;

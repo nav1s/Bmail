@@ -18,7 +18,16 @@ import useInboxMails from "../hooks/useInboxMails";
 // Routing
 import { useParams, useNavigate } from "react-router-dom";
 
-const SYSTEM_LABELS = ["inbox", "starred", "sent", "draft", "spam", "trash"];
+import { MdInbox, MdStar, MdSend, MdDrafts, MdReport, MdDelete } from "react-icons/md";
+
+const SYSTEM_LABELS = [
+  { id: "inbox", icon: <MdInbox />, label: "Inbox" },
+  { id: "starred", icon: <MdStar />, label: "Starred" },
+  { id: "sent", icon: <MdSend />, label: "Sent" },
+  { id: "draft", icon: <MdDrafts />, label: "Drafts" },
+  { id: "spam", icon: <MdReport />, label: "Spam" },
+  { id: "trash", icon: <MdDelete />, label: "Trash" },
+];
 
 export default function InboxPage() {
   const [query, setQuery] = useState("");
@@ -50,19 +59,20 @@ export default function InboxPage() {
             <button className="compose-btn" onClick={() => setShowCompose(true)}>
               Compose
             </button>
-
             <div className="system-labels">
-              {SYSTEM_LABELS.map((lbl) => (
+              {SYSTEM_LABELS.map(({ id, icon, label: text }) => (
                 <div
-                  key={lbl}
-                  className={`label-item ${label === lbl ? "selected" : ""}`}
-                  onClick={() => navigate(`/mails/${lbl}`)}
+                  key={id}
+                  className={`label-item ${label === id ? "selected" : ""}`}
+                  onClick={() => navigate(`/mails/${id}`)}
                 >
-                  {lbl.charAt(0).toUpperCase() + lbl.slice(1)}
+                  <span style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                    {icon}
+                    {text}
+                  </span>
                 </div>
               ))}
             </div>
-
             <LabelManager
               selectedLabel={label}
               onSelect={(name) => navigate(`/mails/${name}`)}
