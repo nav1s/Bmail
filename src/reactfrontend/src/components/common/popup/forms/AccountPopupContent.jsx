@@ -52,7 +52,7 @@ export default function AccountPopupContent({ onLogout }) {
           <h3>Hello, <strong>{user?.username || "User"}</strong></h3>
           <p className="email">{user?.email}</p>
 
-          <div className="button-row">
+          <div className="profile-buttons">
             <button className="send-btn" onClick={() => setShowEdit(true)}>
               Edit Profile
             </button>

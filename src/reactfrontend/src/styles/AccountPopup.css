@@ -70,3 +70,9 @@
   padding: 24px;
   box-sizing: border-box;
 }
+
+.profile-buttons {
+  display: flex;
+  gap: 12px;
+  margin-top: 12px;
+}
