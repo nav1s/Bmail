@@ -46,11 +46,7 @@ export default function LabelManagerView({
         </>
       )}
 
-      <LabelInput
-        value={newLabelName}
-        onChange={setNewLabelName}
-        onAdd={handleAddLabel}
-      />
+      <div className="custom-labels-title">Labels</div>
 
       <LabelList
         labels={customLabels}
@@ -58,6 +54,14 @@ export default function LabelManagerView({
         onSelect={onSelect}
         onMenuClick={setMenuLabel}
       />
+
+      <div style={{ marginTop: "12px" }}>
+        <LabelInput
+          value={newLabelName}
+          onChange={setNewLabelName}
+          onAdd={handleAddLabel}
+        />
+      </div>
 
       {showEdit && selectedLabel && (
         <EditLabelPopup

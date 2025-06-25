@@ -63,8 +63,6 @@ export default function InboxPage() {
               ))}
             </div>
 
-            <div className="custom-labels-title">Labels</div>
-
             <LabelManager
               selectedLabel={label}
               onSelect={(name) => navigate(`/mails/${name}`)}
