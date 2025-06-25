@@ -62,8 +62,7 @@ useEffect(() => {
         <button
           className="popup-close-button"
           onClick={onClose}
-          aria-label="Close popup"
-        >
+          aria-label="Close popup">
           ×
         </button>
         {children}

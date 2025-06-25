@@ -1,38 +1,71 @@
-.compose-form input,
-.compose-form textarea {
-  background-color: var(--bg-color);
-  color: var(--text-color);
-  border: 1px solid var(--border-color);
-}
-
-.compose-form .draft-btn,
-.compose-form .cancel-btn {
+.compose-form {
+  width: 600px;
   background-color: var(--card-bg);
   color: var(--text-color);
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  overflow: hidden;
+  font-family: "Segoe UI", Roboto, sans-serif;
 }
 
+/* כותרת */
+.compose-form h3 {
+  margin: 0;
+  padding: 16px;
+  font-size: 16px;
+  font-weight: 600;
+  background-color: #f1f3f4;
+  border-bottom: 1px solid #ccc;
+}
+
+/* עיצוב שדות בתוך ComposePopupForm */
+.compose-form input,
+.compose-form textarea {
+  padding: 12px 16px;
+  border: none;
+  border-bottom: 1px solid #ccc;
+  font-size: 14px;
+  outline: none;
+  background-color: transparent;
+  color: inherit;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* עיצוב תיבת טקסט */
 .compose-form textarea {
   resize: vertical;
-  min-height: 100px;
+  min-height: 150px;
 }
 
-.compose-form .button-row {
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-  margin-top: 16px;
-}
-
-.compose-form .button-row button {
-  padding: 10px 20px;
+/* כפתורים */
+.compose-form button {
+  margin: 8px 8px 12px;
+  padding: 8px 16px;
+  font-size: 14px;
+  border-radius: 24px;
   border: none;
-  border-radius: 8px;
-  font-weight: bold;
-  font-size: 15px;
   cursor: pointer;
+  transition: background-color 0.2s ease;
 }
 
-.compose-form .button-row .send-btn {
+.compose-form button[type="submit"] {
   background-color: #1a73e8;
   color: white;
+}
+
+.compose-form button[type="submit"]:hover {
+  background-color: #1664c0;
+}
+
+.compose-form button[type="button"] {
+  background-color: #f1f3f4;
+  color: #5f6368;
+}
+
+.compose-form button[type="button"]:hover {
+  background-color: #e0e0e0;
 }
