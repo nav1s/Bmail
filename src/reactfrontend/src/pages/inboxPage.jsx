@@ -29,7 +29,9 @@ const SYSTEM_LABELS = [
 
 export default function InboxPage() {
   const [query, setQuery] = useState("");
-  const { label } = useParams();
+  const { label: rawLabel } = useParams();
+  const label = decodeURIComponent(rawLabel || "").toLowerCase();
+  
   const navigate = useNavigate();
 
   const {
@@ -63,7 +65,7 @@ export default function InboxPage() {
                 <div
                   key={id}
                   className={`label-item ${label === id ? "selected" : ""}`}
-                  onClick={() => navigate(`/mails/${id}`)}
+                  onClick={() => navigate(`/mails/${id.toLowerCase()}`)}
                 >
                   <span style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                     {icon} {text}
@@ -73,7 +75,7 @@ export default function InboxPage() {
             </div>
             <LabelManager
               selectedLabel={label}
-              onSelect={(name) => navigate(`/mails/${name}`)}
+              onSelect={(label) => navigate(`/mails/${encodeURIComponent(label.name.toLowerCase())}`)}
               hideDefaults={true}
             />
             </ul>

@@ -62,20 +62,8 @@
   border-radius: 8px;
   cursor: pointer;
   transition: background-color 0.2s ease, color 0.2s ease;
-  color: var(--text-color);
   background-color: transparent;
   width: 100%;
-}
-
-.label-tab:hover {
-  background-color: var(--hover-bg, #e0e0e0);
-  color: var(--text-color);
-}
-
-.label-tab.active {
-  background-color: #d2e3fc;
-  font-weight: 600;
-  color: #202124;
 }
 
 .label-tab .label-name {
@@ -85,6 +73,16 @@
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
+}
+
+.label-tab:hover {
+  background-color: var(--hover-bg, #e0e0e0);
+}
+
+.label-tab.active {
+  background-color: #d2e3fc;
+  font-weight: 600;
+  color: #202124;
 }
 
 .label-tab .more-icon {
@@ -99,7 +97,6 @@
 
 /* === DARK MODE === */
 .dark .label-tab {
-  color: var(--text-color);
   background-color: transparent;
 }
 
@@ -113,21 +110,34 @@
 
 .dark .label-tab.active {
   background-color: #31363b;
-  color: #000000;
+  color: #ffffff;
 }
 
-/* Distinct default label styling */
+/* ===== ברירת מחדל לעומת מותאמות אישית ===== */
+
+/* ברירת מחדל (רק להם יהיה צבע טקסט שחור ורקע לבן) */
 .dark .label-tab.default-label {
-  color: #000000;
-  background-color: transparent;
+  background-color: white !important;
+  color: black !important;
 }
 
-.dark .label-tab.default-label:hover {
-  background-color: rgba(255, 255, 255, 0.1);
-  color: #000000;
+.dark .label-tab.default-label .label-name {
+  color: black !important;
 }
 
-.dark .label-tab.default-label.active {
-  background-color: #3a3b3c;
-  color: #000000;
+.dark .label-tab.default-label:hover,
+.dark .label-tab.default-label:hover .label-name {
+  background-color: #f2f2f2 !important;
+  color: black !important;
+}
+
+.dark .label-tab.default-label.active,
+.dark .label-tab.default-label.active .label-name {
+  background-color: white !important;
+  color: black !important;
+}
+
+/* תוויות מותאמות אישית - יקבלו טקסט בהיר כרגיל */
+.dark .label-tab.custom-label {
+  color: var(--text-color);
 }

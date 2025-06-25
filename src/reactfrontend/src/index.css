@@ -29,6 +29,7 @@ body.dark {
   --text-color: #e0e0e0;
   --card-bg: #1e1e1e;
   --border-color: #444;
+  --hover-bg: rgba(255, 255, 255, 0.1);
 }
 
 .dark-mode-toggle {
