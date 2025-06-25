@@ -21,7 +21,7 @@ export default function ComposePopup({ onClose, onSend, prefill }) {
   };
 
   return (
-    <Popup onClose={onClose}>
+    <Popup onClose={onClose} className="wide-popup">
       <div className="compose-form">
         <h3>Compose Mail</h3>
         <ComposePopupForm
