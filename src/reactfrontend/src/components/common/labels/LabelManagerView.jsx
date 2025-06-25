@@ -34,7 +34,7 @@ export default function LabelManagerView({
   const customLabels = labels.filter((l) => !l.isDefault);
 
   return (
-    <div className="labels-container">
+    <>
       {!hideDefaults && (
         <>
           <LabelList
@@ -55,13 +55,13 @@ export default function LabelManagerView({
         onMenuClick={setMenuLabel}
       />
 
-      <div style={{ marginTop: "12px" }}>
-        <LabelInput
-          value={newLabelName}
-          onChange={setNewLabelName}
-          onAdd={handleAddLabel}
-        />
-      </div>
+      <div style={{ height: "12px" }} />
+
+      <LabelInput
+        value={newLabelName}
+        onChange={setNewLabelName}
+        onAdd={handleAddLabel}
+      />
 
       {showEdit && selectedLabel && (
         <EditLabelPopup
@@ -95,6 +95,6 @@ export default function LabelManagerView({
           onClose={() => setMenuLabel(null)}
         />
       )}
-    </div>
+    </>
   );
 }
