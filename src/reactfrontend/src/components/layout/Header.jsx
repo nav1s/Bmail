@@ -2,13 +2,14 @@ import { useEffect, useState } from "react";
 import { loadUser } from "../../utils/userUtils";
 import "../../styles/Header.css";
 import DarkModeToggle from "./DarkModeToggle";
+import { useUser } from "../../contexts/UserContext";
 
 /**
  * Header
  * Displays app title, dark mode toggle, and user avatar.
  */
 export default function Header({ onAvatarClick }) {
-  const user = loadUser();
+  const { user } = useUser();
   const [darkMode, setDarkMode] = useState(() => {
     return localStorage.getItem("theme") === "dark";
   });

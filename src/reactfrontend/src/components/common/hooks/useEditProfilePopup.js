@@ -1,13 +1,10 @@
 import { useState } from "react";
 import { updateUser } from "../../../services/userService";
-import { clearUser, saveUser } from "../../../utils/userUtils";
 import { useUser } from "../../../contexts/UserContext";
-
-
 
 export default function useEditProfile() {
   const [error, setError] = useState(null);
-  const { update } = useUser();
+  const { user, update } = useUser(); // צריך את user.id
 
   const handleEdit = async (form, file) => {
     const formData = new FormData();
@@ -16,8 +13,8 @@ export default function useEditProfile() {
     if (file) formData.append("image", file);
 
     try {
-      const updated = await updateUser(formData);
-      update(updated);
+      const updated = await updateUser(user.id, formData); // כולל getUserById
+      update(updated); // שולח לקונטקסט אובייקט מעודכן מלא
       return true;
     } catch (err) {
       setError(err.message);
