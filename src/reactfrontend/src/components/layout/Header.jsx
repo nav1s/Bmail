@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { loadUser } from "../../utils/userUtils";
 import "../../styles/Header.css";
+import DarkModeToggle from "./DarkModeToggle";
 
 /**
  * Header
@@ -26,13 +27,7 @@ export default function Header({ onAvatarClick }) {
       <div className="app-title">📧 Bmail</div>
 
       <div className="header-right">
-        <button
-          className="dark-mode-toggle"
-          onClick={() => setDarkMode(!darkMode)}
-        >
-          {darkMode ? "☀️ Light Mode" : "🌙 Dark Mode"}
-        </button>
-
+        <DarkModeToggle />
         {user && (
           <div className="user-avatar" onClick={onAvatarClick}>
             {user.firstName?.[0]?.toUpperCase() ?? "?"}
@@ -40,6 +35,7 @@ export default function Header({ onAvatarClick }) {
           </div>
         )}
       </div>
+
     </header>
   );
 }
