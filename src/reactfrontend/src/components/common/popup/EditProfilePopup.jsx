@@ -36,7 +36,7 @@ export default function EditProfilePopup({
           📁 Upload Profile Picture
         </label>
 
-        <div className="button-row">
+        <div className="button-row" style={{ display: "flex", gap: "12px", marginTop: "1rem" }}>
           <button type="submit" className="send-btn">Update</button>
           <button type="button" className="cancel-btn" onClick={onCancel}>Cancel</button>
         </div>

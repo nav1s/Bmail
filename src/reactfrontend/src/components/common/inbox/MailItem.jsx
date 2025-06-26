@@ -36,6 +36,17 @@ export default function MailItem({
               onLabelChange={loadMails}
             />
           )}
+
+          {labelMap?.spam !== undefined && (
+            <ToggableButton
+              mailId={mail.id}
+              labelId={labelMap.spam}
+              labelName="spam"
+              initialState={hasLabel(labelMap.spam)}
+              onLabelChange={loadMails}
+            />
+          )}
+
           <button onClick={(e) => handleTrash(e)}>🗑️</button>
         </div>
 
