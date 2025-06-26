@@ -102,7 +102,7 @@
 .label-item {
   padding: 6px 0;
   font-size: 15px;
-  color: var(--text-color);
+  color: #1a05eb;
 }
 
 .label-item input {

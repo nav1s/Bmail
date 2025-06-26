@@ -61,17 +61,19 @@ export default function InboxPage() {
             </button>
             <ul className="label-list">
               <div className="system-labels">
-              {SYSTEM_LABELS.map(({ id, icon, label: text }) => (
-                <div
-                  key={id}
-                  className={`label-item ${label === id ? "selected" : ""}`}
-                  onClick={() => navigate(`/mails/${id.toLowerCase()}`)}
-                >
-                  <span style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                    {icon} {text}
-                  </span>
-                </div>
-              ))}
+              {
+                SYSTEM_LABELS.map(({ id, icon, label: text }) => (
+                  <div
+                    key={id}
+                    className={`label-item ${label === id ? "selected" : ""}`}
+                    onClick={() => navigate(`/mails/${id.toLowerCase()}`)}
+                  >
+                    <span className="label-content" style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                      {icon} {text}
+                    </span>
+                  </div>
+                ))
+              }
             </div>
             <LabelManager
               selectedLabel={label}

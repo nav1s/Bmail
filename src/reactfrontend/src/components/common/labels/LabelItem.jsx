@@ -15,15 +15,18 @@ export default function LabelItem({ label, selected, onSelect, onMenu, showMenu 
   const className = [
     "label-tab",
     label.isDefault ? "default-label" : "custom-label",
-    isSelected ? "active" : ""
-  ].join(" ");
+    isSelected ? "active" : "",
+    isSelected && label.isDefault ? "default-label-active" : ""
+  ]
+    .filter(Boolean)
+    .join(" ");
 
   return (
     <li
       className={className}
       onClick={() => onSelect?.(label)}
     >
-      <span className="label-name">{label.name}</span>
+      <span className="label-name label-content">{label.name}</span>
 
       {showMenu && !label.isDefault && (
         <span
@@ -40,4 +43,3 @@ export default function LabelItem({ label, selected, onSelect, onMenu, showMenu 
     </li>
   );
 }
-

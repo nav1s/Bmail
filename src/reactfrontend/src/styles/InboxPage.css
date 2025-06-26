@@ -144,6 +144,29 @@
   border: 1px solid #5f6368;
 }
 
+.dark .label-item.selected {
+  background-color: white !important;
+  color: black !important;
+}
+
+body.dark .sidebar .label-item.selected {
+  background-color: white !important;
+  color: black !important;
+}
+
+body.dark .sidebar .label-item.selected .label-content {
+  color: black !important;
+}
+
+.dark .label-tab.default-label-active {
+  background-color: white !important;
+  color: black !important;
+}
+
+.dark .label-tab.default-label-active .label-name {
+  color: black !important;
+}
+
 .mail-list-section {
   flex-grow: 1;
   display: flex;
