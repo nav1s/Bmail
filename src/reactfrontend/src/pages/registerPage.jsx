@@ -1,23 +1,11 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-// Import styling
-import "../styles/AuthForm.css";
-
+import "../styles/RegisterForm.css";
+import DarkModeToggle from "../components/layout/DarkModeToggle";
 import RegisterForm from "./forms/RegisterForm";
-import useRegister from "../hooks/useRegister";
 
-/**
- * RegisterPage
- *
- * Displays the user registration page.
- * Uses RegisterForm for UI, and manages form state + submission.
- */
 export default function RegisterPage() {
-  const navigate = useNavigate();
-  const { handleRegister, error } = useRegister();
-
-  // Form state for text inputs
   const [form, setForm] = useState({
     username: "",
     password: "",
@@ -26,36 +14,64 @@ export default function RegisterPage() {
     lastName: "",
   });
 
-  // Profile photo file input
   const [file, setFile] = useState(null);
+  const [error, setError] = useState(null);
+  const navigate = useNavigate();
 
-  // Handle typing into text fields
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
+    setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  // Handle image file selection
   const handleFileChange = (e) => {
     setFile(e.target.files[0]);
   };
 
-  // Handle registration form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const success = await handleRegister(form, file);
-    if (success) {
+
+    if (form.password !== form.confirmPassword) {
+      setError("Passwords do not match");
+      return;
+    }
+
+    const formData = new FormData();
+    Object.entries(form).forEach(([key, value]) =>
+      formData.append(key, value)
+    );
+    if (file) {
+      formData.append("profilePicture", file);
+    }
+
+    try {
+      const res = await fetch("/api/users/register", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.message || "Registration failed");
+      }
+
       navigate("/login");
+    } catch (err) {
+      setError(err.message);
     }
   };
 
   return (
-    <RegisterForm
-      form={form}
-      onChange={handleChange}
-      onFileChange={handleFileChange}
-      onSubmit={handleSubmit}
-      error={error}
-    />
+    <>
+      <div style={{ display: "flex", justifyContent: "flex-end", padding: "1rem" }}>
+        <DarkModeToggle />
+      </div>
+
+      <RegisterForm
+        form={form}
+        onChange={handleChange}
+        onFileChange={handleFileChange}
+        onSubmit={handleSubmit}
+        error={error}
+      />
+    </>
   );
 }

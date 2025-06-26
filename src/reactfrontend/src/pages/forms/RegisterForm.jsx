@@ -4,7 +4,7 @@ import "../../styles/RegisterForm.css";
 /**
  * Presentational component for the registration form.
  */
-export default function RegisterForm({ form, onChange, onFileChange, onSubmit, error }) {
+export default function RegisterForm({ form = {}, onChange, onFileChange, onSubmit, error }) {
   return (
     <div className="auth-container">
       <div className="auth-card">

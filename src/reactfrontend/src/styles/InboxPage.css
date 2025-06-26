@@ -147,6 +147,11 @@
   box-shadow: 0 0 8px rgba(26, 115, 232, 0.6);
 }
 
+.dark .search-bar {
+  background-color: #303134;
+  border: 1px solid #5f6368;
+}
+
 /* === Mail List Section === */
 .mail-list-section {
   flex-grow: 1;

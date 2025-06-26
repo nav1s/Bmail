@@ -82,3 +82,13 @@
   flex-shrink: 0;
   margin-left: auto;
 }
+
+.dark .mail-title,
+.dark .mail-from,
+.dark .mail-body {
+  color: white;
+}
+
+.mail-title, .mail-from, .mail-body {
+  color: var(--text-color);
+}
