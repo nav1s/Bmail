@@ -153,9 +153,13 @@ function filterMailForOutput(newMail) {
 function getMailsForUser(username, spamLabelId, trashLabelId, labelId = null) {
   return mails
     .filter(mail => {
-      // exclude spam or trash mails
       if (mail.labels) {
-        if (mail.labels.includes(spamLabelId) || mail.labels.includes(trashLabelId)) {
+        // exclude spam mails
+        if (mail.labels.includes(spamLabelId)) {
+          return false;
+        }
+        // exclude trash mails unless it's labeled as trash and spam and we are trying to get spam mails
+        if (spamLabelId !== -1 && mail.labels.includes(trashLabelId)) {
           return false;
         }
       }
