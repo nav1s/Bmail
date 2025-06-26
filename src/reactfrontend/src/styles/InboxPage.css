@@ -195,11 +195,13 @@ body.dark .sidebar .label-item.selected .label-content {
   color: var(--text-color);
 }
 
-.mail-list-item:hover {
+/* Light mode hover effect */
+body:not(.dark) .mail-list-item:hover {
   background-color: #f1f3f4;
 }
 
-.dark .mail-list-item:hover {
+/* Dark mode hover effect */
+body.dark .mail-list-item:hover {
   background-color: #3a3b3f;
 }
 
