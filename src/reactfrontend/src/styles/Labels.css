@@ -113,9 +113,7 @@
   color: #ffffff;
 }
 
-/* ===== ברירת מחדל לעומת מותאמות אישית ===== */
-
-/* ברירת מחדל (רק להם יהיה צבע טקסט שחור ורקע לבן) */
+/* ברירת מחדל */
 .dark .label-tab.default-label {
   background-color: white !important;
   color: black !important;
@@ -137,7 +135,6 @@
   color: black !important;
 }
 
-/* תוויות מותאמות אישית - יקבלו טקסט בהיר כרגיל */
 .dark .label-tab.custom-label {
   color: var(--text-color);
 }

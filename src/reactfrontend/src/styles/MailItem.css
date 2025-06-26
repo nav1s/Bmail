@@ -13,6 +13,10 @@
   background-color: #f1f3f4;
 }
 
+.dark .mail-list-item:hover {
+  background-color: #3a3b3f;
+}
+
 .mail-content-line {
   display: flex;
   align-items: center;
@@ -58,7 +62,7 @@
 
 .mail-title {
   font-weight: 600;
-  color: #202124;
+  color: var(--text-color);
   max-width: 200px;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -86,9 +90,5 @@
 .dark .mail-title,
 .dark .mail-from,
 .dark .mail-body {
-  color: white;
-}
-
-.mail-title, .mail-from, .mail-body {
   color: var(--text-color);
 }
