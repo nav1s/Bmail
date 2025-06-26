@@ -10,5 +10,5 @@ export async function getUserById(id) {
 
 export async function updateUser(id, formData) {
   await api.patch("/users", formData);
-  return getUserById(id); // תחזיר את כל פרטי המשתמש המלאים
+  return getUserById(id);
 }

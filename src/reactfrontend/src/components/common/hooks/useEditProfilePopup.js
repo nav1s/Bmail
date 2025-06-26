@@ -4,7 +4,7 @@ import { useUser } from "../../../contexts/UserContext";
 
 export default function useEditProfile() {
   const [error, setError] = useState(null);
-  const { user, update } = useUser(); // צריך את user.id
+  const { user, update } = useUser();
 
   const handleEdit = async (form, file) => {
     const formData = new FormData();
@@ -13,8 +13,8 @@ export default function useEditProfile() {
     if (file) formData.append("image", file);
 
     try {
-      const updated = await updateUser(user.id, formData); // כולל getUserById
-      update(updated); // שולח לקונטקסט אובייקט מעודכן מלא
+      const updated = await updateUser(user.id, formData);
+      update(updated);
       return true;
     } catch (err) {
       setError(err.message);

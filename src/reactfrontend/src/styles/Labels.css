@@ -119,13 +119,11 @@
   color: black !important;
 }
 
-/* כל תווית ברירת מחדל */
 .dark .label-tab.default-label {
   background-color: transparent;
   color: var(--text-color);
 }
 
-/* כאשר תווית ברירת מחדל נבחרה (active) */
 .dark .label-tab.default-label-active {
   background-color: white !important;
   color: black !important;

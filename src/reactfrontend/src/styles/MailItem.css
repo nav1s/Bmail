@@ -4,17 +4,15 @@
   padding: 14px 24px;
   border-bottom: 1px solid var(--border-color);
   cursor: pointer;
-  background-color: #f1f3f4; /* שורת מייל כברירת מחדל */
+  background-color: #f1f3f4;
   transition: background-color 0.2s ease;
   color: var(--text-color);
 }
 
-/* מצב hover במצב רגיל (לא כהה) */
 body:not(.dark) .mail-list-item:hover {
-  background-color: #3f667a; /* אפור בהיר כמו Gmail */
+  background-color: #3f667a;
 }
 
-/* מצב hover במצב כהה */
 .dark .mail-list-item:hover {
   background-color: #3a3b3f;
 }
@@ -89,7 +87,6 @@ body:not(.dark) .mail-list-item:hover {
   margin-left: auto;
 }
 
-/* מצב כהה - טקסט */
 .dark .mail-title,
 .dark .mail-from,
 .dark .mail-body {
