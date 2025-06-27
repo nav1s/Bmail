@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-
-import "../styles/RegisterForm.css";
+import useRegister from "../hooks/useRegister";
 import DarkModeToggle from "../components/layout/DarkModeToggle";
 import RegisterForm from "./forms/RegisterForm";
+import "../styles/RegisterForm.css";
 
 export default function RegisterPage() {
   const [form, setForm] = useState({
@@ -17,6 +17,7 @@ export default function RegisterPage() {
   const [file, setFile] = useState(null);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
+  const { handleRegister } = useRegister();
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -26,36 +27,14 @@ export default function RegisterPage() {
     setFile(e.target.files[0]);
   };
 
+  /**
+   * Handles form submission and calls the registration hook
+   */
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    if (form.password !== form.confirmPassword) {
-      setError("Passwords do not match");
-      return;
-    }
-
-    const formData = new FormData();
-    Object.entries(form).forEach(([key, value]) =>
-      formData.append(key, value)
-    );
-    if (file) {
-      formData.append("profilePicture", file);
-    }
-
-    try {
-      const res = await fetch("/api/users/register", {
-        method: "POST",
-        body: formData,
-      });
-
-      if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.message || "Registration failed");
-      }
-
+    const success = await handleRegister(form, file);
+    if (success) {
       navigate("/login");
-    } catch (err) {
-      setError(err.message);
     }
   };
 
