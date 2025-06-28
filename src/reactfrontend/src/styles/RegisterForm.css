@@ -33,3 +33,17 @@
 .auth-card button[type="submit"] {
   margin-top: 16px;
 }
+
+.login-link {
+  margin-top: 12px;
+  margin-bottom: 12px;
+  color: #007bff;
+  cursor: pointer;
+  text-decoration: underline;
+  font-size: 14px;
+  transition: color 0.3s;
+}
+
+.login-link:hover {
+  color: #fff;
+}

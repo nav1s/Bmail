@@ -45,5 +45,6 @@ body.dark {
 }
 
 .dark-mode-toggle:hover {
-  background-color: var(--hover-bg);
+  background-color: #000000;
+  color: #fff;
 }

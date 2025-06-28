@@ -31,7 +31,7 @@ export default function EditProfilePopup({
           required
         />
 
-        <label className="custom-file-upload">
+        <label className="custom-file-upload" >
           <input type="file" accept="image/*" onChange={onFileChange} />
           📁 Upload Profile Picture
         </label>

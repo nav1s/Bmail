@@ -68,7 +68,7 @@ export default function InboxPage() {
                     className={`label-item ${label === id ? "selected" : ""}`}
                     onClick={() => navigate(`/mails/${id.toLowerCase()}`)}
                   >
-                    <span className="label-content" style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                    <span className="label-content" style={{ display: "flex", alignItems: "center", gap: "10px", width: "100%" }}>
                       {icon} {text}
                     </span>
                   </div>

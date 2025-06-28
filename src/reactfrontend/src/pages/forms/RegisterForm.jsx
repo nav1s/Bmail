@@ -1,10 +1,14 @@
 import React from "react";
 import "../../styles/RegisterForm.css";
+import "../../styles/AccountPopup.css";
+import { useNavigate } from "react-router-dom";
+
 
 /**
  * Presentational component for the registration form.
  */
 export default function RegisterForm({ form = {}, onChange, onFileChange, onSubmit, error }) {
+  const navigate = useNavigate();
   return (
     <div className="auth-container">
       <div className="auth-card">
@@ -55,9 +59,10 @@ export default function RegisterForm({ form = {}, onChange, onFileChange, onSubm
             📁 Upload Profile Picture
             </label>
           </label>
-
           <button type="submit">Register</button>
-
+          <button className="login-link" onClick={() => navigate('/login')}>
+            Already have an account? Login
+          </button>
           {error && <p style={{ color: "red" }}>{error}</p>}
         </form>
       </div>

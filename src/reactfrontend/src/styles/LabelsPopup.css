@@ -100,9 +100,23 @@
 }
 
 .label-item {
+  display: block;
+  width: 100%;
   padding: 6px 0;
   font-size: 15px;
-  color: #1a05eb;
+  background-color: #fff;
+  color: #333;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+body.dark .label-item {
+    background-color: #353131;
+    color: #fff;
+}
+
+body.dark .label-item:hover {
+  background-color: #ffffff;
+  color: #111111;
 }
 
 .label-item input {
