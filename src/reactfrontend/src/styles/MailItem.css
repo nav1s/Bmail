@@ -10,7 +10,7 @@
 }
 
 body:not(.dark) .mail-list-item:hover {
-  background-color: #3f667a;
+  background-color: #7ea3b6;
 }
 
 .dark .mail-list-item:hover {
@@ -35,12 +35,15 @@ body:not(.dark) .mail-list-item:hover {
   border: none;
   font-size: 16px;
   cursor: pointer;
-  color: var(--text-color);
 }
 
 .mail-actions button:hover {
-  color: #1a73e8;
+  color: #000000;
+  box-shadow: 0 0 5px rgba(0,0,0,0.3);
+  transform: scale(1.05);
+  transition: all 0.2s ease-in-out;
 }
+
 
 .mail-details {
   display: flex;
@@ -103,6 +106,7 @@ body.dark .mail-list-item:hover {
   background-color: #2a2a2a;
 }
 
+.mail-actions button,
 .mail-title,
 .mail-from,
 .mail-body {
