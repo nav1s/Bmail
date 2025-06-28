@@ -15,9 +15,8 @@ export default function RegisterPage() {
   });
 
   const [file, setFile] = useState(null);
-  const [error, setError] = useState(null);
   const navigate = useNavigate();
-  const { handleRegister } = useRegister();
+  const { handleRegister, error } = useRegister();
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
