@@ -54,10 +54,10 @@ export default function RegisterForm({ form = {}, onChange, onFileChange, onSubm
 
           <label>
             <div>Profile Photo:</div>
-            <label className="custom-file-upload">
+            <button className="custom-file-upload">
             <input type="file" accept="image/*" onChange={onFileChange} />
             📁 Upload Profile Picture
-            </label>
+            </button>
           </label>
           <button type="submit">Register</button>
           <button className="login-link" onClick={() => navigate('/login')}>

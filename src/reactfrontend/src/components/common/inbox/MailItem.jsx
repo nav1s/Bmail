@@ -46,8 +46,6 @@ export default function MailItem({
               onLabelChange={loadMails}
             />
           )}
-
-          <button onClick={(e) => handleTrash(e)}>🗑️</button>
         </div>
 
         <div className="mail-details">
@@ -56,14 +54,7 @@ export default function MailItem({
           <span className="mail-body">{mail.body?.slice(0, 50)}...</span>
         </div>
 
-        <span className="mail-date">
-          {mail.createdAt
-            ? new Date(mail.createdAt).toLocaleTimeString([], {
-                hour: "2-digit",
-                minute: "2-digit",
-              })
-            : ""}
-        </span>
+         <button onClick={(e) => handleTrash(e)}>🗑️</button>
       </div>
     </div>
   );

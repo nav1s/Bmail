@@ -119,6 +119,11 @@ body.dark .label-item:hover {
   color: #111111;
 }
 
+body.dark .label-item:hover {
+  background-color: #5d5656;
+  color: #fff;
+}
+
 .label-item input {
   margin-right: 8px;
 }

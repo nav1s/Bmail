@@ -1,4 +1,9 @@
 .compose-form {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+
   width: 95vw;
   max-width: 1000px;
   background-color: var(--card-bg);
@@ -10,7 +15,9 @@
   padding: 0;
   overflow: hidden;
   font-family: "Segoe UI", Roboto, sans-serif;
+  z-index: 1000;
 }
+
 
 .compose-form input,
 .compose-form textarea {
