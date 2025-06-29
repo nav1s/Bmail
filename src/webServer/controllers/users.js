@@ -74,6 +74,13 @@ exports.createUser = (req, res) => {
     userData[field] = req.body[field];
   }
 
+  if ('file' in req) {
+    console.log('File upload detected:', req.file);
+    imageUrl = `/uploads/${req.file.filename}`;
+    console.log('Image URL:', imageUrl);
+    userData['image'] = imageUrl;
+  }
+
   const userPass = req.body.password;
   // check if the password is strong enough
   if (!isPasswordStrongEnough(userPass)) {
@@ -153,6 +160,13 @@ exports.updateUserById = (req, res) => {
     if (!isPasswordStrongEnough(req.body.password)) {
       return badRequest(res, 'Password is not strong enough');
     }
+  }
+
+  if ('file' in req) {
+    console.log('File upload detected:', req.file);
+    imageUrl = `/uploads/${req.file.filename}`;
+    console.log('Image URL:', imageUrl);
+    req.body.image = imageUrl;
   }
 
   try {

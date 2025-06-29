@@ -22,9 +22,13 @@ router.delete('/:mailId/labels/:labelId', requireAuth, detachLabelFromMail);
 // Important: Put /search/:query BEFORE /:id to prevent conflicts
 router.get('/search/:query', requireAuth, searchMails);
 
+// GET /api/mails/:id → returns a mail by ID
 router.get('/:id', requireAuth, getMailById);
+
+// PATCH /api/mails/:id → updates a mail by ID (must be logged in)
 router.patch('/:id', requireAuth, updateMailById);
 
+// DELETE /api/mails/:id → deletes a mail by ID (must be logged in)
 router.delete('/:id', requireAuth, deleteMailById);
 
 module.exports = router;

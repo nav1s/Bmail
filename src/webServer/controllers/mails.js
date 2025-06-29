@@ -7,7 +7,6 @@ const { findUserByUsername } = require('../models/users.js');
 const { addUrlsToBlacklist, removeUrlsFromBlacklist } = require('./blacklist.js');
 
 const mailLimit = 50;
-
 /**
  * Checks a list of URLs by sending them to a server for validation.
  * @param urls the list of URLs to check
@@ -186,7 +185,7 @@ function addInboxLabelToRecipients(mail) {
 
 /**
  * GET /api/mails
- * Returns the last 50 mails sent to the logged-in user.
+ * Returns the last mailLimit mails sent to the logged-in user.
  * Requires login.
  *
  * @param {import('express').Request} req
@@ -321,7 +320,7 @@ function searchMails(req, res) {
   }
 
   try {
-    const results = searchMailsForUser(username, query);
+    const results = searchMailsForUser(username, query, mailLimit);
     // Sends the public info of each mail found
     return res.json(results.map(filterMailForOutput));
   } catch (err) {
@@ -467,8 +466,8 @@ function listMailsByLabel(req, res) {
     let trashLabelId = getLabelByName(req.user.id, defaultLabelNames.trash);
 
     if (labelName.toLowerCase() === "all") {
-      const mails = getMailsForUser(username, spamLabelId, trashLabelId)
-        .slice(-mailLimit).reverse();
+    const mails = getMailsForUser(username, spamLabelId, trashLabelId)
+      .slice(-mailLimit).reverse();
       return res.json(mails.map(filterMailForOutput));
     }
 

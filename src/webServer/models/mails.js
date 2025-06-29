@@ -170,6 +170,7 @@ function getMailsForUser(username, spamLabelId, trashLabelId, labelId = null) {
     })
 }
 
+
 /**
  * finds a mail by its ID.
  * Throws an error if not found.
@@ -327,7 +328,7 @@ function deleteMail(user, id) {
  * @param {string} query - the search query
  * @returns {Array} - array of mails matching the search criteria
  */
-function searchMailsForUser(username, query) {
+function searchMailsForUser(username, query, limit) {
   const lowerQuery = query.toLowerCase();
 
   return mails.filter(mail => {
@@ -336,7 +337,9 @@ function searchMailsForUser(username, query) {
       (mail.body && mail.body.toLowerCase().includes(lowerQuery));
 
     return canUserAccessMail(mail, username) && matchesContent;
-  });
+  })
+  .reverse()
+  .slice(0, limit);
 }
 
 /** Checks if a user can add a label to a mail.
