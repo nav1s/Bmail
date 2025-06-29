@@ -2,6 +2,10 @@ import React from "react";
 import ToggableButton from "../labels/ToggableButton";
 import useMailItem from "../hooks/useMailItem";
 import "../../../styles/MailItem.css";
+import {
+  attachLabelToMail,
+  detachLabelFromMail
+} from "../../../services/mailService";
 
 export default function MailItem({
   mail,
@@ -28,26 +32,27 @@ export default function MailItem({
     <div className="mail-list-item" onClick={handleClick}>
       <div className="mail-content-line">
         <div className="mail-actions">
-          {labelMap?.starred !== undefined && (
-            <ToggableButton
-              mailId={mail.id}
-              labelId={labelMap.starred}
-              labelName="⭐"
-              initialState={isStarred}
-              onLabelChange={loadMails}
-            />
-          )}
+            {labelMap?.starred !== undefined && (
+              <button onClick={(e) => {
+                e.stopPropagation();
+                isStarred
+                  ? detachLabelFromMail(mail.id, labelMap.starred).then(loadMails)
+                  : attachLabelToMail(mail.id, labelMap.starred).then(loadMails);
+              }}>
+                {isStarred ? "⭐" : "☆"}
+              </button>
+            )}
 
-          {labelMap?.spam !== undefined && (
-            <ToggableButton
-              mailId={mail.id}
-              labelId={labelMap.spam}
-              labelName="spam"
-              initialState={isSpam}
-              onLabelChange={loadMails}
-            />
-          )}
-        </div>
+            {labelMap?.spam !== undefined && (
+              <ToggableButton
+                mailId={mail.id}
+                labelId={labelMap.spam}
+                labelName="spam"
+                initialState={isSpam}
+                onLabelChange={loadMails}
+              />
+            )}
+          </div>
 
         <div className="mail-details">
           <span className="mail-from">{mail.from}</span>
