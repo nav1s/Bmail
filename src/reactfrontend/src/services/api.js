@@ -37,7 +37,7 @@ async function request(endpoint, method = "GET", body = null) {
   }
 
   if (!response.ok) {
-    const error = new Error(data.message || "Request failed");
+    const error = new Error(data.error || "Request failed");
     error.status = response.status;
     error.body = data;
     throw error;

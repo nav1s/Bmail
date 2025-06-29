@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import api from "../../../services/api";
+import { useNavigate, useParams } from "react-router-dom";
+
 
 export default function useLabelManager() {
   const [labels, setLabels] = useState([]);
@@ -8,6 +10,9 @@ export default function useLabelManager() {
   const [showEdit, setShowEdit] = useState(false);
   const [showDelete, setShowDelete] = useState(false);
   const [menuLabel, setMenuLabel] = useState(null);
+  const navigate = useNavigate();
+  const { label: currentLabel } = useParams(); // current route param
+
 
   const loadLabels = async () => {
     try {
@@ -43,15 +48,22 @@ export default function useLabelManager() {
   };
 
   const handleDeleteLabel = async () => {
-    try {
-      await api.delete(`/labels/${selectedLabel.id}`, { auth: true });
-      setLabels((prev) => prev.filter((l) => l.id !== selectedLabel.id));
-      setSelectedLabel(null);
-      setShowDelete(false);
-    } catch (err) {
-      console.error("Failed to delete label:", err);
+  try {
+    const nameToDelete = selectedLabel.name.toLowerCase(); // get the label name
+
+    await api.delete(`/labels/${selectedLabel.id}`, { auth: true });
+    setLabels((prev) => prev.filter((l) => l.id !== selectedLabel.id));
+    setSelectedLabel(null);
+    setShowDelete(false);
+
+    if (currentLabel?.toLowerCase() === nameToDelete) {
+      navigate("/mails/inbox");
     }
-  };
+  } catch (err) {
+    console.error("Failed to delete label:", err);
+  }
+};
+
 
   useEffect(() => {
     loadLabels();

@@ -10,7 +10,7 @@ import { useUser } from "../../../../contexts/UserContext";
  * @param {Object} props
  * @param {Function} props.onLogout - Logout callback
  */
-export default function AccountPopupContent({ onLogout }) {
+export default function AccountPopupContent({ username, onLogout })  {
   const { user } = useUser();
   const [showEdit, setShowEdit] = useState(false);
   const [form, setForm] = useState({
@@ -53,7 +53,7 @@ export default function AccountPopupContent({ onLogout }) {
         />
       ) : (
         <>
-          <h3>Hello, <strong>{user?.username || "User"}</strong></h3>
+          <h3>Hello, <strong>{username || user?.username || "User"}</strong></h3>
           <p className="email">{user?.email}</p>
 
           <div className="profile-buttons">
