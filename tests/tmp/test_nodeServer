@@ -76,7 +76,7 @@ curl -i -X POST http://localhost:8080/api/users \
   "firstName": "Bob",
   "lastName": "Smith",
   "username": "bob",
-  "password": "imthebobyboten"
+  "password": "aA12345!"
 }'
 
 ✅ 1.6 sign in as bob
@@ -84,14 +84,14 @@ curl -i -X POST http://localhost:8080/api/tokens \
 -H "Content-Type: application/json" \
 -d '{
   "username": "bob",
-  "password": "imthebobyboten"
+  "password": "aA12345!"
 }'
 
 ✅ 1.7 patch bob
 
 curl -i -X PATCH http://localhost:8080/api/users \
 -H "Content-Type: application/json" \
--H "Authorization: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImJvYiIsImlhdCI6MTc0OTE5NjY0Mn0.CJizebVji2m9WOK4lZCavzc9-GOIoWuhhuDNmDfQ77k" \
+-H "Authorization: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImJvYiIsImlhdCI6MTc0OTgzNTkwMX0.xN0UiD-ypO-gUlbkciqmgiuX8-cKHzWfO5aBCBgasoc" \
 -d '{
   "firstName": "not bob"
 }'
@@ -348,7 +348,7 @@ HTTP/1.1 400 Bad Request
 ✅ 4.12 Valid draft creation
 
 curl -i -X POST http://localhost:8080/api/mails \
--H "Authorization: 1" \
+-H "Authorization: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImJvYiIsImlhdCI6MTc0OTgzNTkwMX0.xN0UiD-ypO-gUlbkciqmgiuX8-cKHzWfO5aBCBgasoc" \
 -H "Content-Type: application/json" \
 -d '{
   "to": ["bob"], 
@@ -398,7 +398,7 @@ curl -i -X GET http://localhost:8080/api/mails/2 \
 ✅ 4.16 valid send draft
 
 curl -i -X PATCH http://localhost:8080/api/mails/1 \
--H "Authorization: 1" \
+-H "Authorization: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImJvYiIsImlhdCI6MTc0OTgzNTkwMX0.xN0UiD-ypO-gUlbkciqmgiuX8-cKHzWfO5aBCBgasoc" \
 -H "Content-Type: application/json" \
 -d '{"draft": true}'
 
@@ -409,6 +409,43 @@ HTTP/1.1 200 OK
 }
 
 
+### label to mail attacher checks
+- create user:
+curl -i -X POST http://localhost:8080/api/users \
+    -H "Content-Type: application/json" \
+    -d '{
+  "firstName": "Bob",
+  "lastName": "Smith",
+  "username": "bob",
+  "password": "aA12345!"
+}'
+
+- create mail:
+
+curl -i -X POST http://localhost:8080/api/mails \
+-H "Authorization: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImJvYiIsImlhdCI6MTc0OTgzNTkwMX0.xN0UiD-ypO-gUlbkciqmgiuX8-cKHzWfO5aBCBgasoc" \
+-H "Content-Type: application/json" \
+-d '{
+  "to": ["bob"],
+  "title": "hi",
+  "body": "qqq"
+}'
+
+- get labels for bob:
+curl -i http://localhost:8080/api/labels \
+-H "Authorization: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImJvYiIsImlhdCI6MTc0OTgzNTkwMX0.xN0UiD-ypO-gUlbkciqmgiuX8-cKHzWfO5aBCBgasoc" 
+
+
+- add trash label:
+
+curl -i -X POST http://localhost:8080/api/mails/1/labels \
+-H "Authorization: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImJvYiIsImlhdCI6MTc0OTgzNTkwMX0.xN0UiD-ypO-gUlbkciqmgiuX8-cKHzWfO5aBCBgasoc" \
+-H "Content-Type: application/json" \
+-d '{
+  "labelId": 4
+}'
+
+
 ----------------------------------------
  5. LABELS
 ----------------------------------------
@@ -416,7 +453,7 @@ HTTP/1.1 200 OK
 ✅ 5.1 Valid label create
 
 curl -i -X POST http://localhost:8080/api/labels \
--H "Authorization: 1" \
+-H "Authorization: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImJvYiIsImlhdCI6MTc0OTgzNTkwMX0.xN0UiD-ypO-gUlbkciqmgiuX8-cKHzWfO5aBCBgasoc" \
 -H "Content-Type: application/json" \
 -d '{
   "name": "Important"

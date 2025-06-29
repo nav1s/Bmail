@@ -6,7 +6,7 @@ const users = [];
 
 // Centralized user field configuration
 const userFieldConfig = {
-  id: { public: true, editable: false, required: false },
+  id: { public: true, required: false, editable: false  },
   username: { public: true, required: true, editable: true },
   firstName: { public: true, required: true, editable: true },
   lastName: { public: true, required: true, editable: true },
@@ -65,6 +65,19 @@ function findUserById(id) {
   return user;
 }
 
+// /**
+//  * @brief Finds a user by their username.
+//  * @param {*} username 
+//  * @returns {Object} The user object if found.
+//  */
+// function findUserByUsername(username) {
+//   const user = users.find(user => user.username === username);
+//   if (!user) {
+//     throw createError('User not found', { status: 404, type: 'NOT_FOUND' });
+//   }
+//   return user;
+// }
+
 /**
  * @brief This function updates a user object with the provided updates.
  * @param {*} user The user object to update.
@@ -74,6 +87,11 @@ function updateUserById(user, updates) {
   const editableFields = Object.entries(userFieldConfig)
     .filter(([_, config]) => config.editable)
     .map(([field]) => field);
+  
+  // log the editable fields for debugging
+  console.log('Editable fields:', editableFields);
+  // log the updates for debugging
+  console.log('Updates:', updates);
   
   // check if the updates contain uneditable fields
   const uneditableFields = Object.keys(updates).filter(field => !editableFields.includes(field));

@@ -1,6 +1,7 @@
 const users = require('../models/users.js');
 const { badRequest, ok, createdWithLocation, noContent } = require('../utils/httpResponses');
 const { httpError } = require('../utils/error');
+const labels = require('../models/labels.js');
 
 
 /**
@@ -67,10 +68,17 @@ exports.createUser = (req, res) => {
     return badRequest(res, `Missing fields: ${missing.join(', ')}`);
   }
 
-  //parses data into json
+  // parses data into json
   const userData = {};
   for (const field of requiredFields) {
     userData[field] = req.body[field];
+  }
+
+  if ('file' in req) {
+    console.log('File upload detected:', req.file);
+    imageUrl = `/uploads/${req.file.filename}`;
+    console.log('Image URL:', imageUrl);
+    userData['image'] = imageUrl;
   }
 
   const userPass = req.body.password;
@@ -82,8 +90,11 @@ exports.createUser = (req, res) => {
   // Trying to create a user, returning bad request with the error if failed
   try {
     const newUser = users.createUser(userData);
+    // Create default labels for the new user
+    labels.createDefaultLabels(newUser.id);
     return createdWithLocation(res, `/api/users/${newUser.id}`);
   } catch (err) {
+    console.error('Error creating user:', err);
     return httpError(res, err);
   }
 }
@@ -107,6 +118,28 @@ exports.getUserById = (req, res) => {
   }
 };
 
+/**
+ * GET /api/users/:username
+ * Returns public user details for a given username
+ */
+exports.getUserByUsername = (req, res) => {
+  try {
+    // searching for user
+    const username = req.params.username;
+    if (!username) {
+      return badRequest(res, 'Username is required');
+    }
+    const user = users.findUserByUsername(username);
+
+    // Returning only public user fields
+    const publicUser = users.filterUserByVisibility(user, 'public');
+    return ok(res, publicUser);
+  } catch (err) {
+    console.error('Error getting user by username:', err);
+    return httpError(res, err);
+  }
+}
+
 
 /**
  * PATCH /api/users
@@ -117,11 +150,23 @@ exports.getUserById = (req, res) => {
  * @param {import('express').Response} res
  */
 exports.updateUserById = (req, res) => {
+  // throw an error if res doesn't contain body
+  if ('body' in req === false || req.body === undefined) {
+    return badRequest(res, 'Request body is required');
+  }
+
   if ('password' in req.body) {
     // Check if the password is strong enough
     if (!isPasswordStrongEnough(req.body.password)) {
       return badRequest(res, 'Password is not strong enough');
     }
+  }
+
+  if ('file' in req) {
+    console.log('File upload detected:', req.file);
+    imageUrl = `/uploads/${req.file.filename}`;
+    console.log('Image URL:', imageUrl);
+    req.body.image = imageUrl;
   }
 
   try {

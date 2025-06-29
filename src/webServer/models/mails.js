@@ -1,6 +1,6 @@
 const { createError } = require('../utils/error');
 
-const mails = []; // [{ id, from, to[], title, body, timestamp }]
+const mails = []; // [{ id, from, to[], title, body, timestamp, labels: [], deletedBySender: false, deletedByRecipient: [] }]
 let mailIdCounter = 1;
 
 /**
@@ -12,11 +12,15 @@ let mailIdCounter = 1;
  * in the buildMail() function and are not part of this schema.
  */
 const mailInputSchema = {
-  from: { public: true },
-  to: { public: true, normalize: true },
-  title: { public: true },
-  body: { public: true },
-  draft: { public: true, default: false },
+  from: { public: true, required: true },
+  to: { public: true, normalize: true, required: true },
+  title: { public: true, required: true },
+  body: { public: true, required: true },
+  draft: { public: true, default: false, required: false },
+  labels: { public: true, default: [], required: false },
+  urls: { public: true, default: [], required: false },
+  deletedBySender: { public: false, default: false, required: false },
+  deletedByRecipient: { public: false, default: [], required: false }
 };
 
 /**
@@ -31,10 +35,19 @@ function validateMailInput(input) {
   // Parses fields from keys
   const requiredFields = Object.keys(mailInputSchema);
   const inputFields = Object.keys(input);
+  // log the mail input schema and input for debugging
+  console.log('Mail input schema:', mailInputSchema);
 
-  // check if draft isn't in the input, if not, set it to the default value
-  if (!inputFields.includes('draft')) {
-    input.draft = mailInputSchema.draft.default;
+  // add default values for fields that aren't required and not in the input
+  for (const field of Object.keys(mailInputSchema)) {
+    if (!(field in input) && !mailInputSchema[field].required) {
+      // check if the default value is an array
+      if (Array.isArray(mailInputSchema[field].default)) {
+        input[field] = [...mailInputSchema[field].default];
+        continue;
+      }
+      input[field] = mailInputSchema[field].default;
+    }
   }
 
   // Filtering fields from input
@@ -68,7 +81,9 @@ function buildMail(input) {
     timestamp: new Date().toISOString(),
     deletedBySender: false,
     deletedByRecipient: [],
+    labels: []
   };
+  console.log('Building new mail with input:', input);
 
   // Filling fields with input according to the schema of newMail
   for (const field of Object.keys(input)) {
@@ -81,8 +96,25 @@ function buildMail(input) {
     }
   }
 
+  const msgBody = newMail.body || '';
+  const msgTitle = newMail.title || '';
+  newMail.urls = extractUrlsFromMessage(msgBody).concat(extractUrlsFromMessage(msgTitle));
+
+  // log the extracted URLs for debugging
+  console.log(`Extracted URLs from message: ${newMail.urls.join(', ')}`);
+
   mails.push(newMail);
   return newMail;
+}
+
+/**
+ * @brief Extracts URLs from a message body or title.
+ * @param {*} msg The message body or title to extract URLs from.
+ * @returns the list of URLs found in the message.
+ */
+function extractUrlsFromMessage(msg) {
+  const urlRegex = /\bhttps?:\/\/(?:www\.)?[a-zA-Z0-9\-]+\.[a-zA-Z]{2,}(?:\.[a-zA-Z]{2,})?(?:\/[^\s]*)?\b/g;
+  return msg.match(urlRegex) || [];
 }
 
 
@@ -113,14 +145,27 @@ function filterMailForOutput(newMail) {
 /**
  * Returns the last `limit` mails for a given user.
  * @param {*} username - the username of the user to get mails for
- * @param {*} limit - the number of mails to return
+ * @param {*} spamLabelId - the label id for spam mails
+ * @param {*} trashLabelId - the label id for trash mails
+ * @param {*} labelId - the label id to filter mails by
  * @returns 
  */
-function getMailsForUser(username, limit) {
+function getMailsForUser(username, spamLabelId, trashLabelId, labelId = null) {
   return mails
-    .filter(mail => canUserAccessMail(mail, username))
-    .slice(-limit).reverse();
+    .filter(mail => {
+      // exclude spam or trash mails
+      if (mail.labels) {
+        if (mail.labels.includes(spamLabelId) || mail.labels.includes(trashLabelId)) {
+          return false;
+        }
+      }
+
+      const accessible = canUserAccessMail(mail, username);
+      const matchesLabel = labelId === null || (mail.labels && mail.labels.includes(labelId));
+      return accessible && matchesLabel;
+    })
 }
+
 
 /**
  * finds a mail by its ID.
@@ -147,11 +192,24 @@ function findMailById(id) {
 function canUserAccessMail(mail, username) {
   console.log(`Checking access for user ${username} on mail ${mail.id}`);
 
-  return (
-    mail.from === username && !mail.deletedBySender ||
-    (Array.isArray(mail.to) && mail.to.includes(username) &&
-      mail.draft === false && mail.deletedByRecipient.includes(username) === false)
-  );
+  if (mail.from === username && !mail.deletedBySender) {
+    console.log(`User ${username} is the sender of mail ${mail.id}`);
+    return true;
+  }
+
+  if (Array.isArray(mail.to)) {
+    if (mail.to.includes(username) &&
+      mail.draft === false && !mail.deletedByRecipient.includes(username)) {
+      // log the deletedByRecipient array for debugging
+      console.log(`User ${username} is a recipient of mail ${mail.id}`);
+      console.log(`Deleted by recipient: ${mail.deletedByRecipient}`);
+
+      return true;
+    }
+  }
+
+  return false;
+
 }
 
 /**
@@ -162,6 +220,7 @@ function canUserAccessMail(mail, username) {
  * @returns 
  */
 function canUserUpdateMail(mail, username) {
+  console.log(`Checking update access for user ${username} on mail ${mail.id}`);
   if (mail.from !== username || mail.draft !== true) {
     throw createError('Only the sender of a draft mail can update it', { status: 403 });
   }
@@ -180,13 +239,26 @@ function editMail(mail, updates) {
   const editableFields = ['title', 'body'];
 
   // check if the update contains draft
-  if('draft' in updates) {
+  if ('draft' in updates) {
     if (mail.draft === true) {
       if (updates.draft === false) {
         mail.draft = false;
       }
     }
   }
+
+  let title = mail.title;
+  let body = mail.body;
+
+  if ('title' in updates) {
+    title = updates.title;
+  }
+  if ('body' in updates) {
+    body = updates.body;
+  }
+
+  // update the mail urls
+  mail.urls = extractUrlsFromMessage(title).concat(extractUrlsFromMessage(body));
 
   for (const field of editableFields) {
     if (field in updates) {
@@ -217,8 +289,10 @@ function deleteMail(user, id) {
   if (index === -1) {
     throw createError('Mail not found', { status: 404 });
   }
+  console.log(`Deleting mail with ID ${id} for user ${user.username}`);
 
   const mail = mails[index];
+  console.log(`Found mail:`, mail);
 
   // If the mail is a draft and the user is the sender, just remove it
   if (mail.draft === true && mail.from === user.username) {
@@ -228,12 +302,14 @@ function deleteMail(user, id) {
 
   if (mail.from === user.username) {
     mail.deletedBySender = true;
-  } else if (Array.isArray(mail.to) && mail.to.includes(user.username)) {
+  }
+
+  if (Array.isArray(mail.to) && mail.to.includes(user.username)) {
     mail.deletedByRecipient.push(user.username);
   }
 
   // If both sender and recipient deleted the mail remove it from the array
-  if (mail.deletedBySender && mail.deletedByRecipient) {
+  if (mail.deletedBySender && mail.deletedByRecipient.length === mail.to.length) {
     mails.splice(index, 1);
   } else {
     // otherwise update the mail in the array
@@ -248,7 +324,7 @@ function deleteMail(user, id) {
  * @param {string} query - the search query
  * @returns {Array} - array of mails matching the search criteria
  */
-function searchMailsForUser(username, query) {
+function searchMailsForUser(username, query, limit) {
   const lowerQuery = query.toLowerCase();
 
   return mails.filter(mail => {
@@ -257,9 +333,108 @@ function searchMailsForUser(username, query) {
       (mail.body && mail.body.toLowerCase().includes(lowerQuery));
 
     return canUserAccessMail(mail, username) && matchesContent;
-  });
+  })
+  .reverse()
+  .slice(0, limit);
 }
 
+/** Checks if a user can add a label to a mail.
+ * Throws an error if the label is already attached to the mail or if the user does not have access to the mail.
+ * @param {object} mail - The mail object to check.
+ * @param {number} labelId - The ID of the label to check.
+ * @returns {boolean} - Returns true if the user can add the label, otherwise throws an error.
+ */
+function canUserAddLabelToMail(mailId, labelId) {
+  console.log(`Checking if user can add label ${labelId} to mail ${mailId}`);
+  const mail = findMailById(mailId);
+
+  if (!mail) {
+    throw createError('Mail not found', { status: 404 });
+  }
+  console.log(`Found mail:`, mail);
+
+  // Check if the label is already attached to the mail
+  if (mail.labels) {
+    if (mail.labels.includes(labelId)) {
+      throw createError('Label already attached to this mail', { status: 400 });
+    }
+  }
+
+  // check if the user can access the mail
+  if (!canUserAccessMail(mail, mail.from)) {
+    throw createError('User does not have access to this mail', { status: 403 });
+  }
+  return true;
+
+}
+
+/**
+ * Attaches a label to a mail for a given user.
+ * @param {number} mailId - The ID of the mail.
+ * @param {number} labelId - The ID of the label.
+ * @param {number} userId - The ID of the user performing the action.
+ * @returns {object} The updated mail object.
+ */
+function addLabelToMail(mailId, labelId) {
+  const mail = findMailById(mailId);
+  if (!mail) {
+    throw createError('Mail not found', { status: 404 });
+  }
+
+  console.log(`Adding label ${labelId} to mail ${mailId}`);
+  console.log(`Mail before adding label:`, mail);
+
+  if (!mail.labels) {
+    mail.labels = [];
+  }
+
+  if (mail.labels.includes(labelId)) {
+    throw createError('Label already attached to this mail', { status: 400 });
+  }
+
+  mail.labels.push(labelId);
+
+  // Update the mail in the array
+  const index = mails.findIndex(m => m.id === mail.id);
+  if (index !== -1) {
+    mails[index] = mail;
+  } else {
+    // Should not happen if findMailById worked
+    throw createError('Mail not found during update', { status: 404 });
+  }
+}
+
+/**
+ * @brief Removes a label from a mail for a given user.
+ * @param {number} mailId - The ID of the mail.
+ * @param {number} labelId - The ID of the label to remove.
+ * @throws {Error} If the label is not found on the mail.
+ */
+function removeLabelFromMail(mailId, labelId, username) {
+  const mail = findMailById(mailId);
+  if (!mail) {
+    throw createError('Mail not found', { status: 404 });
+  }
+
+  if (canUserAccessMail(mail, username) === false) {
+    throw createError('User does not have access to this mail', { status: 403 });
+  }
+
+  if (!mail.labels || !mail.labels.includes(labelId)) {
+    throw createError('Label not found on this mail', { status: 404 });
+  }
+
+  // remove the label from the mail
+  mail.labels = mail.labels.filter(l => l !== labelId);
+
+  // Update the mail in the array
+  const index = mails.findIndex(m => m.id === mail.id);
+  if (index !== -1) {
+    mails[index] = mail;
+  } else {
+    throw createError('Mail not found during update', { status: 404 });
+  }
+}
 
 
 module.exports = {
@@ -272,5 +447,8 @@ module.exports = {
   canUserUpdateMail,
   editMail,
   deleteMail,
-  searchMailsForUser
+  searchMailsForUser,
+  addLabelToMail,
+  removeLabelFromMail,
+  canUserAddLabelToMail,
 };
