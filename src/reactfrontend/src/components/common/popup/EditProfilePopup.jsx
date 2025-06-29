@@ -31,10 +31,10 @@ export default function EditProfilePopup({
           required
         />
 
-        <button className="custom-file-upload" style={{ display: "flex", gap: "12px", marginTop: "1rem" }}>
+        <label  className="custom-file-upload" style={{ display: "flex", gap: "12px", marginTop: "1rem" }}>
           <input type="file" accept="image/*" onChange={onFileChange} />
           📁 Upload Profile Picture
-        </button>
+        </label >
 
         <div className="button-row" style={{ display: "flex", gap: "12px", marginTop: "1rem" }}>
           <button type="submit" className="send-btn">Update</button>
