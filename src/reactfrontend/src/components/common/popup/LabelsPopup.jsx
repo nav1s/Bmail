@@ -12,7 +12,7 @@ export default function LabelsPopup({ mail, onClose, onLabelChange }) {
         <h2 className="popup-title">Assign Labels</h2>
         <ul className="label-list">
           {customLabels.map((label) => (
-            <li className="label-item" key={label.id}>
+            <li key={label.id}>
               <ToggableButton
                 mailId={mail.id}
                 labelId={label.id}

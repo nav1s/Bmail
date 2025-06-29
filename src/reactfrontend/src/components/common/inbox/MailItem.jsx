@@ -32,7 +32,7 @@ export default function MailItem({
             <ToggableButton
               mailId={mail.id}
               labelId={labelMap.starred}
-              labelName="starred"
+              labelName="⭐"
               initialState={isStarred}
               onLabelChange={loadMails}
             />

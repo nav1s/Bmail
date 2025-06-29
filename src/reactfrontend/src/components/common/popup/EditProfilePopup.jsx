@@ -9,7 +9,11 @@ export default function EditProfilePopup({
   onCancel,
 }) {
   return (
-    <div className="account-popup-full">
+    <div style={{
+        display: "flex",
+        justifyContent: "flex-end",
+        paddingRight: "40px",
+      }} className="account-popup-full" >
       <h3>Edit Profile</h3>
       <form
         onSubmit={onSubmit}

@@ -90,6 +90,13 @@ body:not(.dark) .mail-list-item:hover {
   margin-left: auto;
 }
 
+.dark .mail-actions button:hover {
+  color: #faf8f8;
+  box-shadow: 0 0 5px rgba(0,0,0,0.3);
+  transform: scale(1.05);
+  transition: all 0.2s ease-in-out;
+}
+
 .dark .mail-title,
 .dark .mail-from,
 .dark .mail-body {

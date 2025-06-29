@@ -59,7 +59,7 @@ useEffect(() => {
     <div className="popup-backdrop">
       <div ref={popupRef} className={`popup-content ${className}`}>
         {/* Close "×" button */}
-        <button
+        <button style={{ position: 'absolute', left: '10px', top: '10px' }}
           className="popup-close-button"
           onClick={onClose}
           aria-label="Close popup">

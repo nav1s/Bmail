@@ -37,7 +37,11 @@ export default function AccountPopupContent({ onLogout }) {
   };
 
   return (
-    <div className="account-popup-full">
+    <div className="account-popup-full" style={{
+        display: "flex",
+        justifyContent: "flex-end", // מיישר לימין
+        paddingRight: "40px", // רווח מהקצה הימני
+      }}>
       {showEdit ? (
         <EditProfilePopup
           form={form}

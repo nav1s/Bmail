@@ -102,12 +102,14 @@
 .label-item {
   display: block;
   width: 100%;
-  padding: 6px 0;
+  padding: 6px 12px;
   font-size: 15px;
   background-color: #fff;
   color: #333;
   transition: background-color 0.3s, color 0.3s;
+  box-sizing: border-box;
 }
+
 
 body.dark .label-item {
     background-color: #353131;
