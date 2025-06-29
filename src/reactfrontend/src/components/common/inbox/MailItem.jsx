@@ -22,6 +22,7 @@ export default function MailItem({
   } = useMailItem(mail, { onClick, onTrash, onDeletePermanent, onRestore });
 
   const isStarred = hasLabel(labelMap?.starred);
+  const isSpam = hasLabel(labelMap?.spam);
 
   return (
     <div className="mail-list-item" onClick={handleClick}>
@@ -42,7 +43,7 @@ export default function MailItem({
               mailId={mail.id}
               labelId={labelMap.spam}
               labelName="spam"
-              initialState={hasLabel(labelMap.spam)}
+              initialState={isSpam}
               onLabelChange={loadMails}
             />
           )}
@@ -54,7 +55,22 @@ export default function MailItem({
           <span className="mail-body">{mail.body?.slice(0, 50)}...</span>
         </div>
 
-         <button onClick={(e) => handleTrash(e)}>🗑️</button>
+        <div className="mail-buttons">
+          {!isTrashView && (
+            <button onClick={(e) => handleTrash(e)}>🗑️</button>
+          )}
+
+          {isTrashView && (
+            <>
+              <button onClick={(e) => { e.stopPropagation(); handleRestore(e); }}>
+                Restore
+              </button>
+              <button onClick={(e) => { e.stopPropagation(); handleDeletePermanent(e); }}>
+                ❌ Delete Permanently
+              </button>
+            </>
+          )}
+        </div>
       </div>
     </div>
   );
