@@ -37,12 +37,8 @@ export default function AccountPopupContent({ onLogout }) {
   };
 
   return (
-    <div className="account-popup-content">
-      <p>Hello, <strong>{user?.username || "User"}</strong></p>
-      <button onClick={onLogout}>Logout</button>
-      <button onClick={() => setShowEdit(true)}>Edit Profile</button>
-
-      {showEdit && (
+    <div className="account-popup-full">
+      {showEdit ? (
         <EditProfilePopup
           form={form}
           onChange={handleChange}
@@ -51,6 +47,20 @@ export default function AccountPopupContent({ onLogout }) {
           error={error}
           onCancel={() => setShowEdit(false)}
         />
+      ) : (
+        <>
+          <h3>Hello, <strong>{user?.username || "User"}</strong></h3>
+          <p className="email">{user?.email}</p>
+
+          <div className="profile-buttons">
+            <button className="send-btn" onClick={() => setShowEdit(true)}>
+              Edit Profile
+            </button>
+            <button className="cancel-btn" onClick={onLogout}>
+              Logout
+            </button>
+          </div>
+        </>
       )}
     </div>
   );

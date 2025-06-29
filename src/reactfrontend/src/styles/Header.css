@@ -1,0 +1,60 @@
+.app-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 2rem;
+  border-bottom: 1px solid var(--border-color);
+  background-color: var(--card-bg);
+  color: var(--text-color);
+  font-family: "Segoe UI", Roboto, sans-serif;
+}
+
+.app-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1a73e8;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.dark .search-bar {
+  background-color: #303134;
+  border: 1px solid #5f6368;
+}
+
+.dark-mode-toggle:hover {
+  background-color: #fff;
+  color: #000;
+}
+
+.dark-mode-toggle {
+  background: #454285;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+.dark-mode-toggle.dark-mode-on {
+  color: black;
+}
+
+.user-avatar {
+  background-color: #555;
+  color: #fff;
+  border-radius: 50%;
+  width: 35px;
+  height: 35px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: bold;
+  cursor: pointer;
+}

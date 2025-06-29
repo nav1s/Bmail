@@ -1,0 +1,130 @@
+.compose-form {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+
+  width: 95vw;
+  max-width: 1000px;
+  background-color: var(--card-bg);
+  color: var(--text-color);
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  overflow: hidden;
+  font-family: "Segoe UI", Roboto, sans-serif;
+  z-index: 1000;
+}
+
+
+.compose-form input,
+.compose-form textarea {
+  padding: 16px 24px;
+  border: none;
+  border-bottom: 1px solid #ccc;
+  font-size: 16px;
+  outline: none;
+  background-color: transparent;
+  color: inherit;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.compose-form textarea {
+  resize: vertical;
+  min-height: 300px;
+}
+
+.compose-form button {
+  margin: 16px 16px 24px;
+  padding: 12px 20px;
+  font-size: 16px;
+  border-radius: 24px;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.compose-form button[type="submit"] {
+  background-color: #1a73e8;
+  color: white;
+}
+
+.compose-form button[type="submit"]:hover {
+  background-color: #1664c0;
+}
+
+.compose-form button[type="button"] {
+  background-color: #f1f3f4;
+  color: #5f6368;
+}
+
+.compose-form button[type="button"]:hover {
+  background-color: #e0e0e0;
+}
+
+/* === Light mode === */
+.compose-form input,
+.compose-form textarea {
+  background-color: white;
+  color: #202124;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  margin: 8px 16px;
+}
+
+/* === Dark mode === */
+.dark .compose-form input,
+.dark .compose-form textarea {
+  background-color: #2a2d2f;
+  color: white;
+  border: 1px solid #5f6368;
+}
+
+.dark .compose-form input::placeholder,
+.dark .compose-form textarea::placeholder {
+  color: #aaa;
+}
+
+.dark .compose-form button[type="submit"] {
+  background-color: #8ab4f8;
+  color: #000;
+}
+
+.dark .compose-form button[type="submit"]:hover {
+  background-color: #5b9bf5;
+}
+
+.dark .compose-form button[type="button"] {
+  background-color: #3c4043;
+  color: #e8eaed;
+}
+
+.dark .compose-form button[type="button"]:hover {
+  background-color: #5f6368;
+}
+
+.compose-form h3 {
+  margin: 0;
+  padding: 20px;
+  font-size: 20px;
+  font-weight: 600;
+  background-color: var(--card-header-bg, #f1f3f4);
+  border-bottom: 1px solid #ccc;
+  color: var(--text-color);
+}
+
+.dark .compose-form h3 {
+  background-color: #3c4043;
+  color: white;
+}
+
+:root {
+  --card-header-bg: #f1f3f4;
+}
+
+.dark {
+  --card-header-bg: #3c4043;
+}

@@ -1,6 +1,7 @@
 import React from "react";
 import ToggableButton from "../labels/ToggableButton";
 import useMailItem from "../hooks/useMailItem";
+import "../../../styles/MailItem.css";
 
 export default function MailItem({
   mail,
@@ -10,78 +11,66 @@ export default function MailItem({
   onRestore,
   isTrashView,
   labelMap,
-  loadMails
+  loadMails,
 }) {
   const {
     handleClick,
     handleTrash,
     handleDeletePermanent,
     handleRestore,
-    handleUnspam,
-    isSpamView,
-    hasLabel
+    hasLabel,
   } = useMailItem(mail, { onClick, onTrash, onDeletePermanent, onRestore });
 
   const isStarred = hasLabel(labelMap?.starred);
-  const isInboxed = hasLabel(labelMap?.inbox);
-  const isSpam = hasLabel(labelMap.spam);
+  const isSpam = hasLabel(labelMap?.spam);
 
   return (
-    <div
-      onClick={handleClick}
-      style={{ padding: "8px", borderBottom: "1px solid #ccc", cursor: "pointer" }}
-    >
-      <div>
-        <strong>{mail.from}</strong> — {mail.title}
-      </div>
+    <div className="mail-list-item" onClick={handleClick}>
+      <div className="mail-content-line">
+        <div className="mail-actions">
+          {labelMap?.starred !== undefined && (
+            <ToggableButton
+              mailId={mail.id}
+              labelId={labelMap.starred}
+              labelName="starred"
+              initialState={isStarred}
+              onLabelChange={loadMails}
+            />
+          )}
 
-      <div>
-        {!isTrashView && (
-          <>
-            {labelMap?.starred !== undefined && (
-              <ToggableButton
-                mailId={mail.id}
-                labelId={labelMap.starred}
-                labelName="starred"
-                initialState={isStarred}
-                onLabelChange={loadMails}
-              />
-            )}
-            {labelMap?.inbox !== undefined && !mail.draft && !isSpam &&(
-              <ToggableButton
-                mailId={mail.id}
-                labelId={labelMap.inbox}
-                labelName="inbox"
-                initialState={isInboxed}
-                onLabelChange={loadMails}
-              />
-            )}
-            {labelMap?.spam !== undefined && !mail.draft && (
-              <ToggableButton
-                mailId={mail.id}
-                labelId={labelMap.spam}
-                labelName="spam"
-                initialState={isSpam}
-                onLabelChange={loadMails}
-              />
-            )}
-            <button onClick={handleTrash}>Trash</button>
-          </>
-        )}
+          {labelMap?.spam !== undefined && (
+            <ToggableButton
+              mailId={mail.id}
+              labelId={labelMap.spam}
+              labelName="spam"
+              initialState={isSpam}
+              onLabelChange={loadMails}
+            />
+          )}
+        </div>
 
-        {isTrashView && (
-          <>
-            <button onClick={handleRestore}>Restore</button>
-            <button onClick={handleDeletePermanent}>Delete Permanently</button>
-          </>
-        )}
+        <div className="mail-details">
+          <span className="mail-from">{mail.from}</span>
+          <span className="mail-title">{mail.title}</span>
+          <span className="mail-body">{mail.body?.slice(0, 50)}...</span>
+        </div>
 
-        {isSpamView && (
-          <>
-            <button onClick={handleUnspam}>Unspam</button>
-            <button onClick={handleDeletePermanent}>Delete Permanently</button>
-          </>
-        )}
+        <div className="mail-buttons">
+          {!isTrashView && (
+            <button onClick={(e) => handleTrash(e)}>🗑️</button>
+          )}
+
+          {isTrashView && (
+            <>
+              <button onClick={(e) => { e.stopPropagation(); handleRestore(e); }}>
+                Restore
+              </button>
+              <button onClick={(e) => { e.stopPropagation(); handleDeletePermanent(e); }}>
+                ❌ Delete Permanently
+              </button>
+            </>
+          )}
+        </div>
       </div>
     </div>
   );

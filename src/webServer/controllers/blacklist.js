@@ -86,9 +86,9 @@ exports.addToBlacklist = async (req, res) => {
 }
 
 /**
- * @brief This function adds a list of URLs to the blacklist.
- * @param {*} urls the urls to be added to the blacklist
- * @returns promise that resolves to true if the URLs were successfully added, false otherwise
+ * @brief This function removes a list of URLs to the blacklist.
+ * @param {*} urls the urls to be removed to the blacklist
+ * @returns promise that resolves to true if the URLs were successfully removed, false otherwise
  */
 exports.removeUrlsFromBlacklist = async (urls) => {
     return new Promise((resolve, reject) => {

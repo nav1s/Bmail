@@ -1,21 +1,11 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import RegisterForm from "./forms/RegisterForm";
 import useRegister from "../hooks/useRegister";
-import AppLayout from "../components/layout/AppLayout";
+import DarkModeToggle from "../components/layout/DarkModeToggle";
+import RegisterForm from "./forms/RegisterForm";
+import "../styles/RegisterForm.css";
 
-/**
- * registerPage
- *
- * Renders the user registration page.
- * Manages local state for form fields and file input.
- * Delegates validation and API interaction to useRegister().
- */
 export default function RegisterPage() {
-  const navigate = useNavigate();
-  const { handleRegister, error } = useRegister();
-
-  // Form state
   const [form, setForm] = useState({
     username: "",
     password: "",
@@ -24,20 +14,14 @@ export default function RegisterPage() {
     lastName: "",
   });
 
-  // File state for profile photo
   const [file, setFile] = useState(null);
+  const navigate = useNavigate();
+  const { handleRegister, error } = useRegister();
 
-  /**
-   * Handles text input changes and updates form state
-   */
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
+    setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  /**
-   * Handles profile image file selection
-   */
   const handleFileChange = (e) => {
     setFile(e.target.files[0]);
   };
@@ -53,9 +37,12 @@ export default function RegisterPage() {
     }
   };
 
-   return (
-    <AppLayout>
-      <h2>Register</h2>
+  return (
+    <>
+      <div style={{ display: "flex", justifyContent: "flex-end", padding: "1rem" }}>
+        <DarkModeToggle />
+      </div>
+
       <RegisterForm
         form={form}
         onChange={handleChange}
@@ -63,11 +50,6 @@ export default function RegisterPage() {
         onSubmit={handleSubmit}
         error={error}
       />
-      <div style={{ marginTop: "1rem", textAlign: "center" }}>
-        <button onClick={() => navigate("/login")}>
-          Already have an account? Log in
-        </button>
-      </div>
-    </AppLayout>
+    </>
   );
 }
