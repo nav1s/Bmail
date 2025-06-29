@@ -23,7 +23,7 @@ export default function useInboxMails(label, query) {
         endpoint = `/mails/byLabel/${encodeURIComponent(label)}`;
       }
 
-      const data = await api.get(endpoint, { auth: true });
+      let data = await api.get(endpoint, { auth: true });
       setMails(data);
     } catch (err) {
       console.error(err);
@@ -60,19 +60,30 @@ export default function useInboxMails(label, query) {
   }, [query, label]);
 
   const handleSendMail = async (formData) => {
-    try {
-      await api.post("/mails", formData, { auth: true });
-      await loadMails();
-      setShowCompose(false);
+  try {
+    const isUpdate = formData.id != null;
+    const { id, ...data } = formData;
 
-      if (!formData.draft) {
-        setMailSentVisible(true);
-        setTimeout(() => setMailSentVisible(false), 2000);
-      }
-    } catch (err) {
-      alert("Send failed: " + err.message);
+    if (isUpdate) {
+      // Update existing draft or sent mail
+      await api.patch(`/mails/${id}`, { ...data, draft: formData.draft }, { auth: true });
+    } else {
+      // Create new mail (draft or sent)
+      await api.post("/mails", { ...data, draft: formData.draft }, { auth: true });
     }
-  };
+
+    await loadMails();
+    setShowCompose(false);
+
+    if (!formData.draft) {
+      setMailSentVisible(true);
+      setTimeout(() => setMailSentVisible(false), 2000);
+    }
+  } catch (err) {
+    alert("Send failed: " + err.message);
+  }
+};
+
 
   const handleTrashMail = async (mailId) => {
     try {
@@ -108,6 +119,19 @@ export default function useInboxMails(label, query) {
     }
   };
 
+  const handleUnspamMail = async (mailId) => {
+  try {
+    const spamId = labelMap["spam"];
+    if (!spamId) throw new Error("Spam label ID not loaded");
+    await api.delete(`/mails/${mailId}/labels/${spamId}`, { auth: true });
+    await loadMails();
+  } catch (err) {
+    console.error("Unspam failed:", err);
+    alert("Could not remove spam label: " + err.message);
+  }
+};
+
+
    const isDraftMail = (mail) =>Array.isArray(mail.labels) && labelMap.drafts && mail.labels.includes(labelMap.drafts);
 
 
@@ -125,6 +149,7 @@ export default function useInboxMails(label, query) {
     handleDeleteMail,
     handleRestoreMail,
     isDraftMail,
-    labelMap
+    labelMap,
+    handleUnspamMail
   };
 }

@@ -10,6 +10,7 @@ export default function MailList({
   selectedLabel,
   labelMap,
   loadMails,
+  onUnspam,
 }) {
   return (
     <div className="mail-list">
@@ -24,6 +25,8 @@ export default function MailList({
           isTrashView={selectedLabel?.toLowerCase() === "trash"}
           labelMap={labelMap}
           loadMails={loadMails}
+          onUnspam={onUnspam}
+          isSpamView={selectedLabel?.toLowerCase() === "spam"}
         />
       ))}
     </div>
