@@ -1,5 +1,6 @@
 import useComposePopup from "../hooks/useComposePopup";
 import "../../../styles/ComposePopup.css";
+import ComposePopupForm from "./forms/ComposePopupForm";
 
 export default function ComposePopup({ prefill, onSend, onClose }) {
   const { form, handleChange, parseForm } = useComposePopup(prefill);
@@ -21,7 +22,7 @@ export default function ComposePopup({ prefill, onSend, onClose }) {
         <ComposePopupForm
           form={form}
           onChange={handleChange}
-          onSend={handleSubmit}
+          onSend={handleSend}
           onDraft={handleDraft}
           onCancel={onClose}
         />
