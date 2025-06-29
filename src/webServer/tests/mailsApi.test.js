@@ -493,7 +493,7 @@ test('4.22 send draft', async () => {
     title: "Hello again",
     body: "This should work again",
     id: 4,
-    labels: [1],
+    labels: [3, 7],
     draft: false,
     urls: []
   });
@@ -514,7 +514,7 @@ test('4.23 valid get sent mail by recipient after sending draft', async () => {
     title: "Hello again",
     body: "This should work again",
     id: 4,
-    labels: [1],
+    labels: [3, 7],
     draft: false,
     urls: []
   });
