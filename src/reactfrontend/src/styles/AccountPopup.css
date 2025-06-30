@@ -42,7 +42,8 @@
 }
 
 .custom-file-upload {
-  display: inline-block;
+  display: block;
+  width: 100%;
   padding: 0.75rem;
   border-radius: 8px;
   background-color: #1a73e8;
@@ -51,7 +52,9 @@
   cursor: pointer;
   text-align: center;
   transition: background-color 0.2s ease;
+  box-sizing: border-box;
 }
+
 
 .custom-file-upload:hover {
   background-color: #155ab6;

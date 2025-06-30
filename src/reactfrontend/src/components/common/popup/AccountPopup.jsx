@@ -11,7 +11,12 @@ export default function AccountPopup({ onClose }) {
   const { username, handleLogout } = useAccountPopup();
 
   return (
-    <Popup onClose={onClose} className="account-popup">
+    <Popup onClose={onClose} style={{
+        display: "flex",
+        justifyContent: "flex-end",
+        paddingRight: "40px",
+        top: "-20px",
+      }} className="account-popup" >
       <AccountPopupContent username={username} onLogout={handleLogout} />
     </Popup>
   );

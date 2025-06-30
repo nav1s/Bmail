@@ -1,5 +1,6 @@
 import React from "react";
-import useToggableLabel from "../hooks/useToggableButton";
+import useToggableLabel from "../hooks/useToggableButton"; // ודא שהנתיב נכון
+import "../../../styles/MailItem.css"; // אם שם יש את המחלקה label-plus-button
 
 /**
  * ToggableButton
@@ -10,7 +11,8 @@ export default function ToggableButton({
   labelId,
   labelName,
   initialState,
-  onLabelChange
+  onLabelChange,
+  className = "" // ⬅️ מאפשר להוסיף עיצוב חיצוני
 }) {
   const { active, toggleLabel } = useToggableLabel({
     mailId,
@@ -20,7 +22,10 @@ export default function ToggableButton({
   });
 
   return (
-    <button onClick={toggleLabel}>
+    <button
+      className={`label-plus-button ${className}`}
+      onClick={toggleLabel}
+    >
       {labelName} {active ? "✅" : "➕"}
     </button>
   );

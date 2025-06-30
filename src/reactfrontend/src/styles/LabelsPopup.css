@@ -110,6 +110,27 @@
   box-sizing: border-box;
 }
 
+.label-Plus-button {
+  background-color: #f1f3f4;
+  border: none;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  font-size: 18px;
+  color: #5f6368;
+  cursor: pointer;
+  transition: background-color 0.3s, box-shadow 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.label-Plus-button:hover {
+  background-color: #e0e0e0;
+  box-shadow: 0 1px 3px rgba(60, 64, 67, 0.3);
+}
+
+
 
 body.dark .label-item {
     background-color: #353131;
