@@ -38,7 +38,6 @@ export default function AccountPopupContent({ username, onLogout })  {
 
   return (
     <div className="account-popup-full" style={{
-        display: "flex",
         justifyContent: "flex-end",
         paddingRight: "40px",
         top: "-20px",

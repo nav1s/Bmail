@@ -12,8 +12,9 @@ import "../../../styles/Popup.css";
  * @param {string} className - Optional extra class for popup-content container
  * @param {ReactNode} children - Inner popup content
  * @param {Array} extraRefs - Additional refs to include in outside click check
+ * @param {Object} style - Optional inline styles for popup positioning
  */
-export default function Popup({ onClose, className = "", children, extraRefs = [] }) {
+export default function Popup({ onClose, className = "", children, extraRefs = [], style = {} }) {
   const popupRef = useRef();
 
   useEffect(() => {
@@ -31,15 +32,15 @@ export default function Popup({ onClose, className = "", children, extraRefs = [
   }, [onClose, extraRefs]);
 
   useEffect(() => {
-  const handleEscape = (e) => {
-    if (e.key === "Escape") onClose();
-  };
+    const handleEscape = (e) => {
+      if (e.key === "Escape") onClose();
+    };
 
-  document.addEventListener("keydown", handleEscape);
-  return () => document.removeEventListener("keydown", handleEscape);
-}, [onClose]);
+    document.addEventListener("keydown", handleEscape);
+    return () => document.removeEventListener("keydown", handleEscape);
+  }, [onClose]);
 
-useEffect(() => {
+  useEffect(() => {
     const originalStyle = window.getComputedStyle(document.body).overflow;
     document.body.style.overflow = "hidden";
     return () => {
@@ -47,22 +48,27 @@ useEffect(() => {
     };
   }, []);
 
-useEffect(() => {
-  document.body.style.position = 'relative';
-  return () => {
-    document.body.style.position = '';
-  };
-}, []);
-
+  useEffect(() => {
+    document.body.style.position = "relative";
+    return () => {
+      document.body.style.position = "";
+    };
+  }, []);
 
   return (
     <div className="popup-backdrop">
-      <div ref={popupRef} className={`popup-content ${className}`}>
+      <div
+        ref={popupRef}
+        className={`popup-content ${className}`}
+        style={style}
+      >
         {/* Close "×" button */}
-        <button style={{ position: 'absolute', left: '10px', top: '10px' }}
+        <button
+          style={{ position: "absolute", left: "10px", top: "10px" }}
           className="popup-close-button"
           onClick={onClose}
-          aria-label="Close popup">
+          aria-label="Close popup"
+        >
           ×
         </button>
         {children}
