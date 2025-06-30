@@ -30,12 +30,12 @@
 }
 
 .dark-mode-toggle:hover {
-  background-color: #fff;
+  background-color: #607299;
   color: #000;
 }
 
 .dark-mode-toggle {
-  background: #454285;
+  background: #7673b9;
   color: #fff;
   border: none;
   cursor: pointer;

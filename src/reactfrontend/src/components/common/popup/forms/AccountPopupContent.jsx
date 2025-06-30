@@ -60,7 +60,7 @@ export default function AccountPopupContent({ username, onLogout })  {
             <button className="send-btn" onClick={() => setShowEdit(true)}>
               Edit Profile
             </button>
-            <button className="cancel-btn" onClick={onLogout}>
+            <button className="cancel-btn" style={{ marginLeft: "auto" }} onClick={onLogout}>
               Logout
             </button>
           </div>

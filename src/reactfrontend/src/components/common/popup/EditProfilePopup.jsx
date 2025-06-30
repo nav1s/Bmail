@@ -38,7 +38,7 @@ export default function EditProfilePopup({
 
         <div className="button-row" style={{ display: "flex", gap: "12px", marginTop: "1rem" }}>
           <button type="submit" className="send-btn">Update</button>
-          <button type="button" className="cancel-btn" onClick={onCancel}>Cancel</button>
+          <button type="button" className="cancel-btn" style={{ marginLeft: "auto" }} onClick={onCancel}>Cancel</button>
         </div>
 
         {error && <p style={{ color: "red", textAlign: "center" }}>{error}</p>}
