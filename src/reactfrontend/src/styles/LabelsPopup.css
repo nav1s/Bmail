@@ -50,6 +50,11 @@
   color: #202124;
 }
 
+body.dark .edit-label-form label {
+  color: white;
+}
+
+
 .edit-label-form input {
   padding: 8px 12px;
   border: 1px solid #ccc;
