@@ -39,7 +39,7 @@ export default function MailItem({
                   ? detachLabelFromMail(mail.id, labelMap.starred).then(loadMails)
                   : attachLabelToMail(mail.id, labelMap.starred).then(loadMails);
               }}>
-                {isStarred ? "⭐" : "☆"}
+                {isStarred ? "★" : "☆"}
               </button>
             )}
 
@@ -60,7 +60,7 @@ export default function MailItem({
           <span className="mail-body">{mail.body?.slice(0, 50)}...</span>
         </div>
 
-        <div className="mail-buttons">
+        <div className="mail-actions">
           {!isTrashView && (
             <button onClick={(e) => handleTrash(e)}>🗑️</button>
           )}
@@ -71,7 +71,7 @@ export default function MailItem({
                 Restore
               </button>
               <button onClick={(e) => { e.stopPropagation(); handleDeletePermanent(e); }}>
-                ❌ Delete Permanently
+                Delete Permanently
               </button>
             </>
           )}

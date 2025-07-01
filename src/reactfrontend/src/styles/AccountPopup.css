@@ -75,7 +75,9 @@
 }
 
 .profile-buttons {
-  display: flex;
-  gap: 12px;
-  margin-top: 12px;
+  display: "flex";
+  flex-direction: "column";
+  gap: "12px";
+  margin-Top: "12px";
+  width: "100%";
 }

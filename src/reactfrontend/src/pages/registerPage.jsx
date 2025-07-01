@@ -3,7 +3,9 @@ import { useNavigate } from "react-router-dom";
 import useRegister from "../hooks/useRegister";
 import DarkModeToggle from "../components/layout/DarkModeToggle";
 import RegisterForm from "./forms/RegisterForm";
+import Header from "../components/layout/Header";
 import "../styles/RegisterForm.css";
+
 
 export default function RegisterPage() {
   const [form, setForm] = useState({
@@ -39,10 +41,9 @@ export default function RegisterPage() {
 
   return (
     <>
+    <Header showUser={false} />
       <div style={{ display: "flex", justifyContent: "flex-end", padding: "1rem" }}>
-        <DarkModeToggle />
       </div>
-
       <RegisterForm
         form={form}
         onChange={handleChange}

@@ -20,7 +20,7 @@ export default function MailViewerPopup({ mail, onClose, loadMails }) {
     <Popup onClose={onClose} extraRefs={[labelsRef]}>
       <div className="popup-header">
         <h3 className="popup-title">{mail.subject}</h3>
-        <button className="labels-button" onClick={toggleLabels}>
+        <button class="labels-close-btn" onClick={toggleLabels}>
           🏷️ Labels
         </button>
       </div>

@@ -2,9 +2,9 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../styles/AuthForm.css";
 import DarkModeToggle from "../components/layout/DarkModeToggle";
-
 import LoginForm from "./forms/LoginForm";
 import useLogin from "../hooks/useLogin";
+import Header from "../components/layout/Header";
 
 /**
  * LoginPage
@@ -29,10 +29,9 @@ export default function LoginPage() {
 
   return (
     <>
+    <Header showUser={false} />
       <div style={{ display: "flex", justifyContent: "flex-end", padding: "1rem" }}>
-        <DarkModeToggle />
       </div>
-
       <LoginForm
         form={form}
         onChange={handleChange}

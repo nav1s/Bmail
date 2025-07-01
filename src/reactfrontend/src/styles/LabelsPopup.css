@@ -34,7 +34,11 @@
 }
 
 .labels-close-btn:hover {
-  background-color: var(--card-bg);
+  background-color: #e0e0e0;
+}
+
+body.dark .labels-close-btn:hover {
+  background-color: #333333;
 }
 
 .edit-label-form {

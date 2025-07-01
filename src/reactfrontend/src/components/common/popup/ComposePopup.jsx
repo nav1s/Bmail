@@ -18,14 +18,14 @@ export default function ComposePopup({ prefill, onSend, onClose }) {
 
   return (
       <div className="compose-form">
-        <h3>Compose Mail</h3>
-        <ComposePopupForm
-          form={form}
-          onChange={handleChange}
-          onSend={handleSend}
-          onDraft={handleDraft}
-          onCancel={onClose}
-        />
-      </div>
+          <h3>Compose Mail</h3>
+          <ComposePopupForm
+            form={form}
+            onChange={handleChange}
+            onSend={handleSend}
+            onDraft={handleDraft}
+            onCancel={onClose}
+          />
+        </div>
   );
 }
