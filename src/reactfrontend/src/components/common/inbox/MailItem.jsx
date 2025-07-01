@@ -44,14 +44,16 @@ export default function MailItem({
             )}
 
             {labelMap?.spam !== undefined && (
-              <ToggableButton
-                mailId={mail.id}
-                labelId={labelMap.spam}
-                labelName="spam"
-                initialState={isSpam}
-                onLabelChange={loadMails}
-              />
+              <button onClick={(e) => {
+                e.stopPropagation();
+                isSpam
+                  ? detachLabelFromMail(mail.id, labelMap.spam).then(loadMails)
+                  : attachLabelToMail(mail.id, labelMap.spam).then(loadMails);
+              }}>
+                {isSpam ? "📤 Unspam" : "⚠️"}
+              </button>
             )}
+
           </div>
 
         <div className="mail-details">
