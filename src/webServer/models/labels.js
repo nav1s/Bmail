@@ -74,7 +74,7 @@ function buildLabel(name, id) {
  */
 function labelExistsForUser(userId, name) {
   const labels = userLabels[userId] || [];
-  return labels.some(label => label.name === name);
+  return labels.some(label => label.name.toLowerCase() === name.toLowerCase());
 }
 
 /**
@@ -195,7 +195,7 @@ function updateLabelForUser(userId, labelId, newName) {
   }
 
   // Checks if name of label already taken
-  const duplicate = labelList.find(l => l.name === newName && l.id !== labelId);
+  const duplicate = labelList.find(l => l.name.toLowerCase() === newName.toLowerCase() && l.id !== labelId);
   if (duplicate) {
     throw createError('Label with this name already exists', { type: 'VALIDATION', status: 400 });
   }

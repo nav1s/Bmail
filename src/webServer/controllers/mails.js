@@ -114,8 +114,7 @@ async function createMail(req, res) {
     try {
       console.warn(`Mail ${newMail.id} contains blacklisted URLs, moving to spam`);
       const spamLabelId = getLabelByName(req.user.id, defaultLabelNames.spam);
-      addLabelToMail(newMail.id, spamLabelId, req.user.username);
-      addMailToLabel(newMail.id, spamLabelId, req.user.id);
+      addLabel(newMail.id, spamLabelId, req.user);
     }
     catch (err) {
       console.error('Error getting spam label:', err);
@@ -130,15 +129,9 @@ async function createMail(req, res) {
     if (newMail.draft === true) {
       // get the draft label ID
       const draftLabelId = getLabelByName(req.user.id, defaultLabelNames.drafts);
-      addLabelToMail(newMail.id, draftLabelId, req.user.username);
-      addMailToLabel(newMail.id, draftLabelId, req.user.id);
+      addLabel(newMail.id, draftLabelId, req.user);
     } else {
-      // add sent label to the mail
-      const sentLabelId = getLabelByName(req.user.id, defaultLabelNames.sent);
-      addLabelToMail(newMail.id, sentLabelId, req.user.username);
-      addMailToLabel(newMail.id, sentLabelId, req.user.id);
-      // add the mail to the inbox label for the recipients
-      addInboxLabelToRecipients(newMail);
+      addLabelsForNewMail(newMail, req.user);
     }
 
   } catch (err) {
@@ -146,6 +139,24 @@ async function createMail(req, res) {
     return httpError(res, err);
   }
   return created(res, filterMailForOutput(newMail));
+}
+
+/**
+ * @brief Adds the sent label to the mail and adds the mail to the inbox label for the recipients.
+ * @param {number} mailId the ID of the mail to add labels to
+ * @param {object} user the user object of the sender
+ * @throws {Error} if the mail cannot be found or if the user is not registered
+ */
+function addLabelsForNewMail(mail, user) {
+  const uid = user.id;
+  const mailId = mail.id;
+
+  // add sent label to the mail
+  const sentLabelId = getLabelByName(uid, defaultLabelNames.sent);
+  addLabel(mailId, sentLabelId, user);
+
+  // add the mail to the inbox label for the recipients
+  addInboxLabelToRecipients(mail);
 }
 
 /**
@@ -168,8 +179,7 @@ function addInboxLabelToRecipients(mail) {
     const recipientInboxLabelId = getLabelByName(recipient.id, defaultLabelNames.inbox);
 
     // add the mail to the recipient's inbox
-    addLabelToMail(mail.id, recipientInboxLabelId);
-    addMailToLabel(mail.id, recipientInboxLabelId, recipient.id);
+    addLabel(mail.id, recipientInboxLabelId, recipient);
   }
 }
 
@@ -248,14 +258,10 @@ function updateMailById(req, res) {
       if (req.body.draft === false) {
         // detach the draft label from the mail
         const draftLabelId = getLabelByName(req.user.id, defaultLabelNames.drafts);
-        removeLabelFromMail(mail.id, draftLabelId, username);
-        removeMailFromLabel(mail.id, draftLabelId, req.user.id);
+        removeLabel(mail.id, draftLabelId, req.user);
 
-        // add the inbox label to the mail
-        const inboxLabelId = getLabelByName(req.user.id, defaultLabelNames.inbox);
-        addLabelToMail(mail.id, inboxLabelId, username);
-        addMailToLabel(mail.id, inboxLabelId, req.user.id);
-
+        // add the sent label to the mail and add the mail to the inbox label for the recipients
+        addLabelsForNewMail(mail, req.user);
       }
     }
 
@@ -386,8 +392,7 @@ async function attachLabelToMail(req, res) {
   try {
 
     if (canUserAddLabelToMail(mailId, labelId) && canUserAddMailToLabel(uid, labelId, mailId)) {
-      addLabelToMail(mailId, labelId, username);
-      addMailToLabel(mailId, labelId, uid);
+      addLabel(mailId, labelId, req.user);
       // Check if the label is a spam label
       if (labelId === getLabelByName(uid, defaultLabelNames.spam)) {
         handleSpamMail(mailId)
@@ -421,8 +426,7 @@ async function detachLabelFromMail(req, res) {
   const username = req.user.username;
 
   try {
-    removeLabelFromMail(mailId, labelId, username);
-    removeMailFromLabel(mailId, labelId, uid);
+    removeLabel(mailId, labelId, req.user);
     if (labelId === getLabelByName(uid, defaultLabelNames.spam)) {
       // get the mail 
       const mail = findMailById(mailId);
@@ -483,6 +487,37 @@ function listMailsByLabel(req, res) {
     return httpError(res, err);
   }
 }
+
+/**
+ * @brief Removes a label from a mail and updates the database.
+ * @param {number} mailId - The ID of the mail to remove the label from.
+ * @param {number} labelId - The ID of the label to remove.
+ * @param {object} user - The user object of the user performing the action.
+ * @throws {Error} if the mail or label cannot be found or if the user is not registered.
+ */
+function removeLabel(mailId, labelId, user) {
+  const uid = user.id;
+  const username = user.username;
+
+  removeLabelFromMail(mailId, labelId, username);
+  removeMailFromLabel(mailId, labelId, uid);
+}
+
+/**
+ * @brief Adds a label to a mail and updates the database.
+ * @param {number} mailId - The ID of the mail to add the label to.
+ * @param {number} labelId - The ID of the label to add.
+ * @param {object} user - The user object of the user performing the action.
+ * @throws {Error} if the mail or label cannot be found or if the user is not registered.
+ */
+function addLabel(mailId, labelId, user) {
+  const uid = user.id;
+  const username = user.username;
+
+  addLabelToMail(mailId, labelId, username);
+  addMailToLabel(mailId, labelId, uid);
+}
+
 
 
 module.exports = {
