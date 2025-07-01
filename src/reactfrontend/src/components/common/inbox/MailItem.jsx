@@ -27,6 +27,7 @@ export default function MailItem({
 
   const isStarred = hasLabel(labelMap?.starred);
   const isSpam = hasLabel(labelMap?.spam);
+  const currentView = "inbox";
 
   return (
     <div className="mail-list-item" onClick={handleClick}>
@@ -44,14 +45,20 @@ export default function MailItem({
             )}
 
             {labelMap?.spam !== undefined && (
-              <button onClick={(e) => {
-                e.stopPropagation();
-                isSpam
-                  ? detachLabelFromMail(mail.id, labelMap.spam).then(loadMails)
-                  : attachLabelToMail(mail.id, labelMap.spam).then(loadMails);
-              }}>
-                {isSpam ? "📤 Unspam" : "⚠️"}
-              </button>
+              <button
+                  className="button-with-tooltip"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    isSpam
+                      ? detachLabelFromMail(mail.id, labelMap.spam).then(loadMails)
+                      : attachLabelToMail(mail.id, labelMap.spam).then(loadMails);
+                  }}
+                >
+                  {isSpam ? "📤 Unspam" : "⚠️"}
+                  <span className="tooltip-text">
+                    {isSpam ? "Report Not spam" : "Report spam"}
+                  </span>
+                </button>
             )}
 
           </div>
@@ -64,7 +71,8 @@ export default function MailItem({
 
         <div className="mail-actions">
           {!isTrashView && (
-            <button onClick={(e) => handleTrash(e)}>🗑️</button>
+            <button class="button-with-tooltip" onClick={(e) => handleTrash(e)}>🗑️
+             <span class="tooltip-text">Delete</span> </button>
           )}
 
           {isTrashView && (
