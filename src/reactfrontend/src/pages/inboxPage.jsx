@@ -25,6 +25,7 @@ const SYSTEM_LABELS = [
   { id: "drafts", icon: "📝", label: "Drafts" },
   { id: "spam", icon: "🚫", label: "Spam" },
   { id: "trash", icon: "🗑️", label: "Trash" },
+  { id: "all", icon: "📂", label: "All Mails" },
 ];
 
 export default function InboxPage() {
