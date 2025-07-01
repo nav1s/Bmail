@@ -20,14 +20,17 @@
 .compose-form input,
 .compose-form textarea {
   padding: 16px 24px;
-  border: none;
-  border-bottom: 1px solid #ccc;
+  border: 1px solid #ccc;
+  border-radius: 0;
   font-size: 16px;
   outline: none;
-  background-color: transparent;
-  color: inherit;
+  background-color: white;
+  color: #202124;
   width: 100%;
   box-sizing: border-box;
+  margin: 0;
+  border-left: none;
+  border-right: none;
 }
 
 .compose-form textarea {
@@ -36,7 +39,7 @@
 }
 
 .compose-form button {
-  margin: 16px 16px 24px;
+  margin: 16px 24px 24px;
   padding: 12px 20px;
   font-size: 16px;
   border-radius: 24px;
@@ -63,17 +66,16 @@
   background-color: #e0e0e0;
 }
 
-/* === Light mode === */
-.compose-form input,
-.compose-form textarea {
-  background-color: white;
-  color: #202124;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  margin: 8px 16px;
+.compose-form h3 {
+  margin: 0;
+  padding: 20px 24px;
+  font-size: 20px;
+  font-weight: 600;
+  background-color: var(--card-header-bg, #f1f3f4);
+  border-bottom: 1px solid #ccc;
+  color: var(--text-color);
 }
 
-/* === Dark mode === */
 .dark .compose-form input,
 .dark .compose-form textarea {
   background-color: #2a2d2f;
@@ -102,16 +104,6 @@
 
 .dark .compose-form button[type="button"]:hover {
   background-color: #5f6368;
-}
-
-.compose-form h3 {
-  margin: 0;
-  padding: 20px;
-  font-size: 20px;
-  font-weight: 600;
-  background-color: var(--card-header-bg, #f1f3f4);
-  border-bottom: 1px solid #ccc;
-  color: var(--text-color);
 }
 
 .dark .compose-form h3 {

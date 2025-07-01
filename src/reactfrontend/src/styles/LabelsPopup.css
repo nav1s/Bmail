@@ -219,14 +219,20 @@ body.dark .label-item:hover {
   border-radius: 6px;
   cursor: pointer;
   transition: background-color 0.2s ease;
-  background-color: #f1f3f4;
-  color: #202124;
+  background-color: var(--bg-color, #f1f3f4);
+  color: var(--text-color, #202124);
   text-align: center;
 }
 
-.label-menu-btn:hover {
-  background-color: #d2e3fc;
+body.dark .label-menu-btn {
+  background-color: #3c4043;
+  color: #e8eaed;
 }
+
+body.dark .label-menu-btn:hover {
+  background-color: #333333;
+}
+
 
 .label-menu-btn.cancel {
   background-color: #e8e8e8;
