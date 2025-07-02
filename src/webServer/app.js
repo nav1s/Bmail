@@ -10,6 +10,8 @@ const { serverError, notFound } = require('./utils/httpResponses');
 const app = express();
 app.use(express.json());
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+// add static file serving for React frontend
+app.use(express.static(path.join(__dirname, 'public')));
 
 
 const cors = require("cors");
