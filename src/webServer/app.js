@@ -13,17 +13,6 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 // add static file serving for React frontend
 app.use(express.static(path.join(__dirname, 'public')));
 
-
-const cors = require("cors");
-
-const corsOptions = {
-  origin: "http://localhost:3000",   // React frontend origin
-  credentials: true,                 // allow cookies/auth headers
-};
-
-app.use(cors(corsOptions));
-
-
 // Tag disable
 app.disable('etag');
 
