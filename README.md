@@ -5,6 +5,7 @@
 > - Part 2: https://github.com/Binja12/Bmail/tree/part2
 > - Part 3: https://github.com/Binja12/Bmail/tree/part3
 > - Part 4: https://github.com/Binja12/Bmail/tree/part4
+> - Part 5: will be completed past the deadline due to miluim service
 
 Bmail is a mail server application featuring a C++-based Bloom filter for blacklist management and a Node.js web server providing a RESTful API for mail operations.
 
@@ -32,11 +33,11 @@ git checkout part4
 
 ### Creating an env file
 
-```bash
-# Generate a secure JWT secret token
+To change the JWT token used by the application, edit the `src/webServer/.env.prod` file and set a new value for `JWT_SECRET`,
+You can generate a secure token using Node.js:
+
+```
 node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
-# Create .env file with the JWT token
-echo "JWT_SECRET=your_generated_token_here" > src/webServer/.env.prod
 ```
 
 ### Running the Application
@@ -45,6 +46,8 @@ echo "JWT_SECRET=your_generated_token_here" > src/webServer/.env.prod
 docker compose down --remove-orphans
 docker compose up --detach --pull always --remove-orphans --build --wait bloom-filter web-server
 ```
+
+Once the application is running, open your browser and go to [http://localhost:8080](http://localhost:8080).
 
 > **When you are done using the application, shut down the containers with:**
 ```bash
