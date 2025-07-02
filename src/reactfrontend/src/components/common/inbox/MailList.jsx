@@ -13,7 +13,7 @@ export default function MailList({
   onUnspam,
 }) {
   return (
-    <div>
+    <div className="mail-list">
       {mails.map((mail) => (
         <MailItem
           key={mail.id}

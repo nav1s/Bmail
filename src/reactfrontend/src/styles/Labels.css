@@ -1,0 +1,137 @@
+.custom-labels-title {
+  font-size: 14px;
+  font-weight: bold;
+  color: var(--text-color);
+  margin-top: 20px;
+  margin-bottom: 6px;
+  padding-left: 12px;
+  border-top: 1px solid #ddd;
+  padding-top: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.label-input-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-start;
+  margin-bottom: 16px;
+  margin-top: 4px;
+  padding: 0 8px;
+}
+
+.label-input {
+  padding: 10px 12px;
+  font-size: 14px;
+  border: 1px solid #dadce0;
+  border-radius: 8px;
+  outline: none;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+}
+
+.label-add-btn {
+  padding: 8px 16px;
+  font-size: 14px;
+  background-color: #1a73e8;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  margin-top: 4px;
+}
+
+.label-add-btn:hover {
+  background-color: #155ab6;
+}
+
+.label-list {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 0 8px;
+}
+
+.label-tab {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+  background-color: transparent;
+  width: 100%;
+}
+
+.label-tab .label-name {
+  font-weight: 500;
+  flex-grow: 1;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.label-tab:hover {
+  background-color: var(--hover-bg, #e0e0e0);
+}
+
+.label-tab.active {
+  background-color: #d2e3fc;
+  font-weight: 600;
+  color: #202124;
+}
+
+.label-tab .more-icon {
+  font-size: 30px;
+  color: #5f6368;
+  transition: color 0.2s ease;
+  margin-left: 12px;
+}
+
+.label-tab:hover .more-icon {
+  color: #1a73e8;
+}
+
+/* === DARK MODE === */
+.dark .label-tab.default-label {
+  background-color: white !important;
+  color: black !important;
+}
+
+.dark .label-tab.default-label .label-name,
+.dark .label-tab.default-label .label-content {
+  color: black !important;
+}
+
+.dark .label-item.selected {
+  background-color: white !important;
+  color: black !important;
+}
+
+.dark .label-tab.default-label-active {
+  background-color: white !important;
+  color: black !important;
+}
+
+.dark .label-tab.default-label-active .label-name {
+  color: black !important;
+}
+
+.dark .label-tab.default-label {
+  background-color: transparent;
+  color: var(--text-color);
+}
+
+.dark .label-tab.default-label-active {
+  background-color: white !important;
+  color: black !important;
+  font-weight: bold;
+}
+
+.dark .label-tab.default-label-active .label-name,
+.dark .label-tab.default-label-active .label-content {
+  color: black !important;
+}

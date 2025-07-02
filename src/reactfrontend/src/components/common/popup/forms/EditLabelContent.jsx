@@ -7,7 +7,6 @@ import { useEffect, useState } from "react";
 export default function EditLabelContent({ label, onSave, onClose }) {
   const [newName, setNewName] = useState("");
 
-  // Update the input value whenever a new label is received
   useEffect(() => {
     if (label?.name) {
       setNewName(label.name);
@@ -18,27 +17,31 @@ export default function EditLabelContent({ label, onSave, onClose }) {
     e.preventDefault();
     const trimmed = newName.trim();
     if (trimmed) {
-      onSave({ ...label, name: trimmed });
+      onSave(trimmed);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <h3>Edit Label</h3>
+    <form className="edit-label-form" onSubmit={handleSubmit}>
+      <h2 className="popup-title">Edit Label</h2>
 
-      <label>
-        Label name:
-        <input
-          type="text"
-          value={newName}
-          onChange={(e) => setNewName(e.target.value)}
-          autoFocus
-        />
-      </label>
+      <label htmlFor="labelName">Label Name</label>
+      <input
+        id="labelName"
+        type="text"
+        value={newName}
+        onChange={(e) => setNewName(e.target.value)}
+        placeholder="Enter label name"
+        required
+      />
 
-      <div style={{ marginTop: "10px" }}>
-        <button type="button" onClick={onClose}>Cancel</button>
-        <button type="submit" style={{ marginLeft: "10px" }}>Save</button>
+      <div className="form-actions">
+        <button type="button" className="cancel-btn" onClick={onClose}>
+          Cancel
+        </button>
+        <button type="submit" className="save-btn">
+          Save
+        </button>
       </div>
     </form>
   );

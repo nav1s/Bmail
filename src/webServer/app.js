@@ -10,17 +10,8 @@ const { serverError, notFound } = require('./utils/httpResponses');
 const app = express();
 app.use(express.json());
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-
-
-const cors = require("cors");
-
-const corsOptions = {
-  origin: "http://localhost:3000",   // React frontend origin
-  credentials: true,                 // allow cookies/auth headers
-};
-
-app.use(cors(corsOptions));
-
+// add static file serving for React frontend
+app.use(express.static(path.join(__dirname, 'public')));
 
 // Tag disable
 app.disable('etag');

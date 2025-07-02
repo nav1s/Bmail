@@ -3,6 +3,7 @@ import LabelList from "./LabelList";
 import EditLabelPopup from "../popup/EditLabelPopup";
 import ConfirmDeletePopup from "../popup/ConfirmDeletePopup";
 import LabelMenuPopup from "../popup/LabelMenuPopup";
+import "../../../styles/Labels.css";
 
 export const ALL_LABEL = {
   id: "all",
@@ -11,10 +12,6 @@ export const ALL_LABEL = {
   isAttachable: false,
 };
 
-/**
- * LabelManagerView
- * Pure UI layout with all subcomponents.
- */
 export default function LabelManagerView({
   labels,
   newLabelName,
@@ -31,25 +28,26 @@ export default function LabelManagerView({
   handleDeleteLabel,
   menuLabel,
   setMenuLabel,
+  hideDefaults = false,
 }) {
   const defaultLabels = [...labels.filter((l) => l.isDefault), ALL_LABEL];
   const customLabels = labels.filter((l) => !l.isDefault);
 
   return (
-    <div>
-      <h4>Labels</h4>
+    <>
+      {!hideDefaults && (
+        <>
+          <LabelList
+            labels={defaultLabels}
+            selected={selectedLabel}
+            onSelect={onSelect}
+            onMenuClick={setMenuLabel}
+          />
+          <div style={{ height: "12px" }} />
+        </>
+      )}
 
-      <LabelInput
-        value={newLabelName}
-        onChange={setNewLabelName}
-        onAdd={handleAddLabel}
-      />
-
-      <LabelList
-        labels={defaultLabels}
-        selected={selectedLabel}
-        onSelect={onSelect}
-      />
+      <div className="custom-labels-title">Labels</div>
 
       <LabelList
         labels={customLabels}
@@ -58,6 +56,13 @@ export default function LabelManagerView({
         onMenuClick={setMenuLabel}
       />
 
+      <div style={{ height: "12px" }} />
+
+      <LabelInput
+        value={newLabelName}
+        onChange={setNewLabelName}
+        onAdd={handleAddLabel}
+      />
 
       {showEdit && selectedLabel && (
         <EditLabelPopup
@@ -91,6 +96,6 @@ export default function LabelManagerView({
           onClose={() => setMenuLabel(null)}
         />
       )}
-    </div>
+    </>
   );
 }

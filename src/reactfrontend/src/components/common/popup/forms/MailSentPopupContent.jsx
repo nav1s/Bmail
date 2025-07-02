@@ -6,7 +6,6 @@ export default function MailSentPopupContent({ onClose }) {
   return (
     <div style={{ textAlign: "center" }}>
       <p style={{ fontSize: "16px", marginBottom: "10px" }}>📬 Mail sent successfully.</p>
-      <button onClick={onClose}>x</button>
     </div>
   );
 }

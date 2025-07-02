@@ -25,8 +25,9 @@ export default function useAccountPopup() {
   };
 
   const username = user?.firstName
-    ? `${user.firstName} ${user.lastName || ""}`.trim()
+    ? `${user.firstName}`.trim()
     : user?.username || "Unknown";
+
 
   return {
     username,

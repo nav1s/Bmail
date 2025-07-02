@@ -1,19 +1,33 @@
-import Popup from "./Popup";
-import LabelMenuContent from "./forms/LabelMenuContent";
+import React from "react";
+import "../../../styles/LabelsPopup.css";
 
 /**
  * LabelMenuPopup
- * Wraps LabelMenuContent inside reusable Popup.
+ * A contextual menu for label actions (Edit / Delete).
  */
 export default function LabelMenuPopup({ label, onEdit, onDelete, onClose }) {
+  const handleClick = (action) => {
+    action();
+    onClose();
+  };
+
   return (
-    <Popup onClose={onClose} className="label-menu-popup">
-      <LabelMenuContent
-        label={label}
-        onEdit={onEdit}
-        onDelete={onDelete}
-        onClose={onClose}
-      />
-    </Popup>
+    <div className="label-menu-backdrop" onClick={onClose}>
+      <div
+        className="label-menu-popup"
+        onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside
+      >
+        <div className="label-menu-title">{label.name}</div>
+        <button className="label-menu-btn" onClick={() => handleClick(onEdit)}>
+          ✏️ Edit
+        </button>
+        <button className="label-menu-btn" onClick={() => handleClick(onDelete)}>
+          🗑️ Delete
+        </button>
+        <button className="label-menu-btn cancel" onClick={onClose}>
+          ❌ Cancel
+        </button>
+      </div>
+    </div>
   );
 }

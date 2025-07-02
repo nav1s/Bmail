@@ -5,10 +5,10 @@ export async function getUserByUsername(username) {
 }
 
 export async function getUserById(id) {
-  return api.get(`/users/${id}`, { auth: true });
+  return api.get(`/users/${id}`);
 }
 
 export async function updateUser(id, formData) {
-  await api.patch(`/users`, formData);
+  await api.patch("/users", formData);
   return getUserById(id);
 }

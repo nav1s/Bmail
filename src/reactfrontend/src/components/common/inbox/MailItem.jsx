@@ -1,6 +1,11 @@
 import React from "react";
 import ToggableButton from "../labels/ToggableButton";
 import useMailItem from "../hooks/useMailItem";
+import "../../../styles/MailItem.css";
+import {
+  attachLabelToMail,
+  detachLabelFromMail
+} from "../../../services/mailService";
 
 export default function MailItem({
   mail,
@@ -10,78 +15,77 @@ export default function MailItem({
   onRestore,
   isTrashView,
   labelMap,
-  loadMails
+  loadMails,
 }) {
   const {
     handleClick,
     handleTrash,
     handleDeletePermanent,
     handleRestore,
-    handleUnspam,
-    isSpamView,
-    hasLabel
+    hasLabel,
   } = useMailItem(mail, { onClick, onTrash, onDeletePermanent, onRestore });
 
   const isStarred = hasLabel(labelMap?.starred);
-  const isInboxed = hasLabel(labelMap?.inbox);
-  const isSpam = hasLabel(labelMap.spam);
+  const isSpam = hasLabel(labelMap?.spam);
+  const currentView = "inbox";
 
   return (
-    <div
-      onClick={handleClick}
-      style={{ padding: "8px", borderBottom: "1px solid #ccc", cursor: "pointer" }}
-    >
-      <div>
-        <strong>{mail.from}</strong> — {mail.title}
-      </div>
-
-      <div>
-        {!isTrashView && (
-          <>
+    <div className="mail-list-item" onClick={handleClick}>
+      <div className="mail-content-line">
+        <div className="mail-actions">
             {labelMap?.starred !== undefined && (
-              <ToggableButton
-                mailId={mail.id}
-                labelId={labelMap.starred}
-                labelName="starred"
-                initialState={isStarred}
-                onLabelChange={loadMails}
-              />
+              <button onClick={(e) => {
+                e.stopPropagation();
+                isStarred
+                  ? detachLabelFromMail(mail.id, labelMap.starred).then(loadMails)
+                  : attachLabelToMail(mail.id, labelMap.starred).then(loadMails);
+              }}>
+                {isStarred ? "★" : "☆"}
+              </button>
             )}
-            {labelMap?.inbox !== undefined && !mail.draft && !isSpam &&(
-              <ToggableButton
-                mailId={mail.id}
-                labelId={labelMap.inbox}
-                labelName="inbox"
-                initialState={isInboxed}
-                onLabelChange={loadMails}
-              />
-            )}
-            {labelMap?.spam !== undefined && !mail.draft && (
-              <ToggableButton
-                mailId={mail.id}
-                labelId={labelMap.spam}
-                labelName="spam"
-                initialState={isSpam}
-                onLabelChange={loadMails}
-              />
-            )}
-            <button onClick={handleTrash}>Trash</button>
-          </>
-        )}
 
-        {isTrashView && (
-          <>
-            <button onClick={handleRestore}>Restore</button>
-            <button onClick={handleDeletePermanent}>Delete Permanently</button>
-          </>
-        )}
+            {labelMap?.spam !== undefined && (
+              <button
+                  className="button-with-tooltip"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    isSpam
+                      ? detachLabelFromMail(mail.id, labelMap.spam).then(loadMails)
+                      : attachLabelToMail(mail.id, labelMap.spam).then(loadMails);
+                  }}
+                >
+                  {isSpam ? "📤 Unspam" : "⚠️"}
+                  <span className="tooltip-text">
+                    {isSpam ? "Report Not spam" : "Report spam"}
+                  </span>
+                </button>
+            )}
 
-        {isSpamView && (
-          <>
-            <button onClick={handleUnspam}>Unspam</button>
-            <button onClick={handleDeletePermanent}>Delete Permanently</button>
-          </>
-        )}
+          </div>
+
+        <div className="mail-details">
+          <span className="mail-from">{mail.from}</span>
+          <span className="mail-title">{mail.title}</span>
+          <span className="mail-body">{mail.body?.slice(0, 50)}...</span>
+        </div>
+
+        <div className="mail-actions">
+          {!isTrashView && (
+            <button class="button-with-tooltip" onClick={(e) => handleTrash(e)}>🗑️
+             <span class="tooltip-text">Delete</span> </button>
+          )}
+
+          {isTrashView && (
+            <>
+              <button onClick={(e) => { e.stopPropagation(); handleRestore(e); }}>
+                Restore
+              </button>
+              <button onClick={(e) => { e.stopPropagation(); handleDeletePermanent(e); }}>
+                Delete Permanently
+              </button>
+            </>
+          )}
+        </div>
       </div>
     </div>
   );

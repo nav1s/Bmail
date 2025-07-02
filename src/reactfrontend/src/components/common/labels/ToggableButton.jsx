@@ -1,5 +1,6 @@
 import React from "react";
 import useToggableLabel from "../hooks/useToggableButton";
+import "../../../styles/MailItem.css";
 
 /**
  * ToggableButton
@@ -10,7 +11,8 @@ export default function ToggableButton({
   labelId,
   labelName,
   initialState,
-  onLabelChange
+  onLabelChange,
+  className = ""
 }) {
   const { active, toggleLabel } = useToggableLabel({
     mailId,
@@ -20,7 +22,11 @@ export default function ToggableButton({
   });
 
   return (
-    <button onClick={toggleLabel}>
+    <button
+      className={`label-plus-button ${className}`}
+      class="mail-actions"
+      onClick={toggleLabel}
+    >
       {labelName} {active ? "✅" : "➕"}
     </button>
   );

@@ -1,18 +1,27 @@
 import { useEffect, useState } from "react";
-import { useUser } from "../../contexts/UserContext"; 
+import { loadUser } from "../../utils/userUtils";
+import "../../styles/Header.css";
+import DarkModeToggle from "./DarkModeToggle";
+import { useUser } from "../../contexts/UserContext";
 
+/**
+ * Header
+ * Displays app title, dark mode toggle, and user avatar.
+ */
 export default function Header({ onAvatarClick, showUser = true }) {
   const { user } = useUser();
-  const [isDark, setIsDark] = useState(false);
+  const [darkMode, setDarkMode] = useState(() => {
+    return localStorage.getItem("theme") === "dark";
+  });
 
   useEffect(() => {
-    setIsDark(document.body.classList.contains("dark"));
-  }, []);
-
-  const toggleDark = () => {
-    document.body.classList.toggle("dark");
-    setIsDark(!isDark);
-  };
+    if (darkMode) {
+      document.body.classList.add("dark");
+    } else {
+      document.body.classList.remove("dark");
+    }
+    localStorage.setItem("theme", darkMode ? "dark" : "light");
+  }, [darkMode]);
 
   const getInitials = (user) => {
     const first = user?.firstName?.[0]?.toUpperCase() ?? "";
@@ -21,22 +30,11 @@ export default function Header({ onAvatarClick, showUser = true }) {
   };
 
   return (
-    <header
-      style={{
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "center",
-        padding: "1rem",
-        borderBottom: "1px solid #ccc",
-      }}
-    >
-      <h1>Inbox</h1>
+    <header className="app-header">
+      <div className="app-title">📧 Bmail</div>
 
-      <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-        <button onClick={toggleDark}>
-          {isDark ? "☀️ Light Mode" : "🌙 Dark Mode"}
-        </button>
-
+      <div className="header-right">
+        <DarkModeToggle />
         {showUser && user && (
           user.imageUrl ? (
             <img
@@ -53,6 +51,7 @@ export default function Header({ onAvatarClick, showUser = true }) {
             />
           ) : (
             <div
+              className="user-avatar"
               onClick={onAvatarClick}
               style={{
                 backgroundColor: "#555",

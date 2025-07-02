@@ -2,6 +2,7 @@ import { useRef, useState } from "react";
 import Popup from "./Popup";
 import MailViewerContent from "./forms/MailViewerContent";
 import LabelsPopup from "./LabelsPopup";
+import "../../../styles/Popup.css";
 
 /**
  * MailViewerPopup
@@ -17,9 +18,11 @@ export default function MailViewerPopup({ mail, onClose, loadMails }) {
 
   return (
     <Popup onClose={onClose} extraRefs={[labelsRef]}>
-      <div style={{ display: "flex", justifyContent: "space-between" }}>
-        <h3>{mail.subject}</h3>
-        <button onClick={toggleLabels}>⋮</button>
+      <div className="popup-header">
+        <h3 className="popup-title">{mail.subject}</h3>
+        <button class="labels-close-btn" onClick={toggleLabels}>
+          🏷️ Labels
+        </button>
       </div>
 
       <MailViewerContent mail={mail} />
@@ -28,7 +31,7 @@ export default function MailViewerPopup({ mail, onClose, loadMails }) {
         <LabelsPopup
           mail={mail}
           onClose={toggleLabels}
-          onLabelChange={loadMails} 
+          onLabelChange={loadMails}
         />
       )}
     </Popup>

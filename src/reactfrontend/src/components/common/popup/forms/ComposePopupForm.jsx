@@ -32,13 +32,16 @@ export default function ComposePopupForm({
         onChange={onChange}
         required
       />
-      <button type="submit">Send</button>
-      <button type="button" onClick={onDraft}>
-        Save as Draft
-      </button>
-      <button type="button" onClick={onCancel}>
-        Cancel
-      </button>
+
+      <div className="button-row">
+        <button type="submit" className="send-btn">Send</button>
+        <button type="button" className="draft-btn" onClick={onDraft}>
+          Save as Draft
+        </button>
+        <button type="button" className="cancel-btn" onClick={onCancel}>
+          Cancel
+        </button>
+      </div>
     </form>
   );
 }
