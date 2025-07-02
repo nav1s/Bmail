@@ -123,7 +123,7 @@ function getLabelByName(userId, name) {
   const labels = userLabels[userId] || [];
   // log the user labels for debugging
   console.log(`User ${userId} labels:`, labels);
-  const label = labels.find(l => l.name === name);
+  const label = labels.find(l => l.name.toLowerCase() === name.toLowerCase());
 
   if (!label) {
     throw createError('Label not found', { type: 'NOT_FOUND', status: 404 });
@@ -190,7 +190,7 @@ function updateLabelForUser(userId, labelId, newName) {
   }
 
   // check if label is default
-  if (Object.values(defaultLabelNames).includes(label.name)) {
+  if (Object.values(defaultLabelNames).includes(label.name.toLowerCase())) {
     throw createError('Cannot update default label', { type: 'VALIDATION', status: 400 });
   }
 
@@ -226,7 +226,7 @@ function deleteLabelForUser(userId, labelId) {
   }
 
   // check if label is default
-  if (Object.values(defaultLabelNames).includes(labelList[index].name)) {
+  if (Object.values(defaultLabelNames).includes(labelList[index].name.toLowerCase())) {
     throw createError('Cannot delete default label', { type: 'VALIDATION', status: 400 });
   }
 

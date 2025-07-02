@@ -31,15 +31,6 @@ cd bmail
 git checkout part4
 ```
 
-### Creating an env file
-
-To change the JWT token used by the application, edit the `src/webServer/.env.prod` file and set a new value for `JWT_SECRET`,
-You can generate a secure token using Node.js:
-
-```
-node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
-```
-
 ### Running the Application
 
 ```bash
