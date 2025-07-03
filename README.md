@@ -11,9 +11,14 @@ Bmail is a mail server application featuring a C++-based Bloom filter for blackl
 
 The project also includes a Python client for interacting with the Bloom filter and utilizes Docker for streamlined deployment and testing.
 
-## Demo
+## Screenshots
+![login page](assets/part4-screenshots/login-page.png)
 
-![Bmail Demo](assets/ex3-example-run.gif)
+![register page](assets/part4-screenshots/registration-page.png)
+
+![obiwan sent message](assets/part4-screenshots/obiwan-sent.png)
+
+![grievous received message](assets/part4-screenshots/griveous-recievefd.png)
 
 ## Getting Started
 
