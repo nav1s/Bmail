@@ -9,6 +9,7 @@
         android:layout_height="wrap_content"
         android:autofillHints="username"
         android:hint="@string/username_hint"
+        android:id="@+id/username"
         android:inputType="text" />
 
     <EditText
@@ -16,10 +17,16 @@
         android:layout_height="wrap_content"
         android:autofillHints="password"
         android:hint="@string/password_hint"
+        android:id="@+id/password"
         android:inputType="textPassword" />
     <Button
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/login_text"
+        android:text="@string/login"
+        />
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/signup"
         />
 </LinearLayout>
