@@ -8,7 +8,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:autofillHints="username"
-        android:hint="@string/username_hint"
+        android:hint="@string/username"
         android:id="@+id/username"
         android:inputType="text" />
 
@@ -16,9 +16,10 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:autofillHints="password"
-        android:hint="@string/password_hint"
+        android:hint="@string/password"
         android:id="@+id/password"
         android:inputType="textPassword" />
+
     <Button
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -27,6 +28,7 @@
     <Button
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:id="@+id/signup"
         android:text="@string/signup"
         />
 </LinearLayout>
