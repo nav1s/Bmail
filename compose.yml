@@ -1,5 +1,19 @@
 ---
 services:
+  mongo:
+    image: mongo:8-noble
+    container_name: mongo
+    hostname: mongo
+    ports:
+      - 27017:27017
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+    volumes:
+      - ./mongo-data:/data/db
+    networks:
+      - bmail
   web-server:
     image: node:24-bookworm
     container_name: web-server
