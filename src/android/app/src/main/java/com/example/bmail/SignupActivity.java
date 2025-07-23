@@ -1,13 +1,19 @@
 package com.example.bmail;
 
 import android.app.Activity;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
 
 public class SignupActivity extends Activity {
     private SignupViewModel viewModel;
+    private static final int PICK_IMAGE_REQUEST = 1;
+    // Optional: Add an ImageView member variable
+    // private ImageView imageView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -18,6 +24,9 @@ public class SignupActivity extends Activity {
 
         Button signupBtn = findViewById(R.id.signupButton);
         signupBtn.setOnClickListener(view -> handleSignupButtonClick());
+
+        Button choosePhotoBtn = findViewById(R.id.choosePhotoButton);
+        choosePhotoBtn.setOnClickListener(view -> handleChoosePhotoButtonClick());
     }
 
     private void handleSignupButtonClick() {
@@ -48,5 +57,21 @@ public class SignupActivity extends Activity {
         passwordET.setError(result.passwordError);
         confirmPasswordET.setError(result.confirmPasswordError);
 
+    }
+
+    private void handleChoosePhotoButtonClick() {
+        Intent intent = new Intent(Intent.ACTION_PICK);
+        intent.setDataAndType(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, "image/*");
+        startActivityForResult(intent, PICK_IMAGE_REQUEST);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null
+                && data.getData() != null) {
+            Uri selectedImageUri = data.getData();
+            Log.i("foo", "Selected Image URI: " + selectedImageUri.toString());
+        }
     }
 }

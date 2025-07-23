@@ -49,6 +49,13 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textAllCaps="false"
+        android:text="@string/choose_profile_photo"
+        android:id="@+id/choosePhotoButton" />
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAllCaps="false"
         android:text="@string/signup"
         android:id="@+id/signupButton"
         />
