@@ -2,14 +2,16 @@ package com.example.bmail;
 
 public class LoginViewModel {
     private final UserRepository userRepository;
+
+    public LoginViewModel(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
+
     public static class ValidationResult {
         public String usernameError;
         public String passwordError;
     }
 
-    public LoginViewModel(UserRepository userRepository) {
-        this.userRepository = userRepository;
-    }
     public ValidationResult validateCredentials(String username, String password) {
         ValidationResult result = new ValidationResult();
         result.usernameError = username.isEmpty() ? "Username cannot be empty" : null;
@@ -22,4 +24,3 @@ public class LoginViewModel {
     }
 
 }
-

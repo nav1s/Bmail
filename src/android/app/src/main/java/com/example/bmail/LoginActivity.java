@@ -41,16 +41,8 @@ public class LoginActivity extends Activity {
 
         // Use ViewModel for validation
         LoginViewModel.ValidationResult result = loginViewModel.validateCredentials(username, password);
-        if (result.usernameError != null) {
-            usernameET.setError(result.usernameError);
-        } else {
-            usernameET.setError(null);
-        }
-        if (result.passwordError != null) {
-            passwordEt.setError(result.passwordError);
-        } else {
-            passwordEt.setError(null);
-        }
+        usernameET.setError(result.usernameError);
+        passwordEt.setError(result.passwordError);
 
         // Use ViewModel for login
         boolean loginSuccess = loginViewModel.login(username, password);
