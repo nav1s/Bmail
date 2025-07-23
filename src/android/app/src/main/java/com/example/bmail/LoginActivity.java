@@ -6,6 +6,8 @@ import android.os.Bundle;
 import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
+import android.content.Context;
+import android.content.SharedPreferences;
 
 public class LoginActivity extends Activity {
     private LoginViewModel loginViewModel;
@@ -14,9 +16,10 @@ public class LoginActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+        UserRepository userRepository = new UserRepository(this);
 
         // Initialize ViewModel with Repository
-        loginViewModel = new LoginViewModel(new UserRepository());
+        loginViewModel = new LoginViewModel(userRepository);
 
         Button signupBtn = findViewById(R.id.signup);
         signupBtn.setOnClickListener(view -> {
@@ -54,5 +57,13 @@ public class LoginActivity extends Activity {
         Log.i("foo", "The password is: " + password);
         // Use ViewModel for login
         loginViewModel.login(username, password);
+        SharedPreferences prefs = getSharedPreferences("user_prefs", Context.MODE_PRIVATE);
+        String token = prefs.getString("auth_token", null);
+        // check if token is null
+        if (token == null) {
+            Log.i("foo", "No token found in SharedPreferences.");
+            return;
+        }
+        Log.i("foo", "Token retrieved: " + token);
     }
 }
