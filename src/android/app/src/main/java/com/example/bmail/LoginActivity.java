@@ -65,5 +65,7 @@ public class LoginActivity extends Activity {
             return;
         }
         Log.i("foo", "Token retrieved: " + token);
+        Intent intent = new Intent(this, MailActivity.class);
+        startActivity(intent);
     }
 }
