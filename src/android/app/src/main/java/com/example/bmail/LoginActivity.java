@@ -44,10 +44,15 @@ public class LoginActivity extends Activity {
         usernameET.setError(result.usernameError);
         passwordEt.setError(result.passwordError);
 
-        // Use ViewModel for login
-        boolean loginSuccess = loginViewModel.login(username, password);
+        if (result.usernameError != null || result.passwordError != null) {
+            Log.i("foo", "Validation failed: " +
+                    result.usernameError + ", " + result.passwordError);
+            return; // Exit if validation fails
+        }
+
         Log.i("foo", "The username is: " + username);
         Log.i("foo", "The password is: " + password);
-        Log.i("foo", "Login success: " + loginSuccess);
+        // Use ViewModel for login
+        loginViewModel.login(username, password);
     }
 }

@@ -2,10 +2,13 @@ package com.example.bmail;
 
 import android.util.Log;
 
+import androidx.annotation.NonNull;
+
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 import retrofit2.Call;
 import retrofit2.Response;
+
 import java.io.IOException;
 
 public class UserRepository {
@@ -19,15 +22,23 @@ public class UserRepository {
         authApi = retrofit.create(AuthApi.class);
     }
 
-    public boolean login(String username, String password) {
+    public void login(String username, String password) {
         LoginRequest request = new LoginRequest(username, password);
         Call<LoginResponse> call = authApi.login(request);
-        try {
-            Response<LoginResponse> response = call.execute();
-            return response.isSuccessful() && response.body() != null && response.body().success;
-        } catch (IOException e) {
-            Log.e("UserRepository", "Login failed", e);
-            return false;
-        }
+        call.enqueue(new retrofit2.Callback<>() {
+            @Override
+            public void onResponse(@NonNull Call<LoginResponse> call, @NonNull Response<LoginResponse> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    Log.i("UserRepository", "Login successful: " + response.body().success);
+                } else {
+                    Log.e("UserRepository", "Login failed: " + response.message());
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<LoginResponse> call, @NonNull Throwable t) {
+                Log.e("UserRepository", "Login request failed", t);
+            }
+        });
     }
 }
