@@ -36,6 +36,7 @@ dependencies {
     implementation(libs.material)
     implementation(libs.retrofit)
     implementation(libs.retrofitC)
+    implementation(libs.swipeRefreshLayout)
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
