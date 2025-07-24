@@ -14,7 +14,7 @@ public class MailActivity extends Activity {
         setContentView(R.layout.activity_mail);
 
         // Initialize the MailViewModel
-        MailViewModel mailViewModel = new MailViewModel(new MailRepository());
+        MailViewModel mailViewModel = new MailViewModel(new MailRepository(this));
 
         // Load the user's emails
         mailViewModel.loadEmails();

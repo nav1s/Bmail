@@ -25,6 +25,7 @@ public class SignupActivity extends Activity {
         Button signupBtn = findViewById(R.id.signupButton);
         signupBtn.setOnClickListener(view -> handleSignupButtonClick());
 
+        // todo add ability to choose a photo from camera or gallery
         Button choosePhotoBtn = findViewById(R.id.choosePhotoButton);
         choosePhotoBtn.setOnClickListener(view -> handleChoosePhotoButtonClick());
     }

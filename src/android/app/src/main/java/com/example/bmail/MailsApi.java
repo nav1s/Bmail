@@ -8,6 +8,6 @@ import retrofit2.http.Header;
 
 public interface MailsApi {
      @GET("mails")
-     Call<List<Email>> getMails(@Header("Authorization") String token);
+     Call<List<MailResponse>> getMails(@Header("Authorization") String token);
 
 }

@@ -1,13 +1,13 @@
 package com.example.bmail;
 
-public class Email {
+public class MailResponse {
     public String id;
     public String sender;
     public String recipients;
     public String subject;
     public String body;
 
-    public Email(String id, String sender, String recipients, String subject, String body) {
+    public MailResponse(String id, String sender, String recipients, String subject, String body) {
         this.id = id;
         this.sender = sender;
         this.recipients = recipients;

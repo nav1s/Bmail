@@ -11,7 +11,7 @@ public class MailViewModel {
     }
 
     public void loadEmails() {
-        emails = mailRepository.getEmails();
+        mailRepository.getEmails();
     }
 
     public List<String> getEmails() {
