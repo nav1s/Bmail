@@ -16,6 +16,18 @@ public class LoginActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+
+        // Check for existing token
+        SharedPreferences prefs = getSharedPreferences("user_prefs", Context.MODE_PRIVATE);
+        String token = prefs.getString("auth_token", null);
+        // if token is not null, redirect to MailActivity
+        if (token != null) {
+            Intent intent = new Intent(this, MailActivity.class);
+            startActivity(intent);
+            finish();
+            return;
+        }
+
         UserRepository userRepository = new UserRepository(this);
 
         // Initialize ViewModel with Repository
