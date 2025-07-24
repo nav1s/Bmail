@@ -12,7 +12,7 @@ import retrofit2.Call;
 import retrofit2.Response;
 
 public class UserRepository {
-    private final AuthApi authApi;
+    private final TokensApi authApi;
     private final Context context;
 
     public UserRepository(Context context) {
@@ -21,7 +21,7 @@ public class UserRepository {
                 .baseUrl("http://localhost:8080/api/")
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
-        authApi = retrofit.create(AuthApi.class);
+        authApi = retrofit.create(TokensApi.class);
     }
 
     public void login(String username, String password) {
