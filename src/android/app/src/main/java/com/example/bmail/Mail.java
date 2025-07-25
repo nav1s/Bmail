@@ -13,11 +13,19 @@ public class Mail {
     private String body;
     private String sender;
     private List<String> recipients;
+
+    public Mail(int id, String subject, String body, String sender, List<String> recipients,
+                Boolean draft) {
+        this.id = id;
+        this.subject = subject;
+        this.body = body;
+        this.sender = sender;
+        this.recipients = recipients;
+        this.draft = draft;
+    }
+
     private Boolean draft;
 
-    public Mail(int id) {
-        this.id = id;
-    }
 
     public Boolean getDraft() {
         return draft;
