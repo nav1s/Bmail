@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item name="avatarImageView" type="id" />
+    <item name="senderTextView" type="id" />
+    <item name="timeTextView" type="id" />
+    <item name="subjectTextView" type="id" />
+    <item name="previewTextView" type="id" />
+</resources>
