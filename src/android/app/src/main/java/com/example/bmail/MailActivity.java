@@ -15,17 +15,16 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import java.util.List;
 
 public class MailActivity extends AppCompatActivity {
-    private MailViewModel viewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
         setContentView(R.layout.activity_mail);
 
         MailViewModel viewModel = new ViewModelProvider(this).get(MailViewModel.class);
 
         RecyclerView recyclerView = findViewById(R.id.recycler_view);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this)); // Fix: set LayoutManager
         final mailsAdapter adapter = new mailsAdapter(this);
         recyclerView.setAdapter(adapter);
 

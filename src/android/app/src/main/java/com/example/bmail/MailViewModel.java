@@ -5,11 +5,10 @@ import androidx.lifecycle.LiveData;
 import java.util.List;
 
 public class MailViewModel extends androidx.lifecycle.ViewModel {
-    private final MailRepository mailRepository;
+    private final MailRepository mailRepository = new MailRepository();
     private final LiveData<List<Mail>> mails;
 
-    public MailViewModel(MailRepository mailRepository) {
-        this.mailRepository = mailRepository;
+    public MailViewModel() {
         mails = mailRepository.getMails();
     }
 
