@@ -4,7 +4,6 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -14,14 +13,12 @@ import java.util.List;
 
 public class mailsAdapter extends RecyclerView.Adapter<mailsAdapter.mailViewHolder> {
     public static class mailViewHolder extends RecyclerView.ViewHolder {
-        private final ImageView avatar;
         private final TextView sender;
         private final TextView subject;
         private final TextView preview;
 
         public mailViewHolder(@NonNull View itemView) {
             super(itemView);
-            avatar = itemView.findViewById(R.id.avatarImageView);
             sender = itemView.findViewById(R.id.senderTextView);
             subject = itemView.findViewById(R.id.subjectTextView);
             preview = itemView.findViewById(R.id.previewTextView);
