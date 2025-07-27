@@ -13,4 +13,10 @@
     <string name="_12_34_pm">12:34 PM</string>
     <string name="mail_subject">Mail Subject</string>
     <string name="this_is_a_short_preview_of_the_email_message">This is a short preview of the email message...</string>
+    <string name="inbox">Inbox</string>
+    <string name="starred">Starred</string>
+    <string name="sent">Sent</string>
+    <string name="drafts">Drafts</string>
+    <string name="spam">Spam</string>
+    <string name="trash">Trash</string>
 </resources>
