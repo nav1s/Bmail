@@ -38,6 +38,7 @@ dependencies {
     implementation(libs.retrofitC)
     implementation(libs.swipeRefreshLayout)
     implementation(libs.room.common.jvm)
+    implementation(libs.navigation.runtime.android)
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)

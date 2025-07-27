@@ -13,6 +13,7 @@ public class MailActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_mail);
+        setSupportActionBar(findViewById(R.id.toolbar));
 
         MailViewModel viewModel = new ViewModelProvider(this).get(MailViewModel.class);
 
@@ -28,4 +29,5 @@ public class MailActivity extends AppCompatActivity {
         });
 
     }
+
     }
