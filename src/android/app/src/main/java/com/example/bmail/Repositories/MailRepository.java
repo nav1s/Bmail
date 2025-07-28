@@ -6,7 +6,6 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
 import com.example.bmail.Api.MailApi;
-import com.example.bmail.Api.WebServiceApi;
 import com.example.bmail.Entities.Mail;
 
 import java.util.LinkedList;
@@ -51,7 +50,7 @@ public class MailRepository {
     public void deleteMail(Mail mail) {
     }
 
-    public void reloadMails() {
-        mailApi.reload();
+    public void reloadMails(String label) {
+        mailApi.reload(label);
     }
 }

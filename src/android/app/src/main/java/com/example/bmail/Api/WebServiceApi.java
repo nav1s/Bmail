@@ -11,11 +11,13 @@ import retrofit2.http.Body;
 import retrofit2.http.GET;
 import retrofit2.http.Header;
 import retrofit2.http.POST;
+import retrofit2.http.Path;
 
 public interface WebServiceApi {
     @POST("tokens")
     Call<LoginResponse> login(@Body LoginRequest request);
 
-    @GET("mails")
-    Call<List<Mail>> getMails(@Header("Authorization") String token);
+    @GET("mails/byLabel/{label}")
+    Call<List<Mail>> getMails(@Header("Authorization") String token,
+    @Path ("label") String label);
 }

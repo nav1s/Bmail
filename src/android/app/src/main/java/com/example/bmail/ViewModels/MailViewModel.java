@@ -28,7 +28,7 @@ public class MailViewModel extends androidx.lifecycle.ViewModel {
     public void delete(Mail mail) {
         mailRepository.deleteMail(mail);
     }
-    public void loadMails() {
-        mailRepository.reloadMails();
+    public void loadMails(String label) {
+        mailRepository.reloadMails(label);
     }
 }

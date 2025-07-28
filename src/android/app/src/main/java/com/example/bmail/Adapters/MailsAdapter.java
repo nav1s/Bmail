@@ -1,5 +1,6 @@
 package com.example.bmail.Adapters;
 
+import android.util.Log;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -18,13 +19,13 @@ public class MailsAdapter extends RecyclerView.Adapter<MailsAdapter.mailViewHold
     public static class mailViewHolder extends RecyclerView.ViewHolder {
         private final TextView sender;
         private final TextView subject;
-        private final TextView preview;
+        private final TextView body;
 
         public mailViewHolder(@NonNull View itemView) {
             super(itemView);
             sender = itemView.findViewById(R.id.senderTextView);
             subject = itemView.findViewById(R.id.subjectTextView);
-            preview = itemView.findViewById(R.id.previewTextView);
+            body = itemView.findViewById(R.id.previewTextView);
         }
     }
 
@@ -45,9 +46,13 @@ public class MailsAdapter extends RecyclerView.Adapter<MailsAdapter.mailViewHold
     @Override
     public void onBindViewHolder(@NonNull mailViewHolder holder, int position) {
         Mail currentMail = mailList.get(position);
-        holder.sender.setText(currentMail.getSender());
-        holder.subject.setText(currentMail.getSubject());
-        holder.preview.setText(currentMail.getSubject());
+        Log.i("MailsAdapter", "Binding mail at position: " + position);
+        Log.i("MailsAdapter", "Mail sender: " + currentMail.getFrom());
+        Log.i("MailsAdapter", "Mail subject: " + currentMail.getTitle());
+
+        holder.sender.setText(currentMail.getFrom());
+        holder.subject.setText(currentMail.getTitle());
+        holder.body.setText(currentMail.getBody());
     }
     @Override
     public int getItemCount() {
@@ -62,7 +67,8 @@ public class MailsAdapter extends RecyclerView.Adapter<MailsAdapter.mailViewHold
     }
     public void setMails(@NonNull List<Mail> mails) {
         this.mailList = mails;
-        notifyItemRangeChanged(0, mails.size());
+        // todo fix this
+        notifyDataSetChanged();
     }
 
 }

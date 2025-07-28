@@ -34,15 +34,15 @@ public class MailApi {
         webServiceApi = retrofit.create(WebServiceApi.class);
     }
 
-    public void reload(){
+    public void reload(String label) {
         SharedPreferences prefs = context.getSharedPreferences("user_prefs",
                 Context.MODE_PRIVATE);
         String token = prefs.getString("auth_token", null);
         Log.i("MailApi", "Token: " + token);
 
-        Call<List<Mail>> call = webServiceApi.getMails("Bearer " + token);
+        Call<List<Mail>> call = webServiceApi.getMails("Bearer " + token, label);
         call.enqueue(
-                new Callback<List<Mail>>() {
+                new Callback<>() {
 
                     @Override
                     public void onResponse(@NonNull Call<List<Mail>> call,
@@ -52,6 +52,8 @@ public class MailApi {
                                 Log.i("MailApi", "Fetched mails successfully");
                                 List<Mail> mails = response.body();
                                 mailListData.postValue(mails);
+                                // log the number of mails fetched
+                                Log.i("MailApi", "Number of mails fetched: " + mails.size());
                             } else {
                                 Log.e("MailApi", "Failed to fetch mails: " + response.message());
                                 mailListData.postValue(null);

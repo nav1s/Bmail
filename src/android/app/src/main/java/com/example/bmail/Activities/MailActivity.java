@@ -21,6 +21,7 @@ import com.google.android.material.navigation.NavigationView;
 
 public class MailActivity extends AppCompatActivity {
     private DrawerLayout drawer;
+    private String label = "inbox";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,7 +50,10 @@ public class MailActivity extends AppCompatActivity {
         recyclerView.setAdapter(adapter);
 
         SwipeRefreshLayout refreshLayout = findViewById(R.id.swipe_refresh_layout);
-        refreshLayout.setOnRefreshListener(viewModel::loadMails);
+        refreshLayout.setOnRefreshListener(() -> {
+            viewModel.loadMails(label); // reload mails when user swipes to refresh
+            refreshLayout.setRefreshing(true); // show the refreshing animation
+        });
 
         viewModel.getMails().observe(this, mails -> {
             if (mails != null) {
@@ -62,21 +66,27 @@ public class MailActivity extends AppCompatActivity {
         navigationView.setNavigationItemSelectedListener(item -> {
             drawer.closeDrawers(); // close drawer on click
             if (item.getItemId() == R.id.nav_inbox) {
+                label = "inbox";
                 Toast.makeText(MailActivity.this, "Inbox selected", Toast.LENGTH_SHORT).show();
                 return true;
             } else if (item.getItemId() == R.id.nav_drafts) {
+                label = "drafts";
                 Toast.makeText(MailActivity.this, "Drafts selected", Toast.LENGTH_SHORT).show();
                 return true;
             } else if (item.getItemId() == R.id.nav_trash) {
+                label = "trash";
                 Toast.makeText(MailActivity.this, "Trash selected", Toast.LENGTH_SHORT).show();
                 return true;
             } else if (item.getItemId() == R.id.nav_spam) {
+                label = "spam";
                 Toast.makeText(MailActivity.this, "Spam selected", Toast.LENGTH_SHORT).show();
                 return true;
             } else if (item.getItemId() == R.id.nav_sent) {
+                label = "sent";
                 Toast.makeText(MailActivity.this, "Sent selected", Toast.LENGTH_SHORT).show();
                 return true;
             } else if (item.getItemId() == R.id.nav_starred) {
+                label = "starred";
                 Toast.makeText(MailActivity.this, "Starred selected", Toast.LENGTH_SHORT).show();
                 return true;
             }

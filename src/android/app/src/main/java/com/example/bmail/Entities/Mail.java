@@ -9,17 +9,17 @@ import java.util.List;
 public class Mail {
     @PrimaryKey
     private final int id;
-    private String subject;
+    private String title;
     private String body;
-    private String sender;
+    private String from;
     private List<String> recipients;
 
     public Mail(int id, String subject, String body, String sender, List<String> recipients,
                 Boolean draft) {
         this.id = id;
-        this.subject = subject;
+        this.title = subject;
         this.body = body;
-        this.sender = sender;
+        this.from = sender;
         this.recipients = recipients;
         this.draft = draft;
     }
@@ -43,12 +43,12 @@ public class Mail {
         this.recipients = recipients;
     }
 
-    public String getSender() {
-        return sender;
+    public String getFrom() {
+        return from;
     }
 
-    public void setSender(String sender) {
-        this.sender = sender;
+    public void setFrom(String from) {
+        this.from = from;
     }
 
     public String getBody() {
@@ -59,12 +59,12 @@ public class Mail {
         this.body = body;
     }
 
-    public String getSubject() {
-        return subject;
+    public String getTitle() {
+        return title;
     }
 
-    public void setSubject(String subject) {
-        this.subject = subject;
+    public void setTitle(String title) {
+        this.title = title;
     }
 
     public int getId() {
