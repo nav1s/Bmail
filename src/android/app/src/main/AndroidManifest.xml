@@ -27,6 +27,8 @@
         </activity>
         <activity android:name=".Activities.SignupActivity"/>
         <activity android:name=".Activities.MailActivity"/>
+        <activity android:name=".Activities.ComposeActivity"
+            android:parentActivityName=".Activities.MailActivity" />
 
     </application>
 </manifest>

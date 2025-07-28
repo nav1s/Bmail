@@ -1,5 +1,6 @@
 package com.example.bmail.Activities;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Toast;
 
@@ -17,6 +18,7 @@ import com.example.bmail.ViewModels.MailViewModel;
 import com.example.bmail.ViewModels.MailViewModelFactory;
 import com.example.bmail.R;
 import com.example.bmail.Adapters.MailsAdapter;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
 
 public class MailActivity extends AppCompatActivity {
@@ -40,6 +42,13 @@ public class MailActivity extends AppCompatActivity {
                 R.string.open_drawer, R.string.close_drawer);
         drawer.addDrawerListener(toggle);
         toggle.syncState();
+
+        // Setup FAB for compose
+        FloatingActionButton fabCompose = findViewById(R.id.fab_compose);
+        fabCompose.setOnClickListener(v -> {
+            Intent intent = new Intent(MailActivity.this, ComposeActivity.class);
+            startActivity(intent);
+        });
 
         MailRepository mailRepository = new MailRepository(this);
         MailViewModelFactory factory = new MailViewModelFactory(mailRepository);
@@ -89,4 +98,4 @@ public class MailActivity extends AppCompatActivity {
         });
     }
 
-    }
+}
