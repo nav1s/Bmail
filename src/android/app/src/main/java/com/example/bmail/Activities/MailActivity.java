@@ -10,6 +10,7 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.example.bmail.Repositories.MailRepository;
 import com.example.bmail.ViewModels.MailViewModel;
@@ -47,9 +48,13 @@ public class MailActivity extends AppCompatActivity {
         final MailsAdapter adapter = new MailsAdapter(this);
         recyclerView.setAdapter(adapter);
 
+        SwipeRefreshLayout refreshLayout = findViewById(R.id.swipe_refresh_layout);
+        refreshLayout.setOnRefreshListener(viewModel::loadMails);
+
         viewModel.getMails().observe(this, mails -> {
             if (mails != null) {
                 adapter.setMails(mails);
+                refreshLayout.setRefreshing(false); // stop the refreshing animation
             }
         });
 

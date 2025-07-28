@@ -9,7 +9,6 @@ import androidx.annotation.NonNull;
 import com.example.bmail.Api.WebServiceApi;
 import com.example.bmail.Entities.LoginRequest;
 import com.example.bmail.Entities.LoginResponse;
-import com.example.bmail.Api.TokensApi;
 
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
