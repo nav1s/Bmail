@@ -26,4 +26,8 @@
     <string name="all_labels">All labels</string>
     <string name="profile">Profile</string>
     <string name="back">Back</string>
+    <string name="send">Send</string>
+    <string name="to">To:</string>
+    <string name="subject">Subject</string>
+    <string name="compose_email">Compose email</string>
 </resources>

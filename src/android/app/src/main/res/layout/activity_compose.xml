@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
@@ -30,9 +31,8 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Compose"
+                android:text="@string/compose"
                 android:textSize="20sp"
-                android:textColor="@android:color/black"
                 android:textStyle="bold"
                 android:gravity="center"
                 android:layout_marginEnd="48dp" />
@@ -43,7 +43,7 @@
                 android:layout_height="48dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:src="@android:drawable/ic_menu_send"
-                android:contentDescription="Send"
+                android:contentDescription="@string/send"
                 android:scaleType="centerInside" />
 
         </LinearLayout>
@@ -60,7 +60,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="16dp">
+            >
 
             <!-- To Field -->
             <LinearLayout
@@ -71,24 +71,24 @@
                 android:layout_marginBottom="8dp">
 
                 <TextView
-                    android:layout_width="60dp"
+                    android:layout_width="24dp"
                     android:layout_height="wrap_content"
-                    android:text="To:"
+                    android:text="@string/to"
                     android:textSize="16sp"
-                    android:textColor="@android:color/black"
-                    android:gravity="end"
-                    android:layout_marginEnd="8dp" />
+                    android:labelFor="@id/et_to"
+                    />
 
                 <EditText
                     android:id="@+id/et_to"
+                    android:background="@android:color/transparent"
                     android:layout_width="0dp"
                     android:layout_height="48dp"
                     android:layout_weight="1"
-                    android:hint="Recipient email"
+                    android:autofillHints="@string/to"
                     android:inputType="textEmailAddress"
-                    android:background="@android:color/transparent"
                     android:textSize="16sp"
-                    android:padding="8dp" />
+                    android:padding="8dp"
+                    />
 
             </LinearLayout>
 
@@ -96,7 +96,6 @@
             <View
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
-                android:background="@android:color/darker_gray"
                 android:layout_marginBottom="8dp" />
 
             <!-- Subject Field -->
@@ -107,25 +106,17 @@
                 android:gravity="center_vertical"
                 android:layout_marginBottom="8dp">
 
-                <TextView
-                    android:layout_width="60dp"
-                    android:layout_height="wrap_content"
-                    android:text="Subject:"
-                    android:textSize="16sp"
-                    android:textColor="@android:color/black"
-                    android:gravity="end"
-                    android:layout_marginEnd="8dp" />
-
                 <EditText
                     android:id="@+id/et_subject"
+                    android:background="@android:color/transparent"
                     android:layout_width="0dp"
                     android:layout_height="48dp"
                     android:layout_weight="1"
-                    android:hint="Email subject"
+                    android:autofillHints="@string/subject"
+                    android:hint="@string/subject"
                     android:inputType="text"
-                    android:background="@android:color/transparent"
                     android:textSize="16sp"
-                    android:padding="8dp" />
+                    />
 
             </LinearLayout>
 
@@ -133,7 +124,6 @@
             <View
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
-                android:background="@android:color/darker_gray"
                 android:layout_marginBottom="16dp" />
 
             <!-- Message Body -->
@@ -142,11 +132,11 @@
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
                 android:layout_weight="1"
+                android:autofillHints="@string/compose_email"
                 android:minHeight="200dp"
-                android:hint="Compose email..."
+                android:hint="@string/compose_email"
                 android:inputType="textMultiLine|textCapSentences"
                 android:gravity="top|start"
-                android:background="@android:color/transparent"
                 android:textSize="16sp"
                 android:padding="8dp"
                 android:scrollbars="vertical" />
