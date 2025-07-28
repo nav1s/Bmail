@@ -6,6 +6,7 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 
+import com.example.bmail.Api.WebServiceApi;
 import com.example.bmail.Entities.LoginRequest;
 import com.example.bmail.Entities.LoginResponse;
 import com.example.bmail.Api.TokensApi;
@@ -16,7 +17,7 @@ import retrofit2.Call;
 import retrofit2.Response;
 
 public class UserRepository {
-    private final TokensApi authApi;
+    private final WebServiceApi webServiceApi;
     private final Context context;
 
     public UserRepository(Context context) {
@@ -25,12 +26,12 @@ public class UserRepository {
                 .baseUrl("http://localhost:8080/api/")
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
-        authApi = retrofit.create(TokensApi.class);
+        webServiceApi = retrofit.create(WebServiceApi.class);
     }
 
     public void login(String username, String password) {
         LoginRequest request = new LoginRequest(username, password);
-        Call<LoginResponse> call = authApi.login(request);
+        Call<LoginResponse> call = webServiceApi.login(request);
         call.enqueue(new retrofit2.Callback<>() {
             @Override
             public void onResponse(@NonNull Call<LoginResponse> call, @NonNull Response<LoginResponse> response) {
