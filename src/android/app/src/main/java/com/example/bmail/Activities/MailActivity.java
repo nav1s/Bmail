@@ -21,6 +21,8 @@ import com.google.android.material.navigation.NavigationView;
 
 public class MailActivity extends AppCompatActivity {
     private DrawerLayout drawer;
+
+    MailViewModel mailViewModel;
     private String label = "inbox";
 
     @Override
@@ -41,7 +43,7 @@ public class MailActivity extends AppCompatActivity {
 
         MailRepository mailRepository = new MailRepository(this);
         MailViewModelFactory factory = new MailViewModelFactory(mailRepository);
-        MailViewModel viewModel = new ViewModelProvider(this, factory)
+        mailViewModel = new ViewModelProvider(this, factory)
                 .get(MailViewModel.class);
 
         RecyclerView recyclerView = findViewById(R.id.recycler_view);
@@ -51,11 +53,11 @@ public class MailActivity extends AppCompatActivity {
 
         SwipeRefreshLayout refreshLayout = findViewById(R.id.swipe_refresh_layout);
         refreshLayout.setOnRefreshListener(() -> {
-            viewModel.loadMails(label); // reload mails when user swipes to refresh
+            mailViewModel.loadMails(label); // reload mails when user swipes to refresh
             refreshLayout.setRefreshing(true); // show the refreshing animation
         });
 
-        viewModel.getMails().observe(this, mails -> {
+        mailViewModel.getMails().observe(this, mails -> {
             if (mails != null) {
                 adapter.setMails(mails);
                 refreshLayout.setRefreshing(false); // stop the refreshing animation
@@ -67,31 +69,23 @@ public class MailActivity extends AppCompatActivity {
             drawer.closeDrawers(); // close drawer on click
             if (item.getItemId() == R.id.nav_inbox) {
                 label = "inbox";
-                Toast.makeText(MailActivity.this, "Inbox selected", Toast.LENGTH_SHORT).show();
-                return true;
             } else if (item.getItemId() == R.id.nav_drafts) {
                 label = "drafts";
-                Toast.makeText(MailActivity.this, "Drafts selected", Toast.LENGTH_SHORT).show();
-                return true;
             } else if (item.getItemId() == R.id.nav_trash) {
                 label = "trash";
-                Toast.makeText(MailActivity.this, "Trash selected", Toast.LENGTH_SHORT).show();
-                return true;
             } else if (item.getItemId() == R.id.nav_spam) {
                 label = "spam";
-                Toast.makeText(MailActivity.this, "Spam selected", Toast.LENGTH_SHORT).show();
-                return true;
             } else if (item.getItemId() == R.id.nav_sent) {
                 label = "sent";
-                Toast.makeText(MailActivity.this, "Sent selected", Toast.LENGTH_SHORT).show();
-                return true;
             } else if (item.getItemId() == R.id.nav_starred) {
                 label = "starred";
-                Toast.makeText(MailActivity.this, "Starred selected", Toast.LENGTH_SHORT).show();
-                return true;
             }
+            else {
+                return false;
+            }
+            mailViewModel.loadMails(label);
+            return true;
 
-            return false;
         });
     }
 

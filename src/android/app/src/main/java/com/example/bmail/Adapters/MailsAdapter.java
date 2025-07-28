@@ -66,7 +66,12 @@ public class MailsAdapter extends RecyclerView.Adapter<MailsAdapter.mailViewHold
         return mailList;
     }
     public void setMails(@NonNull List<Mail> mails) {
-        this.mailList = mails;
+        if (this.mailList != null) {
+            Log.i("MailsAdapter", "Updating mail list with new data");
+            this.mailList = mails;
+        } else {
+            Log.i("MailsAdapter", "Setting initial mail list data");
+        }
         // todo fix this
         notifyDataSetChanged();
     }
