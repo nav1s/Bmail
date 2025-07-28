@@ -46,6 +46,7 @@ public class MailsAdapter extends RecyclerView.Adapter<MailsAdapter.mailViewHold
     @Override
     public void onBindViewHolder(@NonNull mailViewHolder holder, int position) {
         Mail currentMail = mailList.get(position);
+        // todo add different view when the label is sent and draft
         Log.i("MailsAdapter", "Binding mail at position: " + position);
         Log.i("MailsAdapter", "Mail sender: " + currentMail.getFrom());
         Log.i("MailsAdapter", "Mail subject: " + currentMail.getTitle());
@@ -62,18 +63,10 @@ public class MailsAdapter extends RecyclerView.Adapter<MailsAdapter.mailViewHold
         return mailList.size();
     }
 
-    public List<Mail> getMails() {
-        return mailList;
-    }
     public void setMails(@NonNull List<Mail> mails) {
-        if (this.mailList != null) {
-            Log.i("MailsAdapter", "Updating mail list with new data");
-            this.mailList = mails;
-        } else {
-            Log.i("MailsAdapter", "Setting initial mail list data");
-        }
-        // todo fix this
-        notifyDataSetChanged();
+        notifyItemRangeChanged(0, mailList == null ? 0 : mailList.size());
+        this.mailList = mails;
+        notifyItemRangeInserted(0, mails.size());
     }
 
 }
