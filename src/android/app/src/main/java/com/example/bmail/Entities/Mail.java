@@ -1,4 +1,4 @@
-package com.example.bmail;
+package com.example.bmail.Entities;
 
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;

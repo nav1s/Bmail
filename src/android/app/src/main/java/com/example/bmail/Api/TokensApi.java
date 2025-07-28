@@ -1,4 +1,7 @@
-package com.example.bmail;
+package com.example.bmail.Api;
+
+import com.example.bmail.Entities.LoginRequest;
+import com.example.bmail.Entities.LoginResponse;
 
 import retrofit2.Call;
 import retrofit2.http.Body;

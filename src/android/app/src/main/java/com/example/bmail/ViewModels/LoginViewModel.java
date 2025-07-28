@@ -1,6 +1,8 @@
-package com.example.bmail;
+package com.example.bmail.ViewModels;
 
 import androidx.annotation.NonNull;
+
+import com.example.bmail.Repositories.UserRepository;
 
 public class LoginViewModel {
     private final UserRepository userRepository;

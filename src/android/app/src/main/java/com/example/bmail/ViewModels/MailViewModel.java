@@ -1,6 +1,9 @@
-package com.example.bmail;
+package com.example.bmail.ViewModels;
 
 import androidx.lifecycle.LiveData;
+
+import com.example.bmail.Entities.Mail;
+import com.example.bmail.Repositories.MailRepository;
 
 import java.util.List;
 

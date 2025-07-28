@@ -1,4 +1,4 @@
-package com.example.bmail;
+package com.example.bmail.ViewModels;
 
 import androidx.annotation.NonNull;
 

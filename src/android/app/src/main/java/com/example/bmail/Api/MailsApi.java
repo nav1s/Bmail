@@ -1,4 +1,6 @@
-package com.example.bmail;
+package com.example.bmail.Api;
+
+import com.example.bmail.Entities.MailResponse;
 
 import java.util.List;
 

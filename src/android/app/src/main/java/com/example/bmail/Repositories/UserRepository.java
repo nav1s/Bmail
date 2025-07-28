@@ -1,10 +1,14 @@
-package com.example.bmail;
+package com.example.bmail.Repositories;
 
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
+
+import com.example.bmail.Entities.LoginRequest;
+import com.example.bmail.Entities.LoginResponse;
+import com.example.bmail.Api.TokensApi;
 
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;

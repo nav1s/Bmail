@@ -1,4 +1,4 @@
-package com.example.bmail;
+package com.example.bmail.Entities;
 
 public class LoginRequest {
     public String username;

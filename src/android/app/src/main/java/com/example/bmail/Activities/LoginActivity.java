@@ -1,4 +1,4 @@
-package com.example.bmail;
+package com.example.bmail.Activities;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -8,6 +8,10 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.content.Context;
 import android.content.SharedPreferences;
+
+import com.example.bmail.ViewModels.LoginViewModel;
+import com.example.bmail.R;
+import com.example.bmail.Repositories.UserRepository;
 
 public class LoginActivity extends Activity {
     private LoginViewModel loginViewModel;

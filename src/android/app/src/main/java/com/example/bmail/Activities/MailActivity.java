@@ -1,4 +1,4 @@
-package com.example.bmail;
+package com.example.bmail.Activities;
 
 import android.os.Bundle;
 import android.widget.Toast;
@@ -11,6 +11,9 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.bmail.ViewModels.MailViewModel;
+import com.example.bmail.R;
+import com.example.bmail.Adapters.MailsAdapter;
 import com.google.android.material.navigation.NavigationView;
 
 public class MailActivity extends AppCompatActivity {
@@ -36,7 +39,7 @@ public class MailActivity extends AppCompatActivity {
 
         RecyclerView recyclerView = findViewById(R.id.recycler_view);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        final mailsAdapter adapter = new mailsAdapter(this);
+        final MailsAdapter adapter = new MailsAdapter(this);
         recyclerView.setAdapter(adapter);
 
         viewModel.getMails().observe(this, mails -> {

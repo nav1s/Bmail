@@ -1,4 +1,4 @@
-package com.example.bmail;
+package com.example.bmail.Activities;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -8,6 +8,9 @@ import android.provider.MediaStore;
 import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
+
+import com.example.bmail.R;
+import com.example.bmail.ViewModels.SignupViewModel;
 
 public class SignupActivity extends Activity {
     private SignupViewModel viewModel;

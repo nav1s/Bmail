@@ -1,4 +1,4 @@
-package com.example.bmail;
+package com.example.bmail.Adapters;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -9,9 +9,12 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.bmail.Entities.Mail;
+import com.example.bmail.R;
+
 import java.util.List;
 
-public class mailsAdapter extends RecyclerView.Adapter<mailsAdapter.mailViewHolder> {
+public class MailsAdapter extends RecyclerView.Adapter<MailsAdapter.mailViewHolder> {
     public static class mailViewHolder extends RecyclerView.ViewHolder {
         private final TextView sender;
         private final TextView subject;
@@ -28,7 +31,7 @@ public class mailsAdapter extends RecyclerView.Adapter<mailsAdapter.mailViewHold
     private List<Mail> mailList;
     private final LayoutInflater inflater;
 
-    public mailsAdapter(Context context) {
+    public MailsAdapter(Context context) {
         this.inflater = LayoutInflater.from(context);
     }
 
