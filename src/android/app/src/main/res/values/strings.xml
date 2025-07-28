@@ -24,4 +24,5 @@
     <string name="compose">compose</string>
     <string name="search_in_mail">Search in mail</string>
     <string name="all_labels">All labels</string>
+    <string name="profile">Profile</string>
 </resources>
