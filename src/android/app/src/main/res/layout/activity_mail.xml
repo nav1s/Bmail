@@ -21,15 +21,14 @@
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             >
-            <SearchView
+            <EditText
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:id="@+id/search_view"
-                android:queryHint="Search..."
-                app:iconifiedByDefault="false"
-                app:layout_anchorGravity="center_vertical"
-                app:layout_collapseMode="pin"
-                />
+                android:hint="@string/search_in_mail"
+                android:autofillHints="@string/search_in_mail"
+                android:inputType="text"
+                android:textSize="20sp"
+                android:background="@android:color/transparent" />
         </androidx.appcompat.widget.Toolbar>
 
 
