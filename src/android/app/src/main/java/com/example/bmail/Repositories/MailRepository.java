@@ -1,12 +1,22 @@
 package com.example.bmail.Repositories;
 
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.util.Log;
+
+import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
+import com.example.bmail.Api.WebServiceApi;
 import com.example.bmail.Entities.Mail;
 
 import java.util.LinkedList;
 import java.util.List;
+
+import retrofit2.Call;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 public class MailRepository {
     static class MailListData extends MutableLiveData<List<Mail>> {
@@ -30,25 +40,42 @@ public class MailRepository {
 
     private final MailListData mailListData = new MailListData();
 
-//    private final MailsApi mailsApi;
-//    private final Context context;
+    private final WebServiceApi mailsApi;
+    private final Context context;
 
-    public MailRepository() {
-//        this.context = context.getApplicationContext();
-//
-//        Retrofit retrofit = new Retrofit.Builder()
-//                .baseUrl("http://localhost:8080/api/")
-//                .addConverterFactory(GsonConverterFactory.create())
-//                .build();
-//        mailsApi = retrofit.create(MailsApi.class);
+    public MailRepository(Context context) {
+        this.context = context;
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl("http://localhost:8080/api/")
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+        mailsApi = retrofit.create(WebServiceApi.class);
     }
 
     public LiveData<List<Mail>> getMails() {
+        SharedPreferences prefs = context.getSharedPreferences("user_prefs", Context.MODE_PRIVATE);
+        String token = prefs.getString("auth_token", null);
+
+        Call<List<Mail>> call = mailsApi.getMails(token);
+        call.enqueue(new retrofit2.Callback<>() {
+            @Override
+            public void onResponse(@NonNull Call<List<Mail>> call, @NonNull retrofit2.Response<List<Mail>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    Log.d("MailRepository", "Fetched mails successfully");
+                    mailListData.postValue(response.body());
+                } else {
+                    Log.e("MailRepository", "Failed to fetch mails: " + response.message());
+                    mailListData.postValue(null);
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<List<Mail>> call, @NonNull Throwable t) {
+                Log.e("MailRepository", "Network error: " + t.getMessage());
+                mailListData.postValue(null);
+            }
+        });
         return mailListData;
-//        SharedPreferences prefs = context.getSharedPreferences("user_prefs", Context.MODE_PRIVATE);
-//        String token = prefs.getString("auth_token", null);
-//
-//        Call<List<MailResponse>> call = mailsApi.getMails(token);
     }
 
     public void sendMail(Mail mail) {
@@ -61,4 +88,3 @@ public class MailRepository {
 
     }
 }
-

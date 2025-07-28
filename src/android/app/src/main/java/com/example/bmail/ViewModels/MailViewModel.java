@@ -8,10 +8,11 @@ import com.example.bmail.Repositories.MailRepository;
 import java.util.List;
 
 public class MailViewModel extends androidx.lifecycle.ViewModel {
-    private final MailRepository mailRepository = new MailRepository();
+    private final MailRepository mailRepository;
     private final LiveData<List<Mail>> mails;
 
-    public MailViewModel() {
+    public MailViewModel(MailRepository mailRepository) {
+        this.mailRepository = mailRepository;
         mails = mailRepository.getMails();
     }
 

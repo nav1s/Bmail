@@ -15,6 +15,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class MailApi {
 
+    // todo add dao
     private final MutableLiveData<List<Mail>> mailListData;
     WebServiceApi webServiceApi;
 

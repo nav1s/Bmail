@@ -11,7 +11,9 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.bmail.Repositories.MailRepository;
 import com.example.bmail.ViewModels.MailViewModel;
+import com.example.bmail.ViewModels.MailViewModelFactory;
 import com.example.bmail.R;
 import com.example.bmail.Adapters.MailsAdapter;
 import com.google.android.material.navigation.NavigationView;
@@ -35,7 +37,10 @@ public class MailActivity extends AppCompatActivity {
         drawer.addDrawerListener(toggle);
         toggle.syncState();
 
-        MailViewModel viewModel = new ViewModelProvider(this).get(MailViewModel.class);
+        MailRepository mailRepository = new MailRepository(this);
+        MailViewModelFactory factory = new MailViewModelFactory(mailRepository);
+        MailViewModel viewModel = new ViewModelProvider(this, factory)
+                .get(MailViewModel.class);
 
         RecyclerView recyclerView = findViewById(R.id.recycler_view);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
