@@ -16,7 +16,8 @@ import retrofit2.converter.gson.GsonConverterFactory;
 public class MailApi {
 
     private final MutableLiveData<List<Mail>> mailListData;
-    WebServiceApi webServiceApi; Retrofit retrofit;
+    WebServiceApi webServiceApi;
+
     public MailApi(MutableLiveData<List<Mail>> mailListData) {
         this.mailListData = mailListData;
         Retrofit retrofit = new Retrofit.Builder()
