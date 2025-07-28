@@ -52,6 +52,7 @@
             <com.google.android.material.floatingactionbutton.FloatingActionButton
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_margin="32dp"
                 android:contentDescription="@string/compose"
                 android:id="@+id/fab_compose"
                 android:src="@drawable/ic_edit"
