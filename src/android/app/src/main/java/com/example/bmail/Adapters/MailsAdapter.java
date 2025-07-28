@@ -60,8 +60,9 @@ public class MailsAdapter extends RecyclerView.Adapter<MailsAdapter.mailViewHold
     public List<Mail> getMails() {
         return mailList;
     }
-    public void setMails(List<Mail> mails) {
+    public void setMails(@NonNull List<Mail> mails) {
         this.mailList = mails;
+        notifyItemRangeChanged(0, mails.size());
     }
 
 }
