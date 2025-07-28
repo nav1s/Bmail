@@ -22,7 +22,9 @@
                 android:id="@+id/btn_back"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
-                android:background="?attr/selectableItemBackgroundBorderless"
+                android:background="@android:color/transparent"
+                android:clickable="true"
+                android:focusable="true"
                 android:src="@drawable/ic_back"
                 android:contentDescription="@string/back" />
 
@@ -41,7 +43,9 @@
                 android:id="@+id/btn_send"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
-                android:background="?attr/selectableItemBackgroundBorderless"
+                android:background="@android:color/transparent"
+                android:clickable="true"
+                android:focusable="true"
                 android:src="@android:drawable/ic_menu_send"
                 android:contentDescription="@string/send"
                 android:scaleType="centerInside" />
