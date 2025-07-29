@@ -127,12 +127,10 @@ public class MailActivity extends AppCompatActivity {
         searchBar.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-                // Called before the text is changed
             }
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                // Called when the text is being changed
                 String searchText = s.toString().trim();
                 if (searchText.isEmpty()) {
                     Log.i("MailActivity", "Search text is empty, loading all mails.");
@@ -143,7 +141,6 @@ public class MailActivity extends AppCompatActivity {
 
             @Override
             public void afterTextChanged(Editable s) {
-                // Called after the text has been changed
             }
         });
 

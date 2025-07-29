@@ -1,39 +1,49 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
-    <item
-        android:id="@+id/nav_inbox"
-        android:title="@string/inbox"
-        android:icon="@android:drawable/ic_dialog_email" />
 
-    <item
-        android:id="@+id/nav_all_labels"
-        android:title="@string/all_labels"
-        android:enabled="false"
-        />
+    <group android:id="@+id/group_main" android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_inbox"
+            android:title="@string/inbox"
+            android:icon="@android:drawable/ic_dialog_email" />
+
+        <item
+            android:id="@+id/nav_all_labels"
+            android:title="@string/all_labels"
+            android:enabled="false"
+            />
 
 
-    <item
-        android:id="@+id/nav_starred"
-        android:title="@string/starred"
-        android:icon="@android:drawable/btn_star_big_on" />
+        <item
+            android:id="@+id/nav_starred"
+            android:title="@string/starred"
+            android:icon="@android:drawable/btn_star_big_on" />
 
-    <item
-        android:id="@+id/nav_sent"
-        android:title="@string/sent"
-        android:icon="@android:drawable/ic_menu_send" />
+        <item
+            android:id="@+id/nav_sent"
+            android:title="@string/sent"
+            android:icon="@android:drawable/ic_menu_send" />
 
-    <item
-        android:id="@+id/nav_drafts"
-        android:title="@string/drafts"
-        android:icon="@android:drawable/ic_menu_edit" />
+        <item
+            android:id="@+id/nav_drafts"
+            android:title="@string/drafts"
+            android:icon="@android:drawable/ic_menu_edit" />
 
-    <item
-        android:id="@+id/nav_spam"
-        android:title="@string/spam"
-        android:icon="@android:drawable/ic_delete" />
+        <item
+            android:id="@+id/nav_spam"
+            android:title="@string/spam"
+            android:icon="@android:drawable/ic_delete" />
 
-    <item
-        android:id="@+id/nav_trash"
-        android:title="@string/trash"
-        android:icon="@android:drawable/ic_menu_delete" />
+        <item
+            android:id="@+id/nav_trash"
+            android:title="@string/trash"
+            android:icon="@android:drawable/ic_menu_delete" />
+    </group>
+
+    <group android:id="@+id/group_actions">
+        <item
+            android:id="@+id/nav_logout"
+            android:title="@string/logout"
+            android:icon="@android:drawable/ic_lock_power_off" />
+    </group>
 
 </menu>
