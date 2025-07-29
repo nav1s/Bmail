@@ -3,6 +3,8 @@ package com.example.bmail.Activities;
 import android.os.Bundle;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.Toast;
+
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.lifecycle.ViewModelProvider;
@@ -76,8 +78,10 @@ public class ComposeActivity extends AppCompatActivity {
             message = "";
         }
 
+        // todo replace sender with actual user email
         Mail mail = new Mail(subject, message, "Me", List.of(to), false);
         composeViewModel.send(mail);
+        Toast.makeText(this, "sent", Toast.LENGTH_SHORT).show();
         finish();
     }
 
