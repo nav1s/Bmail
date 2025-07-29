@@ -20,11 +20,6 @@ public class MailViewModel extends androidx.lifecycle.ViewModel {
         return mails;
     }
 
-
-    public void add(Mail mail) {
-        mailRepository.sendMail(mail);
-    }
-
     public void delete(Mail mail) {
         mailRepository.deleteMail(mail);
     }
