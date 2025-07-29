@@ -1,8 +1,9 @@
 package com.example.bmail.Activities;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.os.Parcelable;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -119,8 +120,16 @@ public class MailActivity extends AppCompatActivity {
                         .setTitle("Logout")
                         .setMessage("Are you sure you want to logout?")
                         .setPositiveButton("Yes", (dialog, which) -> {
-                            // Clear any stored user data/preferences if needed
-                            // For now, just finish the activity
+                            Context context = MailActivity.this;
+                            SharedPreferences preferences = context.getSharedPreferences("user_prefs", Context.MODE_PRIVATE);
+                            SharedPreferences.Editor editor = preferences.edit();
+                            editor.clear(); // Clear all preferences
+                            editor.apply(); // Apply changes
+
+                            // Navigate back to LoginActivity and clear the activity stack
+                            Intent intent = new Intent(MailActivity.this, LoginActivity.class);
+                            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                            startActivity(intent);
                             finish();
                         })
                         .setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss())
