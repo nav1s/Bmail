@@ -24,6 +24,7 @@ public class MailsAdapter extends RecyclerView.Adapter<MailsAdapter.mailViewHold
         private final TextView sender;
         private final TextView subject;
         private final TextView body;
+        private Mail currentMail;
 
         public mailViewHolder(@NonNull View itemView, View.OnClickListener clickListener) {
             super(itemView);
@@ -32,12 +33,19 @@ public class MailsAdapter extends RecyclerView.Adapter<MailsAdapter.mailViewHold
             body = itemView.findViewById(R.id.previewTextView);
 
             itemView.setOnClickListener(v -> {
-                int position = getAdapterPosition();
-                if (position != RecyclerView.NO_POSITION && clickListener != null) {
-                    v.setTag(position);
+                if (currentMail != null) {
+                    Log.i("MailsAdapter", "Mail clicked: " + currentMail.getTitle());
+                    v.setTag(currentMail);
                     clickListener.onClick(v);
+                } else {
+                    Log.w("MailsAdapter", "Current mail is null, cannot handle click.");
                 }
+
             });
+        }
+
+        public void setMail(Mail mail) {
+            this.currentMail = mail;
         }
     }
 
@@ -64,6 +72,7 @@ public class MailsAdapter extends RecyclerView.Adapter<MailsAdapter.mailViewHold
         holder.sender.setText(currentMail.getFrom());
         holder.subject.setText(currentMail.getTitle());
         holder.body.setText(currentMail.getBody());
+        holder.setMail(currentMail);
     }
     @Override
     public int getItemCount() {

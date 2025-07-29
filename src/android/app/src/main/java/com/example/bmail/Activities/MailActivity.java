@@ -2,6 +2,7 @@ package com.example.bmail.Activities;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -18,6 +19,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
+import com.example.bmail.Entities.Mail;
 import com.example.bmail.Repositories.MailRepository;
 import com.example.bmail.ViewModels.MailViewModel;
 import com.example.bmail.ViewModels.MailViewModelFactory;
@@ -161,8 +163,15 @@ public class MailActivity extends AppCompatActivity {
     }
 
     private void showMailContent(View view) {
+        Mail clickedMail = (Mail) view.getTag();
+        if (clickedMail == null) {
+            Log.w("MailActivity", "Clicked mail is null, cannot show content.");
+            return;
+        }
+        Log.i("MailActivity", "Clicked mail: " + clickedMail.getTitle());
         Intent intent = new Intent(MailActivity.this, MailContentActivity.class);
-//        intent.putExtra("mail_id", mailId);
+        // add the mail to the intent
+        intent.putExtra("mail", (Parcelable) clickedMail);
         startActivity(intent);
     }
 
