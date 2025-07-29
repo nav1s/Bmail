@@ -40,4 +40,14 @@
     <string name="confirm_new_password">Confirm new password</string>
     <string name="save_changes">Save changes</string>
     <string name="logout">Logout</string>
+    <string name="delete">Delete</string>
+    <string name="email_subject">Email Subject</string>
+    <string name="star_email">Star email</string>
+    <string name="sender_avatar">Sender Avatar</string>
+    <string name="_5_30_2024">5/30/2024</string>
+    <string name="me">me</string>
+    <string name="email_content_goes_here_this_is_where_the_main_body_of_the_email_will_be_displayed_it_can_contain_multiple_paragraphs_and_will_scroll_if_the_content_is_long">Email content goes here. This is where the main body of the email will be displayed. It can contain multiple paragraphs and will scroll if the content is long.</string>
+    <string name="reply">Reply</string>
+    <string name="reply_all">Reply All</string>
+    <string name="forward">Forward</string>
 </resources>
