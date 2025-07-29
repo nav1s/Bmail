@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageButton;
 
@@ -68,10 +69,7 @@ public class MailActivity extends AppCompatActivity {
 
         this.recyclerView = findViewById(R.id.recycler_view);
         this.recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        adapter = new MailsAdapter(this, v -> {
-            Intent intent = new Intent(MailActivity.this, MailContentActivity.class);
-            startActivity(intent);
-        });
+        adapter = new MailsAdapter(this, this::showMailContent);
         this.recyclerView.setAdapter(adapter);
 
     }
@@ -160,20 +158,10 @@ public class MailActivity extends AppCompatActivity {
             public void afterTextChanged(Editable s) {
             }
         });
-        recyclerView.setOnClickListener(v -> {
-            int position = recyclerView.getChildAdapterPosition(v);
-            // handle click on mail item
-            if (position != RecyclerView.NO_POSITION) {
-                Log.i("MailActivity", "Clicked on mail at position: " + position);
-                 Intent intent = new Intent(MailActivity.this, MailContentActivity.class);
-//                 intent.putExtra("mail_id", adapter.getMails().get(position).getId());
-                 startActivity(intent);
-            }
-        });
 
     }
 
-    private void showMailContent() {
+    private void showMailContent(View view) {
         Intent intent = new Intent(MailActivity.this, MailContentActivity.class);
 //        intent.putExtra("mail_id", mailId);
         startActivity(intent);
