@@ -64,9 +64,9 @@ public class MailsAdapter extends RecyclerView.Adapter<MailsAdapter.mailViewHold
     }
 
     public void setMails(@NonNull List<Mail> mails) {
-        notifyItemRangeChanged(0, mailList == null ? 0 : mailList.size());
+        notifyItemRangeRemoved(0, mailList == null ? 0 : mailList.size());
         this.mailList = mails;
-        notifyItemRangeInserted(0, mailList == null ? 0 : mailList.size());
+        notifyItemRangeInserted(0, mailList.size());
     }
 
 }
