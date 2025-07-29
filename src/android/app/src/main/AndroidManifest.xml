@@ -33,6 +33,8 @@
             android:parentActivityName=".Activities.MailActivity" />
         <activity android:name=".Activities.ProfileActivity"
             android:parentActivityName=".Activities.MailActivity" />
+        <activity android:name=".Activities.MailContentActivity"
+            android:parentActivityName=".Activities.MailActivity" />
 
     </application>
 </manifest>
