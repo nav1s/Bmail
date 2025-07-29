@@ -4,18 +4,22 @@ import android.os.Bundle;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 
 import com.example.bmail.R;
 
 public class ComposeActivity extends AppCompatActivity {
 
     private EditText etTo;
-    private ImageButton btnBack, btnSend;
+    private ImageButton btnSend;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_compose);
+
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
 
         initViews();
         setupListeners();
@@ -23,13 +27,11 @@ public class ComposeActivity extends AppCompatActivity {
 
     private void initViews() {
         etTo = findViewById(R.id.et_to);
-        btnBack = findViewById(R.id.btn_back);
         btnSend = findViewById(R.id.btn_send);
     }
 
 
     private void setupListeners() {
-        btnBack.setOnClickListener(v -> finish());
         btnSend.setOnClickListener(v -> sendEmail());
     }
 
@@ -47,6 +49,12 @@ public class ComposeActivity extends AppCompatActivity {
         finish();
 
 
+    }
+
+    @Override
+    public boolean onSupportNavigateUp() {
+        finish();
+        return true;
     }
 
 }
