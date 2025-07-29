@@ -110,6 +110,19 @@ public class MailActivity extends AppCompatActivity {
                 label = "sent";
             } else if (item.getItemId() == R.id.nav_starred) {
                 label = "starred";
+            } else if (item.getItemId() == R.id.nav_logout) {
+                // Handle logout
+                new androidx.appcompat.app.AlertDialog.Builder(this)
+                        .setTitle("Logout")
+                        .setMessage("Are you sure you want to logout?")
+                        .setPositiveButton("Yes", (dialog, which) -> {
+                            // Clear any stored user data/preferences if needed
+                            // For now, just finish the activity
+                            finish();
+                        })
+                        .setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss())
+                        .show();
+                return true;
             }
             else {
                 return false;

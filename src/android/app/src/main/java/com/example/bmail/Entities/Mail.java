@@ -1,26 +1,22 @@
 package com.example.bmail.Entities;
 
 import androidx.room.Entity;
-import androidx.room.PrimaryKey;
 
 import java.util.List;
 
 @Entity
 public class Mail {
-    @PrimaryKey
-    private final int id;
     private String title;
     private String body;
     private String from;
-    private List<String> recipients;
+    private List<String> to;
 
-    public Mail(int id, String subject, String body, String sender, List<String> recipients,
+    public Mail(String subject, String body, String sender, List<String> to,
                 Boolean draft) {
-        this.id = id;
         this.title = subject;
         this.body = body;
         this.from = sender;
-        this.recipients = recipients;
+        this.to = to;
         this.draft = draft;
     }
 
@@ -35,12 +31,12 @@ public class Mail {
         this.draft = draft;
     }
 
-    public List<String> getRecipients() {
-        return recipients;
+    public List<String> getTo() {
+        return to;
     }
 
-    public void setRecipients(List<String> recipients) {
-        this.recipients = recipients;
+    public void setTo(List<String> to) {
+        this.to = to;
     }
 
     public String getFrom() {
@@ -67,7 +63,4 @@ public class Mail {
         this.title = title;
     }
 
-    public int getId() {
-        return id;
-    }
 }
