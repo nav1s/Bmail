@@ -29,8 +29,7 @@ public class ComposeActivity extends AppCompatActivity {
 
 
     private void setupListeners() {
-        btnBack.setOnClickListener(v -> handleBackAction());
-
+        btnBack.setOnClickListener(v -> finish());
         btnSend.setOnClickListener(v -> sendEmail());
     }
 
@@ -50,7 +49,4 @@ public class ComposeActivity extends AppCompatActivity {
 
     }
 
-    private void handleBackAction() {
-        finish();
-    }
 }
