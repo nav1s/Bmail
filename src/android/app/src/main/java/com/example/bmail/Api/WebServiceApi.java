@@ -20,4 +20,7 @@ public interface WebServiceApi {
     @GET("mails/byLabel/{label}")
     Call<List<Mail>> getMails(@Header("Authorization") String token,
     @Path ("label") String label);
+
+    @POST("mails")
+    Call<Void> sendMail(@Header("Authorization") String token, @Body Mail mail);
 }

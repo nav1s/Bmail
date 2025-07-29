@@ -34,10 +34,13 @@ public class MailApi {
         webServiceApi = retrofit.create(WebServiceApi.class);
     }
 
-    public void reload(String label) {
+    public String getToken() {
         SharedPreferences prefs = context.getSharedPreferences("user_prefs",
                 Context.MODE_PRIVATE);
-        String token = prefs.getString("auth_token", null);
+        return prefs.getString("auth_token", null);
+    }
+    public void reload(String label) {
+        String token = getToken();
         Log.i("MailApi", "Token: " + token);
 
         Call<List<Mail>> call = webServiceApi.getMails("Bearer " + token, label);
@@ -71,5 +74,27 @@ public class MailApi {
                 }
         );
 
+    }
+    public void sendMail(Mail mail) {
+        String token = getToken();
+        Log.i("MailApi", "Sending mail with token: " + token);
+
+        Call<Void> call = webServiceApi.sendMail("Bearer " + token, mail);
+        call.enqueue(new Callback<>() {
+            @Override
+            public void onResponse(@NonNull Call<Void> call,
+                                   @NonNull Response<Void> response) {
+                if (response.isSuccessful()) {
+                    Log.i("MailApi", "Mail sent successfully");
+                } else {
+                    Log.e("MailApi", "Failed to send mail: " + response.message());
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<Void> call, @NonNull Throwable t) {
+                Log.e("MailApi", "Network error while sending mail: " + t.getMessage());
+            }
+        });
     }
 }
