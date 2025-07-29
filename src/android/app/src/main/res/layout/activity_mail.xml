@@ -42,8 +42,8 @@
 
                 <ImageButton
                     android:id="@+id/profile_button"
-                    android:layout_width="60dp"
-                    android:layout_height="60dp"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
                     android:background="@drawable/round_button_background"
                     android:src="@drawable/ic_person"
                     android:contentDescription="@string/profile"
