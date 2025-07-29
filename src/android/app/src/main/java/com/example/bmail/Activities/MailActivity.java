@@ -2,6 +2,7 @@ package com.example.bmail.Activities;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.widget.ImageButton;
 import android.widget.Toast;
 
 import androidx.appcompat.app.ActionBarDrawerToggle;
@@ -28,6 +29,7 @@ public class MailActivity extends AppCompatActivity {
     private MailsAdapter adapter;
     private NavigationView navigationView;
     private FloatingActionButton fabCompose;
+    private ImageButton btnProfile;
 
     private String label = "inbox";
 
@@ -47,6 +49,7 @@ public class MailActivity extends AppCompatActivity {
         fabCompose = findViewById(R.id.fab_compose);
         drawer = findViewById(R.id.drawer_layout);
         navigationView = findViewById(R.id.nav_view);
+        btnProfile = findViewById(R.id.profile_button);
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -109,6 +112,10 @@ public class MailActivity extends AppCompatActivity {
             mailViewModel.loadMails(label);
             return true;
 
+        });
+        btnProfile.setOnClickListener(v -> {
+            Intent intent = new Intent(MailActivity.this, ProfileActivity.class);
+            startActivity(intent);
         });
 
     }
