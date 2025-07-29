@@ -30,4 +30,13 @@
     <string name="to">To:</string>
     <string name="subject">Subject</string>
     <string name="compose_email">Compose email</string>
+    <string name="profile_picture">Profile picture</string>
+    <string name="change_photo">Change photo</string>
+    <string name="personal_information">Personal information</string>
+    <string name="account_information">Account information</string>
+    <string name="change_password">Change password</string>
+    <string name="current_password">Current password</string>
+    <string name="new_password">New password</string>
+    <string name="confirm_new_password">Confirm new password</string>
+    <string name="save_changes">Save changes</string>
 </resources>
