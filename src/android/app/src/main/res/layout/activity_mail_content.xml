@@ -23,6 +23,14 @@
             android:orientation="horizontal">
 
             <ImageButton
+                android:id="@+id/btn_delete"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:src="@android:drawable/ic_menu_delete"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/delete" />
+
+            <ImageButton
                 android:id="@+id/btn_add_label"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
@@ -30,13 +38,6 @@
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:contentDescription="@string/add_label" />
 
-            <ImageButton
-                android:id="@+id/btn_delete"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:src="@android:drawable/ic_menu_delete"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="@string/delete" />
 
         </LinearLayout>
 
@@ -70,7 +71,6 @@
                     android:layout_weight="1"
                     android:text="@string/email_subject"
                     android:textSize="24sp"
-                    android:textColor="#202124"
                     android:textStyle="normal"
                     android:fontFamily="sans-serif" />
 
@@ -99,13 +99,13 @@
                     android:padding="16dp"
                     android:gravity="center_vertical">
 
-                    <!-- Sender Avatar -->
                     <ImageView
                         android:id="@+id/iv_sender_avatar"
-                        android:layout_width="40dp"
-                        android:layout_height="40dp"
+                        android:layout_width="50dp"
+                        android:layout_height="50dp"
+                        android:background="@drawable/round_button_background"
+                        android:src="@drawable/ic_person"
                         android:contentDescription="@string/sender_avatar"
-                        android:src="@android:drawable/ic_menu_gallery"
                         android:layout_marginEnd="12dp"
                         android:scaleType="centerCrop" />
 
