@@ -16,31 +16,41 @@ import com.example.bmail.R;
 import java.util.List;
 
 public class MailsAdapter extends RecyclerView.Adapter<MailsAdapter.mailViewHolder> {
+    private final View.OnClickListener clickListener;
+    private List<Mail> mailList;
+    private final LayoutInflater inflater;
+
     public static class mailViewHolder extends RecyclerView.ViewHolder {
         private final TextView sender;
         private final TextView subject;
         private final TextView body;
 
-        public mailViewHolder(@NonNull View itemView) {
+        public mailViewHolder(@NonNull View itemView, View.OnClickListener clickListener) {
             super(itemView);
             sender = itemView.findViewById(R.id.senderTextView);
             subject = itemView.findViewById(R.id.subjectTextView);
             body = itemView.findViewById(R.id.previewTextView);
+
+            itemView.setOnClickListener(v -> {
+                int position = getAdapterPosition();
+                if (position != RecyclerView.NO_POSITION && clickListener != null) {
+                    v.setTag(position);
+                    clickListener.onClick(v);
+                }
+            });
         }
     }
 
-    private List<Mail> mailList;
-    private final LayoutInflater inflater;
-
-    public MailsAdapter(Context context) {
+    public MailsAdapter(Context context, View.OnClickListener clickListener) {
         this.inflater = LayoutInflater.from(context);
+        this.clickListener = clickListener;
     }
 
     @NonNull
     @Override
     public mailViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View itemView = inflater.inflate(R.layout.mail_item, parent, false);
-        return new mailViewHolder(itemView);
+        return new mailViewHolder(itemView, clickListener);
     }
 
     @Override

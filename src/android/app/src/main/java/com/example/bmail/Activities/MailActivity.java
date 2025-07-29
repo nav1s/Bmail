@@ -26,6 +26,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
 
 public class MailActivity extends AppCompatActivity {
+    private RecyclerView recyclerView;
     private DrawerLayout drawer;
     private SwipeRefreshLayout refreshLayout;
     private MailViewModel mailViewModel;
@@ -65,10 +66,13 @@ public class MailActivity extends AppCompatActivity {
         drawer.addDrawerListener(toggle);
         toggle.syncState();
 
-        RecyclerView recyclerView = findViewById(R.id.recycler_view);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        adapter = new MailsAdapter(this);
-        recyclerView.setAdapter(adapter);
+        this.recyclerView = findViewById(R.id.recycler_view);
+        this.recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        adapter = new MailsAdapter(this, v -> {
+            Intent intent = new Intent(MailActivity.this, MailContentActivity.class);
+            startActivity(intent);
+        });
+        this.recyclerView.setAdapter(adapter);
 
     }
 
@@ -156,7 +160,23 @@ public class MailActivity extends AppCompatActivity {
             public void afterTextChanged(Editable s) {
             }
         });
+        recyclerView.setOnClickListener(v -> {
+            int position = recyclerView.getChildAdapterPosition(v);
+            // handle click on mail item
+            if (position != RecyclerView.NO_POSITION) {
+                Log.i("MailActivity", "Clicked on mail at position: " + position);
+                 Intent intent = new Intent(MailActivity.this, MailContentActivity.class);
+//                 intent.putExtra("mail_id", adapter.getMails().get(position).getId());
+                 startActivity(intent);
+            }
+        });
 
+    }
+
+    private void showMailContent() {
+        Intent intent = new Intent(MailActivity.this, MailContentActivity.class);
+//        intent.putExtra("mail_id", mailId);
+        startActivity(intent);
     }
 
 }
