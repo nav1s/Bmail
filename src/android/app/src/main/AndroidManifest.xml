@@ -25,8 +25,10 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".Activities.SignupActivity"/>
-        <activity android:name=".Activities.MailActivity"/>
+        <activity android:name=".Activities.SignupActivity"
+            android:parentActivityName=".Activities.LoginActivity" />
+        <activity android:name=".Activities.MailActivity"
+            android:parentActivityName=".Activities.LoginActivity" />
         <activity android:name=".Activities.ComposeActivity"
             android:parentActivityName=".Activities.MailActivity" />
         <activity android:name=".Activities.ProfileActivity"
