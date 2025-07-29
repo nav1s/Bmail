@@ -171,7 +171,7 @@ public class MailActivity extends AppCompatActivity {
         Log.i("MailActivity", "Clicked mail: " + clickedMail.getTitle());
         Intent intent = new Intent(MailActivity.this, MailContentActivity.class);
         // add the mail to the intent
-        intent.putExtra("mail", (Parcelable) clickedMail);
+//        intent.putExtra("mail", (Parcelable) clickedMail);
         startActivity(intent);
     }
 
