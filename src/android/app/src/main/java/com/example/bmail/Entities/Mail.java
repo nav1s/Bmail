@@ -1,27 +1,40 @@
 package com.example.bmail.Entities;
 
 import androidx.room.Entity;
+import androidx.room.PrimaryKey;
+import com.google.gson.annotations.Expose;
 
 import java.util.List;
 
 @Entity
 public class Mail {
-    private String title;
-    private String body;
-    private String from;
-    private List<String> to;
+    @PrimaryKey
+    @Expose(serialize = false) // Exclude when sending, include when receiving
+    private int id;
 
-    public Mail(String subject, String body, String sender, List<String> to,
-                Boolean draft) {
+    @Expose
+    private String title;
+    @Expose
+    private String body;
+    @Expose
+    private String from;
+    @Expose
+    private List<String> to;
+    @Expose
+    private Boolean draft;
+
+    // Default constructor for Gson
+    public Mail() {
+    }
+
+    // Constructor for sending new mails (without ID)
+    public Mail(String subject, String body, String sender, List<String> to, Boolean draft) {
         this.title = subject;
         this.body = body;
         this.from = sender;
         this.to = to;
         this.draft = draft;
     }
-
-    private Boolean draft;
-
 
     public Boolean getDraft() {
         return draft;
@@ -63,4 +76,11 @@ public class Mail {
         this.title = title;
     }
 
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
 }

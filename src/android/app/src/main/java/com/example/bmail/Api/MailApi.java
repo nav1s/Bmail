@@ -8,6 +8,8 @@ import androidx.annotation.NonNull;
 import androidx.lifecycle.MutableLiveData;
 
 import com.example.bmail.Entities.Mail;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 import java.util.List;
 
@@ -27,9 +29,15 @@ public class MailApi {
     public MailApi(MutableLiveData<List<Mail>> mailListData, Context context) {
         this.mailListData = mailListData;
         this.context = context.getApplicationContext();
+
+        // Configure Gson to respect @Expose annotations
+        Gson gson = new GsonBuilder()
+                .excludeFieldsWithoutExposeAnnotation()
+                .create();
+
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl("http://localhost:8080/api/")
-                .addConverterFactory(GsonConverterFactory.create())
+                .addConverterFactory(GsonConverterFactory.create(gson))
                 .build();
         webServiceApi = retrofit.create(WebServiceApi.class);
     }
@@ -39,6 +47,7 @@ public class MailApi {
                 Context.MODE_PRIVATE);
         return prefs.getString("auth_token", null);
     }
+
     public void reload(String label) {
         String token = getToken();
         Log.i("MailApi", "Token: " + token);
