@@ -2,8 +2,11 @@ package com.example.bmail.Activities;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.util.Log;
+import android.widget.EditText;
 import android.widget.ImageButton;
-import android.widget.Toast;
 
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
@@ -30,6 +33,7 @@ public class MailActivity extends AppCompatActivity {
     private NavigationView navigationView;
     private FloatingActionButton fabCompose;
     private ImageButton btnProfile;
+    private EditText searchBar;
 
     private String label = "inbox";
 
@@ -50,6 +54,7 @@ public class MailActivity extends AppCompatActivity {
         drawer = findViewById(R.id.drawer_layout);
         navigationView = findViewById(R.id.nav_view);
         btnProfile = findViewById(R.id.profile_button);
+        searchBar = findViewById(R.id.search_edit_text);
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -116,6 +121,30 @@ public class MailActivity extends AppCompatActivity {
         btnProfile.setOnClickListener(v -> {
             Intent intent = new Intent(MailActivity.this, ProfileActivity.class);
             startActivity(intent);
+        });
+
+        // Setup search bar text change listener
+        searchBar.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                // Called before the text is changed
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                // Called when the text is being changed
+                String searchText = s.toString().trim();
+                if (searchText.isEmpty()) {
+                    Log.i("MailActivity", "Search text is empty, loading all mails.");
+                } else {
+                    Log.i("MailActivity", "Searching for mails with text: " + searchText);
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                // Called after the text has been changed
+            }
         });
 
     }
