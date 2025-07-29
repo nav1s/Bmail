@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:orientation="vertical"
-    >
+    android:orientation="vertical">
 
     <!-- Toolbar -->
     <androidx.appcompat.widget.Toolbar
@@ -26,17 +25,17 @@
                 android:id="@+id/btn_delete"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
-                android:src="@android:drawable/ic_menu_delete"
                 android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="@string/delete" />
+                android:contentDescription="@string/delete"
+                android:src="@android:drawable/ic_menu_delete" />
 
             <ImageButton
                 android:id="@+id/btn_add_label"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
-                android:src="@android:drawable/ic_menu_add"
                 android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="@string/add_label" />
+                android:contentDescription="@string/add_label"
+                android:src="@android:drawable/ic_menu_add" />
 
 
         </LinearLayout>
@@ -60,9 +59,10 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
+                android:layout_marginBottom="16dp"
+                android:layout_marginStart="4dp"
                 android:gravity="center_vertical"
-                android:layout_marginBottom="16dp">
+                android:orientation="horizontal">
 
                 <TextView
                     android:id="@+id/tv_subject"
@@ -71,117 +71,107 @@
                     android:layout_weight="1"
                     android:text="@string/email_subject"
                     android:textSize="24sp"
-                    android:textStyle="normal"
-                    android:fontFamily="sans-serif" />
+                    android:textStyle="normal" />
 
                 <ImageButton
                     android:id="@+id/btn_star"
                     android:layout_width="48dp"
                     android:layout_height="48dp"
                     android:background="?attr/selectableItemBackgroundBorderless"
-                    android:src="@android:drawable/btn_star_big_off"
-                    android:contentDescription="@string/star_email" />
+                    android:contentDescription="@string/star_email"
+                    android:src="@android:drawable/btn_star_big_off" />
 
             </LinearLayout>
 
-            <!-- Sender Info Card -->
-            <androidx.cardview.widget.CardView
+            <!-- Sender Info layout -->
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                app:cardCornerRadius="8dp"
-                app:cardElevation="2dp">
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                >
+
+                <ImageView
+                    android:id="@+id/iv_sender_avatar"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:layout_marginEnd="12dp"
+                    android:background="@drawable/round_button_background"
+                    android:contentDescription="@string/sender_avatar"
+                    android:src="@drawable/ic_person" />
 
                 <LinearLayout
-                    android:layout_width="match_parent"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:padding="16dp"
-                    android:gravity="center_vertical">
+                    android:layout_weight="1"
+                    android:orientation="vertical">
 
-                    <ImageView
-                        android:id="@+id/iv_sender_avatar"
-                        android:layout_width="50dp"
-                        android:layout_height="50dp"
-                        android:background="@drawable/round_button_background"
-                        android:src="@drawable/ic_person"
-                        android:contentDescription="@string/sender_avatar"
-                        android:layout_marginEnd="12dp"
-                        android:scaleType="centerCrop" />
-
+                    <!-- Sender Name and Email -->
                     <LinearLayout
-                        android:layout_width="0dp"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:orientation="vertical">
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
 
-                        <!-- Sender Name and Email -->
-                        <LinearLayout
-                            android:layout_width="match_parent"
+                        <TextView
+                            android:id="@+id/tv_sender_name"
+                            android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:orientation="horizontal"
-                            android:gravity="center_vertical">
+                            android:text="@string/sender_name"
+                            android:textSize="14sp"
+                            android:textStyle="bold" />
 
-                            <TextView
-                                android:id="@+id/tv_sender_name"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="@string/sender_name"
-                                android:textSize="14sp"
-                                android:textStyle="bold" />
-
-                            <TextView
-                                android:id="@+id/tv_timestamp"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="@string/_5_30_2024"
-                                android:textSize="12sp"
-                                android:layout_marginStart="8dp"
-                                />
-
-                        </LinearLayout>
-
-                        <!-- Recipient info -->
-                        <LinearLayout
-                            android:layout_width="match_parent"
+                        <TextView
+                            android:id="@+id/tv_timestamp"
+                            android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:orientation="horizontal"
-                            android:layout_marginTop="4dp"
-                            android:gravity="center_vertical">
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="@string/to"
-                                android:textSize="12sp" />
-
-                            <TextView
-                                android:id="@+id/tv_recipient"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="@string/me"
-                                android:textSize="12sp"
-                                android:layout_marginStart="4dp" />
-
-                        </LinearLayout>
-
+                            android:layout_marginStart="8dp"
+                            android:text="@string/_5_30_2024"
+                            android:textSize="12sp" />
 
                     </LinearLayout>
 
+                    <!-- Recipient info -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/to"
+                            android:textSize="12sp" />
+
+                        <TextView
+                            android:id="@+id/tv_recipient"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="4dp"
+                            android:text="@string/me"
+                            android:textSize="12sp" />
+
+                    </LinearLayout>
+
+
                 </LinearLayout>
 
-            </androidx.cardview.widget.CardView>
+            </LinearLayout>
+
 
             <!-- Email Content -->
             <TextView
                 android:id="@+id/tv_email_content"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/email_content_goes_here_this_is_where_the_main_body_of_the_email_will_be_displayed_it_can_contain_multiple_paragraphs_and_will_scroll_if_the_content_is_long"
-                android:textSize="16sp"
-                android:lineSpacingExtra="4dp"
                 android:layout_marginBottom="24dp"
-                android:fontFamily="sans-serif" />
+                android:layout_marginTop="24dp"
+                android:layout_marginStart="4dp"
+                android:lineSpacingExtra="4dp"
+                android:text="@string/email_content_goes_here_this_is_where_the_main_body_of_the_email_will_be_displayed_it_can_contain_multiple_paragraphs_and_will_scroll_if_the_content_is_long"
+                android:textSize="16sp" />
 
         </LinearLayout>
 
@@ -192,38 +182,37 @@
         style="?android:attr/buttonBarStyle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:padding="8dp"
         android:elevation="4dp"
-        android:gravity="center">
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:padding="8dp">
 
         <Button
             android:id="@+id/btn_reply"
             style="?android:attr/buttonBarButtonStyle"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_marginHorizontal="4dp"
             android:layout_weight="1"
-            android:text="@string/reply"
-            android:layout_marginHorizontal="4dp" />
+            android:text="@string/reply" />
 
         <Button
             android:id="@+id/btn_reply_all"
             style="?android:attr/buttonBarButtonStyle"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_marginHorizontal="4dp"
             android:layout_weight="1"
-            android:text="@string/reply_all"
-            android:layout_marginHorizontal="4dp" />
+            android:text="@string/reply_all" />
 
         <Button
             android:id="@+id/btn_forward"
             style="?android:attr/buttonBarButtonStyle"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/forward"
             android:layout_marginHorizontal="4dp"
-            />
+            android:layout_weight="1"
+            android:text="@string/forward" />
 
     </LinearLayout>
 
