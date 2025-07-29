@@ -23,11 +23,7 @@ public class Mail {
     @Expose
     private Boolean draft;
 
-    // Default constructor for Gson
-    public Mail() {
-    }
-
-    // Constructor for sending new mails (without ID)
+    // Constructor for sending new mails (without ID as it breaks the server)
     public Mail(String subject, String body, String sender, List<String> to, Boolean draft) {
         this.title = subject;
         this.body = body;
