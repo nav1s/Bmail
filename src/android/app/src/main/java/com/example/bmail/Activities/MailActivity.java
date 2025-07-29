@@ -23,19 +23,33 @@ import com.google.android.material.navigation.NavigationView;
 
 public class MailActivity extends AppCompatActivity {
     private DrawerLayout drawer;
+    private SwipeRefreshLayout refreshLayout;
+    private MailViewModel mailViewModel;
+    private MailsAdapter adapter;
+    private NavigationView navigationView;
+    private FloatingActionButton fabCompose;
 
-    MailViewModel mailViewModel;
     private String label = "inbox";
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_mail);
+
+        initViews();
+        setupListeners();
+
+    }
+
+    private void initViews() {
+        refreshLayout = findViewById(R.id.swipe_refresh_layout);
+        fabCompose = findViewById(R.id.fab_compose);
+        drawer = findViewById(R.id.drawer_layout);
+        navigationView = findViewById(R.id.nav_view);
+
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
-        drawer = findViewById(R.id.drawer_layout);
-        NavigationView navigationView = findViewById(R.id.nav_view);
 
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar,
@@ -43,24 +57,24 @@ public class MailActivity extends AppCompatActivity {
         drawer.addDrawerListener(toggle);
         toggle.syncState();
 
-        // Setup FAB for compose
-        FloatingActionButton fabCompose = findViewById(R.id.fab_compose);
-        fabCompose.setOnClickListener(v -> {
-            Intent intent = new Intent(MailActivity.this, ComposeActivity.class);
-            startActivity(intent);
-        });
+        RecyclerView recyclerView = findViewById(R.id.recycler_view);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        adapter = new MailsAdapter(this);
+        recyclerView.setAdapter(adapter);
 
+    }
+
+    private void setupListeners(){
         MailRepository mailRepository = new MailRepository(this);
         MailViewModelFactory factory = new MailViewModelFactory(mailRepository);
         mailViewModel = new ViewModelProvider(this, factory)
                 .get(MailViewModel.class);
 
-        RecyclerView recyclerView = findViewById(R.id.recycler_view);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        final MailsAdapter adapter = new MailsAdapter(this);
-        recyclerView.setAdapter(adapter);
+        fabCompose.setOnClickListener(v -> {
+            Intent intent = new Intent(MailActivity.this, ComposeActivity.class);
+            startActivity(intent);
+        });
 
-        SwipeRefreshLayout refreshLayout = findViewById(R.id.swipe_refresh_layout);
         refreshLayout.setOnRefreshListener(() -> {
             mailViewModel.loadMails(label); // reload mails when user swipes to refresh
             refreshLayout.setRefreshing(true); // show the refreshing animation
@@ -96,6 +110,7 @@ public class MailActivity extends AppCompatActivity {
             return true;
 
         });
+
     }
 
 }
