@@ -27,7 +27,6 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
 
 public class MailActivity extends AppCompatActivity {
-    private RecyclerView recyclerView;
     private DrawerLayout drawer;
     private SwipeRefreshLayout refreshLayout;
     private MailViewModel mailViewModel;
@@ -67,10 +66,10 @@ public class MailActivity extends AppCompatActivity {
         drawer.addDrawerListener(toggle);
         toggle.syncState();
 
-        this.recyclerView = findViewById(R.id.recycler_view);
-        this.recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        RecyclerView recyclerView = findViewById(R.id.recycler_view);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
         adapter = new MailsAdapter(this, this::showMailContent);
-        this.recyclerView.setAdapter(adapter);
+        recyclerView.setAdapter(adapter);
 
     }
 
