@@ -13,6 +13,7 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -32,6 +33,14 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
 
 public class MailActivity extends AppCompatActivity {
+    // Constants for mail labels
+    private static final String LABEL_INBOX = "inbox";
+    private static final String LABEL_DRAFTS = "drafts";
+    private static final String LABEL_TRASH = "trash";
+    private static final String LABEL_SPAM = "spam";
+    private static final String LABEL_SENT = "sent";
+    private static final String LABEL_STARRED = "starred";
+
     private DrawerLayout drawer;
     private SwipeRefreshLayout refreshLayout;
     private MailViewModel mailViewModel;
@@ -42,8 +51,7 @@ public class MailActivity extends AppCompatActivity {
     private EditText searchBar;
     private TextView logout;
 
-    private String label = "inbox";
-
+    private String label = LABEL_INBOX;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,9 +60,12 @@ public class MailActivity extends AppCompatActivity {
 
         initViews();
         setupListeners();
-
     }
 
+    /**
+     * @brief Initialize the views for the MailActivity.
+     * Finds views by their IDs and sets up the toolbar and RecyclerView.
+     */
     private void initViews() {
         refreshLayout = findViewById(R.id.swipe_refresh_layout);
         fabCompose = findViewById(R.id.fab_compose);
@@ -64,6 +75,15 @@ public class MailActivity extends AppCompatActivity {
         searchBar = findViewById(R.id.search_edit_text);
         logout = findViewById(R.id.nav_logout);
 
+        setupToolbar();
+        setupRecyclerView();
+    }
+
+    /**
+     * @brief Setup the toolbar for the MailActivity.
+     * Initializes the toolbar and sets up the ActionBarDrawerToggle for navigation drawer.
+     */
+    private void setupToolbar() {
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
@@ -72,125 +92,174 @@ public class MailActivity extends AppCompatActivity {
                 R.string.open_drawer, R.string.close_drawer);
         drawer.addDrawerListener(toggle);
         toggle.syncState();
+    }
 
+    /**
+     * @brief Setup the RecyclerView for displaying mails.
+     * Initializes the RecyclerView with a LinearLayoutManager and sets the adapter.
+     */
+    private void setupRecyclerView() {
         RecyclerView recyclerView = findViewById(R.id.recycler_view);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         adapter = new MailsAdapter(this, this::showMailContent);
         recyclerView.setAdapter(adapter);
-
     }
 
-    private void setupListeners(){
+    /**
+     * @brief Setup listeners for the MailActivity.
+     * Initializes ViewModel, sets up click listeners, navigation listener,
+     * search listener, and custom menu item.
+     */
+    private void setupListeners() {
+        setupViewModel();
+        setupClickListeners();
+        setupNavigationListener();
+        setupSearchListener();
+        setupCustomMenuItem();
+    }
+
+    /**
+     * @brief Setup the ViewModel for the MailActivity.
+     * Initializes the MailViewModel and observes the mails LiveData.
+     * Updates the adapter when new mails are received.
+     */
+    private void setupViewModel() {
         MailRepository mailRepository = new MailRepository(this);
         MailViewModelFactory factory = new MailViewModelFactory(mailRepository);
-        mailViewModel = new ViewModelProvider(this, factory)
-                .get(MailViewModel.class);
-
-        fabCompose.setOnClickListener(v -> {
-            Intent intent = new Intent(MailActivity.this, ComposeActivity.class);
-            startActivity(intent);
-        });
-
-        refreshLayout.setOnRefreshListener(() -> {
-            mailViewModel.loadMails(label); // reload mails when user swipes to refresh
-            refreshLayout.setRefreshing(true); // show the refreshing animation
-        });
+        mailViewModel = new ViewModelProvider(this, factory).get(MailViewModel.class);
 
         mailViewModel.getMails().observe(this, mails -> {
             if (mails != null) {
                 adapter.setMails(mails);
-                refreshLayout.setRefreshing(false); // stop the refreshing animation
+                refreshLayout.setRefreshing(false);
             }
         });
+    }
 
-        // Handle navigation item clicks
-        navigationView.setNavigationItemSelectedListener(item -> {
-            drawer.closeDrawers(); // close drawer on click
-            if (item.getItemId() == R.id.nav_inbox) {
-                label = "inbox";
-            } else if (item.getItemId() == R.id.nav_drafts) {
-                label = "drafts";
-            } else if (item.getItemId() == R.id.nav_trash) {
-                label = "trash";
-            } else if (item.getItemId() == R.id.nav_spam) {
-                label = "spam";
-            } else if (item.getItemId() == R.id.nav_sent) {
-                label = "sent";
-            } else if (item.getItemId() == R.id.nav_starred) {
-                label = "starred";
-            } else {
-                return false;
-            }
-            mailViewModel.loadMails(label);
-            return true;
-
-        });
-        btnProfile.setOnClickListener(v -> {
-            Intent intent = new Intent(MailActivity.this, ProfileActivity.class);
+    /**
+     * @brief Setup click listeners for various UI elements.
+     * Handles compose button, refresh layout, profile button, and logout button.
+     */
+    private void setupClickListeners() {
+        fabCompose.setOnClickListener(v -> {
+            Intent intent = new Intent(this, ComposeActivity.class);
             startActivity(intent);
         });
 
-        // Setup search bar text change listener
+        refreshLayout.setOnRefreshListener(() -> {
+            mailViewModel.loadMails(label);
+            refreshLayout.setRefreshing(true);
+        });
+
+        btnProfile.setOnClickListener(v -> {
+            Intent intent = new Intent(this, ProfileActivity.class);
+            startActivity(intent);
+        });
+
+        logout.setOnClickListener(v -> showLogoutDialog());
+    }
+
+    /**
+     * @brief Setup a listener for the navigation drawer.
+     * Changes the label based on the selected item and loads mails accordingly.
+     */
+    private void setupNavigationListener() {
+        navigationView.setNavigationItemSelectedListener(item -> {
+            drawer.closeDrawers();
+
+            int itemId = item.getItemId();
+            if (itemId == R.id.nav_inbox) {
+                label = LABEL_INBOX;
+            } else if (itemId == R.id.nav_drafts) {
+                label = LABEL_DRAFTS;
+            } else if (itemId == R.id.nav_trash) {
+                label = LABEL_TRASH;
+            } else if (itemId == R.id.nav_spam) {
+                label = LABEL_SPAM;
+            } else if (itemId == R.id.nav_sent) {
+                label = LABEL_SENT;
+            } else if (itemId == R.id.nav_starred) {
+                label = LABEL_STARRED;
+            } else {
+                return false;
+            }
+
+            mailViewModel.loadMails(label);
+            return true;
+        });
+    }
+
+    /**
+     * @brief Setup a listener for the search bar.
+     * Logs the search text when it changes.
+     */
+    private void setupSearchListener() {
         searchBar.addTextChangedListener(new TextWatcher() {
             @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-            }
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 String searchText = s.toString().trim();
-                if (searchText.isEmpty()) {
-                    Log.i("MailActivity", "Search text is empty, loading all mails.");
-                } else {
-                    Log.i("MailActivity", "Searching for mails with text: " + searchText);
-                }
+                String logMessage = searchText.isEmpty() ?
+                    "Search text is empty, loading all mails." :
+                    "Searching for mails with text: " + searchText;
+                Log.i("MailActivity", logMessage);
             }
 
             @Override
-            public void afterTextChanged(Editable s) {
-            }
+            public void afterTextChanged(Editable s) {}
         });
+    }
 
+    private void setupCustomMenuItem() {
         Menu menu = navigationView.getMenu();
         menu.add(Menu.NONE, Menu.NONE, Menu.NONE, "Custom Item")
                 .setOnMenuItemClickListener(item -> {
                     Log.i("MailActivity", "Custom item clicked");
                     return true;
                 });
-
-        logout = findViewById(R.id.nav_logout);
-        logout.setOnClickListener(v -> {
-            // Handle logout
-            new androidx.appcompat.app.AlertDialog.Builder(this)
-                    .setTitle("Logout")
-                    .setMessage("Are you sure you want to logout?")
-                    .setPositiveButton("Yes", (dialog, which) -> {
-                        Context context = MailActivity.this;
-                        SharedPreferences preferences = context.getSharedPreferences("user_prefs", Context.MODE_PRIVATE);
-                        SharedPreferences.Editor editor = preferences.edit();
-                        editor.clear(); // Clear all preferences
-                        editor.apply(); // Apply changes
-
-                        // Navigate back to LoginActivity and clear the activity stack
-                        Intent intent = new Intent(MailActivity.this, LoginActivity.class);
-                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                        startActivity(intent);
-                        finish();
-                    })
-                    .setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss())
-                    .show();
-        });
-
     }
 
-    private void showMailContent(View view) {
+    /**
+     * @brief Show a dialog to confirm logout.
+     * If confirmed, clears user preferences and redirects to the login activity.
+     */
+    private void showLogoutDialog() {
+        new androidx.appcompat.app.AlertDialog.Builder(this)
+                .setTitle("Logout")
+                .setMessage("Are you sure you want to logout?")
+                .setPositiveButton("Yes", (dialog, which) -> performLogout())
+                .setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss())
+                .show();
+    }
+
+    /**
+     * @brief Perform the logout operation.
+     * Clears user preferences and redirects to the login activity.
+     */
+    private void performLogout() {
+        SharedPreferences preferences = getSharedPreferences("user_prefs", Context.MODE_PRIVATE);
+        preferences.edit().clear().apply();
+
+        Intent intent = new Intent(this, LoginActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+        finish();
+    }
+
+    /**
+     * @brief Show the content of the clicked mail.
+     * @param view The view that was clicked, containing the mail data.
+     */
+    private void showMailContent(@NonNull View view) {
         Mail clickedMail = (Mail) view.getTag();
         if (clickedMail == null) {
             Log.w("MailActivity", "Clicked mail is null, cannot show content.");
             return;
         }
         Log.i("MailActivity", "Clicked mail: " + clickedMail.getTitle());
-        Intent intent = new Intent(MailActivity.this, MailContentActivity.class);
+        Intent intent = new Intent(this, MailContentActivity.class);
         // add the mail to the intent
 //        intent.putExtra("mail", (Parcelable) clickedMail);
         startActivity(intent);
