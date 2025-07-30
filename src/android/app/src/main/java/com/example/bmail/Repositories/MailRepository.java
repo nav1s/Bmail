@@ -5,14 +5,20 @@ import android.util.Log;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
+import androidx.room.Room;
 
 import com.example.bmail.Api.MailApi;
 import com.example.bmail.Entities.Mail;
+import com.example.bmail.db.AppDatabase;
 
 import java.util.LinkedList;
 import java.util.List;
 
 public class MailRepository {
+    private AppDatabase appdb;
+    private final MailListData mailListData;
+    private final MailApi mailApi;
+
     static class MailListData extends MutableLiveData<List<Mail>> {
         public MailListData() {
             super();
@@ -30,13 +36,29 @@ public class MailRepository {
                     "Newsletter", List.of("Alice", "Bob"), false));
             setValue(mails);
         }
+        @Override
+        protected void onActive() {
+            super.onActive();
+            Log.d("MailListData", "MailListData is now active");
+            new Thread(() -> {
+                // Simulate loading data from a database or API
+                try {
+                    Thread.sleep(2000); // Simulate delay
+                } catch (InterruptedException e) {
+                    Log.e("MailListData", "Error simulating data load", e);
+                }
+                // Notify observers that data is ready
+                postValue(getValue());
+            }).start();
+        }
     }
-
-    private final MailListData mailListData = new MailListData();
-    private final MailApi mailApi;
 
 
     public MailRepository(Context context) {
+        appdb = Room.databaseBuilder(context.getApplicationContext(),
+                AppDatabase.class, "mail_database")
+                .build();
+         mailListData = new MailListData();
          mailApi = new MailApi(mailListData, context);
     }
 
