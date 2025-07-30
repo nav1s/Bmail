@@ -8,13 +8,6 @@
             android:checked="true" />
 
         <item
-            android:id="@+id/nav_all_labels"
-            android:title="@string/all_labels"
-            android:enabled="false"
-            />
-
-
-        <item
             android:id="@+id/nav_starred"
             android:title="@string/starred"
             android:icon="@android:drawable/btn_star_big_on" />
