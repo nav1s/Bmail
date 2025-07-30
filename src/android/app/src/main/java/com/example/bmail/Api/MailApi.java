@@ -26,7 +26,7 @@ public class MailApi {
     WebServiceApi webServiceApi;
     private final Context context;
 
-    public MailApi(MutableLiveData<List<Mail>> mailListData, Context context) {
+    public MailApi(MutableLiveData<List<Mail>> mailListData, @NonNull Context context) {
         this.mailListData = mailListData;
         this.context = context.getApplicationContext();
 

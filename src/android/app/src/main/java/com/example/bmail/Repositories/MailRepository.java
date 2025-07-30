@@ -1,6 +1,7 @@
 package com.example.bmail.Repositories;
 
 import android.content.Context;
+import android.util.Log;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
@@ -10,7 +11,6 @@ import com.example.bmail.Entities.Mail;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Objects;
 
 public class MailRepository {
     static class MailListData extends MutableLiveData<List<Mail>> {
@@ -56,6 +56,10 @@ public class MailRepository {
         List<Mail> mails = mailListData.getValue();
         if (mails != null) {
             for (Mail mail : mails) {
+                // log the mail ID for debugging
+               Log.d("MailRepository", "Checking mail ID: " + mail.getId());
+               // log the mail object for debugging
+                Log.d("MailRepository", "Mail object: " + mail);
                 if (mail.getId() == id) {
                     return mail;
                 }

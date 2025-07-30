@@ -65,11 +65,11 @@
                 android:orientation="horizontal">
 
                 <TextView
-                    android:id="@+id/tv_subject"
+                    android:id="@+id/tv_mail_title"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="@string/email_subject"
+                    android:text="@string/mail_title"
                     android:textSize="24sp"
                     android:textStyle="normal" />
 
@@ -146,7 +146,7 @@
                             android:textSize="12sp" />
 
                         <TextView
-                            android:id="@+id/tv_recipient"
+                            android:id="@+id/tv_recipients"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginStart="4dp"
@@ -161,9 +161,9 @@
             </LinearLayout>
 
 
-            <!-- Email Content -->
+            <!-- Email Body -->
             <TextView
-                android:id="@+id/tv_email_content"
+                android:id="@+id/tv_mail_body"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="24dp"

@@ -1,5 +1,6 @@
 package com.example.bmail.Entities;
 
+import androidx.annotation.NonNull;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 import com.google.gson.annotations.Expose;
@@ -8,6 +9,7 @@ import java.util.List;
 
 @Entity
 public class Mail {
+
     @PrimaryKey
     @Expose(serialize = false) // Exclude when sending, include when receiving
     private int id;
@@ -78,5 +80,18 @@ public class Mail {
 
     public void setId(int id) {
         this.id = id;
+    }
+
+    @NonNull
+    @Override
+    public String toString() {
+        return "Mail{" +
+                "id=" + id +
+                ", title='" + title + '\'' +
+                ", body='" + body + '\'' +
+                ", from='" + from + '\'' +
+                ", to=" + to +
+                ", draft=" + draft +
+                '}';
     }
 }
