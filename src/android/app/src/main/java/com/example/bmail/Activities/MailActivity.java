@@ -7,9 +7,12 @@ import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.view.Menu;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
@@ -38,6 +41,7 @@ public class MailActivity extends AppCompatActivity {
     private FloatingActionButton fabCompose;
     private ImageButton btnProfile;
     private EditText searchBar;
+    private TextView logout;
 
     private String label = "inbox";
 
@@ -59,6 +63,7 @@ public class MailActivity extends AppCompatActivity {
         navigationView = findViewById(R.id.nav_view);
         btnProfile = findViewById(R.id.profile_button);
         searchBar = findViewById(R.id.search_edit_text);
+        TextView logout = findViewById(R.id.nav_logout);
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -114,29 +119,7 @@ public class MailActivity extends AppCompatActivity {
                 label = "sent";
             } else if (item.getItemId() == R.id.nav_starred) {
                 label = "starred";
-            } else if (item.getItemId() == R.id.nav_logout) {
-                // Handle logout
-                new androidx.appcompat.app.AlertDialog.Builder(this)
-                        .setTitle("Logout")
-                        .setMessage("Are you sure you want to logout?")
-                        .setPositiveButton("Yes", (dialog, which) -> {
-                            Context context = MailActivity.this;
-                            SharedPreferences preferences = context.getSharedPreferences("user_prefs", Context.MODE_PRIVATE);
-                            SharedPreferences.Editor editor = preferences.edit();
-                            editor.clear(); // Clear all preferences
-                            editor.apply(); // Apply changes
-
-                            // Navigate back to LoginActivity and clear the activity stack
-                            Intent intent = new Intent(MailActivity.this, LoginActivity.class);
-                            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                            startActivity(intent);
-                            finish();
-                        })
-                        .setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss())
-                        .show();
-                return true;
-            }
-            else {
+            } else {
                 return false;
             }
             mailViewModel.loadMails(label);
@@ -167,6 +150,36 @@ public class MailActivity extends AppCompatActivity {
             @Override
             public void afterTextChanged(Editable s) {
             }
+        });
+
+        Menu menu = navigationView.getMenu();
+        menu.add(Menu.NONE, Menu.NONE, Menu.NONE, "Custom Item")
+                .setOnMenuItemClickListener(item -> {
+                    Log.i("MailActivity", "Custom item clicked");
+                    return true;
+                });
+
+        TextView logout = findViewById(R.id.nav_logout);
+        logout.setOnClickListener(v -> {
+            // Handle logout
+            new androidx.appcompat.app.AlertDialog.Builder(this)
+                    .setTitle("Logout")
+                    .setMessage("Are you sure you want to logout?")
+                    .setPositiveButton("Yes", (dialog, which) -> {
+                        Context context = MailActivity.this;
+                        SharedPreferences preferences = context.getSharedPreferences("user_prefs", Context.MODE_PRIVATE);
+                        SharedPreferences.Editor editor = preferences.edit();
+                        editor.clear(); // Clear all preferences
+                        editor.apply(); // Apply changes
+
+                        // Navigate back to LoginActivity and clear the activity stack
+                        Intent intent = new Intent(MailActivity.this, LoginActivity.class);
+                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                        startActivity(intent);
+                        finish();
+                    })
+                    .setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss())
+                    .show();
         });
 
     }

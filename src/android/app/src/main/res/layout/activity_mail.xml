@@ -110,6 +110,8 @@
                 android:padding="12dp"
                 android:drawablePadding="12dp"
                 app:drawableStartCompat="@android:drawable/ic_lock_power_off"
+                android:focusable="true"
+                android:clickable="true"
                 />
 
         </LinearLayout>

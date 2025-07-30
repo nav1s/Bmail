@@ -40,11 +40,4 @@
             android:icon="@android:drawable/ic_menu_delete" />
     </group>
 
-    <group android:id="@+id/group_actions">
-        <item
-            android:id="@+id/nav_logout"
-            android:title="@string/logout"
-            android:icon="@android:drawable/ic_lock_power_off" />
-    </group>
-
 </menu>
