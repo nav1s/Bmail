@@ -12,7 +12,6 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
@@ -63,7 +62,7 @@ public class MailActivity extends AppCompatActivity {
         navigationView = findViewById(R.id.nav_view);
         btnProfile = findViewById(R.id.profile_button);
         searchBar = findViewById(R.id.search_edit_text);
-        TextView logout = findViewById(R.id.nav_logout);
+        logout = findViewById(R.id.nav_logout);
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -159,7 +158,7 @@ public class MailActivity extends AppCompatActivity {
                     return true;
                 });
 
-        TextView logout = findViewById(R.id.nav_logout);
+        logout = findViewById(R.id.nav_logout);
         logout.setOnClickListener(v -> {
             // Handle logout
             new androidx.appcompat.app.AlertDialog.Builder(this)
