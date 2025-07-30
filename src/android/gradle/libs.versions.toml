@@ -10,6 +10,7 @@ retrofitConverterGson = "3.0.0"
 swipeRefreshLayout = "1.1.0"
 roomCommonJvm = "2.7.2"
 navigationRuntimeAndroid = "2.9.2"
+roomRuntimeAndroid = "2.7.2"
 
 [libraries]
 junit = { group = "junit", name = "junit", version.ref = "junit" }
@@ -22,6 +23,7 @@ retrofitC = { group = "com.squareup.retrofit2", name = "converter-gson", version
 swipeRefreshLayout = { group = "androidx.swiperefreshlayout", name = "swiperefreshlayout", version.ref = "swipeRefreshLayout" }
 room-common-jvm = { group = "androidx.room", name = "room-common-jvm", version.ref = "roomCommonJvm" }
 navigation-runtime-android = { group = "androidx.navigation", name = "navigation-runtime-android", version.ref = "navigationRuntimeAndroid" }
+room-runtime-android = { group = "androidx.room", name = "room-runtime-android", version.ref = "roomRuntimeAndroid" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

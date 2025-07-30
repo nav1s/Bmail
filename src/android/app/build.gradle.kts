@@ -39,6 +39,7 @@ dependencies {
     implementation(libs.swipeRefreshLayout)
     implementation(libs.room.common.jvm)
     implementation(libs.navigation.runtime.android)
+    implementation(libs.room.runtime.android)
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
