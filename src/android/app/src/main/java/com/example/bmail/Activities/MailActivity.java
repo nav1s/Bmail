@@ -115,7 +115,7 @@ public class MailActivity extends AppCompatActivity {
         setupClickListeners();
         setupNavigationListener();
         setupSearchListener();
-        setupCustomMenuItem();
+        setupCustomLabels();
     }
 
     /**
@@ -212,11 +212,18 @@ public class MailActivity extends AppCompatActivity {
         });
     }
 
-    private void setupCustomMenuItem() {
+    private void setupCustomLabels() {
         Menu menu = navigationView.getMenu();
-        menu.add(Menu.NONE, Menu.NONE, Menu.NONE, "Custom Item")
+        menu.add(R.id.group_main, Menu.NONE, Menu.NONE, "Custom Item")
+                .setIcon(R.drawable.ic_folder)
                 .setOnMenuItemClickListener(item -> {
                     Log.i("MailActivity", "Custom item clicked");
+                    return true;
+                });
+        menu.add(R.id.group_main, Menu.NONE, Menu.NONE, "Another Item")
+                .setIcon(R.drawable.ic_folder)
+                .setOnMenuItemClickListener(item -> {
+                    Log.i("MailActivity", "Another item clicked");
                     return true;
                 });
     }
