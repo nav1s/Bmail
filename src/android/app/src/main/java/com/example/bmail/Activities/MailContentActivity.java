@@ -16,6 +16,7 @@ public class MailContentActivity extends AppCompatActivity {
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        // todo add logic for fetching and displaying mail content by id
 
     }
 
