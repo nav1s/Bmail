@@ -1,6 +1,7 @@
 package com.example.bmail.Entities;
 
 import androidx.annotation.NonNull;
+import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 import com.google.gson.annotations.Expose;
@@ -25,6 +26,7 @@ public class Mail {
     @Expose
     private Boolean draft;
 
+    public Mail(){}
     // Constructor for sending new mails (without ID as it breaks the server)
     public Mail(String subject, String body, String sender, List<String> to, Boolean draft) {
         this.title = subject;

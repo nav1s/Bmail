@@ -25,17 +25,6 @@ public class MailRepository {
         public MailListData() {
             super();
             List<Mail> mails = new LinkedList<>();
-            mails.add(new Mail("Welcome to BMail", "This is your first email!",
-                    "System", List.of("Alice", "Bob"), false));
-            mails.add(new Mail("Meeting Reminder",
-                    "Don't forget our meeting tomorrow.",
-                    "Alice", List.of("Bob"), false));
-            mails.add(new Mail("Project Update",
-                    "The project is on track for completion next week.",
-                    "Bob", List.of("Alice"), false));
-            mails.add(new Mail("Newsletter",
-                    "Check out our latest updates and features.",
-                    "Newsletter", List.of("Alice", "Bob"), false));
             setValue(mails);
         }
         @Override
