@@ -3,6 +3,7 @@ package com.example.bmail.Api;
 import com.example.bmail.Entities.LoginRequest;
 import com.example.bmail.Entities.LoginResponse;
 import com.example.bmail.Entities.Mail;
+import com.example.bmail.Repositories.Label;
 
 import java.util.List;
 
@@ -18,9 +19,12 @@ public interface WebServiceApi {
     Call<LoginResponse> login(@Body LoginRequest request);
 
     @GET("mails/byLabel/{label}")
-    Call<List<Mail>> getMails(@Header("Authorization") String token,
-    @Path ("label") String label);
+
+    Call<List<Mail>> getMails(@Header("Authorization") String token, @Path ("label") String label);
 
     @POST("mails")
     Call<Void> sendMail(@Header("Authorization") String token, @Body Mail mail);
+
+    @GET("labels")
+    Call <List<Label>> getLabels(@Header("Authorization") String token);
 }

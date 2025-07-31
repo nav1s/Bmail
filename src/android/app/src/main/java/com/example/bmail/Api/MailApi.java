@@ -8,6 +8,7 @@ import androidx.annotation.NonNull;
 import androidx.lifecycle.MutableLiveData;
 
 import com.example.bmail.Entities.Mail;
+import com.example.bmail.db.MailDao;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -21,16 +22,16 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class MailApi {
 
-    // todo add dao
+    private MailDao mailDao;
     private final MutableLiveData<List<Mail>> mailListData;
     WebServiceApi webServiceApi;
     private final Context context;
 
-    public MailApi(MutableLiveData<List<Mail>> mailListData, @NonNull Context context) {
+    public MailApi(MailDao mailDao, MutableLiveData<List<Mail>> mailListData, @NonNull Context context) {
+        this.mailDao = mailDao;
         this.mailListData = mailListData;
         this.context = context.getApplicationContext();
 
-        // Configure Gson to respect @Expose annotations
         Gson gson = new GsonBuilder()
                 .excludeFieldsWithoutExposeAnnotation()
                 .create();
@@ -63,7 +64,12 @@ public class MailApi {
                             if (response.isSuccessful() && response.body() != null) {
                                 Log.i("MailApi", "Fetched mails successfully");
                                 List<Mail> mails = response.body();
-                                mailListData.postValue(mails);
+                                // Clear the existing mails in the database
+                                mailDao.clear();
+                                mailDao.insertList(mails);
+
+                                List<Mail> dbMails = mailDao.getAllMails();
+                                mailListData.postValue(dbMails);
                                 // log the number of mails fetched
                                 Log.i("MailApi", "Number of mails fetched: " + mails.size());
                             } else {
@@ -89,6 +95,7 @@ public class MailApi {
         Log.i("MailApi", "Sending mail with token: " + token);
 
         Call<Void> call = webServiceApi.sendMail("Bearer " + token, mail);
+        // todo use dao here
         call.enqueue(new Callback<>() {
             @Override
             public void onResponse(@NonNull Call<Void> call,

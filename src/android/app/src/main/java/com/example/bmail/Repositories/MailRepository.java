@@ -32,7 +32,7 @@ public class MailRepository {
             super.onActive();
             Log.d("MailListData", "MailListData is now active");
             new Thread(() ->
-                    mailListData.postValue(mailDao.index())
+                    mailListData.postValue(mailDao.getAllMails())
             ).start();
         }
     }
@@ -44,7 +44,7 @@ public class MailRepository {
                 .build();
         mailDao = db.mailDao();
         mailListData = new MailListData();
-         mailApi = new MailApi(mailListData, context);
+        mailApi = new MailApi(mailDao, mailListData, context);
     }
 
     public LiveData<List<Mail>> getMails() {
@@ -57,6 +57,9 @@ public class MailRepository {
     }
 
     public void deleteMail(Mail mail) {
+        Log.d("MailRepository", "Deleting mail: " + mail);
+
+        mailDao.delete(mail);
     }
 
     public Mail getMailById(int id) {

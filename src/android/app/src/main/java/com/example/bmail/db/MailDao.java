@@ -13,7 +13,7 @@ import java.util.List;
 @Dao
 public interface MailDao {
     @Query("SELECT * from mail")
-    List<Mail> index();
+    List<Mail> getAllMails();
     @Query("SELECT * from mail WHERE id = :id")
     Mail getById(int id);
 
@@ -23,6 +23,12 @@ public interface MailDao {
     void update(Mail mail);
     @Delete
     void delete(Mail mail);
+    // delete all mails
+    @Query("DELETE FROM mail")
+    void clear();
+
+    @Insert
+    void insertList(List<Mail> mails);
 
 
 }
