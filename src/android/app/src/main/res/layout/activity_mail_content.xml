@@ -30,12 +30,12 @@
                 android:src="@android:drawable/ic_menu_delete" />
 
             <ImageButton
-                android:id="@+id/btn_add_label"
+                android:id="@+id/btn_change_label"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="@string/add_label"
-                android:src="@android:drawable/ic_menu_add" />
+                android:contentDescription="@string/change_label"
+                android:src="@drawable/outline_label_24"/>
 
 
         </LinearLayout>

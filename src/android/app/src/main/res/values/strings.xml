@@ -49,6 +49,6 @@
     <string name="reply">Reply</string>
     <string name="reply_all">Reply All</string>
     <string name="forward">Forward</string>
-    <string name="add_label">Add label</string>
     <string name="mail_title">Mail Title</string>
+    <string name="change_label">Change Label</string>
 </resources>
