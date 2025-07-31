@@ -23,6 +23,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
+import com.example.bmail.BmailApplication;
 import com.example.bmail.Entities.Mail;
 import com.example.bmail.Repositories.MailRepository;
 import com.example.bmail.ViewModels.MailViewModel;
@@ -130,7 +131,7 @@ public class MailActivity extends AppCompatActivity {
      * Updates the adapter when new mails are received.
      */
     private void setupViewModel() {
-        MailRepository mailRepository = new MailRepository(this);
+        MailRepository mailRepository = BmailApplication.getInstance().getMailRepository();
         MailViewModelFactory factory = new MailViewModelFactory(mailRepository);
         mailViewModel = new ViewModelProvider(this, factory).get(MailViewModel.class);
 

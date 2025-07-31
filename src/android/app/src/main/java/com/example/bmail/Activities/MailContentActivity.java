@@ -7,6 +7,7 @@ import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
+import com.example.bmail.BmailApplication;
 import com.example.bmail.Entities.Mail;
 import com.example.bmail.R;
 import com.example.bmail.Repositories.MailRepository;
@@ -28,9 +29,8 @@ public class MailContentActivity extends AppCompatActivity {
             finish();
             return;
         }
-        MailRepository mailRepository = new MailRepository(this);
-        // todo add dao implementation so this is not needed
-        mailRepository.reloadMails("inbox"); // Load inbox mails to ensure data is fresh
+        MailRepository mailRepository = BmailApplication.getInstance().getMailRepository();
+
         Mail mail = mailRepository.getMailById(mailId);
         if (mail == null) {
             Log.e("MailContentActivity", "Mail not found for ID: " + mailId);

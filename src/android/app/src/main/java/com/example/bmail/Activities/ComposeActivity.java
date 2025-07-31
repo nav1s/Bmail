@@ -9,6 +9,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.example.bmail.BmailApplication;
 import com.example.bmail.Entities.Mail;
 import com.example.bmail.R;
 import com.example.bmail.Repositories.MailRepository;
@@ -46,7 +47,8 @@ public class ComposeActivity extends AppCompatActivity {
     }
 
     private void setupViewModel() {
-        MailRepository mailRepository = new MailRepository(this);
+        MailRepository mailRepository = BmailApplication.getInstance().getMailRepository();
+
         ComposeViewModelFactory factory = new ComposeViewModelFactory(mailRepository);
         composeViewModel = new ViewModelProvider(this, factory)
                 .get(ComposeViewModel.class);
