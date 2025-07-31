@@ -62,6 +62,12 @@ public class MailActivity extends AppCompatActivity {
         setupListeners();
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        mailViewModel.loadMails(label);
+    }
+
     /**
      * @brief Initialize the views for the MailActivity.
      * Finds views by their IDs and sets up the toolbar and RecyclerView.
