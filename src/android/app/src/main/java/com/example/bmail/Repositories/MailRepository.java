@@ -3,6 +3,7 @@ package com.example.bmail.Repositories;
 import android.content.Context;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.room.Room;
@@ -10,16 +11,17 @@ import androidx.room.Room;
 import com.example.bmail.Api.MailApi;
 import com.example.bmail.Entities.Mail;
 import com.example.bmail.db.AppDatabase;
+import com.example.bmail.db.MailDao;
 
 import java.util.LinkedList;
 import java.util.List;
 
 public class MailRepository {
-    private AppDatabase appdb;
+    private final MailDao mailDao;
     private final MailListData mailListData;
     private final MailApi mailApi;
 
-    static class MailListData extends MutableLiveData<List<Mail>> {
+    class MailListData extends MutableLiveData<List<Mail>> {
         public MailListData() {
             super();
             List<Mail> mails = new LinkedList<>();
@@ -40,25 +42,19 @@ public class MailRepository {
         protected void onActive() {
             super.onActive();
             Log.d("MailListData", "MailListData is now active");
-            new Thread(() -> {
-                // Simulate loading data from a database or API
-                try {
-                    Thread.sleep(2000); // Simulate delay
-                } catch (InterruptedException e) {
-                    Log.e("MailListData", "Error simulating data load", e);
-                }
-                // Notify observers that data is ready
-                postValue(getValue());
-            }).start();
+            new Thread(() ->
+                    mailListData.postValue(mailDao.index())
+            ).start();
         }
     }
 
 
-    public MailRepository(Context context) {
-        appdb = Room.databaseBuilder(context.getApplicationContext(),
-                AppDatabase.class, "mail_database")
+    public MailRepository(@NonNull Context context) {
+        AppDatabase db = Room.databaseBuilder(context.getApplicationContext(),
+                        AppDatabase.class, "mail_database")
                 .build();
-         mailListData = new MailListData();
+        mailDao = db.mailDao();
+        mailListData = new MailListData();
          mailApi = new MailApi(mailListData, context);
     }
 
