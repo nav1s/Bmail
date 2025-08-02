@@ -25,6 +25,7 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.example.bmail.Entities.BmailApplication;
 import com.example.bmail.Entities.Mail;
+import com.example.bmail.Repositories.LabelRepository;
 import com.example.bmail.Repositories.MailRepository;
 import com.example.bmail.ViewModels.MainActivityViewModel;
 import com.example.bmail.ViewModels.MailViewModelFactory;
@@ -132,7 +133,8 @@ public class MainActivity extends AppCompatActivity {
      */
     private void setupViewModel() {
         MailRepository mailRepository = BmailApplication.getInstance().getMailRepository();
-        MailViewModelFactory factory = new MailViewModelFactory(mailRepository);
+        LabelRepository labelRepository = BmailApplication.getInstance().getLabelRepository();
+        MailViewModelFactory factory = new MailViewModelFactory(mailRepository, labelRepository);
         mailViewModel = new ViewModelProvider(this, factory).get(MainActivityViewModel.class);
 
         mailViewModel.getMails().observe(this, mails -> {
