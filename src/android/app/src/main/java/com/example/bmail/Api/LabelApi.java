@@ -54,7 +54,7 @@ public class LabelApi {
         return prefs.getString(TOKEN_KEY, null);
     }
 
-    public void loadLabels() {
+    public void getLabels() {
         String token = getToken();
         Log.i(TAG, "Token: " + token);
 
