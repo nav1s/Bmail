@@ -9,6 +9,7 @@ import androidx.annotation.NonNull;
 import com.example.bmail.Api.WebServiceApi;
 import com.example.bmail.Entities.LoginRequest;
 import com.example.bmail.Entities.LoginResponse;
+import com.example.bmail.R;
 
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
@@ -19,10 +20,11 @@ public class UserRepository {
     private final WebServiceApi webServiceApi;
     private final Context context;
 
-    public UserRepository(Context context) {
+    // todo create user api
+    public UserRepository(@NonNull Context context) {
         this.context = context.getApplicationContext();
         Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl("http://localhost:8080/api/")
+                .baseUrl(String.valueOf(R.string.api))
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
         webServiceApi = retrofit.create(WebServiceApi.class);

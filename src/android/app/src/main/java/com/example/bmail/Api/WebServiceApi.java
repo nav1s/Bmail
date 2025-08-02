@@ -3,7 +3,7 @@ package com.example.bmail.Api;
 import com.example.bmail.Entities.LoginRequest;
 import com.example.bmail.Entities.LoginResponse;
 import com.example.bmail.Entities.Mail;
-import com.example.bmail.Repositories.Label;
+import com.example.bmail.Entities.Label;
 
 import java.util.List;
 

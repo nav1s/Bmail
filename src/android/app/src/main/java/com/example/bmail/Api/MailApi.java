@@ -8,6 +8,7 @@ import androidx.annotation.NonNull;
 import androidx.lifecycle.MutableLiveData;
 
 import com.example.bmail.Entities.Mail;
+import com.example.bmail.R;
 import com.example.bmail.db.MailDao;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -37,7 +38,7 @@ public class MailApi {
                 .create();
 
         Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl("http://localhost:8080/api/")
+                .baseUrl(String.valueOf(R.string.api))
                 .addConverterFactory(GsonConverterFactory.create(gson))
                 .build();
         webServiceApi = retrofit.create(WebServiceApi.class);

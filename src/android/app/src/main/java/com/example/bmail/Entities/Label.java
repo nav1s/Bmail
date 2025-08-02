@@ -1,18 +1,24 @@
-package com.example.bmail.Repositories;
+package com.example.bmail.Entities;
 
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
+
+import com.google.gson.annotations.Expose;
 
 import java.util.List;
 
 @Entity
 public class Label {
     @PrimaryKey
+    @Expose(serialize = false) // Exclude when sending, include when receiving
     private int id;
-
+    @Expose
     private String name;
+    @Expose
     private boolean isDefault;
+    @Expose
     private boolean isAttachable;
+    @Expose
     private List<Integer> mailIds;
 
     public Label(){
