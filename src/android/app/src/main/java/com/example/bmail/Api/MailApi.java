@@ -38,7 +38,7 @@ public class MailApi {
                 .create();
 
         Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl(String.valueOf(R.string.api))
+                .baseUrl(context.getString(R.string.api))
                 .addConverterFactory(GsonConverterFactory.create(gson))
                 .build();
         webServiceApi = retrofit.create(WebServiceApi.class);

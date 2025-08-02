@@ -32,18 +32,19 @@ public class LabelApi {
 
     public LabelApi(MutableLiveData<List<Label>> labelListData, @NonNull Context context) {
         this.labelListData = labelListData;
-        this.prefs = context.getApplicationContext().getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
-        this.webServiceApi = createWebServiceApi();
+        Context appContext = context.getApplicationContext();
+        this.prefs = appContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        this.webServiceApi = createWebServiceApi(appContext);
     }
 
     @NonNull
-    private WebServiceApi createWebServiceApi() {
+    private WebServiceApi createWebServiceApi(Context context) {
         Gson gson = new GsonBuilder()
                 .excludeFieldsWithoutExposeAnnotation()
                 .create();
 
         Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl(String.valueOf(R.string.api))
+                .baseUrl(context.getString(R.string.api))
                 .addConverterFactory(GsonConverterFactory.create(gson))
                 .build();
 
@@ -59,7 +60,7 @@ public class LabelApi {
         Log.i(TAG, "Token: " + token);
 
         Call<List<Label>> call = webServiceApi.getLabels(BEARER_PREFIX + token);
-        call.enqueue(new Callback<List<Label>>() {
+        call.enqueue(new Callback<>() {
             @Override
             public void onResponse(@NonNull Call<List<Label>> call, @NonNull Response<List<Label>> response) {
                 handleResponse(response);

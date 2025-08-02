@@ -24,6 +24,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.example.bmail.Entities.BmailApplication;
+import com.example.bmail.Entities.Label;
 import com.example.bmail.Entities.Mail;
 import com.example.bmail.Repositories.LabelRepository;
 import com.example.bmail.Repositories.MailRepository;
@@ -45,7 +46,7 @@ public class MainActivity extends AppCompatActivity {
 
     private DrawerLayout drawer;
     private SwipeRefreshLayout refreshLayout;
-    private MainActivityViewModel mailViewModel;
+    private MainActivityViewModel viewModel;
     private MailsAdapter adapter;
     private NavigationView navigationView;
     private FloatingActionButton fabCompose;
@@ -67,7 +68,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        mailViewModel.loadMails(label);
+        viewModel.loadMails(label);
     }
 
     /**
@@ -135,9 +136,9 @@ public class MainActivity extends AppCompatActivity {
         MailRepository mailRepository = BmailApplication.getInstance().getMailRepository();
         LabelRepository labelRepository = BmailApplication.getInstance().getLabelRepository();
         MailViewModelFactory factory = new MailViewModelFactory(mailRepository, labelRepository);
-        mailViewModel = new ViewModelProvider(this, factory).get(MainActivityViewModel.class);
+        viewModel = new ViewModelProvider(this, factory).get(MainActivityViewModel.class);
 
-        mailViewModel.getMails().observe(this, mails -> {
+        viewModel.getMails().observe(this, mails -> {
             if (mails != null) {
                 adapter.setMails(mails);
                 refreshLayout.setRefreshing(false);
@@ -156,7 +157,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
         refreshLayout.setOnRefreshListener(() -> {
-            mailViewModel.loadMails(label);
+            viewModel.loadMails(label);
             refreshLayout.setRefreshing(true);
         });
 
@@ -193,7 +194,7 @@ public class MainActivity extends AppCompatActivity {
                 return false;
             }
 
-            mailViewModel.loadMails(label);
+            viewModel.loadMails(label);
             return true;
         });
     }
@@ -222,6 +223,16 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setupCustomLabels() {
+        viewModel.getLabels().observe(this, labels -> {
+            if (labels != null) {
+                Log.i("MailActivity", "Labels loaded: " + labels.size());
+                for (Label label : labels) {
+                    Log.i("MailActivity", "Label: " + label.getName());
+                }
+            } else {
+                Log.w("MailActivity", "Labels are null, cannot setup custom labels.");
+            }
+        });
         Menu menu = navigationView.getMenu();
         menu.add(R.id.group_main, Menu.NONE, Menu.NONE, "Custom Item")
                 .setIcon(R.drawable.ic_folder)

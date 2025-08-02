@@ -24,7 +24,7 @@ public class UserRepository {
     public UserRepository(@NonNull Context context) {
         this.context = context.getApplicationContext();
         Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl(String.valueOf(R.string.api))
+                .baseUrl(context.getString(R.string.api))
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
         webServiceApi = retrofit.create(WebServiceApi.class);
