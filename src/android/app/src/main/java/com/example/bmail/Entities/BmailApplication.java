@@ -1,4 +1,4 @@
-package com.example.bmail;
+package com.example.bmail.Entities;
 
 import android.app.Application;
 import com.example.bmail.Repositories.MailRepository;

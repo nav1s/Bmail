@@ -26,7 +26,7 @@ public class LoginActivity extends Activity {
         String token = prefs.getString("auth_token", null);
         // if token is not null, redirect to MailActivity
         if (token != null) {
-            Intent intent = new Intent(this, MailActivity.class);
+            Intent intent = new Intent(this, MainActivity.class);
             startActivity(intent);
             finish();
             return;
@@ -81,7 +81,7 @@ public class LoginActivity extends Activity {
             return;
         }
         Log.i("foo", "Token retrieved: " + token);
-        Intent intent = new Intent(this, MailActivity.class);
+        Intent intent = new Intent(this, MainActivity.class);
         startActivity(intent);
     }
 }

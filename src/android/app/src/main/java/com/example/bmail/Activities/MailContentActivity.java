@@ -7,7 +7,7 @@ import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
-import com.example.bmail.BmailApplication;
+import com.example.bmail.Entities.BmailApplication;
 import com.example.bmail.Entities.Mail;
 import com.example.bmail.R;
 import com.example.bmail.Repositories.MailRepository;

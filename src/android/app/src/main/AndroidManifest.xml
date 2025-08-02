@@ -7,7 +7,7 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <application
-        android:name=".BmailApplication"
+        android:name=".Entities.BmailApplication"
         android:networkSecurityConfig="@xml/network_security_config"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -28,14 +28,14 @@
         </activity>
         <activity android:name=".Activities.SignupActivity"
             android:parentActivityName=".Activities.LoginActivity" />
-        <activity android:name=".Activities.MailActivity"
+        <activity android:name=".Activities.MainActivity"
             android:parentActivityName=".Activities.LoginActivity" />
         <activity android:name=".Activities.ComposeActivity"
-            android:parentActivityName=".Activities.MailActivity" />
+            android:parentActivityName=".Activities.MainActivity" />
         <activity android:name=".Activities.ProfileActivity"
-            android:parentActivityName=".Activities.MailActivity" />
+            android:parentActivityName=".Activities.MainActivity" />
         <activity android:name=".Activities.MailContentActivity"
-            android:parentActivityName=".Activities.MailActivity" />
+            android:parentActivityName=".Activities.MainActivity" />
 
     </application>
 </manifest>

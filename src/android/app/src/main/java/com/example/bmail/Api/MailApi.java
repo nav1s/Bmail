@@ -22,7 +22,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class MailApi {
 
-    private MailDao mailDao;
+    private final MailDao mailDao;
     private final MutableLiveData<List<Mail>> mailListData;
     WebServiceApi webServiceApi;
     private final Context context;
@@ -95,7 +95,7 @@ public class MailApi {
         Log.i("MailApi", "Sending mail with token: " + token);
 
         Call<Void> call = webServiceApi.sendMail("Bearer " + token, mail);
-        // todo use dao here
+        // todo consider whether dao is needed here
         call.enqueue(new Callback<>() {
             @Override
             public void onResponse(@NonNull Call<Void> call,
@@ -113,4 +113,5 @@ public class MailApi {
             }
         });
     }
+
 }

@@ -58,8 +58,8 @@ public class MailRepository {
 
     public void deleteMail(Mail mail) {
         Log.d("MailRepository", "Deleting mail: " + mail);
+//        mailApi.deleteMail(mail);
 
-        mailDao.delete(mail);
     }
 
     public Mail getMailById(int id) {

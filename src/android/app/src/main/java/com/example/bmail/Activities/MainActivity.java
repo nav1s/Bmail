@@ -23,17 +23,17 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
-import com.example.bmail.BmailApplication;
+import com.example.bmail.Entities.BmailApplication;
 import com.example.bmail.Entities.Mail;
 import com.example.bmail.Repositories.MailRepository;
-import com.example.bmail.ViewModels.MailViewModel;
+import com.example.bmail.ViewModels.MainActivityViewModel;
 import com.example.bmail.ViewModels.MailViewModelFactory;
 import com.example.bmail.R;
 import com.example.bmail.Adapters.MailsAdapter;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
 
-public class MailActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity {
     // Constants for mail labels
     private static final String LABEL_INBOX = "inbox";
     private static final String LABEL_DRAFTS = "drafts";
@@ -44,7 +44,7 @@ public class MailActivity extends AppCompatActivity {
 
     private DrawerLayout drawer;
     private SwipeRefreshLayout refreshLayout;
-    private MailViewModel mailViewModel;
+    private MainActivityViewModel mailViewModel;
     private MailsAdapter adapter;
     private NavigationView navigationView;
     private FloatingActionButton fabCompose;
@@ -57,7 +57,7 @@ public class MailActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_mail);
+        setContentView(R.layout.activity_main);
 
         initViews();
         setupListeners();
@@ -133,7 +133,7 @@ public class MailActivity extends AppCompatActivity {
     private void setupViewModel() {
         MailRepository mailRepository = BmailApplication.getInstance().getMailRepository();
         MailViewModelFactory factory = new MailViewModelFactory(mailRepository);
-        mailViewModel = new ViewModelProvider(this, factory).get(MailViewModel.class);
+        mailViewModel = new ViewModelProvider(this, factory).get(MainActivityViewModel.class);
 
         mailViewModel.getMails().observe(this, mails -> {
             if (mails != null) {
