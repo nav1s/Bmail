@@ -25,7 +25,7 @@ public class MainActivityViewModel extends androidx.lifecycle.ViewModel {
         return mails;
     }
 
-    public LiveData<List<Label>> getLabels() {
+    public LiveData<List<Label>> loadLabels() {
         return labelRepository.getLabels();
     }
 

@@ -44,6 +44,7 @@
             android:orderInCategory="9999999"
             android:id="@+id/nav_add_label"
             android:title="@string/add_label"
+            android:checkable="false"
             android:icon="@drawable/ic_new_label" />
 
 

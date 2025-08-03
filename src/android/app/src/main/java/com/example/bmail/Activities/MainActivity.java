@@ -38,11 +38,6 @@ import com.google.android.material.navigation.NavigationView;
 public class MainActivity extends AppCompatActivity {
     // Constants for mail labels
     private static final String LABEL_INBOX = "inbox";
-    private static final String LABEL_DRAFTS = "drafts";
-    private static final String LABEL_TRASH = "trash";
-    private static final String LABEL_SPAM = "spam";
-    private static final String LABEL_SENT = "sent";
-    private static final String LABEL_STARRED = "starred";
 
     private DrawerLayout drawer;
     private SwipeRefreshLayout refreshLayout;
@@ -54,7 +49,9 @@ public class MainActivity extends AppCompatActivity {
     private EditText searchBar;
     private TextView logout;
 
+    // Current label for the mail view
     private String label = LABEL_INBOX;
+    private int labelCounter = 7;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,6 +65,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        viewModel.loadLabels();
         viewModel.loadMails(label);
     }
 
@@ -157,6 +155,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
         refreshLayout.setOnRefreshListener(() -> {
+            viewModel.loadLabels();
             viewModel.loadMails(label);
             refreshLayout.setRefreshing(true);
         });
@@ -178,24 +177,15 @@ public class MainActivity extends AppCompatActivity {
             drawer.closeDrawers();
 
             int itemId = item.getItemId();
-            if (itemId == R.id.nav_inbox) {
-                label = LABEL_INBOX;
-            } else if (itemId == R.id.nav_drafts) {
-                label = LABEL_DRAFTS;
-            } else if (itemId == R.id.nav_trash) {
-                label = LABEL_TRASH;
-            } else if (itemId == R.id.nav_spam) {
-                label = LABEL_SPAM;
-            } else if (itemId == R.id.nav_sent) {
-                label = LABEL_SENT;
-            } else if (itemId == R.id.nav_starred) {
-                label = LABEL_STARRED;
-            } else {
-                label = (String) item.getTitle();
-                Log.i("MailActivity", "Custom label selected: " + label);
+            if (itemId == R.id.nav_add_label) {
+                Log.i("MailActivity", "Add label clicked, opening AddLabelActivity.");
+                return false;
             }
 
-            viewModel.loadMails(label);
+            this.label = (String) item.getTitle();
+            Log.i("MailActivity", "Custom label selected: " + this.label);
+
+            viewModel.loadMails(this.label);
             return true;
         });
     }
@@ -227,7 +217,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void setupCustomLabels() {
         Menu menu = navigationView.getMenu();
-        viewModel.getLabels().observe(this, labels -> {
+        viewModel.loadLabels().observe(this, labels -> {
             if (labels == null) {
                 Log.w("MailActivity", "Labels are null, cannot setup custom labels.");
                 return;
@@ -245,9 +235,10 @@ public class MainActivity extends AppCompatActivity {
 
                     Log.i("MailActivity", "Adding custom label to menu: "
                             + label.getName());
-                    // todo add order counter
-                    menu.add(R.id.group_main, Menu.NONE, 7, label.getName())
-                            .setIcon(R.drawable.ic_label);
+                    menu.add(R.id.group_main, this.labelCounter, this.labelCounter, label.getName())
+                            .setIcon(R.drawable.ic_label)
+                            .setCheckable(true);
+                    this.labelCounter++;
                 }
             }
         });
