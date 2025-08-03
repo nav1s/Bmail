@@ -191,7 +191,8 @@ public class MainActivity extends AppCompatActivity {
             } else if (itemId == R.id.nav_starred) {
                 label = LABEL_STARRED;
             } else {
-                return false;
+                label = (String) item.getTitle();
+                Log.i("MailActivity", "Custom label selected: " + label);
             }
 
             viewModel.loadMails(label);
@@ -206,48 +207,49 @@ public class MainActivity extends AppCompatActivity {
     private void setupSearchListener() {
         searchBar.addTextChangedListener(new TextWatcher() {
             @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 String searchText = s.toString().trim();
                 String logMessage = searchText.isEmpty() ?
-                    "Search text is empty, loading all mails." :
-                    "Searching for mails with text: " + searchText;
+                        "Search text is empty, loading all mails." :
+                        "Searching for mails with text: " + searchText;
                 Log.i("MailActivity", logMessage);
             }
 
             @Override
-            public void afterTextChanged(Editable s) {}
+            public void afterTextChanged(Editable s) {
+            }
         });
     }
 
     private void setupCustomLabels() {
+        Menu menu = navigationView.getMenu();
         viewModel.getLabels().observe(this, labels -> {
-            if (labels != null) {
-                Log.i("MailActivity", "Labels loaded: " + labels.size());
-                for (Label label : labels) {
-                    if (!label.isDefault()){
-                        Log.i("MailActivity", "Label: " + label.getName());
-                    }
-                }
-            } else {
+            if (labels == null) {
                 Log.w("MailActivity", "Labels are null, cannot setup custom labels.");
+                return;
+            }
+
+            Log.i("MailActivity", "Labels loaded: " + labels.size());
+            for (Label label : labels) {
+                if (!label.isDefault()) {
+                    Log.i("MailActivity", "Found non default: " + label.getName());
+                    if (menu.findItem(label.getId()) != null) {
+                        Log.w("MailActivity", "Label already exists in menu: "
+                                + label.getName());
+                        continue;
+                    }
+
+                    Log.i("MailActivity", "Adding custom label to menu: "
+                            + label.getName());
+                    menu.add(R.id.group_custom, Menu.NONE, Menu.NONE, label.getName())
+                            .setIcon(R.drawable.ic_folder);
+                }
             }
         });
-        Menu menu = navigationView.getMenu();
-        menu.add(R.id.group_custom, Menu.NONE, Menu.NONE, "Custom Item")
-                .setIcon(R.drawable.ic_folder)
-                .setOnMenuItemClickListener(item -> {
-                    Log.i("MailActivity", "Custom item clicked");
-                    return true;
-                });
-        menu.add(R.id.group_custom, Menu.NONE, Menu.NONE, "Another Item")
-                .setIcon(R.drawable.ic_folder)
-                .setOnMenuItemClickListener(item -> {
-                    Log.i("MailActivity", "Another item clicked");
-                    return true;
-                });
     }
 
     /**
@@ -278,8 +280,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * @brief Show the content of the clicked mail.
      * @param view The view that was clicked, containing the mail data.
+     * @brief Show the content of the clicked mail.
      */
     private void showMailContent(@NonNull View view) {
         Mail clickedMail = (Mail) view.getTag();
