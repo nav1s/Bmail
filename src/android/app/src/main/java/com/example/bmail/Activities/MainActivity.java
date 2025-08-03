@@ -245,7 +245,8 @@ public class MainActivity extends AppCompatActivity {
 
                     Log.i("MailActivity", "Adding custom label to menu: "
                             + label.getName());
-                    menu.add(R.id.group_custom, Menu.NONE, Menu.NONE, label.getName())
+                    // todo add order counter
+                    menu.add(R.id.group_main, Menu.NONE, 7, label.getName())
                             .setIcon(R.drawable.ic_folder);
                 }
             }

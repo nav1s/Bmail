@@ -5,40 +5,48 @@
             android:id="@+id/nav_inbox"
             android:title="@string/inbox"
             android:icon="@android:drawable/ic_dialog_email"
+            android:orderInCategory="1"
             android:checked="true" />
 
         <item
             android:id="@+id/nav_starred"
             android:title="@string/starred"
+            android:orderInCategory="2"
             android:icon="@android:drawable/btn_star_big_on" />
 
         <item
             android:id="@+id/nav_sent"
+            android:orderInCategory="3"
             android:title="@string/sent"
             android:icon="@android:drawable/ic_menu_send" />
 
         <item
             android:id="@+id/nav_drafts"
+            android:orderInCategory="4"
             android:title="@string/drafts"
             android:icon="@android:drawable/ic_menu_edit" />
 
         <item
             android:id="@+id/nav_spam"
+            android:orderInCategory="5"
             android:title="@string/spam"
             android:icon="@android:drawable/ic_delete" />
 
         <item
             android:id="@+id/nav_trash"
+            android:orderInCategory="6"
             android:title="@string/trash"
             android:icon="@android:drawable/ic_menu_delete" />
 
+    </group>
+    <group>
         <item
+            android:orderInCategory="9999999"
             android:id="@+id/nav_add_label"
             android:title="@string/add_label"
             android:icon="@drawable/ic_new_label" />
 
-    </group>
-    <group android:id="@+id/group_custom" android:checkableBehavior="single">
+
     </group>
 
 </menu>
