@@ -111,7 +111,7 @@
                 app:drawableStartCompat="@drawable/ic_new_label"
                 android:focusable="true"
                 android:clickable="true"
-                />
+                app:drawableTint="?attr/colorOnSurface" />
 
             <TextView
                 android:id="@+id/nav_logout"
@@ -124,6 +124,7 @@
                 app:drawableStartCompat="@android:drawable/ic_lock_power_off"
                 android:focusable="true"
                 android:clickable="true"
+                app:drawableTint="?attr/colorOnSurface"
                 />
 
         </LinearLayout>
