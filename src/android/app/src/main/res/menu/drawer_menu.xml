@@ -31,6 +31,14 @@
             android:id="@+id/nav_trash"
             android:title="@string/trash"
             android:icon="@android:drawable/ic_menu_delete" />
+
+        <item
+            android:id="@+id/nav_add_label"
+            android:title="@string/add_label"
+            android:icon="@drawable/ic_new_label" />
+
+    </group>
+    <group android:id="@+id/group_custom" android:checkableBehavior="single">
     </group>
 
 </menu>

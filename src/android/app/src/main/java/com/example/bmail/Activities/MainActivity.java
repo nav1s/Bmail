@@ -236,13 +236,13 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         Menu menu = navigationView.getMenu();
-        menu.add(R.id.group_main, Menu.NONE, Menu.NONE, "Custom Item")
+        menu.add(R.id.group_custom, Menu.NONE, Menu.NONE, "Custom Item")
                 .setIcon(R.drawable.ic_folder)
                 .setOnMenuItemClickListener(item -> {
                     Log.i("MailActivity", "Custom item clicked");
                     return true;
                 });
-        menu.add(R.id.group_main, Menu.NONE, Menu.NONE, "Another Item")
+        menu.add(R.id.group_custom, Menu.NONE, Menu.NONE, "Another Item")
                 .setIcon(R.drawable.ic_folder)
                 .setOnMenuItemClickListener(item -> {
                     Log.i("MailActivity", "Another item clicked");

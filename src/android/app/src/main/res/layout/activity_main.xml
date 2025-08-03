@@ -101,19 +101,6 @@
             android:padding="16dp">
 
             <TextView
-                android:id="@+id/nav_add_label"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/add_label"
-                android:gravity="start|center_vertical"
-                android:padding="12dp"
-                android:drawablePadding="12dp"
-                app:drawableStartCompat="@drawable/ic_new_label"
-                android:focusable="true"
-                android:clickable="true"
-                app:drawableTint="?attr/colorOnSurface" />
-
-            <TextView
                 android:id="@+id/nav_logout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
