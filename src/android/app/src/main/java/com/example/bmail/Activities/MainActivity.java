@@ -247,7 +247,7 @@ public class MainActivity extends AppCompatActivity {
                             + label.getName());
                     // todo add order counter
                     menu.add(R.id.group_main, Menu.NONE, 7, label.getName())
-                            .setIcon(R.drawable.ic_folder);
+                            .setIcon(R.drawable.ic_label);
                 }
             }
         });

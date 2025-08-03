@@ -35,7 +35,7 @@
                 android:layout_height="48dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:contentDescription="@string/change_label"
-                android:src="@drawable/outline_label_24"/>
+                android:src="@drawable/ic_label"/>
 
 
         </LinearLayout>
