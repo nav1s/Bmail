@@ -227,7 +227,9 @@ public class MainActivity extends AppCompatActivity {
             if (labels != null) {
                 Log.i("MailActivity", "Labels loaded: " + labels.size());
                 for (Label label : labels) {
-                    Log.i("MailActivity", "Label: " + label.getName());
+                    if (!label.isDefault()){
+                        Log.i("MailActivity", "Label: " + label.getName());
+                    }
                 }
             } else {
                 Log.w("MailActivity", "Labels are null, cannot setup custom labels.");

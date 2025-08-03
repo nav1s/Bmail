@@ -38,7 +38,7 @@ public class LabelApi {
     }
 
     @NonNull
-    private WebServiceApi createWebServiceApi(Context context) {
+    private WebServiceApi createWebServiceApi(@NonNull Context context) {
         Gson gson = new GsonBuilder()
                 .excludeFieldsWithoutExposeAnnotation()
                 .create();
