@@ -10,13 +10,10 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.example.bmail.Entities.BmailApplication;
-import com.example.bmail.Entities.Mail;
 import com.example.bmail.R;
 import com.example.bmail.Repositories.MailRepository;
 import com.example.bmail.ViewModels.ComposeViewModel;
 import com.example.bmail.ViewModels.ComposeViewModelFactory;
-
-import java.util.List;
 
 public class ComposeActivity extends AppCompatActivity {
 
@@ -24,7 +21,7 @@ public class ComposeActivity extends AppCompatActivity {
     private EditText etSubject;
     private EditText etMessage;
     private ImageButton btnSend;
-    private ComposeViewModel composeViewModel;
+    private ComposeViewModel viewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,7 +47,7 @@ public class ComposeActivity extends AppCompatActivity {
         MailRepository mailRepository = BmailApplication.getInstance().getMailRepository();
 
         ComposeViewModelFactory factory = new ComposeViewModelFactory(mailRepository);
-        composeViewModel = new ViewModelProvider(this, factory)
+        viewModel = new ViewModelProvider(this, factory)
                 .get(ComposeViewModel.class);
     }
 
@@ -59,30 +56,25 @@ public class ComposeActivity extends AppCompatActivity {
     }
 
     private void sendMail() {
-        String to = etTo.getText().toString().trim();
-        String subject = etSubject.getText().toString().trim();
-        String message = etMessage.getText().toString().trim();
+        String currentLabel = getIntent().getStringExtra("currentLabel");
 
-        // Validate input
+        if (currentLabel == null) {
+            currentLabel = "inbox";
+        }
+        String to = etTo.getText().toString().trim();
         if (to.isEmpty()) {
             new androidx.appcompat.app.AlertDialog.Builder(this)
-                    .setMessage("Add at least one recipient.")
+                    .setMessage("Please enter at least one recipient.")
                     .setPositiveButton("OK", (dialog, which) -> dialog.dismiss())
                     .show();
             return;
         }
 
-        if (subject.isEmpty()) {
-            subject = "(No Subject)";
-        }
+        String subject = etSubject.getText().toString().trim();
+        String message = etMessage.getText().toString().trim();
 
-        if (message.isEmpty()) {
-            message = "";
-        }
+        viewModel.sendMail(to, subject, message, currentLabel);
 
-        // todo replace sender with actual user email
-        Mail mail = new Mail(subject, message, "Me", List.of(to), false);
-        composeViewModel.send(mail);
         Toast.makeText(this, "sent", Toast.LENGTH_SHORT).show();
         finish();
     }
