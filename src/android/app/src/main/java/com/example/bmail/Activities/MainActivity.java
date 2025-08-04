@@ -50,7 +50,7 @@ public class MainActivity extends AppCompatActivity {
     private TextView logout;
 
     // Current label for the mail view
-    private String label = LABEL_INBOX;
+    private String currentLabel = LABEL_INBOX;
     private int labelCounter = 7;
 
     @Override
@@ -66,7 +66,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         viewModel.loadLabels();
-        viewModel.loadMails(label);
+        viewModel.loadMails(currentLabel);
     }
 
     /**
@@ -151,12 +151,13 @@ public class MainActivity extends AppCompatActivity {
     private void setupClickListeners() {
         fabCompose.setOnClickListener(v -> {
             Intent intent = new Intent(this, ComposeActivity.class);
+            intent.putExtra("currentLabel", currentLabel);
             startActivity(intent);
         });
 
         refreshLayout.setOnRefreshListener(() -> {
             viewModel.loadLabels();
-            viewModel.loadMails(label);
+            viewModel.loadMails(currentLabel);
             refreshLayout.setRefreshing(true);
         });
 
@@ -179,13 +180,14 @@ public class MainActivity extends AppCompatActivity {
             int itemId = item.getItemId();
             if (itemId == R.id.nav_add_label) {
                 Log.i("MailActivity", "Add label clicked, opening AddLabelActivity.");
+                // todo create a dialog that asks for the label name
                 return false;
             }
 
-            this.label = (String) item.getTitle();
-            Log.i("MailActivity", "Custom label selected: " + this.label);
+            this.currentLabel = (String) item.getTitle();
+            Log.i("MailActivity", "Custom label selected: " + this.currentLabel);
 
-            viewModel.loadMails(this.label);
+            viewModel.loadMails(this.currentLabel);
             return true;
         });
     }
@@ -203,10 +205,11 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 String searchText = s.toString().trim();
-                String logMessage = searchText.isEmpty() ?
-                        "Search text is empty, loading all mails." :
-                        "Searching for mails with text: " + searchText;
-                Log.i("MailActivity", logMessage);
+                if (searchText.isEmpty()) {
+                    viewModel.loadMails(currentLabel);
+                } else {
+                    Log.i("MailActivity", "Searching for mails with text: " + searchText);
+                }
             }
 
             @Override
