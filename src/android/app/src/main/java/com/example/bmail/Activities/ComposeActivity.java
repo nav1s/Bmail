@@ -56,11 +56,6 @@ public class ComposeActivity extends AppCompatActivity {
     }
 
     private void sendMail() {
-        String currentLabel = getIntent().getStringExtra("currentLabel");
-
-        if (currentLabel == null) {
-            currentLabel = "inbox";
-        }
         String to = etTo.getText().toString().trim();
         if (to.isEmpty()) {
             new androidx.appcompat.app.AlertDialog.Builder(this)
@@ -73,7 +68,7 @@ public class ComposeActivity extends AppCompatActivity {
         String subject = etSubject.getText().toString().trim();
         String message = etMessage.getText().toString().trim();
 
-        viewModel.sendMail(to, subject, message, currentLabel);
+        viewModel.sendMail(to, subject, message);
 
         Toast.makeText(this, "sent", Toast.LENGTH_SHORT).show();
         finish();

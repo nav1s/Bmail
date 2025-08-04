@@ -65,6 +65,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onResume() {
+        // todo add periodic updates for mails
         super.onResume();
         viewModel.loadLabels();
         viewModel.loadMails(currentLabel);

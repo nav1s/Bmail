@@ -15,8 +15,7 @@ public class ComposeViewModel extends androidx.lifecycle.ViewModel {
         this.mailRepository = mailRepository;
     }
 
-    public void sendMail(@NonNull String to, String subject, String message,
-                         @NonNull String currentLabel) {
+    public void sendMail(@NonNull String to, String subject, String message) {
 
         // Validate input
         if (to.isEmpty()) {
@@ -34,6 +33,5 @@ public class ComposeViewModel extends androidx.lifecycle.ViewModel {
         // todo replace sender with actual user email
         Mail mail = new Mail(subject, message, "Me", List.of(to), false);
         mailRepository.sendMail(mail);
-        mailRepository.reloadMails(currentLabel);
     }
 }
