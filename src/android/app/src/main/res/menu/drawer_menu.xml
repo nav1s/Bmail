@@ -1,4 +1,5 @@
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <group android:id="@+id/group_main" android:checkableBehavior="single">
         <item
@@ -39,13 +40,14 @@
             android:icon="@android:drawable/ic_menu_delete" />
 
     </group>
-    <group>
+    <group android:id="@+id/nav_custom_labels">
         <item
-            android:orderInCategory="9999999"
-            android:id="@+id/nav_add_label"
-            android:title="@string/add_label"
-            android:checkable="false"
-            android:icon="@drawable/ic_new_label" />
+            android:id="@+id/nav_labels"
+            android:orderInCategory="7"
+            android:title="@string/labels"
+            app:actionLayout="@layout/label_button"
+            />
+
 
 
     </group>

@@ -52,5 +52,5 @@
     <string name="mail_title">Mail Title</string>
     <string name="change_label">Change Label</string>
     <string name="api">http://localhost:8080/api/</string>
-    <string name="add_label">Add Label</string>
+    <string name="labels">Labels</string>
 </resources>

@@ -8,6 +8,7 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -177,12 +178,12 @@ public class MainActivity extends AppCompatActivity {
         navigationView.setNavigationItemSelectedListener(item -> {
             drawer.closeDrawers();
 
-            int itemId = item.getItemId();
-            if (itemId == R.id.nav_add_label) {
-                Log.i("MailActivity", "Add label clicked, opening AddLabelActivity.");
-                // todo create a dialog that asks for the label name
-                return false;
-            }
+//            int itemId = item.getItemId();
+//            if (itemId == R.id.nav_add_label) {
+//                Log.i("MailActivity", "Add label clicked, opening AddLabelActivity.");
+//                // todo create a dialog that asks for the label name
+//                return false;
+//            }
 
             this.currentLabel = (String) item.getTitle();
             Log.i("MailActivity", "Custom label selected: " + this.currentLabel);
@@ -221,6 +222,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void setupCustomLabels() {
         Menu menu = navigationView.getMenu();
+
         viewModel.loadLabels().observe(this, labels -> {
             if (labels == null) {
                 Log.w("MailActivity", "Labels are null, cannot setup custom labels.");
@@ -239,7 +241,7 @@ public class MainActivity extends AppCompatActivity {
 
                     Log.i("MailActivity", "Adding custom label to menu: "
                             + label.getName());
-                    menu.add(R.id.group_main, this.labelCounter, this.labelCounter, label.getName())
+                    menu.add(R.id.nav_custom_labels, this.labelCounter, this.labelCounter, label.getName())
                             .setIcon(R.drawable.ic_label)
                             .setCheckable(true);
                     this.labelCounter++;
