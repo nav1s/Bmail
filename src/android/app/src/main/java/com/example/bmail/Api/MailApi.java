@@ -96,7 +96,6 @@ public class MailApi {
         Log.i("MailApi", "Sending mail with token: " + token);
 
         Call<Void> call = webServiceApi.sendMail("Bearer " + token, mail);
-        // todo consider whether dao is needed here
         call.enqueue(new Callback<>() {
             @Override
             public void onResponse(@NonNull Call<Void> call,
@@ -111,6 +110,33 @@ public class MailApi {
             @Override
             public void onFailure(@NonNull Call<Void> call, @NonNull Throwable t) {
                 Log.e("MailApi", "Network error while sending mail: " + t.getMessage());
+            }
+        });
+    }
+
+    public void searchMail(String query) {
+        String token = getToken();
+        Log.i("MailApi", "Searching mail with token: " + token);
+
+        Call<List<Mail>> call = webServiceApi.searchMails("Bearer " + token, query);
+        call.enqueue(new Callback<>() {
+            @Override
+            public void onResponse(@NonNull Call<List<Mail>> call,
+                                   @NonNull Response<List<Mail>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    Log.i("MailApi", "Search completed successfully");
+                    List<Mail> mails = response.body();
+                    mailListData.postValue(mails);
+                } else {
+                    Log.e("MailApi", "Search failed: " + response.message());
+                    mailListData.postValue(null);
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<List<Mail>> call, @NonNull Throwable t) {
+                Log.e("MailApi", "Network error during search: " + t.getMessage());
+                mailListData.setValue(null);
             }
         });
     }

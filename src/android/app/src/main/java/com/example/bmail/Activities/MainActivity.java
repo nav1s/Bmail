@@ -209,6 +209,7 @@ public class MainActivity extends AppCompatActivity {
                     viewModel.loadMails(currentLabel);
                 } else {
                     Log.i("MailActivity", "Searching for mails with text: " + searchText);
+                    viewModel.searchMail(searchText);
                 }
             }
 

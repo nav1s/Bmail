@@ -51,6 +51,10 @@ public class MailRepository {
         return mailListData;
     }
 
+    public void searchMail(String query) {
+        Log.d("MailRepository", "Searching for mail with query: " + query);
+        mailApi.searchMail(query);
+    }
 
     public void sendMail(Mail mail) {
         mailApi.sendMail(mail);

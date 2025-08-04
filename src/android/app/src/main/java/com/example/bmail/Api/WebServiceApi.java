@@ -25,6 +25,10 @@ public interface WebServiceApi {
     @POST("mails")
     Call<Void> sendMail(@Header("Authorization") String token, @Body Mail mail);
 
+    @GET("mails/search/{query}")
+    Call<List<Mail>> searchMails(@Header("Authorization") String token,
+                                 @Path ("query") String query);
+
     @GET("labels")
     Call <List<Label>> getLabels(@Header("Authorization") String token);
 }

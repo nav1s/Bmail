@@ -1,6 +1,7 @@
 package com.example.bmail.ViewModels;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 public class SignupViewModel {
 
@@ -38,6 +39,7 @@ public class SignupViewModel {
      * @param password The password to validate.
      * @return A string describing the validation error, or null if the password is valid.
      */
+    @Nullable
     private String getPasswordValidationError(@NonNull String password) {
         if (password.isEmpty()) return "Password cannot be empty";
         if (password.length() < 8) return "Password must be at least 8 characters long";
