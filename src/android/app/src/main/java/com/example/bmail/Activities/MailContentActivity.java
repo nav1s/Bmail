@@ -2,6 +2,7 @@ package com.example.bmail.Activities;
 
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.ImageButton;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -16,6 +17,7 @@ public class MailContentActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        // todo add viewmodel
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_mail_content);
 
@@ -47,6 +49,12 @@ public class MailContentActivity extends AppCompatActivity {
         tvSender.setText(mail.getFrom());
         tvRecipients.setText(String.join(", ", mail.getTo()));
         tvMailBody.setText(mail.getBody());
+
+        // setup delete button
+        ImageButton btnDelete = findViewById(R.id.btn_delete);
+        btnDelete.setOnClickListener(v -> {
+            finish();
+        });
     }
 
     @Override
