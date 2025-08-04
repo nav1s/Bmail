@@ -43,11 +43,23 @@
     <group android:id="@+id/nav_custom_labels">
         <item
             android:id="@+id/nav_labels"
-            android:orderInCategory="7"
+            android:orderInCategory="8"
             android:title="@string/labels"
             app:actionLayout="@layout/label_button"
-            />
+            >
+            <menu>
+                <item
+                    android:title="foo"
+                    app:actionLayout="@layout/label_button"
+                    />
+                <item
+                    android:title="bar"
+                    app:actionLayout="@layout/label_button"
+                    />
 
+            </menu>
+
+        </item>
 
 
     </group>
