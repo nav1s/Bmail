@@ -76,6 +76,15 @@ public class ComposeActivity extends AppCompatActivity {
 
     @Override
     public boolean onSupportNavigateUp() {
+        String to = etTo.getText().toString().trim();
+        String subject = etSubject.getText().toString().trim();
+        String message = etMessage.getText().toString().trim();
+
+        // save draft
+        if (!subject.isEmpty() || !message.isEmpty()) {
+            viewModel.sendDraft(to, subject, message);
+            Toast.makeText(this, R.string.message_saved_as_draft, Toast.LENGTH_SHORT).show();
+        }
         finish();
         return true;
     }

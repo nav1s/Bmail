@@ -1,10 +1,13 @@
 package com.example.bmail.ViewModels;
 
+import android.util.Log;
+
 import androidx.annotation.NonNull;
 
 import com.example.bmail.Entities.Mail;
 import com.example.bmail.Repositories.MailRepository;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class ComposeViewModel extends androidx.lifecycle.ViewModel {
@@ -33,5 +36,22 @@ public class ComposeViewModel extends androidx.lifecycle.ViewModel {
         // todo replace sender with actual user email
         Mail mail = new Mail(subject, message, "Me", List.of(to), false);
         mailRepository.sendMail(mail);
+    }
+
+    public void sendDraft(String to, String subject, String message){
+        // log the input
+        Log.i("ComposeViewModel",
+                "Sending draft to: " + to + ", Subject: " + subject + ", Message: " + message);
+        List<String> toList;
+        if (to != null && !to.isEmpty()) {
+            toList = List.of(to);
+        } else {
+            toList = new ArrayList<>();
+        }
+
+        // todo replace sender with actual user email
+        Mail mail = new Mail(subject, message, "Me", toList, true);
+        mailRepository.sendMail(mail);
+
     }
 }

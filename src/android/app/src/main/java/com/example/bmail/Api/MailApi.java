@@ -27,13 +27,14 @@ public class MailApi {
     private final MutableLiveData<List<Mail>> mailListData;
     WebServiceApi webServiceApi;
     private final Context context;
+    private Gson gson;
 
     public MailApi(MailDao mailDao, MutableLiveData<List<Mail>> mailListData, @NonNull Context context) {
         this.mailDao = mailDao;
         this.mailListData = mailListData;
         this.context = context.getApplicationContext();
 
-        Gson gson = new GsonBuilder()
+        gson = new GsonBuilder()
                 .excludeFieldsWithoutExposeAnnotation()
                 .create();
 
@@ -94,6 +95,9 @@ public class MailApi {
     public void sendMail(Mail mail) {
         String token = getToken();
         Log.i("MailApi", "Sending mail with token: " + token);
+        String json = gson.toJson(mail);
+        // log the mail object being sent
+        Log.i("MailApi", "Mail object: " + json);
 
         Call<Void> call = webServiceApi.sendMail("Bearer " + token, mail);
         call.enqueue(new Callback<>() {
