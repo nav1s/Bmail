@@ -24,6 +24,9 @@ public class ComposeActivity extends AppCompatActivity {
     private ImageButton btnSend;
     private ComposeViewModel viewModel;
 
+    // Flag to store if the mail is a draft
+    private int draftId = -1;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -44,6 +47,7 @@ public class ComposeActivity extends AppCompatActivity {
                 etTo.setText(String.join(", ", mail.getTo()));
                 etSubject.setText(mail.getTitle());
                 etMessage.setText(mail.getBody());
+                draftId = mail.getId();
             }
         }
 
@@ -99,8 +103,14 @@ public class ComposeActivity extends AppCompatActivity {
 
         // save draft
         if (!subject.isEmpty() || !message.isEmpty()) {
-            viewModel.sendDraft(to, subject, message);
-            Toast.makeText(this, R.string.message_saved_as_draft, Toast.LENGTH_SHORT).show();
+            if (this.draftId != -1) {
+                // todo check gmail behavior
+                viewModel.updateDraft(to, subject, message, this.draftId);
+            }
+            else {
+                viewModel.sendDraft(to, subject, message);
+                Toast.makeText(this, R.string.message_saved_as_draft, Toast.LENGTH_SHORT).show();
+            }
         }
         finish();
         return true;

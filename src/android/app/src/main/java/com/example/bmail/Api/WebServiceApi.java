@@ -11,6 +11,7 @@ import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.GET;
 import retrofit2.http.Header;
+import retrofit2.http.PATCH;
 import retrofit2.http.POST;
 import retrofit2.http.Path;
 
@@ -24,6 +25,9 @@ public interface WebServiceApi {
 
     @POST("mails")
     Call<Void> sendMail(@Header("Authorization") String token, @Body Mail mail);
+
+    @PATCH("mails")
+    Call<Void> updateDraft(@Header("Authorization") String token, @Body Mail mail);
 
     @GET("mails/search/{query}")
     Call<List<Mail>> searchMails(@Header("Authorization") String token,

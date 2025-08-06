@@ -118,6 +118,29 @@ public class MailApi {
         });
     }
 
+    public void updateDraft(Mail mail) {
+        // todo fix id not getting sent
+        String token = getToken();
+        Log.i("MailApi", "Updating draft with token: " + token);
+        Call <Void> call = webServiceApi.updateDraft("Bearer " + token, mail);
+        call.enqueue(new Callback<>() {
+            @Override
+            public void onResponse(@NonNull Call<Void> call,
+                                   @NonNull Response<Void> response) {
+                if (response.isSuccessful()) {
+                    Log.i("MailApi", "Draft updated successfully");
+                } else {
+                    Log.e("MailApi", "Failed to update draft: " + response.message());
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<Void> call, @NonNull Throwable t) {
+                Log.e("MailApi", "Network error while updating draft: " + t.getMessage());
+            }
+        });
+    }
+
     public void searchMail(String query) {
         String token = getToken();
         Log.i("MailApi", "Searching mail with token: " + token);
