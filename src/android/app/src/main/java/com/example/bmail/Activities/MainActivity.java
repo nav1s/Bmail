@@ -8,7 +8,6 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -39,6 +38,7 @@ import com.google.android.material.navigation.NavigationView;
 public class MainActivity extends AppCompatActivity {
     // Constants for mail labels
     private static final String LABEL_INBOX = "inbox";
+    private static final String LABEL_DRAFTS = "drafts";
 
     private DrawerLayout drawer;
     private SwipeRefreshLayout refreshLayout;
@@ -289,7 +289,16 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
         Log.i("MailActivity", "Clicked mail: " + clickedMail.getTitle());
-        Intent intent = new Intent(this, MailContentActivity.class);
+        Intent intent;
+        // check if the mail is a draft
+        if (clickedMail.getDraft()) {
+            Log.i("MailActivity", "Clicked mail is a draft, opening ComposeActivity.");
+            intent = new Intent(this, ComposeActivity.class);
+        } else{
+            Log.i("MailActivity", "Clicked mail is not a draft, opening MailContentActivity.");
+            intent = new Intent(this, MailContentActivity.class);
+        }
+
         intent.putExtra("mail_id", clickedMail.getId());
         startActivity(intent);
     }

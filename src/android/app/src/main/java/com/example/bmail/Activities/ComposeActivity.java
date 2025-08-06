@@ -10,6 +10,7 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.example.bmail.Entities.BmailApplication;
+import com.example.bmail.Entities.Mail;
 import com.example.bmail.R;
 import com.example.bmail.Repositories.MailRepository;
 import com.example.bmail.ViewModels.ComposeViewModel;
@@ -32,6 +33,21 @@ public class ComposeActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
         initViews();
+
+        // todo move this part into a function
+        int mailId = getIntent().getIntExtra("mail_id", -1);
+        MailRepository mailRepository = BmailApplication.getInstance().getMailRepository();
+        if (mailId != -1) {
+            Mail mail = mailRepository.getMailById(mailId);
+            // fill the content from the mail
+            if (mail != null) {
+                etTo.setText(String.join(", ", mail.getTo()));
+                etSubject.setText(mail.getTitle());
+                etMessage.setText(mail.getBody());
+            }
+        }
+
+
         setupViewModel();
         setupListeners();
     }
@@ -76,6 +92,7 @@ public class ComposeActivity extends AppCompatActivity {
 
     @Override
     public boolean onSupportNavigateUp() {
+        // todo update the same draft if the mail is a draft
         String to = etTo.getText().toString().trim();
         String subject = etSubject.getText().toString().trim();
         String message = etMessage.getText().toString().trim();

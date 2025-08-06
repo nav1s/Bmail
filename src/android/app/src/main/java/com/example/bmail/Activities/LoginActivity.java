@@ -75,6 +75,7 @@ public class LoginActivity extends Activity {
         loginViewModel.login(username, password);
         SharedPreferences prefs = getSharedPreferences("user_prefs", Context.MODE_PRIVATE);
         String token = prefs.getString("auth_token", null);
+        // todo display error message if login fails
         // check if token is null
         if (token == null) {
             Log.i("foo", "No token found in SharedPreferences.");
