@@ -39,6 +39,12 @@
             android:title="@string/trash"
             android:icon="@android:drawable/ic_menu_delete" />
 
+        <item
+            android:id="@+id/nav_all_mail"
+            android:orderInCategory="7"
+            android:title="@string/all_mail"
+            android:icon="@drawable/ic_folder" />
+
     </group>
     <group android:id="@+id/nav_custom_labels">
         <item
