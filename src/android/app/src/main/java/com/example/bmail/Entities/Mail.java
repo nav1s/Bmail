@@ -24,6 +24,8 @@ public class Mail {
     private List<String> to;
     @Expose
     private Boolean draft;
+    @Expose
+    private List<Integer> LabelsIds;
 
     public Mail(){}
     // Constructor for sending new mails (without ID as it breaks the server)
@@ -94,5 +96,13 @@ public class Mail {
                 ", to=" + to +
                 ", draft=" + draft +
                 '}';
+    }
+
+    public List<Integer> getLabelsIds() {
+        return LabelsIds;
+    }
+
+    public void setLabelsIds(List<Integer> labelsIds) {
+        LabelsIds = labelsIds;
     }
 }
