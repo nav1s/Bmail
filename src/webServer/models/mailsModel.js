@@ -21,24 +21,23 @@ const { Schema, model, Types } = require('mongoose');
  * @property {Date} createdAt
  * @property {Date} updatedAt
  */
+const MailSchema = new Schema({
+  from: { type: String, required: true, public: true },
+  to: { type: [String], required: true, public: true },
+  title: { type: String, required: true, public: true },
+  body: { type: String, required: true, public: true },
+  draft: { type: Boolean, default: false, public: true },
+  labels: [{ type: Schema.Types.ObjectId, ref: 'Label', public: true }],
+  urls: { type: [String], public: true },
+  deletedBySender: { type: Boolean, default: false }, // not public
+  deletedByRecipient: { type: [String], default: [] }, // not public
+}, { timestamps: true });
 
-const MailSchema = new Schema(
-  {
-    from: { type: String, required: true, index: true },
-    to: { type: [String], required: true, index: true },
-    title: { type: String, required: true },
-    body: { type: String, required: true },
-    draft: { type: Boolean, default: false },
-    labels: [{ type: Types.ObjectId, ref: 'Label', index: true }],
-    urls: { type: [String], default: [] },
-    deletedBySender: { type: Boolean, default: false },
-    deletedByRecipient: { type: [String], default: [] }
-  },
-  { timestamps: true }
-);
+MailSchema.path('createdAt').options.public = true;
+MailSchema.path('updatedAt').options.public = true;
 
-// Simple text search for title/body
-MailSchema.index({ title: 'text', body: 'text' });
+module.exports = mongoose.model('Mail', MailSchema);
+
 
 /**
  * @type {import('mongoose').Model<MailDoc>}

@@ -7,6 +7,9 @@
 
 const { Schema, model, Types } = require('mongoose');
 
+/** System default label names */
+const SYSTEM_DEFAULT_LABELS = ['inbox', 'sent', 'drafts', 'spam', 'trash'];
+
 /**
  * @typedef LabelDoc
  * @property {Types.ObjectId} _id
@@ -29,4 +32,7 @@ const LabelSchema = new Schema(
 // Defining unique label names per user
 LabelSchema.index({ userId: 1, name: 1 }, { unique: true });
 
-module.exports = model('Label', LabelSchema);
+module.exports = {
+  Label: model('Label', LabelSchema),
+  SYSTEM_DEFAULT_LABELS
+};
