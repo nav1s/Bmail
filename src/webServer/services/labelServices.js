@@ -1,5 +1,7 @@
 const { Label, SYSTEM_DEFAULT_LABELS } = require('../models/labelsModel');
 const { createError } = require('../utils/error');
+const { Types } = require('mongoose');
+const { validateUserId } = require('./userServices');
 
 /**
  * Get labels for a user.
@@ -12,6 +14,7 @@ const { createError } = require('../utils/error');
  */
 async function getLabelsForUser(userId, name = null) {
   try {
+    validateUserId(userId);
     const query = { userId };
 
     if (name !== null) {
@@ -33,18 +36,30 @@ async function getLabelsForUser(userId, name = null) {
 
 /**
  * Get a label by its id for a specific user.
+ * Validates ObjectId format and enforces ownership.
  *
- * @param {string} labelId - The label's ObjectId string.
  * @param {import('mongoose').Types.ObjectId|string} userId - The user's ID.
+ * @param {string} labelId - The label's ObjectId string.
  * @returns {Promise<import('../models/labelsModel').LabelDoc>}
- * @throws {Error} If label is not found for this user.
+ * @throws {Error} 400 if id(s) are invalid, 404 if not found for this user.
  */
 async function getLabelForUserById(userId, labelId) {
   try {
-    const label = await Label.findOne({ _id: labelId, userId }).lean();
+    // Validate both IDs
+    validateUserId(userId);
+    if (!Types.ObjectId.isValid(labelId)) {
+      throw createError('Label ID is invalid', { type: 'VALIDATION', status: 400 });
+    }
+
+    const label = await Label.findOne({
+      _id: new Types.ObjectId(labelId),
+      userId: new Types.ObjectId(userId),
+    }).lean();
+
     if (!label) {
       throw createError('Label not found', { type: 'NOT_FOUND', status: 404 });
     }
+
     return label;
   } catch (err) {
     throw err;
@@ -63,19 +78,30 @@ async function getLabelForUserById(userId, labelId) {
  */
 async function addLabelForUser(userId, name, system = false, attachable = true) {
   try {
+    // Validate the user ID format
+    validateUserId(userId);
+
     // Validate the label name format
     validateLabelName(name);
+
+    // Block system names
+    if (SYSTEM_DEFAULT_LABELS.includes(name.trim().toLowerCase())) {
+      throw createError('Cannot create a label with a reserved system name', {
+        type: 'VALIDATION', status: 400
+      });
+    }
+
 
     // Check for duplicate name for this user (case-insensitive)
     const duplicate = await Label.findOne({
       userId,
-      name: { $regex: `^${name}$`, $options: 'i' }
+      name: { $regex: `^${name}$`, $options: 'i' },
     }).lean();
 
     if (duplicate) {
       throw createError('Label with this name already exists', {
         type: 'VALIDATION',
-        status: 400
+        status: 400,
       });
     }
 
@@ -102,28 +128,41 @@ function validateLabelName(name) {
 
 
 /**
- * Updates the name/system of a label.
- * - Validates name format
- * - Ensures label belongs to user
- * - Blocks updates to system/default labels
- * - Enforces per-user uniqueness
+ * Updates the name of a custom label for a given user.
+ * 
+ * @param {string|ObjectId} userId - The ID of the user who owns the label.
+ * @param {string|ObjectId} labelId - The label's ID.
+ * @param {string} newName - The new label name.
+ * @returns {Promise<Object>} Updated label document as plain object.
+ * @throws {Error} If validation fails or label cannot be updated.
  */
 async function updateLabelForUser(userId, labelId, newName) {
   try {
+    // Validate IDs
+    validateUserId(userId);
+    validateLabelId(labelId);
+
+    // Validate new name format
     validateLabelName(newName);
 
-    // Find the label by both user + id to enforce ownership
+    // Find the label by user and ID
     const label = await Label.findOne({ _id: labelId, userId });
     if (!label) {
       throw createError('Label not found', { type: 'NOT_FOUND', status: 404 });
     }
 
-    // Block updates to system/default labels
+    // Prevent updating default/system labels
     if (label.system === true || SYSTEM_DEFAULT_LABELS.includes(label.name.toLowerCase())) {
       throw createError('Cannot update default label', { type: 'VALIDATION', status: 400 });
     }
+    if (SYSTEM_DEFAULT_LABELS.includes(newName.trim().toLowerCase())) {
+      throw createError('Cannot create a label with a reserved system name', {
+        type: 'VALIDATION',
+        status: 400
+      });
+    }
 
-    // Per-user uniqueness check (case-insensitive)
+    // Check for duplicates in this user's labels (case-insensitive)
     const duplicate = await Label.findOne({
       userId,
       name: { $regex: `^${newName}$`, $options: 'i' },
@@ -131,14 +170,19 @@ async function updateLabelForUser(userId, labelId, newName) {
     }).lean();
 
     if (duplicate) {
-      throw createError('Label with this name already exists', { type: 'VALIDATION', status: 400 });
+      throw createError('Label with this name already exists', {
+        type: 'VALIDATION',
+        status: 400
+      });
     }
 
+    // Update and save
     label.name = newName.trim();
     await label.save();
+
     return label.toObject();
   } catch (err) {
-    // Also handle unique index violations
+    // Handle unique index violation errors
     if (err && err.code === 11000) {
       throw createError('Label with this name already exists', { type: 'VALIDATION', status: 400 });
     }
@@ -146,33 +190,44 @@ async function updateLabelForUser(userId, labelId, newName) {
   }
 }
 
+
 /**
  * Deletes a label for a specific user by ID.
+ * - Validates userId and labelId
+ * - Ensures the label belongs to the user
+ * - Blocks deletion of system/default labels
  *
- * @param {import('mongoose').Types.ObjectId|string} userId - The ID of the user.
- * @param {import('mongoose').Types.ObjectId|string} labelId - The ID of the label to delete.
+ * @param {import('mongoose').Types.ObjectId|string} userId
+ * @param {import('mongoose').Types.ObjectId|string} labelId
  * @returns {Promise<void>}
- * @throws {Error} If the label is not found or is a system/default label.
+ * @throws {Error} 400 if IDs invalid, 404 if not found, 400 if system/default
  */
 async function deleteLabelForUser(userId, labelId) {
   try {
-    // Find the label for this user
-    const label = await Label.findOne({ _id: labelId, userId }).lean();
+    validateUserId(userId);
+    validateLabelId(labelId);
+
+    const uId = new Types.ObjectId(userId);
+    const lId = new Types.ObjectId(labelId);
+
+    // Ensure the label exists and is owned by the user
+    const label = await Label.findOne({ _id: lId, userId: uId }).lean();
     if (!label) {
       throw createError('Label not found', { type: 'NOT_FOUND', status: 404 });
     }
 
-    // Protect default/system labels
+    // Prevent deleting system/default labels
     if (label.system === true || SYSTEM_DEFAULT_LABELS.includes(label.name.toLowerCase())) {
       throw createError('Cannot delete default label', { type: 'VALIDATION', status: 400 });
     }
 
-    // Delete
-    await Label.deleteOne({ _id: labelId, userId });
+    // Perform deletion
+    await Label.deleteOne({ _id: lId, userId: uId });
   } catch (err) {
     throw err;
   }
 }
+
 
 
 /**
@@ -226,6 +281,14 @@ async function getSystemLabelId(userId, systemName) {
   await ensureDefaultLabels(userId);
   return getLabelIdByName(userId, systemName);
 }
+
+function validateLabelId(labelId) {
+  if (!Types.ObjectId.isValid(labelId)) {
+    throw createError('Label ID is invalid', { type: 'VALIDATION', status: 400 });
+  }
+  return new Types.ObjectId(labelId);
+}
+
 
 
 

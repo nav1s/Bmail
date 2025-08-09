@@ -1,10 +1,3 @@
-/**
- * @file models/labelsModel.js
- * @description Mongoose schema & model for user labels.
- * A label belongs to a user and can be "system" (inbox, sent, drafts, spam, trash)
- * or user-defined. We do NOT store mail IDs on labels; mails reference labels.
- */
-
 const { Schema, model, Types } = require('mongoose');
 
 /** System default label names */

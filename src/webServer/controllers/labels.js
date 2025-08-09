@@ -9,7 +9,6 @@ const {
   getLabelForUserById,
   deleteLabelForUser,
   updateLabelForUser,
-  ensureDefaultLabels,
 } = require('../services/labelServices');
 
 function isValidObjectId(id) {
@@ -17,13 +16,15 @@ function isValidObjectId(id) {
 }
 
 /**
- * GET /api/labels
- * Expects: none
+ * Lists all labels for the authenticated user.
+ * Also ensures that system default labels exist for that user.
+ *
+ * @param {object} req - Express request object (requires `req.user.id`)
+ * @param {object} res - Express response object
  */
 async function listLabels(req, res) {
   const userId = req.user.id;
   try {
-    await ensureDefaultLabels(userId);
     const labels = await getLabelsForUser(userId);
     return ok(res, labels);
   } catch (err) {
@@ -32,8 +33,12 @@ async function listLabels(req, res) {
 }
 
 /**
- * POST /api/labels
- * Expects: body { name: string }
+ * Creates a new custom label for the authenticated user.
+ *
+ * @param {object} req - Express request object
+ * @param {object} req.body - Request body
+ * @param {string} req.body.name - Name of the label (non-empty string)
+ * @param {object} res - Express response object
  */
 async function createLabel(req, res) {
   const userId = req.user.id;
@@ -45,9 +50,6 @@ async function createLabel(req, res) {
     return badRequest(res, 'Body must contain exactly one field: "name"');
   }
   const name = req.body.name.trim();
-  if (name === '') {
-    return badRequest(res, 'Label name must be a non-empty string');
-  }
 
   try {
     const label = await addLabelForUser(userId, name);
@@ -58,15 +60,19 @@ async function createLabel(req, res) {
 }
 
 /**
- * GET /api/labels/:id
- * Expects: param id (string)
+ * Retrieves a label (owned by the authenticated user) by its ID.
+ *
+ * @param {object} req - Express request object
+ * @param {object} req.params - Route params
+ * @param {string} req.params.id - Label identifier (required, non-empty string)
+ * @param {object} res - Express response object
  */
 async function getLabelById(req, res) {
   const userId = req.user.id;
   const id = req.params.id;
 
-  if (!isValidObjectId(id)) {
-    return badRequest(res, 'Label ID is invalid');
+  if (typeof id !== 'string' || id.trim() === '') {
+    return badRequest(res, 'Label ID is required');
   }
 
   try {
@@ -77,17 +83,24 @@ async function getLabelById(req, res) {
   }
 }
 
+
 /**
- * PATCH /api/labels/:id
- * Expects: param id (string), body { name: string }
+ * Updates the name of a custom label for the authenticated user.
+ *
+ * Expects:
+ * - req.params.id: string (Label ID)
+ * - req.body.name: string (non-empty)
  */
 async function updateLabelById(req, res) {
   const userId = req.user.id;
-  const id = req.params.id;
+  const labelId = req.params.id;
 
-  if (!isValidObjectId(id)) {
-    return badRequest(res, 'Label ID is invalid');
+  // Ensure label ID is provided
+  if (!labelId) {
+    return badRequest(res, 'Label ID is required');
   }
+
+  // Ensure request body has only "name" and it's a non-empty string
   if (!req.body || typeof req.body !== 'object') {
     return badRequest(res, 'Request body is required');
   }
@@ -100,27 +113,30 @@ async function updateLabelById(req, res) {
   }
 
   try {
-    const updated = await updateLabelForUser(userId, id, name);
+    const updated = await updateLabelForUser(userId, labelId, name);
     return ok(res, updated);
   } catch (err) {
     return httpError(res, err);
   }
 }
 
+
 /**
- * DELETE /api/labels/:id
- * Expects: param id (string)
+ * Deletes a custom label owned by the authenticated user.
+ *
+ * Expects:
+ * - req.params.id: string (label identifier, required; service will validate format)
  */
 async function deleteLabelById(req, res) {
   const userId = req.user.id;
-  const id = req.params.id;
+  const labelId = req.params.id;
 
-  if (!isValidObjectId(id)) {
-    return badRequest(res, 'Label ID is invalid');
+  if (typeof labelId !== 'string' || labelId.trim() === '') {
+    return badRequest(res, 'Label ID is required');
   }
 
   try {
-    await deleteLabelForUser(userId, id);
+    await deleteLabelForUser(userId, labelId); // service validates ObjectId & ownership
     return noContent(res);
   } catch (err) {
     return httpError(res, err);
