@@ -1,7 +1,9 @@
 // services/mailServices.js
-const Mail = require('../models/mailsModel');
 const { Types } = require('mongoose');
 const { createError } = require('../utils/error');
+const Mail = require('../models/mailsModel');
+const { Label } = require('../models/labelsModel');
+
 
 /**
  * Filters a Mail document to return only the public-facing fields.
@@ -26,8 +28,6 @@ function filterMailForOutput(mail) {
 
   return output;
 }
-
-
 
 /**
  * Checks if a given user can access a mail.
@@ -241,54 +241,55 @@ async function searchMailsForUser(username, searchString, limit = 50) {
   }
 }
 
-
-const createError = require('../utils/createError');
-const { Types } = require('mongoose');
-
 /**
  * Adds a label to a mail.
  * @param {string} mailId - The ID of the mail.
  * @param {string} labelId - The ID of the label to add.
+ * @param {string} username - The acting username (for access checks).
  * @returns {Promise<object>} Updated mail.
- * @throws {Error} If mail not found or label already attached.
+ * @throws {Error} If mail not found, user has no access, label not attachable, or label already attached.
  */
-async function addLabelToMail(mailId, labelId) {
+async function addLabelToMail(mailId, labelId, username) {
   try {
-    const mail = await Mail.findById(mailId).lean();
+    // Fetch the mail and check access
+    const mail = await Mail.findById(mailId);
     if (!mail) {
       throw createError('Mail not found', { status: 404 });
     }
 
-    console.log(`Adding label ${labelId} to mail ${mailId}`);
-    console.log(`Mail before adding label:`, mail);
+    if (canUserAccessMail(mail, username) === false) {
+      throw createError('User does not have access to this mail', { status: 403 });
+    }
 
-    if (!mail.labels) {
-      mail.labels = [];
+    // Fetch the label and check if attachable
+    const label = await Label.findById(labelId).lean();
+    if (!label) {
+      throw createError('Label not found', { status: 404 });
+    }
+    if (!label.attachable) {
+      throw createError('This label cannot be manually attached', { type: 'VALIDATION', status: 400 });
     }
 
     // Check if label is already attached
-    if (mail.labels.some(l => l.toString() === labelId)) {
+    if ((mail.labels || []).some(l => l.toString() === labelId)) {
       throw createError('Label already attached to this mail', { status: 400 });
     }
 
-    // Add label
+    console.log(`Adding label ${labelId} to mail ${mailId}`);
+    console.log(`Mail before adding label:`, mail.toObject ? mail.toObject() : mail);
+
     const updated = await Mail.findByIdAndUpdate(
       mailId,
       { $addToSet: { labels: new Types.ObjectId(labelId) } },
       { new: true }
     ).lean();
 
-    return updated;
+    return filterMailForOutput(updated);
   } catch (err) {
     throw err;
   }
 }
 
-
-const { Types } = require('mongoose');
-const { createError } = require('../utils/error');
-const Mail = require('../models/mailsModel');
-const { canUserAccessMail, filterMailForOutput } = require('../services/mailServices'); // adjust import if needed
 
 /**
  * Removes a label from a mail for a given user.
@@ -301,6 +302,7 @@ const { canUserAccessMail, filterMailForOutput } = require('../services/mailServ
 async function removeLabelFromMail(mailId, labelId, username) {
   try {
     const mail = await Mail.findById(mailId);
+    // Check for mail existance and user access
     if (!mail) {
       throw createError('Mail not found', { status: 404 });
     }
@@ -309,9 +311,20 @@ async function removeLabelFromMail(mailId, labelId, username) {
       throw createError('User does not have access to this mail', { status: 403 });
     }
 
-    const hasLabel = (mail.labels || []).some(l => l.toString() === labelId);
-    if (!hasLabel) {
+    // Check if label exists in DB
+    const label = await Label.findById(labelId).lean();
+    if (!label) {
+      throw createError('Label not found', { status: 404 });
+    }
+
+    // Check if label is attached to this mail
+    if (!(mail.labels || []).some(l => l.toString() === labelId)) {
       throw createError('Label not found on this mail', { status: 404 });
+    }
+
+    // Check if label can be removed
+    if (!label.attachable) {
+      throw createError('This label cannot be manually removed', { type: 'VALIDATION', status: 400 });
     }
 
     console.log(`Removing label ${labelId} from mail ${mailId}`);

@@ -2,26 +2,46 @@ const { Label, SYSTEM_DEFAULT_LABELS } = require('../models/labelsModel');
 const { createError } = require('../utils/error');
 
 /**
- * Get all labels for a user.
- * @param {import('mongoose').Types.ObjectId|string} userId
+ * Get labels for a user.
+ * If `name` is provided, returns only that label (case-insensitive) or throws if not found.
+ * Otherwise, returns all labels for the user.
+ *
+ * @param {import('mongoose').Types.ObjectId|string} userId - The user's ID.
+ * @param {string} [name = null] - Optional label name to filter by.
  * @returns {Promise<import('../models/labelsModel').LabelDoc[]>}
  */
-async function getLabelsForUser(userId) {
+async function getLabelsForUser(userId, name = null) {
   try {
-    return await Label.find({ userId }).lean();
+    const query = { userId };
+
+    if (name !== null) {
+      query.name = { $regex: `^${name}$`, $options: 'i' }; // case-insensitive exact match
+      const label = await Label.findOne(query).lean();
+      if (!label) {
+        throw createError('Label not found', { type: 'NOT_FOUND', status: 404 });
+      }
+      return [label];
+    }
+
+    return await Label.find(query).lean();
   } catch (err) {
     throw err;
   }
 }
 
+
+
 /**
- * Get a label by its id.
- * @param {string} labelId
+ * Get a label by its id for a specific user.
+ *
+ * @param {string} labelId - The label's ObjectId string.
+ * @param {import('mongoose').Types.ObjectId|string} userId - The user's ID.
  * @returns {Promise<import('../models/labelsModel').LabelDoc>}
+ * @throws {Error} If label is not found for this user.
  */
-async function getLabelById(labelId) {
+async function getLabelForUserById(userId, labelId) {
   try {
-    const label = await Label.findById(labelId).lean();
+    const label = await Label.findOne({ _id: labelId, userId }).lean();
     if (!label) {
       throw createError('Label not found', { type: 'NOT_FOUND', status: 404 });
     }
@@ -31,39 +51,42 @@ async function getLabelById(labelId) {
   }
 }
 
-/**
- * Get a label by name.
- * @param {import('mongoose').Types.ObjectId|string} userId
- * @param {string} name
- * @returns {Promise<import('../models/labelsModel').LabelDoc>}
- */
-async function getLabelByName(userId, name) {
-  try {
-    const label = await Label.findOne({ userId, name }).lean();
-    if (!label) {
-      throw createError('Label not found', { type: 'NOT_FOUND', status: 404 });
-    }
-    return label;
-  } catch (err) {
-    throw err;
-  }
-}
 
 /**
- * Create a label.
- * @param {import('mongoose').Types.ObjectId|string} userId
- * @param {string} name
- * @param {boolean} [system=false]
- * @returns {Promise<import('../models/labelsModel').LabelDoc>}
+ * Adds a new label for a given user.
+ * @param {import('mongoose').Types.ObjectId|string} userId - The user's ID.
+ * @param {string} name - The label's name.
+ * @param {boolean} [system=false] - Whether this is a system label.
+ * @param {boolean} [attachable=true] - Whether this label can be manually attached/removed.
+ * @returns {Promise<import('../models/labelsModel').LabelDoc>} The created label document.
+ * @throws {Error} If the label name already exists or is invalid.
  */
-async function createLabel(userId, name, system = false) {
+async function addLabelForUser(userId, name, system = false, attachable = true) {
   try {
-    const doc = await Label.create({ userId, name, system });
+    // Validate the label name format
+    validateLabelName(name);
+
+    // Check for duplicate name for this user (case-insensitive)
+    const duplicate = await Label.findOne({
+      userId,
+      name: { $regex: `^${name}$`, $options: 'i' }
+    }).lean();
+
+    if (duplicate) {
+      throw createError('Label with this name already exists', {
+        type: 'VALIDATION',
+        status: 400
+      });
+    }
+
+    // Create and save label
+    const doc = await Label.create({ userId, name, system, attachable });
     return doc.toObject();
   } catch (err) {
     throw err;
   }
 }
+
 
 
 /** simple format validation; you can also keep this in controller if you prefer */
@@ -75,6 +98,8 @@ function validateLabelName(name) {
     });
   }
 }
+
+
 
 /**
  * Updates the name/system of a label.
@@ -159,23 +184,30 @@ async function deleteLabelForUser(userId, labelId) {
 async function ensureDefaultLabels(userId) {
   try {
     const existing = await Label.find({ userId }, { name: 1 }).lean();
-    const existingNames = new Set(existing.map(l => l.name));
+    const existingNames = new Set(existing.map(l => l.name.toLowerCase()));
     const toCreate = SYSTEM_DEFAULT_LABELS.filter(n => !existingNames.has(n));
 
     if (toCreate.length === 0) return;
 
-    const docs = toCreate.map(name => ({ userId, name, system: true }));
+    const docs = toCreate.map(name => ({
+      userId,
+      name,
+      system: true,
+      attachable: !['sent', 'drafts'].includes(name.toLowerCase()),
+    }));
+
     await Label.insertMany(docs, { ordered: false }).catch(() => {});
   } catch (err) {
     throw err;
   }
 }
 
+
+
 module.exports = {
   getLabelsForUser,
-  getLabelById,
-  getLabelByName,
-  createLabel,
+  getLabelForUserById,
+  addLabelForUser,
   updateLabelForUser,
   deleteLabelForUser,
   ensureDefaultLabels
