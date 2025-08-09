@@ -4,42 +4,89 @@ const { created, ok, noContent, badRequest } = require('../utils/httpResponses')
 const { httpError } = require('../utils/error');
 
 const {
+  // service entrypoints
   buildMail,
   getMailsForUser,
-  findMailById,
-  editMail,
+  findMailByIdForUser,
+  editMailForUser,
   deleteMail,
   searchMailsForUser,
   addLabelToMail,
-  removeLabelFromMail
+  removeLabelFromMail,
 } = require('../services/mailServices');
 
-const { getSystemLabelId, getLabelIdByName } = require('../services/labelServices');
-const { anyUrlBlacklisted, addUrlsToBlacklist } = require('../services/blacklistService');
+const {
+  getSystemLabelId,
+  getLabelIdByName,
+} = require('../services/labelServices');
 
-function isValidObjectId(id) {
-  return Types.ObjectId.isValid(id);
-}
+const isValidObjectId = (id) => Types.ObjectId.isValid(id);
 
 /**
  * GET /api/mails
- * Query params:
- *   labelId (optional) - ObjectId string of label to filter by
- *   limit (optional) - number of results (default 50)
+ * List inbox for the current user (excludes spam/trash by default).
+ * Optional query:
+ *   - labelId: string (ObjectId) — filter by label
+ *   - limit: number — max number of mails (default 50)
  */
-async function listMails(req, res) {
-  const userId = req.user.id;
+async function listInbox(req, res) {
   const username = req.user.username;
+  const userId = req.user.id;
   const { labelId = null, limit = 50 } = req.query;
 
-  if (labelId !== null && !isValidObjectId(labelId)) {
+  if (labelId && !isValidObjectId(labelId)) {
     return badRequest(res, 'Label ID must be a valid ObjectId');
   }
 
   try {
+    // System labels used for default inbox filtering
     const spamId = await getSystemLabelId(userId, 'spam');
     const trashId = await getSystemLabelId(userId, 'trash');
-    const mails = await getMailsForUser(username, spamId, trashId, labelId, Number(limit));
+
+    const mails = await getMailsForUser(
+      username,
+      spamId,
+      trashId,
+      labelId || null,
+      Number(limit)
+    );
+
+    return ok(res, mails);
+  } catch (err) {
+    return httpError(res, err);
+  }
+}
+
+/**
+ * GET /api/mails/byLabel/:label
+ * List mails for a given label.
+ * - :label can be either a label ObjectId or a label name (case-insensitive).
+ * Optional query:
+ *   - limit: number — max number of mails (default 50)
+ */
+async function listMailsByLabel(req, res) {
+  const username = req.user.username;
+  const userId = req.user.id;
+  const { label } = req.params;
+  const { limit = 50 } = req.query;
+
+  try {
+    const spamId = await getSystemLabelId(userId, 'spam');
+    const trashId = await getSystemLabelId(userId, 'trash');
+
+    // Accept either a label id or a name
+    const labelId = isValidObjectId(label)
+      ? label
+      : await getLabelIdByName(userId, label);
+
+    const mails = await getMailsForUser(
+      username,
+      spamId,
+      trashId,
+      labelId,
+      Number(limit)
+    );
+
     return ok(res, mails);
   } catch (err) {
     return httpError(res, err);
@@ -48,45 +95,39 @@ async function listMails(req, res) {
 
 /**
  * POST /api/mails
- * Body: { title, body, to: string[], draft: boolean }
- * Creates a new mail (or draft) for the logged-in user.
+ * Create a new mail or draft for the current user.
+ * Required body: { title: string, body: string, to: string[], draft?: boolean }
+ * Notes:
+ *   - Validation & auto-labeling (sent/drafts/spam) happen in the service.
  */
 async function createMail(req, res) {
   const userId = req.user.id;
   const username = req.user.username;
-  const { title, body, to, draft } = req.body;
+  const { title, body, to, draft } = req.body || {};
 
   if (!title || !body || !Array.isArray(to)) {
     return badRequest(res, 'Missing required fields: title, body, to[]');
   }
 
   try {
-    // Build mail object with initial labels
-    const mailData = {
-      from: username,
-      to,
-      title,
-      body,
-      draft: Boolean(draft),
-      labels: []
-    };
+    const spamId   = await getSystemLabelId(userId, 'spam');
+    const sentId   = await getSystemLabelId(userId, 'sent');
+    const draftsId = await getSystemLabelId(userId, 'drafts');
 
-    // Auto-assign default label
-    if (draft) {
-      const draftsId = await getSystemLabelId(userId, 'drafts');
-      mailData.labels.push(draftsId);
-    } else {
-      const sentId = await getSystemLabelId(userId, 'sent');
-      mailData.labels.push(sentId);
-    }
+    const newMail = await buildMail(
+      {
+        from: username,
+        to,
+        title,
+        body,
+        draft: Boolean(draft),
+      },
+      {
+        userId,
+        system: { spamId, sentId, draftsId },
+      }
+    );
 
-    // If any URL in the mail is blacklisted, auto-tag as spam
-    if (await anyUrlBlacklisted((mailData.urls || []))) {
-      const spamId = await getSystemLabelId(userId, 'spam');
-      mailData.labels.push(spamId);
-    }
-
-    const newMail = await buildMail(mailData);
     return created(res, newMail);
   } catch (err) {
     return httpError(res, err);
@@ -95,14 +136,14 @@ async function createMail(req, res) {
 
 /**
  * GET /api/mails/:id
+ * Return a single mail if the current user has access to it.
  */
 async function getMailById(req, res) {
   const id = req.params.id;
-  if (!isValidObjectId(id)) {
-    return badRequest(res, 'Mail ID must be a valid ObjectId');
-  }
+  if (!isValidObjectId(id)) return badRequest(res, 'Mail ID must be a valid ObjectId');
+
   try {
-    const mail = await findMailById(id);
+    const mail = await findMailByIdForUser(id, req.user.username);
     return ok(res, mail);
   } catch (err) {
     return httpError(res, err);
@@ -111,15 +152,15 @@ async function getMailById(req, res) {
 
 /**
  * PATCH /api/mails/:id
- * Body: Partial mail fields (only drafts can be edited)
+ * Edit a draft mail. Only the owner (from=me) may edit drafts.
+ * Body may include title/body (service will whitelist & validate).
  */
-async function updateMail(req, res) {
+async function updateMailById(req, res) {
   const id = req.params.id;
-  if (!isValidObjectId(id)) {
-    return badRequest(res, 'Mail ID must be a valid ObjectId');
-  }
+  if (!isValidObjectId(id)) return badRequest(res, 'Mail ID must be a valid ObjectId');
+
   try {
-    const updated = await editMail(id, req.body);
+    const updated = await editMailForUser(id, req.user.username, req.body || {});
     return ok(res, updated);
   } catch (err) {
     return httpError(res, err);
@@ -128,13 +169,12 @@ async function updateMail(req, res) {
 
 /**
  * DELETE /api/mails/:id
- * Marks a mail as deleted (or permanently removes if all parties deleted)
+ * Soft-deletes for the current user; hard-deletes when no one can access anymore.
  */
-async function removeMail(req, res) {
+async function deleteMailById(req, res) {
   const id = req.params.id;
-  if (!isValidObjectId(id)) {
-    return badRequest(res, 'Mail ID must be a valid ObjectId');
-  }
+  if (!isValidObjectId(id)) return badRequest(res, 'Mail ID must be a valid ObjectId');
+
   try {
     await deleteMail(id, req.user.username);
     return noContent(res);
@@ -144,14 +184,14 @@ async function removeMail(req, res) {
 }
 
 /**
- * GET /api/mails/search?q=...
- * Full-text search for mails visible to the user
+ * GET /api/mails/search/:query
+ * Full-text search across title/body for mails accessible by the current user.
+ * Also accepts ?q=... for compatibility.
  */
 async function searchMails(req, res) {
-  const q = req.query.q;
-  if (!q || typeof q !== 'string') {
-    return badRequest(res, 'Missing search query');
-  }
+  const q = req.params.query || req.query.q;
+  if (!q || typeof q !== 'string') return badRequest(res, 'Missing search query');
+
   try {
     const results = await searchMailsForUser(req.user.username, q);
     return ok(res, results);
@@ -160,58 +200,37 @@ async function searchMails(req, res) {
   }
 }
 
-/**
- * POST /api/mails/:id/labels/:labelId
- * Attach a label to a mail (manual labeling)
- */
-async function attachLabel(req, res) {
-  const { id, labelId } = req.params;
-  if (!isValidObjectId(id) || !isValidObjectId(labelId)) {
+// POST /api/mails/:mailId/labels
+async function attachLabelToMail(req, res) {
+  const { mailId } = req.params;
+  const { labelId } = req.body || {};
+
+  if (!isValidObjectId(mailId) || !isValidObjectId(labelId)) {
     return badRequest(res, 'IDs must be valid ObjectIds');
   }
+
   try {
-    const updated = await addLabelToMail(id, labelId, req.user.username);
+    const updated = await addLabelToMail(mailId, labelId, req.user.username, req.user.id);
     return ok(res, updated);
   } catch (err) {
     return httpError(res, err);
   }
 }
 
+
 /**
- * DELETE /api/mails/:id/labels/:labelId
- * Remove a label from a mail (manual unlabeling)
+ * DELETE /api/mails/:mailId/labels/:labelId
+ * Detach a label from a mail.
  */
-async function detachLabel(req, res) {
-  const { id, labelId } = req.params;
-  if (!isValidObjectId(id) || !isValidObjectId(labelId)) {
+async function detachLabelFromMail(req, res) {
+  const { mailId, labelId } = req.params;
+
+  if (!isValidObjectId(mailId) || !isValidObjectId(labelId)) {
     return badRequest(res, 'IDs must be valid ObjectIds');
   }
+
   try {
-    const updated = await removeLabelFromMail(id, labelId, req.user.username);
-    return ok(res, updated);
-  } catch (err) {
-    return httpError(res, err);
-  }
-}
-
-/**
- * POST /api/mails/:id/spam
- * Mark a mail as spam and add its URLs to the blacklist.
- */
-async function markAsSpam(req, res) {
-  const { id } = req.params;
-  if (!isValidObjectId(id)) {
-    return badRequest(res, 'Mail ID must be a valid ObjectId');
-  }
-  try {
-    const spamId = await getSystemLabelId(req.user.id, 'spam');
-    const updated = await addLabelToMail(id, spamId, req.user.username);
-
-    // Add its URLs to blacklist
-    if (updated.urls && updated.urls.length) {
-      await addUrlsToBlacklist(updated.urls);
-    }
-
+    const updated = await removeLabelFromMail(mailId, labelId, req.user.username);
     return ok(res, updated);
   } catch (err) {
     return httpError(res, err);
@@ -219,13 +238,13 @@ async function markAsSpam(req, res) {
 }
 
 module.exports = {
-  listMails,
+  listInbox,
+  listMailsByLabel,
   createMail,
   getMailById,
-  updateMail,
-  removeMail,
+  updateMailById,
+  deleteMailById,
   searchMails,
-  attachLabel,
-  detachLabel,
-  markAsSpam
+  attachLabelToMail,
+  detachLabelFromMail,
 };

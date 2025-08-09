@@ -2,356 +2,340 @@
 const { Types } = require('mongoose');
 const { createError } = require('../utils/error');
 const Mail = require('../models/mailsModel');
-const { Label } = require('../models/labelsModel');
-
+const { anyUrlBlacklisted, addUrlsToBlacklist } = require('./blacklistService');
 
 /**
- * Filters a Mail document to return only the public-facing fields.
- * @param {import('../models/mailsModel').MailDoc} mail
- * @returns {object} filtered mail object
+ * Ensure a value is a non-empty string.
+ * Mirrors labels/users validation behavior.
+ */
+function assertNonEmptyString(field, value) {
+  if (typeof value !== 'string' || value.trim() === '') {
+    throw createError(`${field} must be a non-empty string`, { type: 'VALIDATION', status: 400 });
+  }
+}
+
+/**
+ * Ensure a value is an array of non-empty strings.
+ */
+function assertStringArray(field, arr) {
+  if (!Array.isArray(arr) || arr.length === 0) {
+    throw createError(`${field} must be a non-empty array`, { type: 'VALIDATION', status: 400 });
+  }
+  for (const v of arr) {
+    if (typeof v !== 'string' || v.trim() === '') {
+      throw createError(`${field} must contain non-empty strings`, { type: 'VALIDATION', status: 400 });
+    }
+  }
+}
+
+/**
+ * Extract URLs from a text blob (title/body). Keep simple & robust.
+ */
+function extractUrls(text) {
+  const re = /\bhttps?:\/\/(?:www\.)?[a-zA-Z0-9\-_.]+\.[a-zA-Z]{2,}(?:\/[^\s]*)?\b/g;
+  return text.match(re) || [];
+}
+
+/** Normalize URL (lowercase, trim, strip trailing slash) */
+function normalizeUrl(u) {
+  if (typeof u !== 'string') return null;
+  const s = u.trim().toLowerCase();
+  if (!s) return null;
+  return s.endsWith('/') ? s.slice(0, -1) : s;
+}
+
+/**
+ * Reduce a mail doc/object to a safe output DTO based on schema `public` flags.
+ * (We annotate Mail schema paths with `public` where needed in the model.)
  */
 function filterMailForOutput(mail) {
   const output = {};
   const schemaPaths = Mail.schema.paths;
 
-  Object.keys(schemaPaths).forEach(path => {
-    if (schemaPaths[path].options.public) {
-      output[path === '_id' ? 'id' : path] =
-        path === '_id' ? mail._id.toString() : mail[path];
+  // Include paths flagged as public
+  Object.keys(schemaPaths).forEach((path) => {
+    if (schemaPaths[path].options && schemaPaths[path].options.public) {
+      const key = path === '_id' ? 'id' : path;
+      output[key] = path === '_id' ? String(mail._id) : mail[path];
     }
   });
 
-  // Ensure labels are strings
-  if (output.labels) {
-    output.labels = output.labels.map(l => l.toString());
+  // Normalize labels to string ids if present
+  if (output.labels && Array.isArray(output.labels)) {
+    output.labels = output.labels.map((l) => String(l));
   }
 
   return output;
 }
 
 /**
- * Checks if a given user can access a mail.
- * @param {import('../models/mailsModel').MailDoc} mail
- * @param {string} username
- * @returns {boolean}
+ * Check whether a user can see a mail.
+ * - Sender can see it unless they deleted it.
+ * - Recipient(s) can see it unless it's a draft or they deleted it.
  */
 function canUserAccessMail(mail, username) {
   return (
     (mail.from === username && !mail.deletedBySender) ||
-    (mail.to.includes(username) && !mail.draft && !mail.deletedByRecipient.includes(username))
+    (Array.isArray(mail.to) &&
+      mail.to.includes(username) &&
+      !mail.draft &&
+      !Array.isArray(mail.deletedByRecipient) ? true : !mail.deletedByRecipient.includes(username))
   );
 }
 
-/**
- * Extracts all URLs from a text string.
- * @param {string} text
- * @returns {string[]} array of URLs
- */
-function extractUrls(text) {
-  const re = /\bhttps?:\/\/(?:www\.)?[a-zA-Z0-9\-]+\.[a-zA-Z]{2,}(?:\.[a-zA-Z]{2,})?(?:\/[^\s]*)?\b/g;
-  return text.match(re) || [];
-}
+/* ------------------------------------------------------------------ */
+/* Core service operations                                             */
+/* ------------------------------------------------------------------ */
 
 /**
- * Creates and saves a new mail.
- * @param {object} mailData - Must contain from, to, title, body, draft, labels
- * @returns {Promise<object>} created mail
+ * Create mail/draft; auto-label Sent/Drafts; Spam by Bloom; propagate Spam.
+ * @param {object} mailData - { from, to[], title, body, draft }
+ * @param {object} ctx - { userId, system: { spamId, sentId, draftsId } }
  */
-async function buildMail(mailData) {
-  try {
-    const urls = extractUrls(`${mailData.title} ${mailData.body}`);
-    const mail = await Mail.create({ ...mailData, urls });
-    return filterMailForOutput(mail);
-  } catch (err) {
-    throw err;
+async function buildMail(mailData, { userId, system }) {
+  const { spamId, sentId, draftsId } = system || {};
+
+  // validate
+  assertNonEmptyString('from', mailData.from);
+  assertNonEmptyString('title', mailData.title);
+  assertNonEmptyString('body', mailData.body);
+  assertStringArray('to', mailData.to);
+
+  // urls
+  const rawUrls = extractUrls(`${mailData.title} ${mailData.body}`);
+  const urls = rawUrls.map(normalizeUrl).filter(Boolean);
+
+  // system labels
+  const labels = [];
+  labels.push(mailData.draft ? draftsId : sentId);
+
+  // bloom spam check
+  const isSpam = urls.length > 0 && (await anyUrlBlacklisted(urls));
+  if (isSpam) labels.push(spamId);
+
+  // persist
+  const mail = await Mail.create({ ...mailData, labels, urls });
+
+  // propagation if spam
+  if (isSpam && urls.length) {
+    await addUrlsToBlacklist(urls);
+    await tagMailsWithUrlsAsSpam(userId, mailData.from, urls, spamId);
   }
+
+  return filterMailForOutput(mail.toObject ? mail.toObject() : mail);
 }
 
 /**
- * Retrieves mails for a user with spam/trash exclusion logic.
+ * Get accessible mails for a user, optionally filtered by label.
+ * Excludes spam/trash by default for the inbox view.
  *
- * @param {string} username - User's username.
- * @param {string} spamLabelId - Label ObjectId string for "spam".
- * @param {string} trashLabelId - Label ObjectId string for "trash".
- * @param {string|null} [labelId=null] - Optional label ObjectId string to filter by.
- * @param {number} [limit=50] - Max number of mails to retrieve.
- * @returns {Promise<object[]>}
+ * @param {string} username
+ * @param {string} spamLabelId
+ * @param {string} trashLabelId
+ * @param {string|null} labelId - if provided, returns only mails with this label
+ * @param {number} limit
  */
 async function getMailsForUser(username, spamLabelId, trashLabelId, labelId = null, limit = 50) {
-  try {
-    const and = [
-      {
-        $or: [
-          { from: username, deletedBySender: { $ne: true } },
-          { to: username, draft: false, deletedByRecipient: { $ne: username } },
-        ],
-      },
-    ];
+  const baseQuery = {
+    $or: [
+      // Sent by me (and I didn't delete it)
+      { from: username, deletedBySender: { $ne: true } },
+      // To me (not a draft, and I didn't delete it)
+      { to: username, draft: false, deletedByRecipient: { $ne: username } },
+    ],
+  };
 
-    const spamObjId = new Types.ObjectId(spamLabelId);
-    const trashObjId = new Types.ObjectId(trashLabelId);
+  const and = [];
 
-    if (labelId) {
-      const labelObjId = new Types.ObjectId(labelId);
-
-      if (labelObjId.equals(spamObjId)) {
-        // Show ONLY spam
-        and.push({ labels: spamObjId });
-      } else if (labelObjId.equals(trashObjId)) {
-        // Show ONLY trash
-        and.push({ labels: trashObjId });
-      } else {
-        // Show ONLY the requested label, but still exclude spam/trash
-        and.push({ labels: labelObjId });
-        and.push({ labels: { $nin: [spamObjId, trashObjId] } });
-      }
-    } else {
-      // No label filter → exclude spam & trash
-      and.push({ labels: { $nin: [spamObjId, trashObjId] } });
-    }
-
-    const mails = await Mail.find({ $and: and })
-      .sort({ createdAt: -1 })
-      .limit(limit)
-      .lean();
-
-    return mails.map(filterMailForOutput);
-  } catch (err) {
-    throw err;
+  if (labelId) {
+    // Explicit label filter (show even spam/trash if that label was requested)
+    and.push({ labels: new Types.ObjectId(labelId) });
+  } else {
+    // Inbox behavior: exclude spam + trash
+    and.push({ labels: { $ne: new Types.ObjectId(spamLabelId) } });
+    and.push({ labels: { $ne: new Types.ObjectId(trashLabelId) } });
   }
+
+  const query = and.length ? { $and: [baseQuery, ...and] } : baseQuery;
+
+  const docs = await Mail.find(query)
+    .sort({ createdAt: -1 })
+    .limit(Math.max(1, Number(limit) || 50))
+    .lean();
+
+  return docs.map(filterMailForOutput);
 }
 
-
-
 /**
- * Finds a mail by its ID.
- * @param {string} id - The ObjectId string of the mail.
- * @returns {Promise<object>} - The found mail (plain object).
- * @throws {Error} If no mail is found or the ID is invalid.
+ * Read a mail by id, enforce access, and return the public DTO.
  */
-async function findMailById(id) {
-  try {
-    const mail = await Mail.findById(id).lean();
-    if (!mail) {
-      throw createError('Mail not found', { type: 'NOT_FOUND', status: 404 });
-    }
-    return mail;
-  } catch (err) {
-    throw err;
+async function findMailByIdForUser(id, username) {
+  const mail = await Mail.findById(id);
+  if (!mail) throw createError('Mail not found', { type: 'NOT_FOUND', status: 404 });
+  if (!canUserAccessMail(mail, username)) {
+    throw createError('User does not have access to this mail', { status: 403 });
   }
+  return filterMailForOutput(mail.toObject ? mail.toObject() : mail);
 }
 
-
 /**
- * Edits an existing mail.
- * Only mails currently marked as draft can be edited.
- *
- * @param {string} mailId
- * @param {Partial<import('../models/mailsModel').MailDoc>} updates
- * @returns {Promise<object>} Updated mail
- * @throws {Error} NOT_FOUND if the mail doesn't exist or isn't a draft
+ * Edit a draft (owner-only). Whitelist title/body and re-extract URLs.
+ * @returns {Promise<object>} Updated mail DTO
  */
-async function editMail(mailId, updates) {
-  try {
-    const mail = await Mail.findById(mailId, { draft: 1 }).lean();
-    if (!mail || !mail.draft) {
-      throw createError('Mail not found', { type: 'NOT_FOUND', status: 404 });
-    }
-
-    if (updates.title || updates.body) {
-      updates.urls = extractUrls(`${updates.title || ''} ${updates.body || ''}`);
-    }
-
-    const updated = await Mail.findByIdAndUpdate(mailId, updates, { new: true }).lean();
-    return filterMailForOutput(updated);
-  } catch (err) {
-    throw err;
+async function editMailForUser(mailId, username, updates) {
+  const mail = await Mail.findById(mailId);
+  if (!mail || !mail.draft) {
+    throw createError('Mail not found', { type: 'NOT_FOUND', status: 404 });
   }
+  if (mail.from !== username) {
+    throw createError('User does not have access to edit this draft', { status: 403 });
+  }
+
+  const patch = {};
+
+  if (updates.title != null) {
+    assertNonEmptyString('title', updates.title);
+    patch.title = updates.title;
+  }
+  if (updates.body != null) {
+    assertNonEmptyString('body', updates.body);
+    patch.body = updates.body;
+  }
+
+  // If either text field changed, recompute URLs
+  if (patch.title != null || patch.body != null) {
+    const nextTitle = patch.title != null ? patch.title : mail.title;
+    const nextBody = patch.body != null ? patch.body : mail.body;
+    patch.urls = extractUrls(`${nextTitle} ${nextBody}`);
+  }
+
+  const updated = await Mail.findByIdAndUpdate(mailId, patch, { new: true }).lean();
+  return filterMailForOutput(updated);
 }
 
-
-
-
 /**
- * Deletes or marks a mail as deleted for a user.
- * @param {string} mailId
- * @param {string} username
- * @returns {Promise<object|null>} deleted mail details or null
+ * Soft-delete for the calling user; hard-delete when no party can access.
+ * - If sender: mark deletedBySender = true
+ * - If recipient: push username into deletedByRecipient
  */
 async function deleteMail(mailId, username) {
-  try {
-    const mail = await Mail.findById(mailId);
-    if (!mail) {
-      throw createError('Mail not found', { type: 'NOT_FOUND', status: 404 });
-    }
-    
-    // If draft delete
-    if (mail.draft && mail.from === username) {
-      await mail.deleteOne();
-      return;
-    }
+  const mail = await Mail.findById(mailId);
+  if (!mail) throw createError('Mail not found', { type: 'NOT_FOUND', status: 404 });
 
-    // Delete by sender
-    if (mail.from === username) {
-      mail.deletedBySender = true;
-    }
+  let changed = false;
 
-    // Delete by recepient
-    if (mail.to.includes(username) && !mail.deletedByRecipient.includes(username)) {
+  if (mail.from === username && !mail.deletedBySender) {
+    mail.deletedBySender = true;
+    changed = true;
+  }
+
+  if (Array.isArray(mail.to) && mail.to.includes(username)) {
+    if (!Array.isArray(mail.deletedByRecipient)) mail.deletedByRecipient = [];
+    if (!mail.deletedByRecipient.includes(username)) {
       mail.deletedByRecipient.push(username);
+      changed = true;
     }
+  }
 
-    const allRecipientsDeleted = mail.deletedByRecipient.length === mail.to.length;
-    // All recepients deleted mail
-    if (mail.deletedBySender && allRecipientsDeleted) {
-      await mail.deleteOne();
-      return;
-    }
+  // If neither side can see it anymore, hard-delete
+  const visibleToSender = !mail.deletedBySender && mail.from === username;
+  const visibleToAnyRecipient =
+    Array.isArray(mail.to) && mail.to.some((u) => u !== username && !mail.deletedByRecipient?.includes(u));
 
-    await mail.save();
+  if (!visibleToSender && !visibleToAnyRecipient) {
+    await Mail.deleteOne({ _id: mail._id });
     return;
-  } catch (err) {
-    throw err;
   }
+
+  if (changed) await mail.save();
 }
 
 /**
- * Searches mails for a user using a text search.
- * @param {string} username
- * @param {string} searchString
- * @param {number} [limit=50] - Maximum number of results to return.
- * @returns {Promise<object[]>}
+ * Full-text search within accessible mails (title/body).
+ * Requires a text index on { title, body } in the model.
  */
-async function searchMailsForUser(username, searchString, limit = 50) {
-  try {
-    const mails = await Mail.find({
-      $text: { $search: searchString },
-      $or: [
-        { from: username, deletedBySender: { $ne: true } },
-        { to: username, draft: false, deletedByRecipient: { $ne: username } }
-      ]
-    })
-      .sort({ createdAt: -1 })
-      .limit(limit)
-      .lean();
-
-    return mails.map(filterMailForOutput);
-  } catch (err) {
-    throw err;
+async function searchMailsForUser(username, query) {
+  if (typeof query !== 'string' || query.trim() === '') {
+    throw createError('Query must be a non-empty string', { type: 'VALIDATION', status: 400 });
   }
+
+  // First, fetch candidates via $text
+  const candidates = await Mail.find(
+    { $text: { $search: query } },
+    { score: { $meta: 'textScore' } }
+  )
+    .sort({ score: { $meta: 'textScore' } })
+    .lean();
+
+  // Then, filter by access
+  return candidates.filter((m) => canUserAccessMail(m, username)).map(filterMailForOutput);
 }
 
 /**
- * Adds a label to a mail.
- * @param {string} mailId - The ID of the mail.
- * @param {string} labelId - The ID of the label to add.
- * @param {string} username - The acting username (for access checks).
- * @returns {Promise<object>} Updated mail.
- * @throws {Error} If mail not found, user has no access, label not attachable, or label already attached.
+ * Attach a label to a mail (idempotent), enforcing access.
  */
 async function addLabelToMail(mailId, labelId, username) {
-  try {
-    // Fetch the mail and check access
-    const mail = await Mail.findById(mailId);
-    if (!mail) {
-      throw createError('Mail not found', { status: 404 });
-    }
-
-    if (canUserAccessMail(mail, username) === false) {
-      throw createError('User does not have access to this mail', { status: 403 });
-    }
-
-    // Fetch the label and check if attachable
-    const label = await Label.findById(labelId).lean();
-    if (!label) {
-      throw createError('Label not found', { status: 404 });
-    }
-    if (!label.attachable) {
-      throw createError('This label cannot be manually attached', { type: 'VALIDATION', status: 400 });
-    }
-
-    // Check if label is already attached
-    if ((mail.labels || []).some(l => l.toString() === labelId)) {
-      throw createError('Label already attached to this mail', { status: 400 });
-    }
-
-    console.log(`Adding label ${labelId} to mail ${mailId}`);
-    console.log(`Mail before adding label:`, mail.toObject ? mail.toObject() : mail);
-
-    const updated = await Mail.findByIdAndUpdate(
-      mailId,
-      { $addToSet: { labels: new Types.ObjectId(labelId) } },
-      { new: true }
-    ).lean();
-
-    return filterMailForOutput(updated);
-  } catch (err) {
-    throw err;
+  const mail = await Mail.findById(mailId);
+  if (!mail) throw createError('Mail not found', { type: 'NOT_FOUND', status: 404 });
+  if (!canUserAccessMail(mail, username)) {
+    throw createError('User does not have access to this mail', { status: 403 });
   }
-}
 
+  const lId = new Types.ObjectId(labelId);
+  if (!mail.labels.map(String).includes(String(lId))) {
+    mail.labels.push(lId);
+    await mail.save();
+  }
+
+  return filterMailForOutput(mail.toObject ? mail.toObject() : mail);
+}
 
 /**
- * Removes a label from a mail for a given user.
- * @param {string} mailId - The ID of the mail (ObjectId string).
- * @param {string} labelId - The ID of the label to remove (ObjectId string).
- * @param {string} username - The acting username (for access checks).
- * @returns {Promise<object>} Updated mail (filtered for output).
- * @throws {Error} 404 if mail not found, 403 if no access, 404 if label not on mail.
+ * Detach a label from a mail (idempotent), enforcing access.
  */
 async function removeLabelFromMail(mailId, labelId, username) {
-  try {
-    const mail = await Mail.findById(mailId);
-    // Check for mail existance and user access
-    if (!mail) {
-      throw createError('Mail not found', { status: 404 });
-    }
-
-    if (canUserAccessMail(mail, username) === false) {
-      throw createError('User does not have access to this mail', { status: 403 });
-    }
-
-    // Check if label exists in DB
-    const label = await Label.findById(labelId).lean();
-    if (!label) {
-      throw createError('Label not found', { status: 404 });
-    }
-
-    // Check if label is attached to this mail
-    if (!(mail.labels || []).some(l => l.toString() === labelId)) {
-      throw createError('Label not found on this mail', { status: 404 });
-    }
-
-    // Check if label can be removed
-    if (!label.attachable) {
-      throw createError('This label cannot be manually removed', { type: 'VALIDATION', status: 400 });
-    }
-
-    console.log(`Removing label ${labelId} from mail ${mailId}`);
-    console.log('Mail before removing label:', mail.toObject ? mail.toObject() : mail);
-
-    const updated = await Mail.findByIdAndUpdate(
-      mailId,
-      { $pull: { labels: new Types.ObjectId(labelId) } },
-      { new: true }
-    ).lean();
-
-    return filterMailForOutput(updated);
-  } catch (err) {
-    throw err;
+  const mail = await Mail.findById(mailId);
+  if (!mail) throw createError('Mail not found', { type: 'NOT_FOUND', status: 404 });
+  if (!canUserAccessMail(mail, username)) {
+    throw createError('User does not have access to this mail', { status: 403 });
   }
+
+  const lId = String(labelId);
+  mail.labels = (mail.labels || []).filter((id) => String(id) !== lId);
+  await mail.save();
+
+  return filterMailForOutput(mail.toObject ? mail.toObject() : mail);
 }
 
+/**
+ * Bulk-tag mails containing any of the given URLs as Spam for this user.
+ * Scope to mails the user can see; avoid re-adding Spam.
+ */
+async function tagMailsWithUrlsAsSpam(userId, username, urls, spamLabelId) {
+  const norms = Array.from(new Set((urls || []).map(normalizeUrl).filter(Boolean)));
+  if (!norms.length) return;
+
+  await Mail.updateMany(
+    {
+      urls: { $in: norms },
+      $or: [
+        { from: username, deletedBySender: { $ne: true } },
+        { to: username, draft: false, deletedByRecipient: { $ne: username } },
+      ],
+      labels: { $ne: new Types.ObjectId(spamLabelId) },
+    },
+    { $addToSet: { labels: new Types.ObjectId(spamLabelId) } }
+  );
+}
 
 module.exports = {
-  filterMailForOutput,
   canUserAccessMail,
+  tagMailsWithUrlsAsSpam,
   buildMail,
   getMailsForUser,
-  findMailById,
-  editMail,
+  findMailByIdForUser,
+  editMailForUser,
   deleteMail,
   searchMailsForUser,
-  addLabelToMail,
-  removeLabelFromMail
 };
+

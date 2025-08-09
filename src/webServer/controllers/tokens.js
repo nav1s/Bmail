@@ -1,4 +1,4 @@
-const users = require('../models/users.js')
+const users = require('../models/usersModel.js')
 const { httpError } = require('../utils/error');
 const jwt = require("jsonwebtoken")
 require('custom-env').env();

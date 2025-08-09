@@ -1,9 +1,3 @@
-/**
- * @file models/mailsModel.js
- * @description Mongoose schema & model for mails.
- * We support drafts, soft-delete per actor, label references, and URL extraction.
- */
-
 const { Schema, model, Types } = require('mongoose');
 
 /**
@@ -28,18 +22,17 @@ const MailSchema = new Schema({
   body: { type: String, required: true, public: true },
   draft: { type: Boolean, default: false, public: true },
   labels: [{ type: Schema.Types.ObjectId, ref: 'Label', public: true }],
-  urls: { type: [String], public: true },
+  urls: { type: [String], default: [], public: true },
   deletedBySender: { type: Boolean, default: false }, // not public
   deletedByRecipient: { type: [String], default: [] }, // not public
 }, { timestamps: true });
 
+// expose timestamps via public DTO logic
 MailSchema.path('createdAt').options.public = true;
 MailSchema.path('updatedAt').options.public = true;
 
-module.exports = mongoose.model('Mail', MailSchema);
+// text index for search endpoint (/api/mails/search)
+MailSchema.index({ title: 'text', body: 'text' });
 
-
-/**
- * @type {import('mongoose').Model<MailDoc>}
- */
+// export using mongoose.model via the imported `model` helper
 module.exports = model('Mail', MailSchema);

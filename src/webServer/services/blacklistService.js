@@ -1,7 +1,3 @@
-// services/blacklistService.js
-// Thin wrapper around the Bloom Filter server used for URL blacklisting.
-// NOTE: Keep all bloom protocol details here so controllers/services stay clean.
-
 const net = require('net');
 
 const BLOOM_HOST = process.env.BLOOM_HOST || 'bloom-filter';

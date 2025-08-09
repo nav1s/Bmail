@@ -1,7 +1,15 @@
 const { Label, SYSTEM_DEFAULT_LABELS } = require('../models/labelsModel');
 const { createError } = require('../utils/error');
 const { Types } = require('mongoose');
-const { validateUserId } = require('./userServices');
+const { canUserAccessMail, tagMailsWithUrlsAsSpam } = require('./mailServices');
+const { addUrlsToBlacklist } = require('./blacklistService');
+
+function validateUserId(id) {
+  if (!Types.ObjectId.isValid(id)) {
+    throw createError('User ID is invalid', { type: 'VALIDATION', status: 400 });
+  }
+  return new Types.ObjectId(id);
+}
 
 /**
  * Get labels for a user.
@@ -290,7 +298,92 @@ function validateLabelId(labelId) {
 }
 
 
+/**
+ * Attach a label to a mail. If the attached label is the user's Spam label:
+ *  - blacklist the mail's URLs via Bloom,
+ *  - auto-tag other accessible mails containing those URLs.
+ *
+ * @param {string} mailId
+ * @param {string} labelId
+ * @param {string} username
+ * @param {string|import('mongoose').Types.ObjectId} userId
+ * @returns {Promise<object>} updated mail DTO (id, from, to, title, body, draft, labels, urls, timestamps)
+ */
+async function attachLabelToMail(mailId, labelId, username, userId) {
+  if (!Types.ObjectId.isValid(mailId) || !Types.ObjectId.isValid(labelId)) {
+    throw createError('IDs must be valid ObjectIds', { type: 'VALIDATION', status: 400 });
+  }
 
+  const mail = await Mail.findById(mailId);
+  if (!mail) throw createError('Mail not found', { type: 'NOT_FOUND', status: 404 });
+  if (!canUserAccessMail(mail, username)) {
+    throw createError('User does not have access to this mail', { status: 403 });
+  }
+
+  const lId = new Types.ObjectId(labelId);
+  if (!mail.labels.map(String).includes(String(lId))) {
+    mail.labels.push(lId);
+    await mail.save();
+  }
+
+  const spamLabelId = await getSystemLabelId(userId, 'spam');
+  if (String(spamLabelId) === String(labelId)) {
+    const norms = (mail.urls || []).map(u => u?.trim().toLowerCase().replace(/\/$/, '')).filter(Boolean);
+    if (norms.length) {
+      await addUrlsToBlacklist(norms);
+      await tagMailsWithUrlsAsSpam(userId, username, norms, spamLabelId);
+    }
+  }
+
+  // return safe DTO inline
+  const out = {};
+  const paths = Mail.schema.paths;
+  Object.keys(paths).forEach((path) => {
+    if (paths[path].options && paths[path].options.public) {
+      const key = path === '_id' ? 'id' : path;
+      out[key] = path === '_id' ? String(mail._id) : mail[path];
+    }
+  });
+  if (out.labels && Array.isArray(out.labels)) out.labels = out.labels.map((l) => String(l));
+  return out;
+}
+
+
+
+/**
+ * Detach a label (idempotent), enforcing access. No propagation on removal.
+ *
+ * @param {string} mailId
+ * @param {string} labelId
+ * @param {string} username
+ * @returns {Promise<object>} updated mail DTO
+ */
+async function detachLabelFromMail(mailId, labelId, username) {
+  if (!Types.ObjectId.isValid(mailId) || !Types.ObjectId.isValid(labelId)) {
+    throw createError('IDs must be valid ObjectIds', { type: 'VALIDATION', status: 400 });
+  }
+
+  const mail = await Mail.findById(mailId);
+  if (!mail) throw createError('Mail not found', { type: 'NOT_FOUND', status: 404 });
+  if (!canUserAccessMail(mail, username)) {
+    throw createError('User does not have access to this mail', { status: 403 });
+  }
+
+  const lId = String(labelId);
+  mail.labels = (mail.labels || []).filter((id) => String(id) !== lId);
+  await mail.save();
+
+  const out = {};
+  const paths = Mail.schema.paths;
+  Object.keys(paths).forEach((path) => {
+    if (paths[path].options && paths[path].options.public) {
+      const key = path === '_id' ? 'id' : path;
+      out[key] = path === '_id' ? String(mail._id) : mail[path];
+    }
+  });
+  if (out.labels && Array.isArray(out.labels)) out.labels = out.labels.map((l) => String(l));
+  return out;
+}
 
 
 module.exports = {
@@ -300,5 +393,7 @@ module.exports = {
   updateLabelForUser,
   deleteLabelForUser,
   ensureDefaultLabels,
-  getSystemLabelId
+  getSystemLabelId,
+  attachLabelToMail,
+  detachLabelFromMail
 };
