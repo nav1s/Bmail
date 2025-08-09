@@ -202,6 +202,32 @@ async function ensureDefaultLabels(userId) {
   }
 }
 
+/**
+ * Get a label's id by name (case-insensitive) for a user.
+ * Keeps your existing "single name lookup" behavior.
+ * @param {import('mongoose').Types.ObjectId|string} userId
+ * @param {string} name
+ * @returns {Promise<string>} label id as string
+ * @throws 404 if not found
+ */
+async function getLabelIdByName(userId, name) {
+  const [label] = await getLabelsForUser(userId, name); // throws 404 if not found (unchanged behavior)
+  return String(label._id);
+}
+
+/**
+ * Get a system label id by name: 'inbox' | 'sent' | 'drafts' | 'spam' | 'trash' | 'starred'
+ * Ensures defaults exist first.
+ * @param {import('mongoose').Types.ObjectId|string} userId
+ * @param {string} systemName
+ * @returns {Promise<string>}
+ */
+async function getSystemLabelId(userId, systemName) {
+  await ensureDefaultLabels(userId);
+  return getLabelIdByName(userId, systemName);
+}
+
+
 
 
 module.exports = {
@@ -210,5 +236,6 @@ module.exports = {
   addLabelForUser,
   updateLabelForUser,
   deleteLabelForUser,
-  ensureDefaultLabels
+  ensureDefaultLabels,
+  getSystemLabelId
 };
