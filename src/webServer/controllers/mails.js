@@ -15,7 +15,7 @@ const {
 } = require('../services/mailServices');
 
 const {
-  getSystemLabelId,
+  getisDefaultLabelId,
   getLabelIdByName,
 } = require('../services/labelServices');
 
@@ -39,8 +39,8 @@ async function listInbox(req, res) {
 
   try {
     // System labels used for default inbox filtering
-    const spamId = await getSystemLabelId(userId, 'spam');
-    const trashId = await getSystemLabelId(userId, 'trash');
+    const spamId = await getisDefaultLabelId(userId, 'spam');
+    const trashId = await getisDefaultLabelId(userId, 'trash');
 
     const mails = await getMailsForUser(
       username,
@@ -71,8 +71,8 @@ async function listMailsByLabel(req, res) {
   const { limit = 50 } = req.query;
   console.log("in listMailsByLabel label:" + label)
   try {
-    const spamId = await getSystemLabelId(userId, 'spam');
-    const trashId = await getSystemLabelId(userId, 'trash');
+    const spamId = await getisDefaultLabelId(userId, 'spam');
+    const trashId = await getisDefaultLabelId(userId, 'trash');
     console.log("spam label id: " + spamId + " trash: " + trashId)
     // Accept either a label id or a name
     const labelId = isValidObjectId(label)
@@ -112,9 +112,9 @@ async function createMail(req, res) {
   }
 
   try {
-    const spamId   = await getSystemLabelId(userId, 'spam');
-    const sentId   = await getSystemLabelId(userId, 'sent');
-    const draftsId = await getSystemLabelId(userId, 'drafts');
+    const spamId   = await getisDefaultLabelId(userId, 'spam');
+    const sentId   = await getisDefaultLabelId(userId, 'sent');
+    const draftsId = await getisDefaultLabelId(userId, 'drafts');
 
     const newMail = await buildMail(
       {

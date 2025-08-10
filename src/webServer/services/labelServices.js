@@ -1,4 +1,4 @@
-const { Label, SYSTEM_DEFAULT_LABELS } = require('../models/labelsModel');
+const { Label, DEFAULT_LABELS } = require('../models/labelsModel');
 const { createError } = require('../utils/error');
 const { Types } = require('mongoose');
 const { canUserAccessMail, tagMailsWithUrlsAsSpam } = require('./mailServices');
@@ -92,12 +92,12 @@ async function getLabelForUserById(userId, labelId) {
  * Adds a new label for a given user.
  * @param {import('mongoose').Types.ObjectId|string} userId - The user's ID.
  * @param {string} name - The label's name.
- * @param {boolean} [system=false] - Whether this is a system label.
- * @param {boolean} [attachable=true] - Whether this label can be manually attached/removed.
+ * @param {boolean} [isDefault=false] - Whether this is a isDefault label.
+ * @param {boolean} [isAttachable=true] - Whether this label can be manually attached/removed.
  * @returns {Promise<import('../models/labelsModel').LabelDoc>} The created label document.
  * @throws {Error} If the label name already exists or is invalid.
  */
-async function addLabelForUser(userId, name, system = false, attachable = true) {
+async function addLabelForUser(userId, name, isDefault = false, isAttachable = true) {
   try {
     // Validate the user ID format
     validateUserId(userId);
@@ -105,9 +105,9 @@ async function addLabelForUser(userId, name, system = false, attachable = true) 
     // Validate the label name format
     validateLabelName(name);
 
-    // Block system names
-    if (SYSTEM_DEFAULT_LABELS.includes(name.trim().toLowerCase())) {
-      throw createError('Cannot create a label with a reserved system name', {
+    // Block isDefault names
+    if (DEFAULT_LABELS.includes(name.trim().toLowerCase())) {
+      throw createError('Cannot create a label with a reserved isDefault name', {
         type: 'VALIDATION', status: 400
       });
     }
@@ -127,7 +127,7 @@ async function addLabelForUser(userId, name, system = false, attachable = true) 
     }
 
     // Create and save label
-    const doc = await Label.create({ userId, name, system, attachable });
+    const doc = await Label.create({ userId, name, isDefault, isAttachable });
     // Return DTO so clients have `id`
     return toLabelDTO(doc);
   } catch (err) {
@@ -173,12 +173,12 @@ async function updateLabelForUser(userId, labelId, newName) {
       throw createError('Label not found', { type: 'NOT_FOUND', status: 404 });
     }
 
-    // Prevent updating default/system labels
-    if (label.system === true || SYSTEM_DEFAULT_LABELS.includes(label.name.toLowerCase())) {
+    // Prevent updating default/isDefault labels
+    if (label.isDefault === true || DEFAULT_LABELS.includes(label.name.toLowerCase())) {
       throw createError('Cannot update default label', { type: 'VALIDATION', status: 400 });
     }
-    if (SYSTEM_DEFAULT_LABELS.includes(newName.trim().toLowerCase())) {
-      throw createError('Cannot create a label with a reserved system name', {
+    if (DEFAULT_LABELS.includes(newName.trim().toLowerCase())) {
+      throw createError('Cannot create a label with a reserved isDefault name', {
         type: 'VALIDATION',
         status: 400
       });
@@ -218,12 +218,12 @@ async function updateLabelForUser(userId, labelId, newName) {
  * Deletes a label for a specific user by ID.
  * - Validates userId and labelId
  * - Ensures the label belongs to the user
- * - Blocks deletion of system/default labels
+ * - Blocks deletion of isDefault/default labels
  *
  * @param {import('mongoose').Types.ObjectId|string} userId
  * @param {import('mongoose').Types.ObjectId|string} labelId
  * @returns {Promise<void>}
- * @throws {Error} 400 if IDs invalid, 404 if not found, 400 if system/default
+ * @throws {Error} 400 if IDs invalid, 404 if not found, 400 if isDefault/default
  */
 async function deleteLabelForUser(userId, labelId) {
   try {
@@ -239,8 +239,8 @@ async function deleteLabelForUser(userId, labelId) {
       throw createError('Label not found', { type: 'NOT_FOUND', status: 404 });
     }
 
-    // Prevent deleting system/default labels
-    if (label.system === true || SYSTEM_DEFAULT_LABELS.includes(label.name.toLowerCase())) {
+    // Prevent deleting default labels
+    if (label.isDefault === true || DEFAULT_LABELS.includes(label.name.toLowerCase())) {
       throw createError('Cannot delete default label', { type: 'VALIDATION', status: 400 });
     }
 
@@ -254,7 +254,7 @@ async function deleteLabelForUser(userId, labelId) {
 
 
 /**
- * Ensure system default labels exist for a user.
+ * Ensure default labels exist for a user.
  * Safe to call multiple times.
  * @param {import('mongoose').Types.ObjectId|string} userId
  * @returns {Promise<void>}
@@ -263,15 +263,15 @@ async function ensureDefaultLabels(userId) {
   try {
     const existing = await Label.find({ userId }, { name: 1 }).lean();
     const existingNames = new Set(existing.map(l => l.name.toLowerCase()));
-    const toCreate = SYSTEM_DEFAULT_LABELS.filter(n => !existingNames.has(n));
+    const toCreate = DEFAULT_LABELS.filter(n => !existingNames.has(n));
 
     if (toCreate.length === 0) return;
 
     const docs = toCreate.map(name => ({
       userId,
       name,
-      system: true,
-      attachable: !['sent', 'drafts'].includes(name.toLowerCase()),
+      isDefault: true,
+      isAttachable: !['sent', 'drafts'].includes(name.toLowerCase()),
     }));
 
     await Label.insertMany(docs, { ordered: false }).catch(() => {});
@@ -295,15 +295,15 @@ async function getLabelIdByName(userId, name) {
 }
 
 /**
- * Get a system label id by name: 'inbox' | 'sent' | 'drafts' | 'spam' | 'trash' | 'starred'
+ * Get a isDefault label id by name: 'inbox' | 'sent' | 'drafts' | 'spam' | 'trash' | 'starred'
  * Ensures defaults exist first.
  * @param {import('mongoose').Types.ObjectId|string} userId
- * @param {string} systemName
+ * @param {string} isDefaultName
  * @returns {Promise<string>}
  */
-async function getSystemLabelId(userId, systemName) {
+async function getisDefaultLabelId(userId, isDefaultName) {
   await ensureDefaultLabels(userId);
-  return getLabelIdByName(userId, systemName);
+  return getLabelIdByName(userId, isDefaultName);
 }
 
 function validateLabelId(labelId) {
@@ -342,7 +342,7 @@ async function attachLabelToMail(mailId, labelId, username, userId) {
     await mail.save();
   }
 
-  const spamLabelId = await getSystemLabelId(userId, 'spam');
+  const spamLabelId = await getisDefaultLabelId(userId, 'spam');
   if (String(spamLabelId) === String(labelId)) {
     const norms = (mail.urls || []).map(u => u?.trim().toLowerCase().replace(/\/$/, '')).filter(Boolean);
     if (norms.length) {
@@ -409,7 +409,7 @@ module.exports = {
   updateLabelForUser,
   deleteLabelForUser,
   ensureDefaultLabels,
-  getSystemLabelId,
+  getisDefaultLabelId,
   getLabelIdByName,
   attachLabelToMail,
   detachLabelFromMail
