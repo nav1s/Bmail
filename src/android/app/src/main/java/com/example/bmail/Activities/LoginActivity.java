@@ -8,18 +8,25 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.widget.Toast;
 
 import com.example.bmail.ViewModels.LoginViewModel;
 import com.example.bmail.R;
 import com.example.bmail.Repositories.UserRepository;
 
-public class LoginActivity extends Activity {
+public class LoginActivity extends Activity implements LoginViewModel.LoginCallback {
     private LoginViewModel loginViewModel;
+    private EditText usernameET;
+    private EditText passwordEt;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+
+        // Initialize EditText fields
+        usernameET = findViewById(R.id.username);
+        passwordEt = findViewById(R.id.password);
 
         // Check for existing token
         SharedPreferences prefs = getSharedPreferences("user_prefs", Context.MODE_PRIVATE);
@@ -36,6 +43,7 @@ public class LoginActivity extends Activity {
 
         // Initialize ViewModel with Repository
         loginViewModel = new LoginViewModel(userRepository);
+        loginViewModel.setLoginCallback(this);
 
         Button signupBtn = findViewById(R.id.signup);
         signupBtn.setOnClickListener(view -> {
@@ -52,9 +60,6 @@ public class LoginActivity extends Activity {
      * Validates the input and performs the login operation using ViewModel.
      */
     private void handleLogin() {
-        EditText usernameET = findViewById(R.id.username);
-        EditText passwordEt = findViewById(R.id.password);
-
         String username = String.valueOf(usernameET.getText()).trim();
         String password = String.valueOf(passwordEt.getText()).trim();
 
@@ -64,25 +69,36 @@ public class LoginActivity extends Activity {
         passwordEt.setError(result.passwordError);
 
         if (result.usernameError != null || result.passwordError != null) {
-            Log.i("foo", "Validation failed: " +
+            Log.i("MainActivity", "Validation failed: " +
                     result.usernameError + ", " + result.passwordError);
             return; // Exit if validation fails
         }
 
-        Log.i("foo", "The username is: " + username);
-        Log.i("foo", "The password is: " + password);
+        Log.i("LoginActivity", "The username is: " + username);
+        Log.i("LoginActivity", "The password is: " + password);
+
         // Use ViewModel for login
         loginViewModel.login(username, password);
-        SharedPreferences prefs = getSharedPreferences("user_prefs", Context.MODE_PRIVATE);
-        String token = prefs.getString("auth_token", null);
-        // todo display error message if login fails
-        // check if token is null
-        if (token == null) {
-            Log.i("foo", "No token found in SharedPreferences.");
-            return;
-        }
-        Log.i("foo", "Token retrieved: " + token);
-        Intent intent = new Intent(this, MainActivity.class);
-        startActivity(intent);
+    }
+
+    @Override
+    public void onLoginSuccess(String token) {
+        Log.i("LoginActivity", "Login successful. Token: " + token);
+        runOnUiThread(() -> {
+            // Navigate to MainActivity on successful login
+            Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+            startActivity(intent);
+            finish(); // Close LoginActivity
+        });
+    }
+
+    @Override
+    public void onLoginFailure(String errorMessage) {
+        Log.e("LoginActivity", "Login failed: " + errorMessage);
+        runOnUiThread(() -> {
+            // Display error message to user
+            Toast.makeText(LoginActivity.this, errorMessage, Toast.LENGTH_LONG).show();
+
+        });
     }
 }

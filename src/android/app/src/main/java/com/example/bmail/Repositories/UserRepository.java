@@ -20,6 +20,12 @@ public class UserRepository {
     private final WebServiceApi webServiceApi;
     private final Context context;
 
+    // Callback interface for login operations
+    public interface LoginCallback {
+        void onLoginSuccess(String token);
+        void onLoginFailure(String errorMessage);
+    }
+
     // todo create user api
     public UserRepository(@NonNull Context context) {
         this.context = context.getApplicationContext();
@@ -30,7 +36,7 @@ public class UserRepository {
         webServiceApi = retrofit.create(WebServiceApi.class);
     }
 
-    public void login(String username, String password) {
+    public void login(String username, String password, LoginCallback callback) {
         LoginRequest request = new LoginRequest(username, password);
         Call<LoginResponse> call = webServiceApi.login(request);
         call.enqueue(new retrofit2.Callback<>() {
@@ -40,14 +46,19 @@ public class UserRepository {
                     String token = response.body().token;
                     Log.i("UserRepository", "Token: " + token);
                     saveToken(token);
+                    callback.onLoginSuccess(token);
                 } else {
-                    Log.e("UserRepository", "Login failed: " + response.message());
+                    String errorMsg = "Login failed: " + response.message();
+                    Log.e("UserRepository", errorMsg);
+                    callback.onLoginFailure(errorMsg);
                 }
             }
 
             @Override
             public void onFailure(@NonNull Call<LoginResponse> call, @NonNull Throwable t) {
+                String errorMsg = "Network error: " + t.getMessage();
                 Log.e("UserRepository", "Login request failed", t);
+                callback.onLoginFailure(errorMsg);
             }
         });
     }
