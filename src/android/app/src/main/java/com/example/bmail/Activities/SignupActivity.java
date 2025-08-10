@@ -8,16 +8,18 @@ import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
+import com.example.bmail.Api.UserApi;
 import com.example.bmail.Entities.BmailApplication;
 import com.example.bmail.R;
 import com.example.bmail.Repositories.UserRepository;
 import com.example.bmail.ViewModels.SignupViewModel;
 
-public class SignupActivity extends AppCompatActivity {
+public class SignupActivity extends AppCompatActivity implements UserApi.callback {
     private SignupViewModel viewModel;
     private static final int PICK_IMAGE_REQUEST = 1;
 
@@ -74,6 +76,21 @@ public class SignupActivity extends AppCompatActivity {
         passwordET.setError(result.passwordError);
         confirmPasswordET.setError(result.confirmPasswordError);
 
+        // check if there are any errors
+        if (result.firstNameError != null || result.lastNameError != null ||
+                result.usernameError != null || result.passwordError != null ||
+                result.confirmPasswordError != null) {
+            Log.i("SignupActivity", "Validation failed: " +
+                    result.firstNameError + ", " + result.lastNameError + ", " +
+                    result.usernameError + ", " + result.passwordError + ", " +
+                    result.confirmPasswordError);
+            return; // Exit if validation fails
+        }
+
+        // otherwise, proceed with signup
+        viewModel.signup(firstName, lastName, username, password, this);
+
+
     }
 
     private void handleChoosePhotoButtonClick() {
@@ -96,5 +113,18 @@ public class SignupActivity extends AppCompatActivity {
     public boolean onSupportNavigateUp() {
         finish();
         return true;
+    }
+
+    @Override
+    public void onSuccess(String msg) {
+        Log.i("LoginActivity", msg);
+        Toast.makeText(SignupActivity.this, msg, Toast.LENGTH_LONG).show();
+        finish();
+    }
+
+    @Override
+    public void onFailure(String errorMessage) {
+        Toast.makeText(SignupActivity.this, errorMessage, Toast.LENGTH_LONG).show();
+
     }
 }

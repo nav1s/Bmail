@@ -4,6 +4,7 @@ import com.example.bmail.Entities.LoginRequest;
 import com.example.bmail.Entities.LoginResponse;
 import com.example.bmail.Entities.Mail;
 import com.example.bmail.Entities.Label;
+import com.example.bmail.Entities.SignupRequest;
 
 import java.util.List;
 
@@ -16,6 +17,9 @@ import retrofit2.http.POST;
 import retrofit2.http.Path;
 
 public interface WebServiceApi {
+    @POST("users")
+    Call<Void> signup(@Body SignupRequest request);
+
     @POST("tokens")
     Call<LoginResponse> login(@Body LoginRequest request);
 

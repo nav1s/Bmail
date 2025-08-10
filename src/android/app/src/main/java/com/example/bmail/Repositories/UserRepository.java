@@ -14,9 +14,13 @@ public class UserRepository {
         userApi = new UserApi(context);
     }
 
-    public void login(String username, String password, UserApi.LoginCallback callback) {
-        userApi.login(username, password, callback);
+    public void login(String username, String password, UserApi.callback loginCallback) {
+        userApi.login(username, password, loginCallback);
+    }
 
+    public void signup(String firstName, String lastName, String username, String password,
+                       UserApi.callback signupCallback) {
+        userApi.signup(firstName, lastName, username, password, signupCallback);
     }
 
 }

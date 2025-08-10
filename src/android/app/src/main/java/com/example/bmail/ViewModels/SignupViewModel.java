@@ -3,6 +3,7 @@ package com.example.bmail.ViewModels;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.example.bmail.Api.UserApi;
 import com.example.bmail.Repositories.UserRepository;
 
 // todo check whether this class need to extend ViewModel or not
@@ -60,6 +61,13 @@ public class SignupViewModel {
                 ? "Passwords do not match" : null;
 
         return result;
+    }
+
+    public void signup(@NonNull String firstName, @NonNull String lastName,
+                        @NonNull String username, @NonNull String password,
+                       UserApi.callback signupCallback
+                       ) {
+        userRepository.signup(firstName, lastName, username, password, signupCallback);
     }
 
 }

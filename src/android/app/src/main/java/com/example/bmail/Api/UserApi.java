@@ -8,8 +8,8 @@ import androidx.annotation.NonNull;
 
 import com.example.bmail.Entities.LoginRequest;
 import com.example.bmail.Entities.LoginResponse;
+import com.example.bmail.Entities.SignupRequest;
 import com.example.bmail.R;
-import com.example.bmail.ViewModels.LoginViewModel;
 
 import retrofit2.Call;
 import retrofit2.Response;
@@ -18,9 +18,9 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class UserApi {
 
-    public interface LoginCallback {
-        void onLoginSuccess(String token);
-        void onLoginFailure(String errorMessage);
+    public interface callback {
+        void onSuccess(String msg);
+        void onFailure(String errorMessage);
     }
 
 
@@ -36,7 +36,7 @@ public class UserApi {
         webServiceApi = retrofit.create(WebServiceApi.class);
     }
 
-    public void login(String username, String password, LoginCallback callback) {
+    public void login(String username, String password, callback loginCallback) {
         LoginRequest request = new LoginRequest(username, password);
         Call<LoginResponse> call = webServiceApi.login(request);
         call.enqueue(new retrofit2.Callback<>() {
@@ -46,11 +46,11 @@ public class UserApi {
                     String token = response.body().getToken();
                     Log.i("UserRepository", "Token: " + token);
                     saveToken(token);
-                    callback.onLoginSuccess(token);
+                    loginCallback.onSuccess(token);
                 } else {
                     String errorMsg = "Login failed: " + response.message();
                     Log.e("UserRepository", errorMsg);
-                    callback.onLoginFailure(errorMsg);
+                    loginCallback.onFailure(errorMsg);
                 }
             }
 
@@ -58,7 +58,34 @@ public class UserApi {
             public void onFailure(@NonNull Call<LoginResponse> call, @NonNull Throwable t) {
                 String errorMsg = "Network error: " + t.getMessage();
                 Log.e("UserRepository", "Login request failed", t);
-                callback.onLoginFailure(errorMsg);
+                loginCallback.onFailure(errorMsg);
+            }
+        });
+    }
+
+    public void signup(String firstName, String lastName, String username,
+                       String password,callback signupCallback) {
+        SignupRequest request = new SignupRequest(firstName, lastName, username, password);
+
+        Call<Void> call = webServiceApi.signup(request);
+        call.enqueue(new retrofit2.Callback<>() {
+            @Override
+            public void onResponse(@NonNull Call<Void> call, @NonNull Response<Void> response) {
+                if (response.isSuccessful()) {
+                    // Assuming signup also returns a token
+                    signupCallback.onSuccess("Signup successful");
+                } else {
+                    String errorMsg = "Signup failed: " + response.message();
+                    Log.e("UserRepository", errorMsg);
+                    signupCallback.onFailure(errorMsg);
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<Void> call, @NonNull Throwable t) {
+                String errorMsg = "Network error: " + t.getMessage();
+                Log.e("UserRepository", errorMsg);
+                signupCallback.onFailure(errorMsg);
             }
         });
     }
