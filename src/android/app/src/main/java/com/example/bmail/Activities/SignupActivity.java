@@ -19,30 +19,43 @@ public class SignupActivity extends AppCompatActivity {
     private SignupViewModel viewModel;
     private static final int PICK_IMAGE_REQUEST = 1;
 
+    private EditText firstNameET;
+    private EditText lastNameET;
+    private EditText usernameET;
+    private EditText passwordET;
+    private EditText confirmPasswordET;
+    private Button signupBtn;
+    private TextView choosePhotoBtn;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_signup);
+
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
         viewModel = new SignupViewModel();
 
-        Button signupBtn = findViewById(R.id.signupButton);
+        initViews();
+
         signupBtn.setOnClickListener(view -> handleSignupButtonClick());
 
         // todo add ability to choose a photo from camera or gallery
-        TextView choosePhotoBtn = findViewById(R.id.change_photo_text);
         choosePhotoBtn.setOnClickListener(view -> handleChoosePhotoButtonClick());
     }
 
-    private void handleSignupButtonClick() {
-        EditText firstNameET = findViewById(R.id.firstname);
-        EditText lastNameET = findViewById(R.id.lastname);
-        EditText usernameET = findViewById(R.id.username);
-        EditText passwordET = findViewById(R.id.password1);
-        EditText confirmPasswordET = findViewById(R.id.password2);
+    private void initViews() {
+        firstNameET = findViewById(R.id.firstname);
+        lastNameET = findViewById(R.id.lastname);
+        usernameET = findViewById(R.id.username);
+        passwordET = findViewById(R.id.password1);
+        confirmPasswordET = findViewById(R.id.password2);
+        signupBtn = findViewById(R.id.signupButton);
+        choosePhotoBtn = findViewById(R.id.change_photo_text);
+    }
 
+    private void handleSignupButtonClick() {
         String firstName = String.valueOf(firstNameET.getText()).trim();
         String lastName = String.valueOf(lastNameET.getText()).trim();
         String username = String.valueOf(usernameET.getText()).trim();
@@ -72,7 +85,7 @@ public class SignupActivity extends AppCompatActivity {
         if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null
                 && data.getData() != null) {
             Uri selectedImageUri = data.getData();
-            Log.i("foo", "Selected Image URI: " + selectedImageUri.toString());
+            Log.i("SignupActivity", "Selected Image URI: " + selectedImageUri.toString());
         }
     }
 
