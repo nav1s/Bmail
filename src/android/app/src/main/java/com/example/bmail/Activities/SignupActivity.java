@@ -7,6 +7,7 @@ import android.provider.MediaStore;
 import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -33,7 +34,7 @@ public class SignupActivity extends AppCompatActivity {
         signupBtn.setOnClickListener(view -> handleSignupButtonClick());
 
         // todo add ability to choose a photo from camera or gallery
-        Button choosePhotoBtn = findViewById(R.id.choosePhotoButton);
+        TextView choosePhotoBtn = findViewById(R.id.change_photo_text);
         choosePhotoBtn.setOnClickListener(view -> handleChoosePhotoButtonClick());
     }
 

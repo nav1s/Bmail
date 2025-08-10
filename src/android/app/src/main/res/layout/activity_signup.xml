@@ -21,43 +21,36 @@
             android:elevation="4dp"
             app:navigationIcon="?attr/homeAsUpIndicator" />
 
-        <!-- Profile Photo Section -->
+        <!-- Profile Picture Section -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:layout_marginBottom="32dp"
-            android:gravity="center">
+            android:padding="24dp"
+            android:gravity="center"
+            android:layout_marginTop="8dp">
 
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="130dp"
-                android:layout_height="130dp"
-                android:layout_marginBottom="16dp"
-                app:cardCornerRadius="65dp"
-                app:cardElevation="4dp"
-                app:strokeWidth="2dp"
-                app:strokeColor="?attr/colorOutline">
+            <ImageView
+                android:id="@+id/profile_image"
+                android:layout_width="120dp"
+                android:layout_height="120dp"
+                android:background="@drawable/round_button_background"
+                android:scaleType="centerCrop"
+                android:src="@drawable/ic_person"
+                android:contentDescription="@string/profile_picture" />
 
-                <ImageView
-                    android:id="@+id/profileImageView"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:src="@drawable/ic_person"
-                    android:scaleType="centerCrop"
-                    android:background="?attr/colorSurfaceVariant"
-                    android:contentDescription="Profile photo preview" />
-
-            </com.google.android.material.card.MaterialCardView>
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/choosePhotoButton"
+            <TextView
+                android:id="@+id/change_photo_text"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/choose_profile_photo"
-                android:textAllCaps="false"
-                android:paddingStart="24dp"
-                android:paddingEnd="24dp"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton" />
+                android:text="@string/change_photo"
+                android:textSize="14sp"
+                android:layout_marginTop="8dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:padding="8dp"
+                android:background="?android:attr/selectableItemBackground"
+                android:textColor="@android:color/holo_blue_dark" />
 
         </LinearLayout>
 
