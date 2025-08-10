@@ -101,6 +101,7 @@ async function listMailsByLabel(req, res) {
  *   - Validation & auto-labeling (sent/drafts/spam) happen in the service.
  */
 async function createMail(req, res) {
+  console.log(req.user);
   const userId = req.user.id;
   const username = req.user.username;
   const { title, body, to, draft } = req.body || {};

@@ -3,6 +3,30 @@ const { createError } = require('../utils/error');
 const { ensureDefaultLabels } = require('./labelServices');
 
 /**
+ * Authenticates a user by username and password (plain-text compare).
+ * Mirrors the old in-memory behavior but uses the DB.
+ *
+ * @param {string} username
+ * @param {string} password
+ * @returns {Promise<object>} The user document (lean object).
+ * @throws {Error} AUTH (401) if credentials are invalid.
+ */
+async function login(username, password) {
+  assertNonEmptyString('username', username);
+  assertNonEmptyString('password', password);
+
+  // fetch user;
+  const user = await User.findOne({ username }).lean();
+  if (!user || user.password !== password) {
+    throw createError('Invalid username or password', { status: 401, type: 'AUTH' });
+  }
+  console.log(user);
+
+  // return the full user (lean). Controller can filter or mint JWT as needed.
+  return user;
+}
+
+/**
  * Get the list of required fields for user creation.
  * Reads from the model's fieldConfig (`required: true`) with a safe fallback.
  * @returns {string[]} Array of required field names.
@@ -167,6 +191,7 @@ async function findUserByUsername(username) {
 }
 
 module.exports = {
+  login,
   getRequiredFields,
   filterUserByVisibility,
   createUser,

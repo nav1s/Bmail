@@ -1,7 +1,6 @@
 const { Schema, model } = require('mongoose');
 
 const userFieldConfig = {
-  id: { public: true, required: false, editable: false },
   username: { public: true, required: true, editable: false },
   firstName: { public: true, required: true, editable: true },
   lastName: { public: true, required: true, editable: true },

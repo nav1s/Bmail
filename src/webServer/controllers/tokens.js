@@ -1,4 +1,4 @@
-const users = require('../models/usersModel.js')
+const users = require('../services/userService.js');
 const { httpError } = require('../utils/error');
 const jwt = require("jsonwebtoken")
 require('custom-env').env();
@@ -9,7 +9,7 @@ require('custom-env').env();
  * Authenticates a user by username and password.
  * Returns their user ID as a token if successful.
  */
-function login(req, res) {
+async function login(req, res) {
   const key = process.env.JWT_SECRET 
 
   if (!key) {
@@ -20,11 +20,12 @@ function login(req, res) {
   try {
     // searching for user and trying to login
     const { username, password } = req.body;
-    const user = users.login(username, password);
+    const user = await users.login(username, password);
 
     const data = { username: user.username }
+    console.log(user.username);
     const token = jwt.sign(data, key)
-    res.status(201).json({ token, id: user.id });
+    res.status(201).json({ token, id: user._id });
 
 
   } catch (err) {
