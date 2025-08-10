@@ -9,10 +9,13 @@ import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
 
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+
 import com.example.bmail.R;
 import com.example.bmail.ViewModels.SignupViewModel;
 
-public class SignupActivity extends Activity {
+public class SignupActivity extends AppCompatActivity {
     private SignupViewModel viewModel;
     private static final int PICK_IMAGE_REQUEST = 1;
     // Optional: Add an ImageView member variable
@@ -22,6 +25,8 @@ public class SignupActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_signup);
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
 
         viewModel = new SignupViewModel();
 
@@ -77,5 +82,11 @@ public class SignupActivity extends Activity {
             Uri selectedImageUri = data.getData();
             Log.i("foo", "Selected Image URI: " + selectedImageUri.toString());
         }
+    }
+
+    @Override
+    public boolean onSupportNavigateUp() {
+        finish();
+        return true;
     }
 }
