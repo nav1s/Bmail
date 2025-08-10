@@ -18,6 +18,12 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class UserApi {
 
+    public interface LoginCallback {
+        void onLoginSuccess(String token);
+        void onLoginFailure(String errorMessage);
+    }
+
+
     private final WebServiceApi webServiceApi;
     private final Context context;
 
@@ -30,7 +36,7 @@ public class UserApi {
         webServiceApi = retrofit.create(WebServiceApi.class);
     }
 
-    public void login(String username, String password, LoginViewModel.LoginCallback callback) {
+    public void login(String username, String password, LoginCallback callback) {
         LoginRequest request = new LoginRequest(username, password);
         Call<LoginResponse> call = webServiceApi.login(request);
         call.enqueue(new retrofit2.Callback<>() {

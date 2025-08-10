@@ -5,8 +5,6 @@ import android.content.Context;
 import androidx.annotation.NonNull;
 
 import com.example.bmail.Api.UserApi;
-import com.example.bmail.ViewModels.LoginViewModel;
-
 
 public class UserRepository {
 
@@ -16,7 +14,7 @@ public class UserRepository {
         userApi = new UserApi(context);
     }
 
-    public void login(String username, String password, LoginViewModel.LoginCallback callback) {
+    public void login(String username, String password, UserApi.LoginCallback callback) {
         userApi.login(username, password, callback);
 
     }

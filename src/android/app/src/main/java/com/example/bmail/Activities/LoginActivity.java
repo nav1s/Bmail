@@ -11,11 +11,12 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.bmail.Api.UserApi;
 import com.example.bmail.ViewModels.LoginViewModel;
 import com.example.bmail.R;
 import com.example.bmail.Repositories.UserRepository;
 
-public class LoginActivity extends AppCompatActivity implements LoginViewModel.LoginCallback {
+public class LoginActivity extends AppCompatActivity implements UserApi.LoginCallback {
     private LoginViewModel loginViewModel;
     private EditText usernameET;
     private EditText passwordEt;

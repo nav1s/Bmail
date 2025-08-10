@@ -2,15 +2,11 @@ package com.example.bmail.ViewModels;
 
 import androidx.annotation.NonNull;
 
+import com.example.bmail.Api.UserApi;
 import com.example.bmail.Repositories.UserRepository;
 
 public class LoginViewModel {
     private final UserRepository userRepository;
-
-    public interface LoginCallback {
-        void onLoginSuccess(String token);
-        void onLoginFailure(String errorMessage);
-    }
 
     public LoginViewModel(UserRepository userRepository) {
         this.userRepository = userRepository;
@@ -29,7 +25,7 @@ public class LoginViewModel {
         return result;
     }
 
-    public void login(String username, String password, LoginCallback loginCallback) {
+    public void login(String username, String password, UserApi.LoginCallback loginCallback) {
         userRepository.login(username, password, loginCallback);
     }
 }
