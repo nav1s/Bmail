@@ -12,11 +12,12 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.bmail.Api.UserApi;
+import com.example.bmail.Entities.BmailApplication;
 import com.example.bmail.ViewModels.LoginViewModel;
 import com.example.bmail.R;
 import com.example.bmail.Repositories.UserRepository;
 
-public class LoginActivity extends AppCompatActivity implements UserApi.LoginCallback {
+public class LoginActivity extends AppCompatActivity implements UserApi.callback {
     private LoginViewModel loginViewModel;
     private EditText usernameET;
     private EditText passwordEt;
@@ -41,7 +42,7 @@ public class LoginActivity extends AppCompatActivity implements UserApi.LoginCal
             return;
         }
 
-        UserRepository userRepository = new UserRepository(this);
+        UserRepository userRepository = BmailApplication.getInstance().getUserRepository();
 
         // Initialize ViewModel with Repository
         loginViewModel = new LoginViewModel(userRepository);
@@ -83,8 +84,8 @@ public class LoginActivity extends AppCompatActivity implements UserApi.LoginCal
     }
 
     @Override
-    public void onLoginSuccess(String token) {
-        Log.i("LoginActivity", "Login successful. Token: " + token);
+    public void onSuccess(String msg) {
+        Log.i("LoginActivity", "Login successful. Token: " + msg);
         runOnUiThread(() -> {
             // Navigate to MainActivity on successful login
             Intent intent = new Intent(LoginActivity.this, MainActivity.class);
@@ -94,7 +95,7 @@ public class LoginActivity extends AppCompatActivity implements UserApi.LoginCal
     }
 
     @Override
-    public void onLoginFailure(String errorMessage) {
+    public void onFailure(String errorMessage) {
         Log.e("LoginActivity", "Login failed: " + errorMessage);
         runOnUiThread(() -> {
             // Display error message to user

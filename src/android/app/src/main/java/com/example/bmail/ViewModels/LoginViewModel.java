@@ -26,7 +26,7 @@ public class LoginViewModel {
         return result;
     }
 
-    public void login(String username, String password, UserApi.LoginCallback loginCallback) {
+    public void login(String username, String password, UserApi.callback loginCallback) {
         userRepository.login(username, password, loginCallback);
     }
 }

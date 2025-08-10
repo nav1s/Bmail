@@ -12,7 +12,9 @@ import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
+import com.example.bmail.Entities.BmailApplication;
 import com.example.bmail.R;
+import com.example.bmail.Repositories.UserRepository;
 import com.example.bmail.ViewModels.SignupViewModel;
 
 public class SignupActivity extends AppCompatActivity {
@@ -35,7 +37,8 @@ public class SignupActivity extends AppCompatActivity {
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        viewModel = new SignupViewModel();
+        UserRepository userRepository = BmailApplication.getInstance().getUserRepository();
+        viewModel = new SignupViewModel(userRepository);
 
         initViews();
 

@@ -4,11 +4,13 @@ import android.app.Application;
 
 import com.example.bmail.Repositories.LabelRepository;
 import com.example.bmail.Repositories.MailRepository;
+import com.example.bmail.Repositories.UserRepository;
 
 public class BmailApplication extends Application {
     private static BmailApplication instance;
     private MailRepository mailRepository;
     private LabelRepository labelRepository;
+    private UserRepository userRepository;
 
     @Override
     public void onCreate() {
@@ -16,6 +18,7 @@ public class BmailApplication extends Application {
         instance = this;
         mailRepository = new MailRepository(this);
         labelRepository = new LabelRepository(this);
+        userRepository = new UserRepository(this);
     }
 
     public static BmailApplication getInstance() {
@@ -27,5 +30,8 @@ public class BmailApplication extends Application {
     }
     public LabelRepository getLabelRepository() {
         return labelRepository;
+    }
+    public UserRepository getUserRepository() {
+        return userRepository;
     }
 }

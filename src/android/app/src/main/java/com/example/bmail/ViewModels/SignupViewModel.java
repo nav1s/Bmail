@@ -3,8 +3,15 @@ package com.example.bmail.ViewModels;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.example.bmail.Repositories.UserRepository;
+
 // todo check whether this class need to extend ViewModel or not
 public class SignupViewModel {
+    private final UserRepository userRepository;
+
+    public SignupViewModel(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
 
     public static class ValidationResult {
         public String firstNameError;
@@ -12,21 +19,6 @@ public class SignupViewModel {
         public String usernameError;
         public String passwordError;
         public String confirmPasswordError;
-    }
-
-    public ValidationResult validateFields(@NonNull String firstName, @NonNull String lastName,
-                                           @NonNull String username, String password,
-                                           String confirmPassword) {
-        ValidationResult result = new ValidationResult();
-
-        result.firstNameError = firstName.isEmpty() ? "First name cannot be empty" : null;
-        result.lastNameError = lastName.isEmpty() ? "Last name cannot be empty" : null;
-        result.usernameError = username.isEmpty() ? "Username cannot be empty" : null;
-        result.passwordError = getPasswordValidationError(password);
-        result.confirmPasswordError = (result.passwordError == null && !password.equals(confirmPassword))
-                ? "Passwords do not match" : null;
-
-        return result;
     }
 
     /**
@@ -52,6 +44,22 @@ public class SignupViewModel {
         if (!password.matches(".*[!@#$%^&*()\\-+=<>?{}\\[\\]~`.,;:'\"\\\\|/_].*"))
             return "Password must contain at least one special character";
         return null;
+    }
+
+
+    public ValidationResult validateFields(@NonNull String firstName, @NonNull String lastName,
+                                           @NonNull String username, String password,
+                                           String confirmPassword) {
+        ValidationResult result = new ValidationResult();
+
+        result.firstNameError = firstName.isEmpty() ? "First name cannot be empty" : null;
+        result.lastNameError = lastName.isEmpty() ? "Last name cannot be empty" : null;
+        result.usernameError = username.isEmpty() ? "Username cannot be empty" : null;
+        result.passwordError = getPasswordValidationError(password);
+        result.confirmPasswordError = (result.passwordError == null && !password.equals(confirmPassword))
+                ? "Passwords do not match" : null;
+
+        return result;
     }
 
 }
