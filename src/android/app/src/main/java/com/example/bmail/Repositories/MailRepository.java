@@ -60,9 +60,9 @@ public class MailRepository {
         mailApi.sendMail(mail);
     }
 
-    public void updateDraft(Mail mail) {
+    public void updateDraft(Mail mail, int mailId) {
         Log.d("MailRepository", "Updating draft for mail: " + mail);
-        mailApi.updateDraft(mail);
+        mailApi.updateDraft(mail, mailId);
     }
 
     public void deleteMail(Mail mail) {

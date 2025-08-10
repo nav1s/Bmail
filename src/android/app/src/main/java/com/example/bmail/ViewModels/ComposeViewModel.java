@@ -57,7 +57,6 @@ public class ComposeViewModel extends androidx.lifecycle.ViewModel {
     public void updateDraft(String to, String subject, String message, int mailId) {
         // todo replace sender with actual user email
         Mail mail = new Mail(subject, message, "Me", List.of(to), true);
-        mail.setId(mailId);
-        mailRepository.updateDraft(mail);
+        mailRepository.updateDraft(mail, mailId);
     }
 }

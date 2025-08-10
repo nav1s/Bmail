@@ -26,8 +26,8 @@ public interface WebServiceApi {
     @POST("mails")
     Call<Void> sendMail(@Header("Authorization") String token, @Body Mail mail);
 
-    @PATCH("mails")
-    Call<Void> updateDraft(@Header("Authorization") String token, @Body Mail mail);
+    @PATCH("mails/{id}")
+    Call<Void> updateDraft(@Header("Authorization") String token, @Body Mail mail, @Path("id") int id);
 
     @GET("mails/search/{query}")
     Call<List<Mail>> searchMails(@Header("Authorization") String token,
