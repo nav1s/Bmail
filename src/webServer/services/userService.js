@@ -52,7 +52,7 @@ function filterUserByVisibility(user, visibility = 'public') {
     throw createError('User not found', { status: 404, type: 'NOT_FOUND' });
   }
 
-  const cfg = User.fieldConfig || null;
+  const cfg = User.userFieldConfig || null;
   const filteredUser = {};
 
   if (cfg) {

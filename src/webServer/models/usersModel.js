@@ -14,12 +14,21 @@ const UserSchema = new Schema(
     firstName: { type: String, required: true },
     lastName:  { type: String, required: true },
     password:  { type: String, required: true },
-    image:     { type: String }, // <-- store image URL/path
+    image:     { type: String },
   },
   { timestamps: true }
 );
 
-// Attach config to schema for later usage
+// Attach config
 UserSchema.statics.fieldConfig = userFieldConfig;
+
+// ✅ Virtual "id" that mirrors _id
+UserSchema.virtual('id').get(function () {
+  return this._id.toHexString();
+});
+
+// ✅ Ensure virtuals are included in both JSON & object outputs
+UserSchema.set('toJSON', { virtuals: true });
+UserSchema.set('toObject', { virtuals: true });
 
 module.exports = model('User', UserSchema);

@@ -394,6 +394,7 @@ module.exports = {
   deleteLabelForUser,
   ensureDefaultLabels,
   getSystemLabelId,
+  getLabelIdByName,
   attachLabelToMail,
   detachLabelFromMail
 };

@@ -18,7 +18,7 @@ curl -i -X POST http://localhost:8080/api/tokens \
 
 create mail: (auth token)
 curl -i -X POST http://localhost:8080/api/mails \
--H "Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImFsaWNlIiwiaWF0IjoxNzU0ODEwMDc5fQ.9-S0nCotVUMgw98dts2NJtuxJedUqsUbQ5j6SlSk9Ww" \
+-H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImFsaWNlIiwiaWF0IjoxNzU0ODA4NTczfQ.WQezHP82hrpHhWw5AZGFEljjxmFOtZgPSSWm8HC9zPM" \
 -H "Content-Type: application/json" \
 -d '{
   "to": ["alice"],
@@ -29,7 +29,6 @@ curl -i -X POST http://localhost:8080/api/mails \
 
 create label:
 curl -i -X POST http://localhost:8080/api/labels \
--H "Authorization: Bearer curl -i -X POST http://localhost:8080/api/mails \
 -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImFsaWNlIiwiaWF0IjoxNzU0ODA4NTczfQ.WQezHP82hrpHhWw5AZGFEljjxmFOtZgPSSWm8HC9zPM" \
 -H "Content-Type: application/json" \
 -d '{

@@ -1,4 +1,3 @@
-// controllers/mails.js
 const { Types } = require('mongoose');
 const { created, ok, noContent, badRequest } = require('../utils/httpResponses');
 const { httpError } = require('../utils/error');
@@ -65,19 +64,21 @@ async function listInbox(req, res) {
  *   - limit: number — max number of mails (default 50)
  */
 async function listMailsByLabel(req, res) {
+  
   const username = req.user.username;
   const userId = req.user.id;
   const { label } = req.params;
   const { limit = 50 } = req.query;
-
+  console.log("in listMailsByLabel label:" + label)
   try {
     const spamId = await getSystemLabelId(userId, 'spam');
     const trashId = await getSystemLabelId(userId, 'trash');
-
+    console.log("spam label id: " + spamId + " trash: " + trashId)
     // Accept either a label id or a name
     const labelId = isValidObjectId(label)
       ? label
       : await getLabelIdByName(userId, label);
+    console.log("3. in listMailsByLabel label ID:" + labelId)  
 
     const mails = await getMailsForUser(
       username,
