@@ -10,6 +10,8 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
@@ -21,7 +23,6 @@ import com.example.bmail.ViewModels.SignupViewModel;
 
 public class SignupActivity extends AppCompatActivity implements UserApi.callback {
     private SignupViewModel viewModel;
-    private static final int PICK_IMAGE_REQUEST = 1;
 
     private EditText firstNameET;
     private EditText lastNameET;
@@ -30,6 +31,8 @@ public class SignupActivity extends AppCompatActivity implements UserApi.callbac
     private EditText confirmPasswordET;
     private Button signupBtn;
     private TextView choosePhotoBtn;
+
+    private ActivityResultLauncher<Intent> imagePickerLauncher;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,12 +45,26 @@ public class SignupActivity extends AppCompatActivity implements UserApi.callbac
         UserRepository userRepository = BmailApplication.getInstance().getUserRepository();
         viewModel = new SignupViewModel(userRepository);
 
+        // Initialize the ActivityResultLauncher
+        imagePickerLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+                        Uri selectedImageUri = result.getData().getData();
+                        Log.i("SignupActivity", "Selected Image URI: " + selectedImageUri);
+                    }
+                });
+
         initViews();
 
         signupBtn.setOnClickListener(view -> handleSignupButtonClick());
 
-        // todo add ability to choose a photo from camera or gallery
-        choosePhotoBtn.setOnClickListener(view -> handleChoosePhotoButtonClick());
+        // Fixed photo selection - now just launches the picker
+        choosePhotoBtn.setOnClickListener(view -> {
+            Intent intent = new Intent(Intent.ACTION_PICK);
+            intent.setDataAndType(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, "image/*");
+            imagePickerLauncher.launch(intent);
+        });
     }
 
     private void initViews() {
@@ -91,22 +108,6 @@ public class SignupActivity extends AppCompatActivity implements UserApi.callbac
         viewModel.signup(firstName, lastName, username, password, this);
 
 
-    }
-
-    private void handleChoosePhotoButtonClick() {
-        Intent intent = new Intent(Intent.ACTION_PICK);
-        intent.setDataAndType(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, "image/*");
-        startActivityForResult(intent, PICK_IMAGE_REQUEST);
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null
-                && data.getData() != null) {
-            Uri selectedImageUri = data.getData();
-            Log.i("SignupActivity", "Selected Image URI: " + selectedImageUri.toString());
-        }
     }
 
     @Override
