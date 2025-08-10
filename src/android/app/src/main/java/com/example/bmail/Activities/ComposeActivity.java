@@ -1,6 +1,7 @@
 package com.example.bmail.Activities;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.Toast;
@@ -44,6 +45,9 @@ public class ComposeActivity extends AppCompatActivity {
             Mail mail = mailRepository.getMailById(mailId);
             // fill the content from the mail
             if (mail != null) {
+                // log the mail for debugging
+                Log.d("ComposeActivity", "Editing mail: " + mail);
+
                 etTo.setText(String.join(", ", mail.getTo()));
                 etSubject.setText(mail.getTitle());
                 etMessage.setText(mail.getBody());
@@ -88,7 +92,12 @@ public class ComposeActivity extends AppCompatActivity {
         String subject = etSubject.getText().toString().trim();
         String message = etMessage.getText().toString().trim();
 
-        viewModel.sendMail(to, subject, message);
+        // If it's a draft, send the draft
+        if (this.draftId != -1) {
+            viewModel.updateDraft(to, subject, message, this.draftId, false);
+        } else {
+            viewModel.sendMail(to, subject, message);
+        }
 
         Toast.makeText(this, "sent", Toast.LENGTH_SHORT).show();
         finish();
@@ -105,10 +114,10 @@ public class ComposeActivity extends AppCompatActivity {
         if (!subject.isEmpty() || !message.isEmpty()) {
             if (this.draftId != -1) {
                 // todo check gmail behavior
-                viewModel.updateDraft(to, subject, message, this.draftId);
+                viewModel.updateDraft(to, subject, message, this.draftId, true);
             }
             else {
-                viewModel.sendDraft(to, subject, message);
+                viewModel.createDraft(to, subject, message);
                 Toast.makeText(this, R.string.message_saved_as_draft, Toast.LENGTH_SHORT).show();
             }
         }

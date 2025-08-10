@@ -38,10 +38,7 @@ public class ComposeViewModel extends androidx.lifecycle.ViewModel {
         mailRepository.sendMail(mail);
     }
 
-    public void sendDraft(String to, String subject, String message){
-        // log the input
-        Log.i("ComposeViewModel",
-                "Sending draft to: " + to + ", Subject: " + subject + ", Message: " + message);
+    public void createDraft(String to, String subject, String message){
         List<String> toList;
         if (to != null && !to.isEmpty()) {
             toList = List.of(to);
@@ -51,12 +48,20 @@ public class ComposeViewModel extends androidx.lifecycle.ViewModel {
 
         // todo replace sender with actual user email
         Mail mail = new Mail(subject, message, "Me", toList, true);
+        // log the sent mail for debugging
+        Log.d("ComposeViewModel", "Creating draft: " + mail);
         mailRepository.sendMail(mail);
     }
 
-    public void updateDraft(String to, String subject, String message, int mailId) {
+    public void updateDraft(String to, String subject, String message, int mailId, Boolean draft) {
+        // print the to address for debugging
+        Log.d("ComposeViewModel", "Updating draft for mailId: " + mailId +
+                " with to: " + to);
+
         // todo replace sender with actual user email
-        Mail mail = new Mail(subject, message, "Me", List.of(to), true);
+        Mail mail = new Mail(subject, message, "Me", List.of(to), draft);
+        // log the draft being updated for debugging
+        Log.d("ComposeViewModel", "Updating draft: " + mail);
         mailRepository.updateDraft(mail, mailId);
     }
 }
