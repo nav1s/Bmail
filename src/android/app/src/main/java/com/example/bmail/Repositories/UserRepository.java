@@ -43,7 +43,7 @@ public class UserRepository {
             @Override
             public void onResponse(@NonNull Call<LoginResponse> call, @NonNull Response<LoginResponse> response) {
                 if (response.isSuccessful() && response.body() != null) {
-                    String token = response.body().token;
+                    String token = response.body().getToken();
                     Log.i("UserRepository", "Token: " + token);
                     saveToken(token);
                     callback.onLoginSuccess(token);
