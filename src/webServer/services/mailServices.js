@@ -49,27 +49,38 @@ function normalizeUrl(u) {
 
 /**
  * Reduce a mail doc/object to a safe output DTO based on schema `public` flags.
- * (We annotate Mail schema paths with `public` where needed in the model.)
+ * Always exposes a top-level `id` (string) derived from `_id`.
  */
 function filterMailForOutput(mail) {
   const output = {};
+
+  // Always expose id (string), even if _id isn't flagged public
+  if (mail && (mail._id || mail.id)) {
+    output.id = String(mail._id || mail.id);
+  }
+
   const schemaPaths = Mail.schema.paths;
 
-  // Include paths flagged as public
+  // Include paths flagged as public (unchanged behavior)
   Object.keys(schemaPaths).forEach((path) => {
     if (schemaPaths[path].options && schemaPaths[path].options.public) {
-      const key = path === '_id' ? 'id' : path;
-      output[key] = path === '_id' ? String(mail._id) : mail[path];
+      const value = mail[path === '_id' ? '_id' : path];
+      if (path === '_id') {
+        // we've already set output.id; skip adding _id again
+        return;
+      }
+      output[path] = value;
     }
   });
 
-  // Normalize labels to string ids if present
-  if (output.labels && Array.isArray(output.labels)) {
+  // Normalize labels to string ids if present on the DTO
+  if (Array.isArray(output.labels)) {
     output.labels = output.labels.map((l) => String(l));
   }
 
   return output;
 }
+
 
 /**
  * Check whether a user can see a mail.
@@ -171,8 +182,22 @@ async function getMailsForUser(username, spamLabelId, trashLabelId, labelId = nu
   const and = [];
 
   if (labelId) {
-    // Explicit label filter (show even spam/trash if that label was requested)
-    and.push({ labels: new Types.ObjectId(labelId) });
+    // Explicit label filter
+    const lid = new Types.ObjectId(labelId);
+    and.push({ labels: lid });
+
+    // NEW: unless we are explicitly viewing Spam or Trash,
+    // also exclude mails that are labeled Spam/Trash.
+    // (Keeps "restore by removing spam label" behavior without stripping other labels.)
+    const spamObjId = new Types.ObjectId(spamLabelId);
+    const trashObjId = new Types.ObjectId(trashLabelId);
+    const isSpamView  = String(lid) === String(spamObjId);
+    const isTrashView = String(lid) === String(trashObjId);
+
+    if (!isSpamView && !isTrashView) {
+      and.push({ labels: { $ne: spamObjId } });
+      and.push({ labels: { $ne: trashObjId } });
+    }
   } else {
     // Inbox behavior: exclude spam + trash
     and.push({ labels: { $ne: new Types.ObjectId(spamLabelId) } });
@@ -188,6 +213,7 @@ async function getMailsForUser(username, spamLabelId, trashLabelId, labelId = nu
 
   return docs.map(filterMailForOutput);
 }
+
 
 /**
  * Read a mail by id, enforce access, and return the public DTO.

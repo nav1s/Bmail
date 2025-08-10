@@ -130,6 +130,7 @@ async function updateLabelById(req, res) {
 async function deleteLabelById(req, res) {
   const userId = req.user.id;
   const labelId = req.params.id;
+  console.log("label id is: " + labelId)
 
   if (typeof labelId !== 'string' || labelId.trim() === '') {
     return badRequest(res, 'Label ID is required');

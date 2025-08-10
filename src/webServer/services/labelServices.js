@@ -3,6 +3,15 @@ const { createError } = require('../utils/error');
 const { Types } = require('mongoose');
 const { canUserAccessMail, tagMailsWithUrlsAsSpam } = require('./mailServices');
 const { addUrlsToBlacklist } = require('./blacklistService');
+const Mail = require('../models/mailsModel'); // ← needed for attach/detach mail label operations
+
+function toLabelDTO(doc) {
+  if (!doc) return doc;
+  // Works for Mongoose docs and plain objects
+  const obj = typeof doc.toObject === 'function' ? doc.toObject() : doc;
+  const { _id, ...rest } = obj;
+  return { id: String(_id), ...rest };
+}
 
 function validateUserId(id) {
   if (!Types.ObjectId.isValid(id)) {
@@ -31,10 +40,13 @@ async function getLabelsForUser(userId, name = null) {
       if (!label) {
         throw createError('Label not found', { type: 'NOT_FOUND', status: 404 });
       }
-      return [label];
+      // Ensure DTO shape with `id` instead of `_id`
+      return [toLabelDTO(label)];
     }
 
-    return await Label.find(query).lean();
+    const rows = await Label.find({ userId }).lean();
+    return rows.map(toLabelDTO);
+
   } catch (err) {
     throw err;
   }
@@ -68,7 +80,8 @@ async function getLabelForUserById(userId, labelId) {
       throw createError('Label not found', { type: 'NOT_FOUND', status: 404 });
     }
 
-    return label;
+    // Return DTO so callers see `id`
+    return toLabelDTO(label);
   } catch (err) {
     throw err;
   }
@@ -115,7 +128,8 @@ async function addLabelForUser(userId, name, system = false, attachable = true) 
 
     // Create and save label
     const doc = await Label.create({ userId, name, system, attachable });
-    return doc.toObject();
+    // Return DTO so clients have `id`
+    return toLabelDTO(doc);
   } catch (err) {
     throw err;
   }
@@ -188,7 +202,8 @@ async function updateLabelForUser(userId, labelId, newName) {
     label.name = newName.trim();
     await label.save();
 
-    return label.toObject();
+    // Return DTO so clients have `id`
+    return toLabelDTO(label);
   } catch (err) {
     // Handle unique index violation errors
     if (err && err.code === 11000) {
@@ -275,7 +290,8 @@ async function ensureDefaultLabels(userId) {
  */
 async function getLabelIdByName(userId, name) {
   const [label] = await getLabelsForUser(userId, name); // throws 404 if not found (unchanged behavior)
-  return String(label._id);
+  // getLabelsForUser returns DTO(s), so use `id`
+  return String(label.id);
 }
 
 /**
