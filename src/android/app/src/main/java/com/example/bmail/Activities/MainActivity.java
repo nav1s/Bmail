@@ -38,7 +38,6 @@ import com.google.android.material.navigation.NavigationView;
 public class MainActivity extends AppCompatActivity {
     // Constants for mail labels
     private static final String LABEL_INBOX = "inbox";
-    private static final String LABEL_DRAFTS = "drafts";
 
     private DrawerLayout drawer;
     private SwipeRefreshLayout refreshLayout;
