@@ -7,6 +7,7 @@ import android.provider.MediaStore;
 import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -22,6 +23,7 @@ import com.example.bmail.Repositories.UserRepository;
 import com.example.bmail.ViewModels.SignupViewModel;
 
 public class SignupActivity extends AppCompatActivity implements UserApi.callback {
+    private ImageView profileImageView;
     private SignupViewModel viewModel;
 
     private EditText firstNameET;
@@ -42,8 +44,7 @@ public class SignupActivity extends AppCompatActivity implements UserApi.callbac
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        UserRepository userRepository = BmailApplication.getInstance().getUserRepository();
-        viewModel = new SignupViewModel(userRepository);
+        initViews();
 
         // Initialize the ActivityResultLauncher
         imagePickerLauncher = registerForActivityResult(
@@ -52,14 +53,17 @@ public class SignupActivity extends AppCompatActivity implements UserApi.callbac
                     if (result.getResultCode() == RESULT_OK && result.getData() != null) {
                         Uri selectedImageUri = result.getData().getData();
                         Log.i("SignupActivity", "Selected Image URI: " + selectedImageUri);
+                        if (selectedImageUri != null) {
+                            profileImageView.setImageURI(selectedImageUri);
+                        } else {
+                            Log.e("SignupActivity", "Selected image URI is null");
+                        }
                     }
                 });
 
-        initViews();
 
         signupBtn.setOnClickListener(view -> handleSignupButtonClick());
 
-        // Fixed photo selection - now just launches the picker
         choosePhotoBtn.setOnClickListener(view -> {
             Intent intent = new Intent(Intent.ACTION_PICK);
             intent.setDataAndType(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, "image/*");
@@ -68,6 +72,10 @@ public class SignupActivity extends AppCompatActivity implements UserApi.callbac
     }
 
     private void initViews() {
+        UserRepository userRepository = BmailApplication.getInstance().getUserRepository();
+        viewModel = new SignupViewModel(userRepository);
+        profileImageView = findViewById(R.id.profile_image);
+
         firstNameET = findViewById(R.id.firstname);
         lastNameET = findViewById(R.id.lastname);
         usernameET = findViewById(R.id.username);

@@ -30,14 +30,22 @@
             android:gravity="center"
             android:layout_marginTop="8dp">
 
+            <androidx.cardview.widget.CardView
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                app:cardCornerRadius="1024dp"
+                >
+
             <ImageView
                 android:id="@+id/profile_image"
                 android:layout_width="120dp"
                 android:layout_height="120dp"
-                android:background="@drawable/round_button_background"
+                android:background="#a2c4fd"
                 android:scaleType="centerCrop"
                 android:src="@drawable/ic_person"
                 android:contentDescription="@string/profile_picture" />
+
+            </androidx.cardview.widget.CardView>
 
             <TextView
                 android:id="@+id/change_photo_text"
