@@ -2,7 +2,10 @@
 const { Types } = require('mongoose');
 const { createError } = require('../utils/error');
 const Mail = require('../models/mailsModel');
+const User = require('../models/usersModel');                 // ← NEW: needed to resolve recipient userIds
+const { Label } = require('../models/labelsModel');           // ← NEW: needed to resolve recipients' inbox labels
 const { anyUrlBlacklisted, addUrlsToBlacklist } = require('./blacklistService');
+
 
 /**
  * Ensure a value is a non-empty string.
@@ -83,12 +86,11 @@ function canUserAccessMail(mail, username) {
   );
 }
 
-/* ------------------------------------------------------------------ */
-/* Core service operations                                             */
-/* ------------------------------------------------------------------ */
-
 /**
  * Create mail/draft; auto-label Sent/Drafts; Spam by Bloom; propagate Spam.
+ * Additionally, auto-attach each recipient user's "inbox" label,
+ * even when the mail is tagged as spam (per requirement).
+ *
  * @param {object} mailData - { from, to[], title, body, draft }
  * @param {object} ctx - { userId, system: { spamId, sentId, draftsId } }
  */
@@ -105,7 +107,7 @@ async function buildMail(mailData, { userId, system }) {
   const rawUrls = extractUrls(`${mailData.title} ${mailData.body}`);
   const urls = rawUrls.map(normalizeUrl).filter(Boolean);
 
-  // system labels
+  // system labels for the SENDER
   const labels = [];
   labels.push(mailData.draft ? draftsId : sentId);
 
@@ -113,8 +115,28 @@ async function buildMail(mailData, { userId, system }) {
   const isSpam = urls.length > 0 && (await anyUrlBlacklisted(urls));
   if (isSpam) labels.push(spamId);
 
+  // NEW: also attach each RECIPIENT's inbox label (even if spam)
+  // We avoid circular imports by resolving via models directly.
+  for (const rUsername of mailData.to) {
+    const recipient = await User.findOne({ username: rUsername }).lean();
+    if (!recipient) continue; // if a recipient isn't found, skip attaching inbox label
+
+    // find recipient's "inbox" label (case-insensitive)
+    const inboxLabel = await Label.findOne({
+      userId: recipient._id,
+      name: { $regex: '^inbox$', $options: 'i' },
+    }).lean();
+
+    if (inboxLabel && inboxLabel._id) {
+      labels.push(inboxLabel._id);
+    }
+  }
+
+  // de-duplicate labels and normalize to ObjectIds
+  const dedupedLabelIds = Array.from(new Set(labels.map(String))).map((id) => new Types.ObjectId(id));
+
   // persist
-  const mail = await Mail.create({ ...mailData, labels, urls });
+  const mail = await Mail.create({ ...mailData, labels: dedupedLabelIds, urls });
 
   // propagation if spam
   if (isSpam && urls.length) {
@@ -124,6 +146,7 @@ async function buildMail(mailData, { userId, system }) {
 
   return filterMailForOutput(mail.toObject ? mail.toObject() : mail);
 }
+
 
 /**
  * Get accessible mails for a user, optionally filtered by label.
@@ -337,5 +360,8 @@ module.exports = {
   editMailForUser,
   deleteMail,
   searchMailsForUser,
+  addLabelToMail,
+  removeLabelFromMail,
 };
+
 
