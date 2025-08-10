@@ -61,25 +61,30 @@ function filterMailForOutput(mail) {
 
   const schemaPaths = Mail.schema.paths;
 
-  // Include paths flagged as public (unchanged behavior)
+  // Include paths flagged as public (path-level OR caster-level for arrays)
   Object.keys(schemaPaths).forEach((path) => {
-    if (schemaPaths[path].options && schemaPaths[path].options.public) {
-      const value = mail[path === '_id' ? '_id' : path];
-      if (path === '_id') {
-        // we've already set output.id; skip adding _id again
-        return;
-      }
-      output[path] = value;
-    }
+    const def = schemaPaths[path];
+    const isPublic =
+      (def.options && def.options.public) ||
+      (def.caster && def.caster.options && def.caster.options.public);
+
+    if (!isPublic) return;
+    if (path === '_id') return; // we've already set output.id
+
+    const value = mail[path];
+    if (typeof value !== 'undefined') output[path] = value;
   });
 
-  // Normalize labels to string ids if present on the DTO
-  if (Array.isArray(output.labels)) {
-    output.labels = output.labels.map((l) => String(l));
+  // Ensure labels are present and normalized (critical for UI state like Spam/Starred)
+  if (Array.isArray(mail.labels)) {
+    // prefer the public-filtered value if present; otherwise take from source
+    const labels = Array.isArray(output.labels) ? output.labels : mail.labels;
+    output.labels = labels.map((l) => String(l));
   }
 
   return output;
 }
+
 
 
 /**
