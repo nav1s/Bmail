@@ -18,8 +18,6 @@ import com.example.bmail.ViewModels.SignupViewModel;
 public class SignupActivity extends AppCompatActivity {
     private SignupViewModel viewModel;
     private static final int PICK_IMAGE_REQUEST = 1;
-    // Optional: Add an ImageView member variable
-    // private ImageView imageView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,12 +48,6 @@ public class SignupActivity extends AppCompatActivity {
         String username = String.valueOf(usernameET.getText()).trim();
         String password = String.valueOf(passwordET.getText()).trim();
         String confirmPassword = String.valueOf(confirmPasswordET.getText()).trim();
-
-        Log.i("foo", "First Name: " + firstName);
-        Log.i("foo", "Last Name: " + lastName);
-        Log.i("foo", "Username: " + username);
-        Log.i("foo", "Password: " + password);
-        Log.i("foo", "Confirm Password: " + confirmPassword);
 
         SignupViewModel.ValidationResult result = viewModel.
                 validateFields(firstName, lastName, username, password, confirmPassword);

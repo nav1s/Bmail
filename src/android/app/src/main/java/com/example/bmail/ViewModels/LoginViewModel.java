@@ -5,6 +5,7 @@ import androidx.annotation.NonNull;
 import com.example.bmail.Api.UserApi;
 import com.example.bmail.Repositories.UserRepository;
 
+// todo check whether this class need to extend ViewModel or not
 public class LoginViewModel {
     private final UserRepository userRepository;
 

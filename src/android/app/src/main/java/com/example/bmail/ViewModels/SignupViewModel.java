@@ -3,6 +3,7 @@ package com.example.bmail.ViewModels;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+// todo check whether this class need to extend ViewModel or not
 public class SignupViewModel {
 
     public static class ValidationResult {
