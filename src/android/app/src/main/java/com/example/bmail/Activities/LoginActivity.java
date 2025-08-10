@@ -1,6 +1,5 @@
 package com.example.bmail.Activities;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -10,11 +9,13 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AppCompatActivity;
+
 import com.example.bmail.ViewModels.LoginViewModel;
 import com.example.bmail.R;
 import com.example.bmail.Repositories.UserRepository;
 
-public class LoginActivity extends Activity implements LoginViewModel.LoginCallback {
+public class LoginActivity extends AppCompatActivity implements LoginViewModel.LoginCallback {
     private LoginViewModel loginViewModel;
     private EditText usernameET;
     private EditText passwordEt;
