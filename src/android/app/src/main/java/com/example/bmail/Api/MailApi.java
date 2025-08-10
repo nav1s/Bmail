@@ -27,7 +27,7 @@ public class MailApi {
     private final MutableLiveData<List<Mail>> mailListData;
     WebServiceApi webServiceApi;
     private final Context context;
-    private Gson gson;
+    private final Gson gson;
 
     public MailApi(MailDao mailDao, MutableLiveData<List<Mail>> mailListData, @NonNull Context context) {
         this.mailDao = mailDao;

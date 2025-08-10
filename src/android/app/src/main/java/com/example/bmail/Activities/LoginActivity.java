@@ -44,7 +44,6 @@ public class LoginActivity extends AppCompatActivity implements LoginViewModel.L
 
         // Initialize ViewModel with Repository
         loginViewModel = new LoginViewModel(userRepository);
-        loginViewModel.setLoginCallback(this);
 
         Button signupBtn = findViewById(R.id.signup);
         signupBtn.setOnClickListener(view -> {
@@ -79,7 +78,7 @@ public class LoginActivity extends AppCompatActivity implements LoginViewModel.L
         Log.i("LoginActivity", "The password is: " + password);
 
         // Use ViewModel for login
-        loginViewModel.login(username, password);
+        loginViewModel.login(username, password, this);
     }
 
     @Override
