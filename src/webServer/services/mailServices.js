@@ -103,9 +103,9 @@ function canUserAccessMail(mail, username) {
 }
 
 /**
- * Create mail/draft; auto-label Sent/Drafts; Spam by Bloom; propagate Spam.
- * Additionally, auto-attach each recipient user's "inbox" label,
- * even when the mail is tagged as spam (per requirement).
+ * Create mail/draft; auto-label Sent/Drafts; Spam by blacklist; propagate Spam.
+ * Additionally, auto-attach each recipient user's "inbox" label
+ * only when the mail is NOT a draft.
  *
  * @param {object} mailData - { from, to[], title, body, draft }
  * @param {object} ctx - { userId, system: { spamId, sentId, draftsId } }
@@ -119,7 +119,7 @@ async function buildMail(mailData, { userId, system }) {
   assertNonEmptyString('body', mailData.body);
   assertStringArray('to', mailData.to);
 
-  // urls
+  // urls (normalize once)
   const rawUrls = extractUrls(`${mailData.title} ${mailData.body}`);
   const urls = rawUrls.map(normalizeUrl).filter(Boolean);
 
@@ -127,24 +127,22 @@ async function buildMail(mailData, { userId, system }) {
   const labels = [];
   labels.push(mailData.draft ? draftsId : sentId);
 
-  // bloom spam check
+  // if any URL is already blacklisted, mark Spam now (for the sender copy)
   const isSpam = urls.length > 0 && (await anyUrlBlacklisted(urls));
   if (isSpam) labels.push(spamId);
 
-  // NEW: also attach each RECIPIENT's inbox label (even if spam)
-  // We avoid circular imports by resolving via models directly.
-  for (const rUsername of mailData.to) {
-    const recipient = await User.findOne({ username: rUsername }).lean();
-    if (!recipient) continue; // if a recipient isn't found, skip attaching inbox label
-
-    // find recipient's "inbox" label (case-insensitive)
-    const inboxLabel = await Label.findOne({
-      userId: recipient._id,
-      name: { $regex: '^inbox$', $options: 'i' },
-    }).lean();
-
-    if (inboxLabel && inboxLabel._id) {
-      labels.push(inboxLabel._id);
+  // attach each RECIPIENT's Inbox label ONLY when NOT a draft
+  if (!mailData.draft) {
+    for (const rUsername of mailData.to) {
+      const recipient = await User.findOne({ username: rUsername }).lean();
+      if (!recipient) continue;
+      const inboxLabel = await Label.findOne({
+        userId: recipient._id,
+        name: { $regex: '^inbox$', $options: 'i' },
+      }).lean();
+      if (inboxLabel && inboxLabel._id) {
+        labels.push(inboxLabel._id);
+      }
     }
   }
 
@@ -154,14 +152,15 @@ async function buildMail(mailData, { userId, system }) {
   // persist
   const mail = await Mail.create({ ...mailData, labels: dedupedLabelIds, urls });
 
-  // propagation if spam
+  // If the URLs were already blacklisted, propagate Spam to all relevant mails/participants.
+  // (We do NOT add new URLs to Bloom here.)
   if (isSpam && urls.length) {
-    await addUrlsToBlacklist(urls);
     await tagMailsWithUrlsAsSpam(userId, mailData.from, urls, spamId);
   }
 
   return filterMailForOutput(mail.toObject ? mail.toObject() : mail);
 }
+
 
 
 /**
@@ -233,39 +232,96 @@ async function findMailByIdForUser(id, username) {
 }
 
 /**
- * Edit a draft (owner-only). Whitelist title/body and re-extract URLs.
- * @returns {Promise<object>} Updated mail DTO
+ * Edit a draft (owner-only) and handle draft/send label transitions.
+ * Draft rules:
+ * - draft = true  -> ensure Drafts label is attached; remove Sent; remove any recipient Inbox labels
+ * - draft = false -> remove Drafts; add Sent; attach each recipient's Inbox; add Spam if URLs already blacklisted
  */
 async function editMailForUser(mailId, username, updates) {
   const mail = await Mail.findById(mailId);
-  if (!mail || !mail.draft) {
-    throw createError('Mail not found', { type: 'NOT_FOUND', status: 404 });
-  }
+  if (!mail) throw createError('Mail not found', { type: 'NOT_FOUND', status: 404 });
   if (mail.from !== username) {
-    throw createError('User does not have access to edit this draft', { status: 403 });
+    throw createError('User does not have access to edit this mail', { status: 403 });
   }
 
-  const patch = {};
+  // Validate & apply text / recipients
+  if (updates.title != null) assertNonEmptyString('title', updates.title);
+  if (updates.body  != null) assertNonEmptyString('body',  updates.body);
+  if (updates.to    != null) assertStringArray('to', updates.to);
 
-  if (updates.title != null) {
-    assertNonEmptyString('title', updates.title);
-    patch.title = updates.title;
-  }
-  if (updates.body != null) {
-    assertNonEmptyString('body', updates.body);
-    patch.body = updates.body;
-  }
+  if (updates.title != null) mail.title = updates.title;
+  if (updates.body  != null) mail.body  = updates.body;
+  if (updates.to    != null) mail.to    = updates.to;
 
-  // If either text field changed, recompute URLs
-  if (patch.title != null || patch.body != null) {
-    const nextTitle = patch.title != null ? patch.title : mail.title;
-    const nextBody = patch.body != null ? patch.body : mail.body;
-    patch.urls = extractUrls(`${nextTitle} ${nextBody}`);
+  // Recompute + normalize URLs if body or title changed
+  if (updates.title != null || updates.body != null) {
+    const raw = extractUrls(`${mail.title} ${mail.body}`);
+    mail.urls = raw.map(normalizeUrl).filter(Boolean);
   }
 
-  const updated = await Mail.findByIdAndUpdate(mailId, patch, { new: true }).lean();
-  return filterMailForOutput(updated);
+  // Resolve sender + system labels
+  const sender = await User.findOne({ username }, { _id: 1 }).lean();
+  if (!sender) throw createError('Author user not found', { type: 'NOT_FOUND', status: 404 });
+
+  const [draftsLbl, sentLbl, spamLbl] = await Promise.all([
+    Label.findOne({ userId: sender._id, name: { $regex: '^drafts$', $options: 'i' } }, { _id: 1 }).lean(),
+    Label.findOne({ userId: sender._id, name: { $regex: '^sent$',   $options: 'i' } }, { _id: 1 }).lean(),
+    Label.findOne({ userId: sender._id, name: { $regex: '^spam$',   $options: 'i' } }, { _id: 1 }).lean(),
+  ]);
+
+  const draftsId = draftsLbl?._id ? String(draftsLbl._id) : null;
+  const sentId   = sentLbl?._id   ? String(sentLbl._id)   : null;
+  const spamId   = spamLbl?._id   ? String(spamLbl._id)   : null;
+
+  const labelSet = new Set((mail.labels || []).map((id) => String(id)));
+  const willBeDraft = updates.draft != null ? !!updates.draft : !!mail.draft;
+
+  if (willBeDraft) {
+    // Save as draft: ensure Drafts present, Sent absent…
+    if (draftsId) labelSet.add(draftsId);
+    if (sentId)   labelSet.delete(sentId);
+    mail.draft = true;
+
+    // …and remove any recipient Inbox labels (drafts should not have Inbox)
+    for (const rUsername of (mail.to || [])) {
+      const recipient = await User.findOne({ username: rUsername }, { _id: 1 }).lean();
+      if (!recipient) continue;
+      const inbox = await Label.findOne(
+        { userId: recipient._id, name: { $regex: '^inbox$', $options: 'i' } },
+        { _id: 1 }
+      ).lean();
+      if (inbox && inbox._id) labelSet.delete(String(inbox._id));
+    }
+  } else {
+    // Send: remove Drafts, add Sent, attach recipient Inbox
+    if (draftsId) labelSet.delete(draftsId);
+    if (sentId)   labelSet.add(sentId);
+    mail.draft = false;
+
+    for (const rUsername of (mail.to || [])) {
+      const recipient = await User.findOne({ username: rUsername }, { _id: 1 }).lean();
+      if (!recipient) continue;
+      const inbox = await Label.findOne(
+        { userId: recipient._id, name: { $regex: '^inbox$', $options: 'i' } },
+        { _id: 1 }
+      ).lean();
+      if (inbox && inbox._id) labelSet.add(String(inbox._id));
+    }
+
+    // Spam by pre-blacklisted URLs
+    const urls = (mail.urls || []).map(normalizeUrl).filter(Boolean);
+    if (urls.length && (await anyUrlBlacklisted(urls)) && spamId) {
+      labelSet.add(spamId);
+      await tagMailsWithUrlsAsSpam(sender._id.toString(), username, urls, spamId);
+    }
+  }
+
+  mail.labels = Array.from(labelSet).map((id) => new Types.ObjectId(id));
+  await mail.save();
+  return filterMailForOutput(mail.toObject ? mail.toObject() : mail);
 }
+
+
 
 /**
  * Soft-delete for the calling user; hard-delete when no party can access.
