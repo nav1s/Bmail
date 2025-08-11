@@ -9,6 +9,7 @@ import androidx.annotation.NonNull;
 import com.example.bmail.Entities.LoginRequest;
 import com.example.bmail.Entities.LoginResponse;
 import com.example.bmail.Entities.SignupRequest;
+import com.example.bmail.Entities.User;
 import com.example.bmail.R;
 
 import retrofit2.Call;
@@ -17,12 +18,6 @@ import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 public class UserApi {
-
-    public interface callback {
-        void onSuccess(String msg);
-        void onFailure(String errorMessage);
-    }
-
 
     private final WebServiceApi webServiceApi;
     private final Context context;
@@ -36,66 +31,40 @@ public class UserApi {
         webServiceApi = retrofit.create(WebServiceApi.class);
     }
 
-    public void login(String username, String password, callback loginCallback) {
-        LoginRequest request = new LoginRequest(username, password);
-        Call<LoginResponse> call = webServiceApi.login(request);
+
+    public String getToken() {
+        SharedPreferences prefs = context.getSharedPreferences("user_prefs",
+                Context.MODE_PRIVATE);
+        return prefs.getString("auth_token", null);
+    }
+
+    public String getUserId() {
+        SharedPreferences prefs = context.getSharedPreferences("user_prefs",
+                Context.MODE_PRIVATE);
+        return prefs.getString("user_id", null);
+    }
+    public void loadUserDetails() {
+        String token = getToken();
+        String userID = getUserId();
+
+        Call<User> call = webServiceApi.getUserDetails(token, userID);
         call.enqueue(new retrofit2.Callback<>() {
             @Override
-            public void onResponse(@NonNull Call<LoginResponse> call, @NonNull Response<LoginResponse> response) {
+            public void onResponse(@NonNull Call<User> call, @NonNull Response<User> response) {
                 if (response.isSuccessful() && response.body() != null) {
-                    String token = response.body().getToken();
-                    Log.i("UserRepository", "Token: " + token);
-                    saveToken(token);
-                    loginCallback.onSuccess(token);
+                    User user = response.body();
+                    Log.i("UserApi", "User details loaded: " + user);
+                    // Handle the loaded user details as needed
                 } else {
-                    String errorMsg = "Login failed: " + response.message();
-                    Log.e("UserRepository", errorMsg);
-                    loginCallback.onFailure(errorMsg);
+                    Log.e("UserApi", "Failed to load user details: " + response.message());
                 }
             }
 
             @Override
-            public void onFailure(@NonNull Call<LoginResponse> call, @NonNull Throwable t) {
-                String errorMsg = "Network error: " + t.getMessage();
-                Log.e("UserRepository", "Login request failed", t);
-                loginCallback.onFailure(errorMsg);
+            public void onFailure(@NonNull Call<User> call, @NonNull Throwable t) {
+                Log.e("UserApi", "Error loading user details", t);
             }
         });
-    }
-
-    public void signup(String firstName, String lastName, String username,
-                       String password,callback signupCallback) {
-        SignupRequest request = new SignupRequest(firstName, lastName, username, password);
-
-        Call<Void> call = webServiceApi.signup(request);
-        call.enqueue(new retrofit2.Callback<>() {
-            @Override
-            public void onResponse(@NonNull Call<Void> call, @NonNull Response<Void> response) {
-                if (response.isSuccessful()) {
-                    // Assuming signup also returns a token
-                    signupCallback.onSuccess("Signup successful");
-                } else {
-                    String errorMsg = "Signup failed: " + response.message();
-                    Log.e("UserRepository", errorMsg);
-                    signupCallback.onFailure(errorMsg);
-                }
-            }
-
-            @Override
-            public void onFailure(@NonNull Call<Void> call, @NonNull Throwable t) {
-                String errorMsg = "Network error: " + t.getMessage();
-                Log.e("UserRepository", errorMsg);
-                signupCallback.onFailure(errorMsg);
-            }
-        });
-    }
-
-    private void saveToken(String token) {
-        SharedPreferences prefs = context.getSharedPreferences("user_prefs", Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = prefs.edit();
-        editor.putString("auth_token", token);
-        editor.apply();
-
     }
 
 }
