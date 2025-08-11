@@ -11,7 +11,7 @@ import androidx.lifecycle.LiveData;
 
 import com.example.bmail.Entities.BmailApplication;
 import com.example.bmail.Entities.Label;
-import com.example.bmail.Entities.Mail;
+import com.example.bmail.Entities.ServerMail;
 import com.example.bmail.R;
 import com.example.bmail.Repositories.LabelRepository;
 import com.example.bmail.Repositories.MailRepository;
@@ -40,7 +40,7 @@ public class MailContentActivity extends AppCompatActivity {
         MailRepository mailRepository = BmailApplication.getInstance().getMailRepository();
         LabelRepository labelRepository = BmailApplication.getInstance().getLabelRepository();
 
-        Mail mail = mailRepository.getMailById(mailId);
+        ServerMail mail = mailRepository.getMailById(mailId);
         if (mail == null) {
             Log.e("MailContentActivity", "Mail not found for ID: " + mailId);
             finish();

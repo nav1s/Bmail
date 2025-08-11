@@ -11,7 +11,7 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.example.bmail.Entities.BmailApplication;
-import com.example.bmail.Entities.Mail;
+import com.example.bmail.Entities.ServerMail;
 import com.example.bmail.R;
 import com.example.bmail.Repositories.MailRepository;
 import com.example.bmail.ViewModels.ComposeViewModel;
@@ -43,7 +43,7 @@ public class ComposeActivity extends AppCompatActivity {
         String mailId = getIntent().getStringExtra("mail_id");
         MailRepository mailRepository = BmailApplication.getInstance().getMailRepository();
         if (mailId != null && !mailId.isEmpty()) {
-            Mail mail = mailRepository.getMailById(mailId);
+            ServerMail mail = mailRepository.getMailById(mailId);
             // fill the content from the mail
             if (mail != null) {
                 // log the mail for debugging

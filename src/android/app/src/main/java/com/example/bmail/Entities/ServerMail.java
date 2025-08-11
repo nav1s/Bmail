@@ -8,7 +8,7 @@ import com.google.gson.annotations.Expose;
 import java.util.List;
 
 @Entity
-public class Mail {
+public class ServerMail {
 
     @PrimaryKey
     @Expose(serialize = false) // Exclude when sending, include when receiving
@@ -28,17 +28,17 @@ public class Mail {
     @Expose(serialize = false) // Exclude when sending, include when receiving
     private List<String> labels;
 
-    public Mail(){}
+    public ServerMail(){}
 
-    public Mail(String subject, String body, String sender, List<String> to, boolean draft) {
+    public ServerMail(String subject, String body, String sender, List<String> to, boolean draft) {
         this.title = subject;
         this.body = body;
         this.from = sender;
         this.to = to;
         this.draft = draft;
     }
-    public Mail(String subject, String body, String sender, List<String> to, Boolean draft,
-                List<String> labels) {
+    public ServerMail(String subject, String body, String sender, List<String> to, Boolean draft,
+                      List<String> labels) {
         this.title = subject;
         this.body = body;
         this.from = sender;

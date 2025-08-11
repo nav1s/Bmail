@@ -4,7 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
 
 import com.example.bmail.Entities.Label;
-import com.example.bmail.Entities.Mail;
+import com.example.bmail.Entities.ServerMail;
 import com.example.bmail.Repositories.LabelRepository;
 import com.example.bmail.Repositories.MailRepository;
 
@@ -13,7 +13,7 @@ import java.util.List;
 public class MainActivityViewModel extends androidx.lifecycle.ViewModel {
     private final MailRepository mailRepository;
     private final LabelRepository labelRepository;
-    private final LiveData<List<Mail>> mails;
+    private final LiveData<List<ServerMail>> mails;
 
     public MainActivityViewModel(@NonNull MailRepository mailRepository, LabelRepository labelRepository) {
         this.mailRepository = mailRepository;
@@ -21,7 +21,7 @@ public class MainActivityViewModel extends androidx.lifecycle.ViewModel {
         this.labelRepository = labelRepository;
     }
 
-    public LiveData<List<Mail>> getMails() {
+    public LiveData<List<ServerMail>> getMails() {
         return mails;
     }
 
@@ -33,7 +33,7 @@ public class MainActivityViewModel extends androidx.lifecycle.ViewModel {
         return labelRepository.getLabels();
     }
 
-    public void delete(Mail mail) {
+    public void delete(ServerMail mail) {
         mailRepository.deleteMail(mail);
     }
     public void loadMails(String label) {

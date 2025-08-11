@@ -1,8 +1,9 @@
 package com.example.bmail.Api;
 
+import com.example.bmail.Entities.ClientMail;
 import com.example.bmail.Entities.LoginRequest;
 import com.example.bmail.Entities.LoginResponse;
-import com.example.bmail.Entities.Mail;
+import com.example.bmail.Entities.ServerMail;
 import com.example.bmail.Entities.Label;
 import com.example.bmail.Entities.SignupRequest;
 
@@ -25,18 +26,18 @@ public interface WebServiceApi {
 
     @GET("mails/byLabel/{label}")
 
-    Call<List<Mail>> getMails(@Header("Authorization") String token, @Path ("label") String label);
+    Call<List<ServerMail>> getMails(@Header("Authorization") String token, @Path ("label") String label);
 
     @POST("mails")
-    Call<Void> sendMail(@Header("Authorization") String token, @Body Mail mail);
+    Call<Void> sendMail(@Header("Authorization") String token, @Body ClientMail mail);
 
     @PATCH("mails/{id}")
-    Call<Void> updateDraft(@Header("Authorization") String token, @Body Mail mail,
+    Call<Void> updateDraft(@Header("Authorization") String token, @Body ServerMail mail,
                            @Path("id") String id);
 
     @GET("mails/search/{query}")
-    Call<List<Mail>> searchMails(@Header("Authorization") String token,
-                                 @Path ("query") String query);
+    Call<List<ServerMail>> searchMails(@Header("Authorization") String token,
+                                       @Path ("query") String query);
 
     @GET("labels")
     Call <List<Label>> getLabels(@Header("Authorization") String token);

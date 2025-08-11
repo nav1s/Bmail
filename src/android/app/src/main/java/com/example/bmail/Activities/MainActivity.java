@@ -25,7 +25,7 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.example.bmail.Entities.BmailApplication;
 import com.example.bmail.Entities.Label;
-import com.example.bmail.Entities.Mail;
+import com.example.bmail.Entities.ServerMail;
 import com.example.bmail.Repositories.LabelRepository;
 import com.example.bmail.Repositories.MailRepository;
 import com.example.bmail.ViewModels.MainActivityViewModel;
@@ -282,7 +282,7 @@ public class MainActivity extends AppCompatActivity {
      * @brief Show the content of the clicked mail.
      */
     private void showMailContent(@NonNull View view) {
-        Mail clickedMail = (Mail) view.getTag();
+        ServerMail clickedMail = (ServerMail) view.getTag();
         if (clickedMail == null) {
             Log.w("MailActivity", "Clicked mail is null, cannot show content.");
             return;

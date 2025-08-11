@@ -10,21 +10,21 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.bmail.Entities.Mail;
+import com.example.bmail.Entities.ServerMail;
 import com.example.bmail.R;
 
 import java.util.List;
 
 public class MailsAdapter extends RecyclerView.Adapter<MailsAdapter.mailViewHolder> {
     private final View.OnClickListener clickListener;
-    private List<Mail> mailList;
+    private List<ServerMail> mailList;
     private final LayoutInflater inflater;
 
     public static class mailViewHolder extends RecyclerView.ViewHolder {
         private final TextView sender;
         private final TextView subject;
         private final TextView body;
-        private Mail currentMail;
+        private ServerMail currentMail;
 
         public mailViewHolder(@NonNull View itemView, View.OnClickListener clickListener) {
             super(itemView);
@@ -44,7 +44,7 @@ public class MailsAdapter extends RecyclerView.Adapter<MailsAdapter.mailViewHold
             });
         }
 
-        public void setMail(Mail mail) {
+        public void setMail(ServerMail mail) {
             this.currentMail = mail;
         }
     }
@@ -63,7 +63,7 @@ public class MailsAdapter extends RecyclerView.Adapter<MailsAdapter.mailViewHold
 
     @Override
     public void onBindViewHolder(@NonNull mailViewHolder holder, int position) {
-        Mail currentMail = mailList.get(position);
+        ServerMail currentMail = mailList.get(position);
         // todo add different view when the label is sent and draft
         Log.i("MailsAdapter", "Binding mail at position: " + position);
         Log.i("MailsAdapter", "Mail sender: " + currentMail.getFrom());
@@ -82,7 +82,7 @@ public class MailsAdapter extends RecyclerView.Adapter<MailsAdapter.mailViewHold
         return mailList.size();
     }
 
-    public void setMails(@NonNull List<Mail> mails) {
+    public void setMails(@NonNull List<ServerMail> mails) {
         notifyItemRangeRemoved(0, mailList == null ? 0 : mailList.size());
         this.mailList = mails;
         notifyItemRangeInserted(0, mailList.size());

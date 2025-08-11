@@ -4,7 +4,8 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 
-import com.example.bmail.Entities.Mail;
+import com.example.bmail.Entities.ClientMail;
+import com.example.bmail.Entities.ServerMail;
 import com.example.bmail.Repositories.MailRepository;
 
 import java.util.ArrayList;
@@ -34,7 +35,7 @@ public class ComposeViewModel extends androidx.lifecycle.ViewModel {
         }
 
         // todo replace sender with actual user email
-        Mail mail = new Mail(subject, message, "Me", List.of(to), false, null);
+        ClientMail mail = new ClientMail(subject, message, "Me", List.of(to), false);
         // log the sent mail for debugging
         Log.d("ComposeViewModel", "Sending mail: " + mail);
         mailRepository.sendMail(mail);
@@ -49,7 +50,7 @@ public class ComposeViewModel extends androidx.lifecycle.ViewModel {
         }
 
         // todo replace sender with actual user email
-        Mail mail = new Mail(subject, message, "Me", toList, true, null);
+        ClientMail mail = new ClientMail(subject, message, "Me", toList, true);
         // log the sent mail for debugging
         Log.d("ComposeViewModel", "Creating draft: " + mail);
         mailRepository.sendMail(mail);
@@ -61,7 +62,7 @@ public class ComposeViewModel extends androidx.lifecycle.ViewModel {
                 " with to: " + to);
 
         // todo replace sender with actual user email
-        Mail mail = new Mail(subject, message, "Me", List.of(to), draft, null);
+        ServerMail mail = new ServerMail(subject, message, "Me", List.of(to), draft, null);
         // log the draft being updated for debugging
         Log.d("ComposeViewModel", "Updating draft: " + mail);
         mailRepository.updateDraft(mail, mailId);

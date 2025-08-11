@@ -6,29 +6,29 @@ import androidx.room.Insert;
 import androidx.room.Query;
 import androidx.room.Update;
 
-import com.example.bmail.Entities.Mail;
+import com.example.bmail.Entities.ServerMail;
 
 import java.util.List;
 
 @Dao
 public interface MailDao {
-    @Query("SELECT * from mail")
-    List<Mail> getAllMails();
-    @Query("SELECT * from mail WHERE id = :id")
-    Mail getById(int id);
+    @Query("SELECT * from ServerMail")
+    List<ServerMail> getAllMails();
+    @Query("SELECT * from ServerMail WHERE id = :id")
+    ServerMail getById(int id);
 
     @Insert
-    void insert(Mail mail);
+    void insert(ServerMail mail);
     @Update
-    void update(Mail mail);
+    void update(ServerMail mail);
     @Delete
-    void delete(Mail mail);
+    void delete(ServerMail mail);
     // delete all mails
-    @Query("DELETE FROM mail")
+    @Query("DELETE FROM ServerMail")
     void clear();
 
     @Insert
-    void insertList(List<Mail> mails);
+    void insertList(List<ServerMail> mails);
 
 
 }

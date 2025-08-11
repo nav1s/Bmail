@@ -9,7 +9,8 @@ import androidx.lifecycle.MutableLiveData;
 import androidx.room.Room;
 
 import com.example.bmail.Api.MailApi;
-import com.example.bmail.Entities.Mail;
+import com.example.bmail.Entities.ClientMail;
+import com.example.bmail.Entities.ServerMail;
 import com.example.bmail.db.AppDatabase;
 import com.example.bmail.db.MailDao;
 
@@ -21,10 +22,10 @@ public class MailRepository {
     private final MailListData mailListData;
     private final MailApi mailApi;
 
-    class MailListData extends MutableLiveData<List<Mail>> {
+    class MailListData extends MutableLiveData<List<ServerMail>> {
         public MailListData() {
             super();
-            List<Mail> mails = new LinkedList<>();
+            List<ServerMail> mails = new LinkedList<>();
             setValue(mails);
         }
         @Override
@@ -47,7 +48,7 @@ public class MailRepository {
         mailApi = new MailApi(mailDao, mailListData, context);
     }
 
-    public LiveData<List<Mail>> getMails() {
+    public LiveData<List<ServerMail>> getMails() {
         return mailListData;
     }
 
@@ -56,25 +57,25 @@ public class MailRepository {
         mailApi.searchMail(query);
     }
 
-    public void sendMail(Mail mail) {
+    public void sendMail(ClientMail mail) {
         mailApi.sendMail(mail);
     }
 
-    public void updateDraft(Mail mail, String mailId) {
+    public void updateDraft(ServerMail mail, String mailId) {
         Log.d("MailRepository", "Updating draft for mail: " + mail);
         mailApi.updateDraft(mail, mailId);
     }
 
-    public void deleteMail(Mail mail) {
+    public void deleteMail(ServerMail mail) {
         Log.d("MailRepository", "Deleting mail: " + mail);
 //        mailApi.deleteMail(mail);
 
     }
 
-    public Mail getMailById(String id) {
-        List<Mail> mails = mailListData.getValue();
+    public ServerMail getMailById(String id) {
+        List<ServerMail> mails = mailListData.getValue();
         if (mails != null) {
-            for (Mail mail : mails) {
+            for (ServerMail mail : mails) {
                 // log the mail ID for debugging
                Log.d("MailRepository", "Checking mail ID: " + mail.getId());
                // log the mail object for debugging

@@ -7,7 +7,8 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.lifecycle.MutableLiveData;
 
-import com.example.bmail.Entities.Mail;
+import com.example.bmail.Entities.ClientMail;
+import com.example.bmail.Entities.ServerMail;
 import com.example.bmail.R;
 import com.example.bmail.db.MailDao;
 import com.google.gson.Gson;
@@ -24,12 +25,12 @@ import retrofit2.converter.gson.GsonConverterFactory;
 public class MailApi {
 
     private final MailDao mailDao;
-    private final MutableLiveData<List<Mail>> mailListData;
+    private final MutableLiveData<List<ServerMail>> mailListData;
     WebServiceApi webServiceApi;
     private final Context context;
     private final Gson gson;
 
-    public MailApi(MailDao mailDao, MutableLiveData<List<Mail>> mailListData, @NonNull Context context) {
+    public MailApi(MailDao mailDao, MutableLiveData<List<ServerMail>> mailListData, @NonNull Context context) {
         this.mailDao = mailDao;
         this.mailListData = mailListData;
         this.context = context.getApplicationContext();
@@ -57,19 +58,19 @@ public class MailApi {
         // log the label being fetched
         Log.i("MailApi", "Fetching mails for label: " + label);
 
-        Call<List<Mail>> call = webServiceApi.getMails("Bearer " + token, label);
+        Call<List<ServerMail>> call = webServiceApi.getMails("Bearer " + token, label);
         call.enqueue(
                 new Callback<>() {
 
                     @Override
-                    public void onResponse(@NonNull Call<List<Mail>> call,
-                                           @NonNull Response<List<Mail>> response) {
+                    public void onResponse(@NonNull Call<List<ServerMail>> call,
+                                           @NonNull Response<List<ServerMail>> response) {
                         new Thread(() -> {
                             if (response.isSuccessful() && response.body() != null) {
                                 Log.i("MailApi", "Fetched mails successfully");
                                 // log the response body size
                                 // log the first mail if available
-                                List<Mail> mails = response.body();
+                                List<ServerMail> mails = response.body();
                                 // log the mails fetched
                                 Log.i("MailApi", "Mails fetched: " + mails.size());
                                 // log the first mail's title if available
@@ -80,7 +81,7 @@ public class MailApi {
                                 mailDao.clear();
                                 mailDao.insertList(mails);
 
-                                List<Mail> dbMails = mailDao.getAllMails();
+                                List<ServerMail> dbMails = mailDao.getAllMails();
                                 mailListData.postValue(dbMails);
                                 // log the number of mails fetched
                                 Log.i("MailApi", "Number of mails fetched: " + mails.size());
@@ -93,7 +94,7 @@ public class MailApi {
                     }
 
                     @Override
-                    public void onFailure(@NonNull Call<List<Mail>> call,
+                    public void onFailure(@NonNull Call<List<ServerMail>> call,
                                           @NonNull Throwable t) {
                         Log.e("MailApi", "Network error: " + t.getMessage());
                         mailListData.setValue(null);
@@ -102,7 +103,7 @@ public class MailApi {
         );
 
     }
-    public void sendMail(Mail mail) {
+    public void sendMail(ClientMail mail) {
         String token = getToken();
         Log.i("MailApi", "Sending mail with token: " + token);
         String json = gson.toJson(mail);
@@ -128,7 +129,7 @@ public class MailApi {
         });
     }
 
-    public void updateDraft(Mail mail, String mailId) {
+    public void updateDraft(ServerMail mail, String mailId) {
         String token = getToken();
         Log.i("MailApi", "Updating draft with token: " + token);
         Call <Void> call = webServiceApi.updateDraft("Bearer " + token, mail, mailId);
@@ -154,14 +155,14 @@ public class MailApi {
         String token = getToken();
         Log.i("MailApi", "Searching mail with token: " + token);
 
-        Call<List<Mail>> call = webServiceApi.searchMails("Bearer " + token, query);
+        Call<List<ServerMail>> call = webServiceApi.searchMails("Bearer " + token, query);
         call.enqueue(new Callback<>() {
             @Override
-            public void onResponse(@NonNull Call<List<Mail>> call,
-                                   @NonNull Response<List<Mail>> response) {
+            public void onResponse(@NonNull Call<List<ServerMail>> call,
+                                   @NonNull Response<List<ServerMail>> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     Log.i("MailApi", "Search completed successfully");
-                    List<Mail> mails = response.body();
+                    List<ServerMail> mails = response.body();
                     mailListData.postValue(mails);
                 } else {
                     Log.e("MailApi", "Search failed: " + response.message());
@@ -170,7 +171,7 @@ public class MailApi {
             }
 
             @Override
-            public void onFailure(@NonNull Call<List<Mail>> call, @NonNull Throwable t) {
+            public void onFailure(@NonNull Call<List<ServerMail>> call, @NonNull Throwable t) {
                 Log.e("MailApi", "Network error during search: " + t.getMessage());
                 mailListData.setValue(null);
             }
