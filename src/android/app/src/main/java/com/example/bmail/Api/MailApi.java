@@ -181,8 +181,12 @@ public class MailApi {
 
     public void addLabelToMail(String mailId, String labelId) {
         LabelRequest labelRequest = new LabelRequest(labelId);
-        String token = getToken();
+        String json = gson.toJson(labelRequest);
+        // log the json object being sent
         Log.i("MailApi", "Adding label to mail with ID: " + mailId + " and label ID: " + labelId);
+        Log.i("MailApi", "Label request JSON: " + json);
+
+        String token = getToken();
 
         Call<Void> call = webServiceApi.addLabelToMail("Bearer " + token, mailId, labelRequest);
         call.enqueue(new Callback<>() {

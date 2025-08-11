@@ -1,7 +1,10 @@
 package com.example.bmail.Entities;
 
+import com.google.gson.annotations.Expose;
+
 public class LabelRequest {
 
+    @Expose
     private String labelId;
 
     public LabelRequest(){
