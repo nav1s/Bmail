@@ -72,8 +72,8 @@ public class SignupActivity extends AppCompatActivity implements UserApi.callbac
     }
 
     private void initViews() {
-        UserRepository userRepository = BmailApplication.getInstance().getUserRepository();
-        viewModel = new SignupViewModel(userRepository);
+        UserApi userApi = new UserApi(this);
+        viewModel = new SignupViewModel(userApi);
         profileImageView = findViewById(R.id.profile_image);
 
         firstNameET = findViewById(R.id.firstname);

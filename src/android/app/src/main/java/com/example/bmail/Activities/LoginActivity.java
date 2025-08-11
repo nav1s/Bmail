@@ -42,10 +42,10 @@ public class LoginActivity extends AppCompatActivity implements UserApi.callback
             return;
         }
 
-        UserRepository userRepository = BmailApplication.getInstance().getUserRepository();
+        UserApi userApi = new UserApi(this);
 
         // Initialize ViewModel with Repository
-        loginViewModel = new LoginViewModel(userRepository);
+        loginViewModel = new LoginViewModel(userApi);
 
         Button signupBtn = findViewById(R.id.signup);
         signupBtn.setOnClickListener(view -> {

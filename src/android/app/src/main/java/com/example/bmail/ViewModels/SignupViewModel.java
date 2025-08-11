@@ -8,10 +8,10 @@ import com.example.bmail.Repositories.UserRepository;
 
 // todo check whether this class need to extend ViewModel or not
 public class SignupViewModel {
-    private final UserRepository userRepository;
+    private final UserApi userApi;
 
-    public SignupViewModel(UserRepository userRepository) {
-        this.userRepository = userRepository;
+    public SignupViewModel(UserApi userApi) {
+        this.userApi = userApi;
     }
 
     public static class ValidationResult {
@@ -67,7 +67,7 @@ public class SignupViewModel {
                         @NonNull String username, @NonNull String password,
                        UserApi.callback signupCallback
                        ) {
-        userRepository.signup(firstName, lastName, username, password, signupCallback);
+        userApi.signup(firstName, lastName, username, password, signupCallback);
     }
 
 }

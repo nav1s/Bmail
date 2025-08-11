@@ -7,10 +7,10 @@ import com.example.bmail.Repositories.UserRepository;
 
 // todo check whether this class need to extend ViewModel or not
 public class LoginViewModel {
-    private final UserRepository userRepository;
+    private final UserApi userApi;
 
-    public LoginViewModel(UserRepository userRepository) {
-        this.userRepository = userRepository;
+    public LoginViewModel(UserApi userApi) {
+        this.userApi = userApi;
     }
 
 
@@ -27,6 +27,6 @@ public class LoginViewModel {
     }
 
     public void login(String username, String password, UserApi.callback loginCallback) {
-        userRepository.login(username, password, loginCallback);
+        userApi.login(username, password, loginCallback);
     }
 }
