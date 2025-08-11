@@ -11,7 +11,7 @@ import java.util.List;
 public class Label {
     @PrimaryKey
     @Expose(serialize = false) // Exclude when sending, include when receiving
-    private int id;
+    private String id;
     @Expose
     private String name;
     @Expose
@@ -25,11 +25,11 @@ public class Label {
 
     }
 
-    public int getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(String id) {
         this.id = id;
     }
 

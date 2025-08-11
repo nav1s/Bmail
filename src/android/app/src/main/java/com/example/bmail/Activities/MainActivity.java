@@ -233,11 +233,11 @@ public class MainActivity extends AppCompatActivity {
             for (Label label : labels) {
                 if (!label.isDefault()) {
                     Log.i("MailActivity", "Found non default: " + label.getName());
-                    if (menu.findItem(label.getId()) != null) {
-                        Log.w("MailActivity", "Label already exists in menu: "
-                                + label.getName());
-                        continue;
-                    }
+//                    if (menu.findItem(label.getId()) != null) {
+//                        Log.w("MailActivity", "Label already exists in menu: "
+//                                + label.getName());
+//                        continue;
+//                    }
 
                     Log.i("MailActivity", "Adding custom label to menu: "
                             + label.getName());
