@@ -178,4 +178,27 @@ public class MailApi {
         });
     }
 
+    public void addLabelToMail(String mailId, String labelId) {
+        String token = getToken();
+        Log.i("MailApi", "Adding label to mail with ID: " + mailId + " and label ID: " + labelId);
+
+        Call<Void> call = webServiceApi.addLabelToMail("Bearer " + token, mailId, labelId);
+        call.enqueue(new Callback<>() {
+            @Override
+            public void onResponse(@NonNull Call<Void> call,
+                                   @NonNull Response<Void> response) {
+                if (response.isSuccessful()) {
+                    Log.i("MailApi", "Label added successfully");
+                } else {
+                    Log.e("MailApi", "Failed to add label: " + response.message());
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<Void> call, @NonNull Throwable t) {
+                Log.e("MailApi", "Network error while adding label: " + t.getMessage());
+            }
+        });
+    }
+
 }

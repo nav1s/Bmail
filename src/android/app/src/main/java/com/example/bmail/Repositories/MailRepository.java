@@ -88,6 +88,15 @@ public class MailRepository {
         return null;
     }
 
+    public void removeLabelFromMail(String mailId, String labelId){
+
+    }
+
+    public void addLabelToMail(String mailId, String labelId) {
+        Log.d("MailRepository", "Adding label " + labelId + " to mail " + mailId);
+        mailApi.addLabelToMail(mailId, labelId);
+    }
+
     public void reloadMails(String label) {
         mailApi.reload(label);
     }

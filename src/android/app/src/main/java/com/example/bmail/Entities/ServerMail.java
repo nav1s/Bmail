@@ -28,15 +28,9 @@ public class ServerMail {
     @Expose()
     private List<String> labels;
 
-    public ServerMail(){}
-
-    public ServerMail(String subject, String body, String sender, List<String> to, boolean draft) {
-        this.title = subject;
-        this.body = body;
-        this.from = sender;
-        this.to = to;
-        this.draft = draft;
+    public ServerMail() {
     }
+
     public ServerMail(String subject, String body, String sender, List<String> to, Boolean draft,
                       List<String> labels) {
         this.title = subject;

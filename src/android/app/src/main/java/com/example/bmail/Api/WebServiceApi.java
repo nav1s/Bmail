@@ -41,4 +41,8 @@ public interface WebServiceApi {
 
     @GET("labels")
     Call <List<Label>> getLabels(@Header("Authorization") String token);
+
+    @POST("mails/{id}/labels")
+    Call<Void> addLabelToMail(@Header("Authorization") String token, @Path("id") String mailId,
+                              @Body String labelId);
 }

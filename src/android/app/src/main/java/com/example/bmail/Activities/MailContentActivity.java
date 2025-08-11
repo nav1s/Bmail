@@ -5,6 +5,7 @@ import android.util.Log;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.lifecycle.LiveData;
@@ -20,33 +21,52 @@ import java.util.List;
 import java.util.Objects;
 
 public class MailContentActivity extends AppCompatActivity {
+    boolean isStarred = false;
+    String starredId = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        // todo add viewmodel
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_mail_content);
 
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+        setupToolbar();
 
-        // fetch the mail id from intent extras
         String mailId = getIntent().getStringExtra("mail_id");
-        if (mailId != null && mailId.isEmpty()) {
+        if (mailId == null || mailId.isEmpty()) {
             Log.e("MailContentActivity", "Invalid mail ID");
             finish();
             return;
         }
-        MailRepository mailRepository = BmailApplication.getInstance().getMailRepository();
-        LabelRepository labelRepository = BmailApplication.getInstance().getLabelRepository();
 
-        ServerMail mail = mailRepository.getMailById(mailId);
+        ServerMail mail = getMailById(mailId);
         if (mail == null) {
-            Log.e("MailContentActivity", "Mail not found for ID: " + mailId);
             finish();
             return;
         }
 
+        starredId = getStarredLabelId();
+        isStarred = mail.getLabels().contains(starredId);
+
+        displayMailContent(mail);
+        setupStarButton(mail);
+        setupDeleteButton();
+    }
+
+    private void setupToolbar() {
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+    }
+
+    private ServerMail getMailById(String mailId) {
+        MailRepository mailRepository = BmailApplication.getInstance().getMailRepository();
+        ServerMail mail = mailRepository.getMailById(mailId);
+        if (mail == null) {
+            Log.e("MailContentActivity", "Mail not found for ID: " + mailId);
+        }
+        return mail;
+    }
+
+    private void displayMailContent(@NonNull ServerMail mail) {
         TextView tvMailTitle = findViewById(R.id.tv_mail_title);
         TextView tvSender = findViewById(R.id.tv_sender_name);
         TextView tvRecipients = findViewById(R.id.tv_recipients);
@@ -56,37 +76,50 @@ public class MailContentActivity extends AppCompatActivity {
         tvSender.setText(mail.getFrom());
         tvRecipients.setText(String.join(", ", mail.getTo()));
         tvMailBody.setText(mail.getBody());
+    }
 
-        LiveData<List<Label>> labels = labelRepository.getLabels();
-        String starredId = "";
-        // print all of the labels
-        for (Label label : Objects.requireNonNull(labels.getValue())) {
-            Log.d("MailContentActivity", "Label: " + label);
-            if (label.isDefault() && label.getName().equalsIgnoreCase("starred")) {
-                starredId = label.getId();
-            }
+    private void setupStarButton(ServerMail mail) {
+        if (starredId.isEmpty()) {
+            return;
         }
 
-        List<String> mailLabels = mail.getLabels();
         ImageButton btnStar = findViewById(R.id.btn_star);
-        Log.d("MailContentActivity", "Starred ID: " + starredId);
-        Log.d("MailContentActivity", "Mail Labels: " + mailLabels);
-        if (mailLabels.contains(starredId)) {
-            Log.d("MailContentActivity", "Mail is starred");
-            // if the mail is starred, set the star icon to filled
-            btnStar.setImageResource(R.drawable.ic_star);
-        } else {
-            Log.d("MailContentActivity", "Mail is not starred");
-            // if the mail is not starred, set the star icon to empty
-            btnStar.setImageResource(R.drawable.ic_star_filled);
+
+        // Set correct icon: filled star if starred, empty star if not starred
+        btnStar.setImageResource(isStarred ? R.drawable.ic_star_filled : R.drawable.ic_star);
+        btnStar.setOnClickListener(v -> {
+            MailRepository mailRepository = BmailApplication.getInstance().getMailRepository();
+            if (isStarred) {
+                mailRepository.removeLabelFromMail(mail.getId(), starredId);
+                btnStar.setImageResource(R.drawable.ic_star);
+                isStarred = false;
+            } else {
+                mailRepository.addLabelToMail(mail.getId(), starredId);
+                btnStar.setImageResource(R.drawable.ic_star_filled);
+                isStarred = true;
+            }
+        });
+    }
+
+    private String getStarredLabelId() {
+        LabelRepository labelRepository = BmailApplication.getInstance().getLabelRepository();
+        LiveData<List<Label>> labels = labelRepository.getLabels();
+
+        List<Label> labelList = labels.getValue();
+        if (labelList == null) {
+            return "";
         }
 
+        return labelList.stream()
+                .filter(label -> label.isDefault() && "starred".equalsIgnoreCase(label.getName()))
+                .findFirst()
+                .map(Label::getId)
+                .orElse("");
+    }
 
-        // setup delete button
+    private void setupDeleteButton() {
         ImageButton btnDelete = findViewById(R.id.btn_delete);
-        btnDelete.setOnClickListener(v -> {
-            finish();
-        });
+        btnDelete.setOnClickListener(v -> finish());
     }
 
     @Override
