@@ -360,26 +360,41 @@ async function deleteMail(mailId, username) {
   if (changed) await mail.save();
 }
 
-/**
- * Full-text search within accessible mails (title/body).
- * Requires a text index on { title, body } in the model.
- */
-async function searchMailsForUser(username, query) {
-  if (typeof query !== 'string' || query.trim() === '') {
-    throw createError('Query must be a non-empty string', { type: 'VALIDATION', status: 400 });
-  }
+function escapeRegex(s = '') {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
 
-  // First, fetch candidates via $text
-  const candidates = await Mail.find(
-    { $text: { $search: query } },
-    { score: { $meta: 'textScore' } }
+/**
+ * Searches for mails accessible to `username` where title/body contains `query` (case-insensitive).
+ * Mirrors the old in-memory behavior:
+ *  - uses "includes" semantics via case-insensitive regex
+ *  - preserves access filtering with canUserAccessMail(...)
+ *  - newest first (reverse)
+ *  - slice(0, limit)
+ */
+async function searchMailsForUser(username, query, limit = 50) {
+  const q = query.trim();
+  const rx = new RegExp(escapeRegex(q), 'i');
+  console.log(rx)
+
+  // We over-fetch a bit, then apply canUserAccessMail() exactly like before.
+  const raw = await Mail.find(
+    { $or: [{ title: { $regex: rx } }, { body: { $regex: rx } }] },
+    { title: 1, body: 1, from: 1, to: 1, cc: 1, bcc: 1, draft: 1,
+      deletedBySender: 1, deletedByRecipient: 1, createdAt: 1, labels: 1 } // ← add labels
   )
-    .sort({ score: { $meta: 'textScore' } })
+    .sort({ createdAt: -1 })
+    .limit(Math.min(Math.max(limit * 3, limit), 300))
     .lean();
 
-  // Then, filter by access
-  return candidates.filter((m) => canUserAccessMail(m, username)).map(filterMailForOutput);
+    console.log(raw)
+
+  const visible = raw.filter(m => canUserAccessMail(m, username));
+  return visible
+    .slice(0, limit)
+    .map(filterMailForOutput);
 }
+
 
 /**
  * Attach a label to a mail (idempotent), enforcing access.

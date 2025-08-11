@@ -20,6 +20,7 @@ const {
 } = require('../services/labelServices');
 
 const isValidObjectId = (id) => Types.ObjectId.isValid(id);
+const mailLimit = 50;
 
 /**
  * GET /api/mails
@@ -187,20 +188,26 @@ async function deleteMailById(req, res) {
 
 /**
  * GET /api/mails/search/:query
- * Full-text search across title/body for mails accessible by the current user.
- * Also accepts ?q=... for compatibility.
+ * Returns all mails accessible to the user where title/body includes the query (case-insensitive).
  */
 async function searchMails(req, res) {
-  const q = req.params.query || req.query.q;
-  if (!q || typeof q !== 'string') return badRequest(res, 'Missing search query');
+  const username = req.user.username;
+  const query = req.params.query ?? req.query.q;
+  const limit = Number(req.query.limit ?? mailLimit) || mailLimit;
+  console.log(username + " " + query + " " +limit)
+
+  if (!query || typeof query !== 'string' || !query.trim()) {
+    return badRequest(res, 'Search query must be a non-empty string');
+  }
 
   try {
-    const results = await searchMailsForUser(req.user.username, q);
-    return ok(res, results);
+    const results = await searchMailsForUser(username, query, limit);
+    return res.json(results);
   } catch (err) {
     return httpError(res, err);
   }
 }
+
 
 // POST /api/mails/:mailId/labels
 async function attachLabelToMail(req, res) {
