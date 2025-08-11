@@ -1,11 +1,27 @@
-// services/mailServices.js
 const { Types } = require('mongoose');
 const { createError } = require('../utils/error');
 const Mail = require('../models/mailsModel');
-const User = require('../models/usersModel');                 // ← NEW: needed to resolve recipient userIds
-const { Label } = require('../models/labelsModel');           // ← NEW: needed to resolve recipients' inbox labels
+const User = require('../models/usersModel');
+const { Label } = require('../models/labelsModel');
 const { anyUrlBlacklisted, addUrlsToBlacklist } = require('./blacklistService');
 
+/** Minimal "looks like an address": requires exactly one @ and no spaces (demo). */
+const EMAIL_RE = /^[^\s@]+@[^\s@]+$/;
+
+/** Internal address → username, supports bb@bmail and bb@bmail.com (demo). */
+function internalUsernameFromAddress(addr) {
+  const m = /^([^@\s]+)@bmail(?:\.com)?$/i.exec(String(addr || ''));
+  return m ? m[1] : null;
+}
+
+/** Split an array of "to" inputs on whitespace, commas, or semicolons; trim & drop empties. */
+function tokenizeAddresses(toArray) {
+  if (!Array.isArray(toArray)) return [];
+  return toArray
+    .flatMap((s) => String(s).split(/[\s,;]+/g))
+    .map((s) => s.trim())
+    .filter(Boolean);
+}
 
 /**
  * Ensure a value is a non-empty string.
@@ -77,7 +93,6 @@ function filterMailForOutput(mail) {
 
   // Ensure labels are present and normalized (critical for UI state like Spam/Starred)
   if (Array.isArray(mail.labels)) {
-    // prefer the public-filtered value if present; otherwise take from source
     const labels = Array.isArray(output.labels) ? output.labels : mail.labels;
     output.labels = labels.map((l) => String(l));
   }
@@ -85,101 +100,130 @@ function filterMailForOutput(mail) {
   return output;
 }
 
-
-
 /**
  * Check whether a user can see a mail.
- * - Sender can see it unless they deleted it.
- * - Recipient(s) can see it unless it's a draft or they deleted it.
+ * Demo routing rule (no schema change):
+ * - Recipients are stored as addresses (e.g., "bb@bmail" or "bb@bmail.com").
+ * - A user "bb" has access if the "to" array contains either internal form.
+ * Back-compat: if older mails stored bare usernames, we still honor those.
  */
 function canUserAccessMail(mail, username) {
+  const internalAddrs = [`${username}@bmail`, `${username}@bmail.com`];
+  const toArr = Array.isArray(mail.to) ? mail.to : [];
+
+  const recipientHasAccess =
+    toArr.includes(internalAddrs[0]) ||
+    toArr.includes(internalAddrs[1]) ||
+    toArr.includes(username); // legacy
+
+  const recipientNotDeleted =
+    !Array.isArray(mail.deletedByRecipient) || !mail.deletedByRecipient.includes(username);
+
   return (
     (mail.from === username && !mail.deletedBySender) ||
-    (Array.isArray(mail.to) &&
-      mail.to.includes(username) &&
-      !mail.draft &&
-      !Array.isArray(mail.deletedByRecipient) ? true : !mail.deletedByRecipient.includes(username))
+    (recipientHasAccess && !mail.draft && recipientNotDeleted)
   );
 }
 
 /**
  * Create mail/draft; auto-label Sent/Drafts; Spam by blacklist; propagate Spam.
- * Additionally, auto-attach each recipient user's "inbox" label
- * only when the mail is NOT a draft.
- *
- * @param {object} mailData - { from, to[], title, body, draft }
- * @param {object} ctx - { userId, system: { spamId, sentId, draftsId } }
+ * DEMO adjustments (no schema change):
+ * - "to" must be addresses (tokens validated by EMAIL_RE); spaces split into multiple tokens.
+ * - Store recipients in `mail.to` as addresses (e.g., "bb@bmail" or "bb@bmail.com").
+ * - On send (not draft): attach Inbox label only for internal recipients,
+ *   mapping address -> username via internalUsernameFromAddress().
+ * - For demo rule "on create - don't allow @ in name": reject senders whose username contains '@'.
  */
 async function buildMail(mailData, { userId, system }) {
   const { spamId, sentId, draftsId } = system || {};
 
-  // validate
+  // validate common fields
   assertNonEmptyString('from', mailData.from);
+  if (/@/.test(mailData.from)) {
+    throw createError('Sender username must not contain "@" (demo rule)', {
+      type: 'VALIDATION',
+      status: 400,
+    });
+  }
   assertNonEmptyString('title', mailData.title);
   assertNonEmptyString('body', mailData.body);
   assertStringArray('to', mailData.to);
 
-  // urls (normalize once)
+  // DEMO: normalize/validate "to" as addresses (split on spaces/commas/semicolons)
+  const toTokens = tokenizeAddresses(mailData.to);
+  const invalid = toTokens.filter((t) => !EMAIL_RE.test(t));
+  if (invalid.length) {
+    throw createError(`Invalid recipient address(es): ${invalid.join(', ')}`, {
+      type: 'VALIDATION',
+      status: 400,
+    });
+  }
+
+  // URLs (normalize once)
   const rawUrls = extractUrls(`${mailData.title} ${mailData.body}`);
   const urls = rawUrls.map(normalizeUrl).filter(Boolean);
 
   // system labels for the SENDER
   const labels = [];
-  labels.push(mailData.draft ? draftsId : sentId);
+  // Only push valid ids; filter later as well to be extra safe
+  if (mailData.draft ? draftsId : sentId) labels.push(mailData.draft ? draftsId : sentId);
 
   // if any URL is already blacklisted, mark Spam now (for the sender copy)
   const isSpam = urls.length > 0 && (await anyUrlBlacklisted(urls));
-  if (isSpam) labels.push(spamId);
+  if (isSpam && spamId) labels.push(spamId);
 
   // attach each RECIPIENT's Inbox label ONLY when NOT a draft
   if (!mailData.draft) {
-    for (const rUsername of mailData.to) {
+    for (const addr of toTokens) {
+      const rUsername = internalUsernameFromAddress(addr); // supports @bmail and @bmail.com
+      if (!rUsername) continue; // external: no internal inbox label in demo
       const recipient = await User.findOne({ username: rUsername }).lean();
       if (!recipient) continue;
-      const inboxLabel = await Label.findOne({
-        userId: recipient._id,
-        name: { $regex: '^inbox$', $options: 'i' },
-      }).lean();
+      const inboxLabel = await Label.findOne(
+        { userId: recipient._id, name: { $regex: '^inbox$', $options: 'i' } },
+        { _id: 1 }
+      ).lean();
       if (inboxLabel && inboxLabel._id) {
         labels.push(inboxLabel._id);
       }
     }
   }
 
-  // de-duplicate labels and normalize to ObjectIds
-  const dedupedLabelIds = Array.from(new Set(labels.map(String))).map((id) => new Types.ObjectId(id));
+  // de-duplicate labels and normalize to ObjectIds (filter falsy first)
+  const dedupedLabelIds = Array.from(new Set(labels.filter(Boolean).map(String))).map(
+    (id) => new Types.ObjectId(id)
+  );
 
-  // persist
-  const mail = await Mail.create({ ...mailData, labels: dedupedLabelIds, urls });
+  // persist: NOTE we now store `to` as address tokens (e.g., "bb@bmail" / "bb@bmail.com")
+  const mail = await Mail.create({ ...mailData, to: toTokens, labels: dedupedLabelIds, urls });
 
   // If the URLs were already blacklisted, propagate Spam to all relevant mails/participants.
-  // (We do NOT add new URLs to Bloom here.)
-  if (isSpam && urls.length) {
+  if (isSpam && urls.length && spamId) {
     await tagMailsWithUrlsAsSpam(userId, mailData.from, urls, spamId);
   }
 
   return filterMailForOutput(mail.toObject ? mail.toObject() : mail);
 }
 
-
-
 /**
  * Get accessible mails for a user, optionally filtered by label.
- * Excludes spam/trash by default for the inbox view.
- *
- * @param {string} username
- * @param {string} spamLabelId
- * @param {string} trashLabelId
- * @param {string|null} labelId - if provided, returns only mails with this label
- * @param {number} limit
+ * DEMO adjustments:
+ * - Inbox recipient matching uses both `${username}@bmail` and `${username}@bmail.com`.
+ * - Back-compat: also matches legacy mails where `to` stored the bare username.
  */
 async function getMailsForUser(username, spamLabelId, trashLabelId, labelId = null, limit = 50) {
+  const internalAddrs = [`${username}@bmail`, `${username}@bmail.com`];
+
   const baseQuery = {
     $or: [
       // Sent by me (and I didn't delete it)
       { from: username, deletedBySender: { $ne: true } },
       // To me (not a draft, and I didn't delete it)
-      { to: username, draft: false, deletedByRecipient: { $ne: username } },
+      {
+        to: { $in: [...internalAddrs, username] }, // include both address forms + legacy bare username
+        draft: false,
+        deletedByRecipient: { $ne: username },
+      },
     ],
   };
 
@@ -190,22 +234,19 @@ async function getMailsForUser(username, spamLabelId, trashLabelId, labelId = nu
     const lid = new Types.ObjectId(labelId);
     and.push({ labels: lid });
 
-    // NEW: unless we are explicitly viewing Spam or Trash,
-    // also exclude mails that are labeled Spam/Trash.
-    // (Keeps "restore by removing spam label" behavior without stripping other labels.)
-    const spamObjId = new Types.ObjectId(spamLabelId);
-    const trashObjId = new Types.ObjectId(trashLabelId);
-    const isSpamView  = String(lid) === String(spamObjId);
-    const isTrashView = String(lid) === String(trashObjId);
+    // Unless we are explicitly viewing Spam or Trash, exclude them
+    const spamObjId = spamLabelId ? new Types.ObjectId(spamLabelId) : null;
+    const trashObjId = trashLabelId ? new Types.ObjectId(trashLabelId) : null;
 
-    if (!isSpamView && !isTrashView) {
-      and.push({ labels: { $ne: spamObjId } });
-      and.push({ labels: { $ne: trashObjId } });
-    }
+    const isSpamView = spamObjId && String(lid) === String(spamObjId);
+    const isTrashView = trashObjId && String(lid) === String(trashObjId);
+
+    if (!isSpamView && spamObjId) and.push({ labels: { $ne: spamObjId } });
+    if (!isTrashView && trashObjId) and.push({ labels: { $ne: trashObjId } });
   } else {
-    // Inbox behavior: exclude spam + trash
-    and.push({ labels: { $ne: new Types.ObjectId(spamLabelId) } });
-    and.push({ labels: { $ne: new Types.ObjectId(trashLabelId) } });
+    // Inbox behavior: exclude spam + trash (only if ids exist)
+    if (spamLabelId) and.push({ labels: { $ne: new Types.ObjectId(spamLabelId) } });
+    if (trashLabelId) and.push({ labels: { $ne: new Types.ObjectId(trashLabelId) } });
   }
 
   const query = and.length ? { $and: [baseQuery, ...and] } : baseQuery;
@@ -217,7 +258,6 @@ async function getMailsForUser(username, spamLabelId, trashLabelId, labelId = nu
 
   return docs.map(filterMailForOutput);
 }
-
 
 /**
  * Read a mail by id, enforce access, and return the public DTO.
@@ -233,9 +273,9 @@ async function findMailByIdForUser(id, username) {
 
 /**
  * Edit a draft (owner-only) and handle draft/send label transitions.
- * Draft rules:
- * - draft = true  -> ensure Drafts label is attached; remove Sent; remove any recipient Inbox labels
- * - draft = false -> remove Drafts; add Sent; attach each recipient's Inbox; add Spam if URLs already blacklisted
+ * DEMO adjustments:
+ * - When recipients change (or draft flips), operate on address tokens in `mail.to`.
+ * - For inbox label attach/remove, only consider internal recipients via internalUsernameFromAddress().
  */
 async function editMailForUser(mailId, username, updates) {
   const mail = await Mail.findById(mailId);
@@ -246,12 +286,26 @@ async function editMailForUser(mailId, username, updates) {
 
   // Validate & apply text / recipients
   if (updates.title != null) assertNonEmptyString('title', updates.title);
-  if (updates.body  != null) assertNonEmptyString('body',  updates.body);
-  if (updates.to    != null) assertStringArray('to', updates.to);
+  if (updates.body != null) assertNonEmptyString('body', updates.body);
+  if (updates.to != null) assertStringArray('to', updates.to);
 
   if (updates.title != null) mail.title = updates.title;
-  if (updates.body  != null) mail.body  = updates.body;
-  if (updates.to    != null) mail.to    = updates.to;
+  if (updates.body != null) mail.body = updates.body;
+
+  let recipientsChanged = false;
+
+  if (updates.to != null) {
+    const toTokens = tokenizeAddresses(updates.to);
+    const invalid = toTokens.filter((t) => !EMAIL_RE.test(t));
+    if (invalid.length) {
+      throw createError(`Invalid recipient address(es): ${invalid.join(', ')}`, {
+        type: 'VALIDATION',
+        status: 400,
+      });
+    }
+    mail.to = toTokens; // store addresses
+    recipientsChanged = true;
+  }
 
   // Recompute + normalize URLs if body or title changed
   if (updates.title != null || updates.body != null) {
@@ -265,13 +319,13 @@ async function editMailForUser(mailId, username, updates) {
 
   const [draftsLbl, sentLbl, spamLbl] = await Promise.all([
     Label.findOne({ userId: sender._id, name: { $regex: '^drafts$', $options: 'i' } }, { _id: 1 }).lean(),
-    Label.findOne({ userId: sender._id, name: { $regex: '^sent$',   $options: 'i' } }, { _id: 1 }).lean(),
-    Label.findOne({ userId: sender._id, name: { $regex: '^spam$',   $options: 'i' } }, { _id: 1 }).lean(),
+    Label.findOne({ userId: sender._id, name: { $regex: '^sent$', $options: 'i' } }, { _id: 1 }).lean(),
+    Label.findOne({ userId: sender._id, name: { $regex: '^spam$', $options: 'i' } }, { _id: 1 }).lean(),
   ]);
 
   const draftsId = draftsLbl?._id ? String(draftsLbl._id) : null;
-  const sentId   = sentLbl?._id   ? String(sentLbl._id)   : null;
-  const spamId   = spamLbl?._id   ? String(spamLbl._id)   : null;
+  const sentId = sentLbl?._id ? String(sentLbl._id) : null;
+  const spamId = spamLbl?._id ? String(spamLbl._id) : null;
 
   const labelSet = new Set((mail.labels || []).map((id) => String(id)));
   const willBeDraft = updates.draft != null ? !!updates.draft : !!mail.draft;
@@ -279,11 +333,13 @@ async function editMailForUser(mailId, username, updates) {
   if (willBeDraft) {
     // Save as draft: ensure Drafts present, Sent absent…
     if (draftsId) labelSet.add(draftsId);
-    if (sentId)   labelSet.delete(sentId);
+    if (sentId) labelSet.delete(sentId);
     mail.draft = true;
 
     // …and remove any recipient Inbox labels (drafts should not have Inbox)
-    for (const rUsername of (mail.to || [])) {
+    for (const addr of mail.to || []) {
+      const rUsername = internalUsernameFromAddress(addr);
+      if (!rUsername) continue;
       const recipient = await User.findOne({ username: rUsername }, { _id: 1 }).lean();
       if (!recipient) continue;
       const inbox = await Label.findOne(
@@ -295,10 +351,12 @@ async function editMailForUser(mailId, username, updates) {
   } else {
     // Send: remove Drafts, add Sent, attach recipient Inbox
     if (draftsId) labelSet.delete(draftsId);
-    if (sentId)   labelSet.add(sentId);
+    if (sentId) labelSet.add(sentId);
     mail.draft = false;
 
-    for (const rUsername of (mail.to || [])) {
+    for (const addr of mail.to || []) {
+      const rUsername = internalUsernameFromAddress(addr);
+      if (!rUsername) continue;
       const recipient = await User.findOne({ username: rUsername }, { _id: 1 }).lean();
       if (!recipient) continue;
       const inbox = await Label.findOne(
@@ -321,25 +379,25 @@ async function editMailForUser(mailId, username, updates) {
   return filterMailForOutput(mail.toObject ? mail.toObject() : mail);
 }
 
-
-
 /**
  * Soft-delete for the calling user; hard-delete when no party can access.
- * - If sender: mark deletedBySender = true
- * - If recipient: push username into deletedByRecipient
+ * DEMO adjustment: recipient match checks both `${username}@bmail` and `${username}@bmail.com`
+ * (and legacy bare username).
  */
 async function deleteMail(mailId, username) {
   const mail = await Mail.findById(mailId);
   if (!mail) throw createError('Mail not found', { type: 'NOT_FOUND', status: 404 });
 
   let changed = false;
+  const internalAddrs = [`${username}@bmail`, `${username}@bmail.com`];
 
   if (mail.from === username && !mail.deletedBySender) {
     mail.deletedBySender = true;
     changed = true;
   }
 
-  if (Array.isArray(mail.to) && mail.to.includes(username)) {
+  const toArr = Array.isArray(mail.to) ? mail.to : [];
+  if (toArr.includes(internalAddrs[0]) || toArr.includes(internalAddrs[1]) || toArr.includes(username)) {
     if (!Array.isArray(mail.deletedByRecipient)) mail.deletedByRecipient = [];
     if (!mail.deletedByRecipient.includes(username)) {
       mail.deletedByRecipient.push(username);
@@ -350,7 +408,12 @@ async function deleteMail(mailId, username) {
   // If neither side can see it anymore, hard-delete
   const visibleToSender = !mail.deletedBySender && mail.from === username;
   const visibleToAnyRecipient =
-    Array.isArray(mail.to) && mail.to.some((u) => u !== username && !mail.deletedByRecipient?.includes(u));
+    Array.isArray(mail.to) &&
+    mail.to.some(
+      (u) =>
+        (u === internalAddrs[0] || u === internalAddrs[1] || u === username) &&
+        !mail.deletedByRecipient?.includes(username)
+    );
 
   if (!visibleToSender && !visibleToAnyRecipient) {
     await Mail.deleteOne({ _id: mail._id });
@@ -375,26 +438,34 @@ function escapeRegex(s = '') {
 async function searchMailsForUser(username, query, limit = 50) {
   const q = query.trim();
   const rx = new RegExp(escapeRegex(q), 'i');
-  console.log(rx)
+  console.log(rx);
 
   // We over-fetch a bit, then apply canUserAccessMail() exactly like before.
   const raw = await Mail.find(
     { $or: [{ title: { $regex: rx } }, { body: { $regex: rx } }] },
-    { title: 1, body: 1, from: 1, to: 1, cc: 1, bcc: 1, draft: 1,
-      deletedBySender: 1, deletedByRecipient: 1, createdAt: 1, labels: 1 } // ← add labels
+    {
+      title: 1,
+      body: 1,
+      from: 1,
+      to: 1,
+      cc: 1,
+      bcc: 1,
+      draft: 1,
+      deletedBySender: 1,
+      deletedByRecipient: 1,
+      createdAt: 1,
+      labels: 1,
+    } // include labels
   )
     .sort({ createdAt: -1 })
     .limit(Math.min(Math.max(limit * 3, limit), 300))
     .lean();
 
-    console.log(raw)
+  console.log(raw);
 
-  const visible = raw.filter(m => canUserAccessMail(m, username));
-  return visible
-    .slice(0, limit)
-    .map(filterMailForOutput);
+  const visible = raw.filter((m) => canUserAccessMail(m, username));
+  return visible.slice(0, limit).map(filterMailForOutput);
 }
-
 
 /**
  * Attach a label to a mail (idempotent), enforcing access.
@@ -434,18 +505,21 @@ async function removeLabelFromMail(mailId, labelId, username) {
 
 /**
  * Bulk-tag mails containing any of the given URLs as Spam for this user.
- * Scope to mails the user can see; avoid re-adding Spam.
+ * DEMO adjustment: recipient matching uses both `${username}@bmail` and `${username}@bmail.com`
+ * (and legacy bare username). Guard against missing spamLabelId.
  */
 async function tagMailsWithUrlsAsSpam(userId, username, urls, spamLabelId) {
   const norms = Array.from(new Set((urls || []).map(normalizeUrl).filter(Boolean)));
-  if (!norms.length) return;
+  if (!norms.length || !spamLabelId) return;
+
+  const internalAddrs = [`${username}@bmail`, `${username}@bmail.com`];
 
   await Mail.updateMany(
     {
       urls: { $in: norms },
       $or: [
         { from: username, deletedBySender: { $ne: true } },
-        { to: username, draft: false, deletedByRecipient: { $ne: username } },
+        { to: { $in: [...internalAddrs, username] }, draft: false, deletedByRecipient: { $ne: username } },
       ],
       labels: { $ne: new Types.ObjectId(spamLabelId) },
     },
@@ -465,5 +539,3 @@ module.exports = {
   addLabelToMail,
   removeLabelFromMail,
 };
-
-
