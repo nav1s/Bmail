@@ -11,7 +11,7 @@ const {
 const { badRequest, ok, createdWithLocation, noContent } = require('../utils/httpResponses');
 const { httpError } = require('../utils/error');
 
-/** POST /api/users — minimal field checks; business logic in service */
+/** POST /api/users — create user (supports image via multer) */
 async function createUser(req, res) {
   try {
     const required = typeof getRequiredFields === 'function'
@@ -23,10 +23,16 @@ async function createUser(req, res) {
     );
     if (missing.length) return badRequest(res, `Missing fields: ${missing.join(', ')}`);
 
+    // Build payload from required fields
     const userData = {};
     for (const f of required) userData[f] = req.body[f];
 
-    const user = await createUserService(userData); // ← no image
+    // If an image was uploaded, store its served path (same as old build)
+    if (req.file) {
+      userData.image = `/uploads/${req.file.filename}`;
+    }
+
+    const user = await createUserService(userData);
     return createdWithLocation(res, `/api/users/${user._id}`);
   } catch (err) {
     return httpError(res, err);
@@ -55,11 +61,19 @@ async function getUserByUsername(req, res) {
   }
 }
 
-/** PATCH /api/users — auth required; body presence only */
+/** PATCH /api/users — update current user (supports image via multer) */
 async function updateUserById(req, res) {
   if (!req.body) return badRequest(res, 'Request body is required');
   try {
-    await updateUserByIdService(req.user, req.body); // ← no image
+    const userId = req.user?.id || req.user?._id;
+    if (!userId) return badRequest(res, 'Authenticated user id is missing');
+
+    const patch = { ...req.body };
+    if (req.file) {
+      patch.image = `/uploads/${req.file.filename}`;
+    }
+
+    await updateUserByIdService(userId, patch);
     return noContent(res);
   } catch (err) {
     return httpError(res, err);

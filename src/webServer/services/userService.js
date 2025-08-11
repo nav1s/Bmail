@@ -221,6 +221,14 @@ async function updateUserById(userId, patch) {
     applyIfAllowed('lastName', String(patch.lastName));
   }
 
+  // ✅ NEW: support image updates (multer sets req.file → controller sets patch.image)
+  if (patch.image != null) {
+    if (typeof patch.image !== 'string' || !patch.image.trim()) {
+      throw createError('image must be a non-empty string path', { type: 'VALIDATION', status: 400 });
+    }
+    applyIfAllowed('image', patch.image.trim());
+  }
+
   // NOTE: password changes should use a dedicated flow (old password check + hashing)
 
   await user.save();
