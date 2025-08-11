@@ -3,6 +3,47 @@ const { createError } = require('../utils/error');
 const { ensureDefaultLabels } = require('./labelServices');
 
 /**
+ * @brief Checks if the provided password is strong enough.
+ * A strong password must:
+ * - Be at least 8 characters long
+ * - Contain at least one uppercase letter
+ * - Contain at least one lowercase letter
+ * - Contain at least one digit
+ * - Contain at least one special character
+ *
+ * @param {string} password - The password to check.
+ * @returns {boolean} True if the password is strong enough, false otherwise.
+ */
+isPasswordStrongEnough = (password) => {
+  // Check if the password is at least 8 characters long
+  if (password.length < 8) {
+    return false;
+  }
+
+  // Check if the password contains at least one uppercase letter
+  if (!/[A-Z]/.test(password)) {
+    return false;
+  }
+
+  // Check if the password contains at least one lowercase letter
+  if (!/[a-z]/.test(password)) {
+    return false;
+  }
+
+  // Check if the password contains at least one digit
+  if (!/\d/.test(password)) {
+    return false;
+  }
+
+  // Check if the password contains at least one special character
+  if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
+    return false;
+  }
+
+  return true;
+}
+
+/**
  * Authenticates a user by username and password (plain-text compare).
  * Mirrors the old in-memory behavior but uses the DB.
  *
@@ -113,11 +154,18 @@ async function createUser(userData) {
     }
   }
 
-  // type/format validations (adjust as you like)
+  // type/format validations
   assertNonEmptyString('username', userData.username);
   assertNonEmptyString('firstName', userData.firstName);
   assertNonEmptyString('lastName', userData.lastName);
-  assertNonEmptyString('password', userData.password); // strength checks can live in a separate helper
+  assertNonEmptyString('password', userData.password);
+   // Password strength
+  if (!isPasswordStrongEnough(userData.password)) {
+    throw createError(
+      'Password is too weak. Use at least 8 characters including letters and numbers.',
+      { type: 'VALIDATION', status: 400 }
+    );
+  }
 
   // uniqueness (case-sensitive as before)
   const existing = await User.findOne({ username: userData.username }).lean();
