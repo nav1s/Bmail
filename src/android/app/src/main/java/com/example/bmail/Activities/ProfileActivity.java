@@ -9,7 +9,10 @@ import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
+import com.example.bmail.Entities.BmailApplication;
+import com.example.bmail.Entities.User;
 import com.example.bmail.R;
+import com.example.bmail.Repositories.UserRepository;
 import com.google.android.material.textfield.TextInputEditText;
 
 public class ProfileActivity extends AppCompatActivity {
@@ -35,6 +38,9 @@ public class ProfileActivity extends AppCompatActivity {
 
         // Setup text watchers to detect changes
         setupTextWatchers();
+
+        // fetch the user data and populate the fields
+        UserRepository userRepository = BmailApplication.getInstance().getUserRepository();
 
         // Setup change photo click listener
         TextView changePhotoText = findViewById(R.id.change_photo_text);
