@@ -87,15 +87,16 @@ public class MailContentActivity extends AppCompatActivity {
 
         // Set correct icon: filled star if starred, empty star if not starred
         btnStar.setImageResource(isStarred ? R.drawable.ic_star_filled : R.drawable.ic_star);
+        Log.d("MailContentActivity", "Starred status: " + isStarred);
         btnStar.setOnClickListener(v -> {
             MailRepository mailRepository = BmailApplication.getInstance().getMailRepository();
             if (isStarred) {
-                mailRepository.removeLabelFromMail(mail.getId(), starredId);
                 btnStar.setImageResource(R.drawable.ic_star_filled);
+                mailRepository.removeLabelFromMail(mail.getId(), starredId);
                 isStarred = false;
             } else {
-                mailRepository.addLabelToMail(mail.getId(), starredId);
                 btnStar.setImageResource(R.drawable.ic_star);
+                mailRepository.addLabelToMail(mail.getId(), starredId);
                 isStarred = true;
             }
         });

@@ -207,4 +207,28 @@ public class MailApi {
         });
     }
 
+    public void removeLabelFromMail(String mailId, String labelId) {
+        String token = getToken();
+        Log.i("MailApi", "Removing label from mail with ID: "
+                + mailId + " and label ID: " + labelId);
+
+        Call<Void> call = webServiceApi.removeLabelFromMail("Bearer " + token, mailId, labelId);
+        call.enqueue(new Callback<>() {
+            @Override
+            public void onResponse(@NonNull Call<Void> call,
+                                   @NonNull Response<Void> response) {
+                if (response.isSuccessful()) {
+                    Log.i("MailApi", "Label removed successfully");
+                } else {
+                    Log.e("MailApi", "Failed to remove label: " + response.message());
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<Void> call, @NonNull Throwable t) {
+                Log.e("MailApi", "Network error while removing label: " + t.getMessage());
+            }
+        });
+
+    }
 }

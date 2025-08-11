@@ -12,6 +12,7 @@ import java.util.List;
 
 import retrofit2.Call;
 import retrofit2.http.Body;
+import retrofit2.http.DELETE;
 import retrofit2.http.GET;
 import retrofit2.http.Header;
 import retrofit2.http.PATCH;
@@ -46,4 +47,7 @@ public interface WebServiceApi {
     @POST("mails/{id}/labels")
     Call<Void> addLabelToMail(@Header("Authorization") String token, @Path("id") String mailId,
                               @Body LabelRequest request);
+    @DELETE("mails/{id}/labels/{labelId}")
+    Call<Void> removeLabelFromMail(@Header("Authorization") String token, @Path("id") String mailId,
+                                   @Path("labelId") String labelId);
 }

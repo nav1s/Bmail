@@ -89,6 +89,8 @@ public class MailRepository {
     }
 
     public void removeLabelFromMail(String mailId, String labelId){
+        Log.d("MailRepository", "Removing label " + labelId + " from mail " + mailId);
+        mailApi.removeLabelFromMail(mailId, labelId);
 
     }
 
