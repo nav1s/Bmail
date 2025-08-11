@@ -91,11 +91,11 @@ public class MailContentActivity extends AppCompatActivity {
         btnStar.setOnClickListener(v -> {
             MailRepository mailRepository = BmailApplication.getInstance().getMailRepository();
             if (isStarred) {
-                btnStar.setImageResource(R.drawable.ic_star_filled);
+                btnStar.setImageResource(R.drawable.ic_star);
                 mailRepository.removeLabelFromMail(mail.getId(), starredId);
                 isStarred = false;
             } else {
-                btnStar.setImageResource(R.drawable.ic_star);
+                btnStar.setImageResource(R.drawable.ic_star_filled);
                 mailRepository.addLabelToMail(mail.getId(), starredId);
                 isStarred = true;
             }
