@@ -1,5 +1,6 @@
 package com.example.bmail.Entities;
 
+import androidx.annotation.NonNull;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
@@ -9,6 +10,7 @@ import java.util.List;
 
 @Entity
 public class Label {
+
     @PrimaryKey
     @Expose(serialize = false) // Exclude when sending, include when receiving
     private String id;
@@ -19,7 +21,7 @@ public class Label {
     @Expose
     private boolean isAttachable;
     @Expose
-    private List<Integer> mailIds;
+    private List<String> mailIds;
 
     public Label(){
 
@@ -57,11 +59,23 @@ public class Label {
         isAttachable = attachable;
     }
 
-    public List<Integer> getMailIds() {
+    public List<String> getMailIds() {
         return mailIds;
     }
 
-    public void setMailIds(List<Integer> mailIds) {
+    public void setMailIds(List<String> mailIds) {
         this.mailIds = mailIds;
+    }
+
+    @NonNull
+    @Override
+    public String toString() {
+        return "Label{" +
+                "id='" + id + '\'' +
+                ", name='" + name + '\'' +
+                ", isDefault=" + isDefault +
+                ", isAttachable=" + isAttachable +
+                ", mailIds=" + mailIds +
+                '}';
     }
 }

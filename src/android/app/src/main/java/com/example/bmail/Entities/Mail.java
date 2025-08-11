@@ -25,17 +25,26 @@ public class Mail {
     private List<String> to;
     @Expose
     private Boolean draft;
-    @Expose
-    private List<Integer> LabelsIds;
+    @Expose(serialize = false) // Exclude when sending, include when receiving
+    private List<String> labels;
 
     public Mail(){}
-    // Constructor for sending new mails (without ID as it breaks the server)
-    public Mail(String subject, String body, String sender, List<String> to, Boolean draft) {
+
+    public Mail(String subject, String body, String sender, List<String> to, boolean draft) {
         this.title = subject;
         this.body = body;
         this.from = sender;
         this.to = to;
         this.draft = draft;
+    }
+    public Mail(String subject, String body, String sender, List<String> to, Boolean draft,
+                List<String> labels) {
+        this.title = subject;
+        this.body = body;
+        this.from = sender;
+        this.to = to;
+        this.draft = draft;
+        this.labels = labels;
     }
 
     public Boolean getDraft() {
@@ -82,27 +91,29 @@ public class Mail {
     @Override
     public String toString() {
         return "Mail{" +
-                "id=" + id +
+                "id='" + id + '\'' +
                 ", title='" + title + '\'' +
                 ", body='" + body + '\'' +
                 ", from='" + from + '\'' +
                 ", to=" + to +
                 ", draft=" + draft +
+                ", labels=" + labels +
                 '}';
     }
 
-    public List<Integer> getLabelsIds() {
-        return LabelsIds;
+    public List<String> getLabels() {
+        return labels;
     }
 
-    public void setLabelsIds(List<Integer> labelsIds) {
-        LabelsIds = labelsIds;
+    public void setLabels(List<String> labels) {
+        this.labels = labels;
     }
 
+    @NonNull
     public String getId() {
         return id;
     }
-    public void setId(String id) {
+    public void setId(@NonNull String id) {
         this.id = id;
     }
 }

@@ -67,7 +67,15 @@ public class MailApi {
                         new Thread(() -> {
                             if (response.isSuccessful() && response.body() != null) {
                                 Log.i("MailApi", "Fetched mails successfully");
+                                // log the response body size
+                                // log the first mail if available
                                 List<Mail> mails = response.body();
+                                // log the mails fetched
+                                Log.i("MailApi", "Mails fetched: " + mails.size());
+                                // log the first mail's title if available
+                                if (!mails.isEmpty()) {
+                                    Log.i("MailApi", "First mail: " + mails.get(0));
+                                }
                                 // Clear the existing mails in the database
                                 mailDao.clear();
                                 mailDao.insertList(mails);

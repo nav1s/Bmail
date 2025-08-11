@@ -7,11 +7,17 @@ import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.lifecycle.LiveData;
 
 import com.example.bmail.Entities.BmailApplication;
+import com.example.bmail.Entities.Label;
 import com.example.bmail.Entities.Mail;
 import com.example.bmail.R;
+import com.example.bmail.Repositories.LabelRepository;
 import com.example.bmail.Repositories.MailRepository;
+
+import java.util.List;
+import java.util.Objects;
 
 public class MailContentActivity extends AppCompatActivity {
 
@@ -32,6 +38,7 @@ public class MailContentActivity extends AppCompatActivity {
             return;
         }
         MailRepository mailRepository = BmailApplication.getInstance().getMailRepository();
+        LabelRepository labelRepository = BmailApplication.getInstance().getLabelRepository();
 
         Mail mail = mailRepository.getMailById(mailId);
         if (mail == null) {
@@ -49,6 +56,31 @@ public class MailContentActivity extends AppCompatActivity {
         tvSender.setText(mail.getFrom());
         tvRecipients.setText(String.join(", ", mail.getTo()));
         tvMailBody.setText(mail.getBody());
+
+        LiveData<List<Label>> labels = labelRepository.getLabels();
+        String starredId = "";
+        // print all of the labels
+        for (Label label : Objects.requireNonNull(labels.getValue())) {
+            Log.d("MailContentActivity", "Label: " + label);
+            if (label.isDefault() && label.getName().equalsIgnoreCase("starred")) {
+                starredId = label.getId();
+            }
+        }
+
+        List<String> mailLabels = mail.getLabels();
+        ImageButton btnStar = findViewById(R.id.btn_star);
+        Log.d("MailContentActivity", "Starred ID: " + starredId);
+        Log.d("MailContentActivity", "Mail Labels: " + mailLabels);
+        if (mailLabels.contains(starredId)) {
+            Log.d("MailContentActivity", "Mail is starred");
+            // if the mail is starred, set the star icon to filled
+            btnStar.setImageResource(android.R.drawable.btn_star_big_on);
+        } else {
+            Log.d("MailContentActivity", "Mail is not starred");
+            // if the mail is not starred, set the star icon to empty
+            btnStar.setImageResource(android.R.drawable.btn_star_big_off);
+        }
+
 
         // setup delete button
         ImageButton btnDelete = findViewById(R.id.btn_delete);
