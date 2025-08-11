@@ -1,6 +1,7 @@
 package com.example.bmail.Api;
 
 import com.example.bmail.Entities.ClientMail;
+import com.example.bmail.Entities.LabelRequest;
 import com.example.bmail.Entities.LoginRequest;
 import com.example.bmail.Entities.LoginResponse;
 import com.example.bmail.Entities.ServerMail;
@@ -44,5 +45,5 @@ public interface WebServiceApi {
 
     @POST("mails/{id}/labels")
     Call<Void> addLabelToMail(@Header("Authorization") String token, @Path("id") String mailId,
-                              @Body String labelId);
+                              @Body LabelRequest request);
 }

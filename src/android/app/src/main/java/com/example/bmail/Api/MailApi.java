@@ -8,6 +8,7 @@ import androidx.annotation.NonNull;
 import androidx.lifecycle.MutableLiveData;
 
 import com.example.bmail.Entities.ClientMail;
+import com.example.bmail.Entities.LabelRequest;
 import com.example.bmail.Entities.ServerMail;
 import com.example.bmail.R;
 import com.example.bmail.db.MailDao;
@@ -179,10 +180,11 @@ public class MailApi {
     }
 
     public void addLabelToMail(String mailId, String labelId) {
+        LabelRequest labelRequest = new LabelRequest(labelId);
         String token = getToken();
         Log.i("MailApi", "Adding label to mail with ID: " + mailId + " and label ID: " + labelId);
 
-        Call<Void> call = webServiceApi.addLabelToMail("Bearer " + token, mailId, labelId);
+        Call<Void> call = webServiceApi.addLabelToMail("Bearer " + token, mailId, labelRequest);
         call.enqueue(new Callback<>() {
             @Override
             public void onResponse(@NonNull Call<Void> call,
