@@ -26,7 +26,7 @@ public class ComposeActivity extends AppCompatActivity {
     private ComposeViewModel viewModel;
 
     // Flag to store if the mail is a draft
-    private String draftId = "";
+    private String draftId = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -81,6 +81,8 @@ public class ComposeActivity extends AppCompatActivity {
     }
 
     private void sendMail() {
+        Log.i("ComposeActivity", "Sending mail...");
+
         String to = etTo.getText().toString().trim();
         if (to.isEmpty()) {
             new androidx.appcompat.app.AlertDialog.Builder(this)
@@ -93,10 +95,15 @@ public class ComposeActivity extends AppCompatActivity {
         String subject = etSubject.getText().toString().trim();
         String message = etMessage.getText().toString().trim();
 
+        // log the draft id for debugging
+        Log.d("ComposeActivity", "Draft ID: " + this.draftId);
+
         // If it's a draft, send the draft
-        if (this.draftId.isEmpty()) {
+        if (this.draftId != null && !this.draftId.isEmpty()) {
             viewModel.updateDraft(to, subject, message, this.draftId, false);
         } else {
+            // If it's not a draft, send the mail
+            Log.i("ComposeActivity", "Sending mail with subject: " + subject);
             viewModel.sendMail(to, subject, message);
         }
 
@@ -113,7 +120,7 @@ public class ComposeActivity extends AppCompatActivity {
 
         // save draft
         if (!subject.isEmpty() || !message.isEmpty()) {
-            if (!this.draftId.isEmpty()) {
+            if (this.draftId != null && !this.draftId.isEmpty()) {
                 // todo check gmail behavior
                 viewModel.updateDraft(to, subject, message, this.draftId, true);
             }

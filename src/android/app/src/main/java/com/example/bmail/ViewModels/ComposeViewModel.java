@@ -35,6 +35,8 @@ public class ComposeViewModel extends androidx.lifecycle.ViewModel {
 
         // todo replace sender with actual user email
         Mail mail = new Mail(subject, message, "Me", List.of(to), false);
+        // log the sent mail for debugging
+        Log.d("ComposeViewModel", "Sending mail: " + mail);
         mailRepository.sendMail(mail);
     }
 

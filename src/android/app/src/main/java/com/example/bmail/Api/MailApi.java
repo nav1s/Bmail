@@ -121,7 +121,6 @@ public class MailApi {
     }
 
     public void updateDraft(Mail mail, String mailId) {
-        // todo fix id not getting sent
         String token = getToken();
         Log.i("MailApi", "Updating draft with token: " + token);
         Call <Void> call = webServiceApi.updateDraft("Bearer " + token, mail, mailId);
