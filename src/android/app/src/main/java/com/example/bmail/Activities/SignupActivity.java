@@ -17,9 +17,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
 import com.example.bmail.Api.UserApi;
-import com.example.bmail.Entities.BmailApplication;
 import com.example.bmail.R;
-import com.example.bmail.Repositories.UserRepository;
 import com.example.bmail.ViewModels.SignupViewModel;
 
 public class SignupActivity extends AppCompatActivity implements UserApi.callback {
@@ -34,7 +32,20 @@ public class SignupActivity extends AppCompatActivity implements UserApi.callbac
     private Button signupBtn;
     private TextView choosePhotoBtn;
 
-    private ActivityResultLauncher<Intent> imagePickerLauncher;
+    private final ActivityResultLauncher<Intent> galleryLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+    result -> {
+        if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+            Uri selectedImageUri = result.getData().getData();
+            Log.i("SignupActivity", "Selected Image URI: " + selectedImageUri);
+            if (selectedImageUri != null) {
+                profileImageView.setImageURI(selectedImageUri);
+            } else {
+                Log.e("SignupActivity", "Selected image URI is null");
+            }
+        }
+    });
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,27 +58,13 @@ public class SignupActivity extends AppCompatActivity implements UserApi.callbac
         initViews();
 
         // Initialize the ActivityResultLauncher
-        imagePickerLauncher = registerForActivityResult(
-                new ActivityResultContracts.StartActivityForResult(),
-                result -> {
-                    if (result.getResultCode() == RESULT_OK && result.getData() != null) {
-                        Uri selectedImageUri = result.getData().getData();
-                        Log.i("SignupActivity", "Selected Image URI: " + selectedImageUri);
-                        if (selectedImageUri != null) {
-                            profileImageView.setImageURI(selectedImageUri);
-                        } else {
-                            Log.e("SignupActivity", "Selected image URI is null");
-                        }
-                    }
-                });
-
 
         signupBtn.setOnClickListener(view -> handleSignupButtonClick());
 
         choosePhotoBtn.setOnClickListener(view -> {
             Intent intent = new Intent(Intent.ACTION_PICK);
             intent.setDataAndType(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, "image/*");
-            imagePickerLauncher.launch(intent);
+            galleryLauncher.launch(intent);
         });
     }
 
