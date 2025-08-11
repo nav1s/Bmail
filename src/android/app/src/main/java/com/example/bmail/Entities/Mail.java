@@ -12,7 +12,8 @@ public class Mail {
 
     @PrimaryKey
     @Expose(serialize = false) // Exclude when sending, include when receiving
-    private int id;
+    @NonNull
+    private String id = "";
 
     @Expose
     private String title;
@@ -77,14 +78,6 @@ public class Mail {
         this.title = title;
     }
 
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
-
     @NonNull
     @Override
     public String toString() {
@@ -104,5 +97,12 @@ public class Mail {
 
     public void setLabelsIds(List<Integer> labelsIds) {
         LabelsIds = labelsIds;
+    }
+
+    public String getId() {
+        return id;
+    }
+    public void setId(String id) {
+        this.id = id;
     }
 }

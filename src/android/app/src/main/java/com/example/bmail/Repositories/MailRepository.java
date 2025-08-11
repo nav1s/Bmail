@@ -60,7 +60,7 @@ public class MailRepository {
         mailApi.sendMail(mail);
     }
 
-    public void updateDraft(Mail mail, int mailId) {
+    public void updateDraft(Mail mail, String mailId) {
         Log.d("MailRepository", "Updating draft for mail: " + mail);
         mailApi.updateDraft(mail, mailId);
     }
@@ -71,7 +71,7 @@ public class MailRepository {
 
     }
 
-    public Mail getMailById(int id) {
+    public Mail getMailById(String id) {
         List<Mail> mails = mailListData.getValue();
         if (mails != null) {
             for (Mail mail : mails) {
@@ -79,7 +79,7 @@ public class MailRepository {
                Log.d("MailRepository", "Checking mail ID: " + mail.getId());
                // log the mail object for debugging
                 Log.d("MailRepository", "Mail object: " + mail);
-                if (mail.getId() == id) {
+                if (mail.getId().equals(id)) {
                     return mail;
                 }
             }

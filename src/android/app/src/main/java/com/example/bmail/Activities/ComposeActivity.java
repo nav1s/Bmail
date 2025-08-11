@@ -26,7 +26,7 @@ public class ComposeActivity extends AppCompatActivity {
     private ComposeViewModel viewModel;
 
     // Flag to store if the mail is a draft
-    private int draftId = -1;
+    private String draftId = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,9 +39,10 @@ public class ComposeActivity extends AppCompatActivity {
         initViews();
 
         // todo move this part into a function
-        int mailId = getIntent().getIntExtra("mail_id", -1);
+        // check if we are editing a mail
+        String mailId = getIntent().getStringExtra("mail_id");
         MailRepository mailRepository = BmailApplication.getInstance().getMailRepository();
-        if (mailId != -1) {
+        if (mailId != null && !mailId.isEmpty()) {
             Mail mail = mailRepository.getMailById(mailId);
             // fill the content from the mail
             if (mail != null) {
@@ -93,7 +94,7 @@ public class ComposeActivity extends AppCompatActivity {
         String message = etMessage.getText().toString().trim();
 
         // If it's a draft, send the draft
-        if (this.draftId != -1) {
+        if (this.draftId.isEmpty()) {
             viewModel.updateDraft(to, subject, message, this.draftId, false);
         } else {
             viewModel.sendMail(to, subject, message);
@@ -112,7 +113,7 @@ public class ComposeActivity extends AppCompatActivity {
 
         // save draft
         if (!subject.isEmpty() || !message.isEmpty()) {
-            if (this.draftId != -1) {
+            if (!this.draftId.isEmpty()) {
                 // todo check gmail behavior
                 viewModel.updateDraft(to, subject, message, this.draftId, true);
             }

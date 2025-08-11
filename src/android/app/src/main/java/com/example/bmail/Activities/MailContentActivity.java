@@ -25,8 +25,8 @@ public class MailContentActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
         // fetch the mail id from intent extras
-        int mailId = getIntent().getIntExtra("mail_id", -1);
-        if (mailId == -1) {
+        String mailId = getIntent().getStringExtra("mail_id");
+        if (mailId != null && mailId.isEmpty()) {
             Log.e("MailContentActivity", "Invalid mail ID");
             finish();
             return;

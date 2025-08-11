@@ -54,6 +54,8 @@ public class MailApi {
     public void reload(String label) {
         String token = getToken();
         Log.i("MailApi", "Token: " + token);
+        // log the label being fetched
+        Log.i("MailApi", "Fetching mails for label: " + label);
 
         Call<List<Mail>> call = webServiceApi.getMails("Bearer " + token, label);
         call.enqueue(
@@ -118,7 +120,7 @@ public class MailApi {
         });
     }
 
-    public void updateDraft(Mail mail, int mailId) {
+    public void updateDraft(Mail mail, String mailId) {
         // todo fix id not getting sent
         String token = getToken();
         Log.i("MailApi", "Updating draft with token: " + token);

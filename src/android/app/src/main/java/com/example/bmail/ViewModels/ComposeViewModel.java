@@ -53,7 +53,7 @@ public class ComposeViewModel extends androidx.lifecycle.ViewModel {
         mailRepository.sendMail(mail);
     }
 
-    public void updateDraft(String to, String subject, String message, int mailId, Boolean draft) {
+    public void updateDraft(String to, String subject, String message, String mailId, Boolean draft) {
         // print the to address for debugging
         Log.d("ComposeViewModel", "Updating draft for mailId: " + mailId +
                 " with to: " + to);
