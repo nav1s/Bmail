@@ -74,11 +74,11 @@ public class MailContentActivity extends AppCompatActivity {
         if (mailLabels.contains(starredId)) {
             Log.d("MailContentActivity", "Mail is starred");
             // if the mail is starred, set the star icon to filled
-            btnStar.setImageResource(android.R.drawable.btn_star_big_on);
+            btnStar.setImageResource(R.drawable.ic_star);
         } else {
             Log.d("MailContentActivity", "Mail is not starred");
             // if the mail is not starred, set the star icon to empty
-            btnStar.setImageResource(android.R.drawable.btn_star_big_off);
+            btnStar.setImageResource(R.drawable.ic_star_filled);
         }
 
 

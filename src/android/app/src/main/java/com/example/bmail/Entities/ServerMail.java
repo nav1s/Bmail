@@ -25,7 +25,7 @@ public class ServerMail {
     private List<String> to;
     @Expose
     private Boolean draft;
-    @Expose(serialize = false) // Exclude when sending, include when receiving
+    @Expose()
     private List<String> labels;
 
     public ServerMail(){}
