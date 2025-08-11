@@ -2,14 +2,13 @@ package com.example.bmail.ViewModels;
 
 import androidx.annotation.NonNull;
 
-import com.example.bmail.Api.UserApi;
-import com.example.bmail.Repositories.UserRepository;
+import com.example.bmail.Api.SignupApi;
 
 // todo check whether this class need to extend ViewModel or not
 public class LoginViewModel {
-    private final UserApi userApi;
+    private final SignupApi userApi;
 
-    public LoginViewModel(UserApi userApi) {
+    public LoginViewModel(SignupApi userApi) {
         this.userApi = userApi;
     }
 
@@ -26,7 +25,7 @@ public class LoginViewModel {
         return result;
     }
 
-    public void login(String username, String password, UserApi.callback loginCallback) {
+    public void login(String username, String password, SignupApi.callback loginCallback) {
         userApi.login(username, password, loginCallback);
     }
 }

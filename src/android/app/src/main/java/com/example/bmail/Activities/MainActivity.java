@@ -18,18 +18,13 @@ import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.drawerlayout.widget.DrawerLayout;
-import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
-import com.example.bmail.Entities.BmailApplication;
 import com.example.bmail.Entities.Label;
 import com.example.bmail.Entities.ServerMail;
-import com.example.bmail.Repositories.LabelRepository;
-import com.example.bmail.Repositories.MailRepository;
 import com.example.bmail.ViewModels.MainActivityViewModel;
-import com.example.bmail.ViewModels.MailViewModelFactory;
 import com.example.bmail.R;
 import com.example.bmail.Adapters.MailsAdapter;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -132,10 +127,7 @@ public class MainActivity extends AppCompatActivity {
      * Updates the adapter when new mails are received.
      */
     private void setupViewModel() {
-        MailRepository mailRepository = BmailApplication.getInstance().getMailRepository();
-        LabelRepository labelRepository = BmailApplication.getInstance().getLabelRepository();
-        MailViewModelFactory factory = new MailViewModelFactory(mailRepository, labelRepository);
-        viewModel = new ViewModelProvider(this, factory).get(MainActivityViewModel.class);
+        viewModel = new MainActivityViewModel();
 
         viewModel.getMails().observe(this, mails -> {
             if (mails != null) {

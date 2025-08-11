@@ -2,9 +2,7 @@ package com.example.bmail.Entities;
 
 public class LoginResponse {
     private String token;
-    public LoginResponse(String token) {
-        this.token = token;
-    }
+    private String userId;
     public LoginResponse() {
     }
 
@@ -14,6 +12,14 @@ public class LoginResponse {
 
     public void setToken(String token) {
         this.token = token;
+    }
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
     }
 }
 

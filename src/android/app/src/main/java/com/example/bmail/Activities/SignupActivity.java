@@ -16,11 +16,11 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
-import com.example.bmail.Api.UserApi;
+import com.example.bmail.Api.SignupApi;
 import com.example.bmail.R;
 import com.example.bmail.ViewModels.SignupViewModel;
 
-public class SignupActivity extends AppCompatActivity implements UserApi.callback {
+public class SignupActivity extends AppCompatActivity implements SignupApi.callback {
     private ImageView profileImageView;
     private SignupViewModel viewModel;
 
@@ -69,7 +69,7 @@ public class SignupActivity extends AppCompatActivity implements UserApi.callbac
     }
 
     private void initViews() {
-        UserApi userApi = new UserApi(this);
+        SignupApi userApi = new SignupApi(this);
         viewModel = new SignupViewModel(userApi);
         profileImageView = findViewById(R.id.profile_image);
 

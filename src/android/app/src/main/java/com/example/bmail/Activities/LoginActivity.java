@@ -11,13 +11,11 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.example.bmail.Api.UserApi;
-import com.example.bmail.Entities.BmailApplication;
+import com.example.bmail.Api.SignupApi;
 import com.example.bmail.ViewModels.LoginViewModel;
 import com.example.bmail.R;
-import com.example.bmail.Repositories.UserRepository;
 
-public class LoginActivity extends AppCompatActivity implements UserApi.callback {
+public class LoginActivity extends AppCompatActivity implements SignupApi.callback {
     private LoginViewModel loginViewModel;
     private EditText usernameET;
     private EditText passwordEt;
@@ -42,7 +40,7 @@ public class LoginActivity extends AppCompatActivity implements UserApi.callback
             return;
         }
 
-        UserApi userApi = new UserApi(this);
+        SignupApi userApi = new SignupApi(this);
 
         // Initialize ViewModel with Repository
         loginViewModel = new LoginViewModel(userApi);
