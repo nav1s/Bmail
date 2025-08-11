@@ -93,8 +93,14 @@ function filterUserByVisibility(user, visibility = 'public') {
     throw createError('User not found', { status: 404, type: 'NOT_FOUND' });
   }
 
-  const cfg = User.userFieldConfig || null;
-  const filteredUser = {};
+  // ✅ correct static name on the model
+  const cfg = User.fieldConfig || null;
+
+  const src = user;   // can be a lean object or a hydrated doc
+  const out = {};
+
+  // Always provide "id" (string). We do this up front so clients can rely on it.
+  if (src._id) out.id = String(src._id);
 
   if (cfg) {
     for (const [field, meta] of Object.entries(cfg)) {
@@ -102,25 +108,32 @@ function filterUserByVisibility(user, visibility = 'public') {
       const isVisible = visibility === 'public' ? meta.public === true : true;
       if (!isVisible) continue;
 
-      // support a virtual "id" that maps to _id
-      const value = field === 'id' ? user._id : user[field];
-      if (value !== undefined) {
-        if (field === 'id') filteredUser._id = value;
-        else filteredUser[field] = value;
+      if (field === 'id') {
+        // already set above from _id; ensure present even if config lists it
+        if (!('id' in out) && src._id) out.id = String(src._id);
+        continue;
+      }
+
+      if (field in src && src[field] !== undefined) {
+        out[field] = src[field];
       }
     }
   } else {
     // Fallback shape if no fieldConfig is present
-    const { _id, username, firstName, lastName } = user;
-    Object.assign(filteredUser, { _id, username, firstName, lastName });
+    const { username, firstName, lastName } = src;
+    Object.assign(out, { username, firstName, lastName });
   }
 
   // Ensure timestamps are available (generally safe to expose)
-  if (user.createdAt && !('createdAt' in filteredUser)) filteredUser.createdAt = user.createdAt;
-  if (user.updatedAt && !('updatedAt' in filteredUser)) filteredUser.updatedAt = user.updatedAt;
+  if (src.createdAt != null && !('createdAt' in out)) out.createdAt = src.createdAt;
+  if (src.updatedAt != null && !('updatedAt' in out)) out.updatedAt = src.updatedAt;
 
-  return filteredUser;
+  // 🚫 Do not expose Mongo "_id" in the filtered output (frontend expects "id")
+  if ('_id' in out) delete out._id;
+
+  return out;
 }
+
 
 /**
  * Ensure a value is a non-empty string (labels-style validation).
