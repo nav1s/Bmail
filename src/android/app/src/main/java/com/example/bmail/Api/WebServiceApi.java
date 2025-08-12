@@ -22,7 +22,7 @@ import retrofit2.http.POST;
 import retrofit2.http.Path;
 
 public interface WebServiceApi {
-    @GET
+    @GET("{url}")
     Call<ResponseBody> downloadImage(@Header("Authorization") String token,
                                        @Path("url") String url);
     @POST("api/users")

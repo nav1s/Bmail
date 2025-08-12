@@ -3,6 +3,7 @@ package com.example.bmail.Activities;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.text.Editable;
@@ -42,7 +43,7 @@ public class MainActivity extends AppCompatActivity {
     private MailsAdapter adapter;
     private NavigationView navigationView;
     private FloatingActionButton fabCompose;
-    private ImageButton btnProfile;
+    private ImageView btnProfile;
     private EditText searchBar;
     private TextView logout;
 
@@ -142,12 +143,12 @@ public class MainActivity extends AppCompatActivity {
         viewModel.getUserData().observe(this, user -> {
             if (user != null) {
                 Log.i("MainActivity", "User data loaded: " + user);
-                ImageView profileImage = findViewById(R.id.profile_image);
                 viewModel.getImage(user.getImage(), new retrofit2.Callback<>() {
                     @Override
                     public void onResponse(@NonNull retrofit2.Call<okhttp3.ResponseBody> call, @NonNull retrofit2.Response<okhttp3.ResponseBody> response) {
                         if (response.isSuccessful() && response.body() != null) {
-                            profileImage.setImageBitmap(BitmapFactory.decodeStream(response.body().byteStream()));
+                            Bitmap bitmap = BitmapFactory.decodeStream(response.body().byteStream());
+                            btnProfile.setImageBitmap(bitmap);
                         } else {
                             Log.e("MainActivity", "Failed to load profile image: " + response.message());
                         }
