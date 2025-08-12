@@ -55,4 +55,6 @@
     <string name="labels">Labels</string>
     <string name="message_saved_as_draft">Message saved as draft.</string>
     <string name="all_mail">All mail</string>
+    <string name="bmail">BMail</string>
+    <string name="sign_in_to_your_account">Sign in to your account</string>
 </resources>
