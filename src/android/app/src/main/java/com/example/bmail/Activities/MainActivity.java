@@ -61,6 +61,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         // todo add periodic updates for mails
         super.onResume();
+        viewModel.loadUserDetails();
         viewModel.loadLabels();
         viewModel.loadMails(currentLabel);
     }
@@ -135,6 +136,16 @@ public class MainActivity extends AppCompatActivity {
                 refreshLayout.setRefreshing(false);
             }
         });
+
+        viewModel.getUserData().observe(this, user -> {
+            if (user != null) {
+                Log.i("MainActivity", "User data loaded: " + user);
+                // Update UI with user data if needed
+            } else {
+                Log.w("MainActivity", "User data is null.");
+            }
+        });
+
     }
 
     /**

@@ -3,19 +3,22 @@ package com.example.bmail.Repositories;
 import android.content.Context;
 
 import androidx.annotation.NonNull;
+import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
-import com.example.bmail.Api.SignupApi;
 import com.example.bmail.Api.UserApi;
 import com.example.bmail.Entities.User;
 
 public class UserRepository {
 
     private final UserApi userApi;
+    private final UserData userData;
 
-    class UserData extends MutableLiveData<User>{
+    public class UserData extends MutableLiveData<User>{
         public UserData() {
             super();
+            // Initialize with an empty User object or null
+            setValue(new User());
         }
 
         @Override
@@ -28,8 +31,18 @@ public class UserRepository {
     }
 
     public UserRepository(@NonNull Context context) {
-        userApi = new UserApi(context);
+        userData = new UserData();
+        userApi = new UserApi(context, userData);
     }
+
+    public void loadUserDetails() {
+        userApi.loadUserDetails();
+    }
+
+    public LiveData<User> getUserData() {
+        return userData;
+    }
+
 
 
 }

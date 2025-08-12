@@ -1,8 +1,12 @@
 package com.example.bmail.Entities;
 
+import com.google.gson.annotations.Expose;
+
 public class LoginResponse {
+    @Expose
     private String token;
-    private String userId;
+    @Expose
+    private String id;
     public LoginResponse() {
     }
 
@@ -14,12 +18,12 @@ public class LoginResponse {
         this.token = token;
     }
 
-    public String getUserId() {
-        return userId;
+    public String getId() {
+        return id;
     }
 
-    public void setUserId(String userId) {
-        this.userId = userId;
+    public void setId(String id) {
+        this.id = id;
     }
 }
 

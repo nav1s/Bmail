@@ -1,18 +1,33 @@
 package com.example.bmail.Entities;
 
+import androidx.annotation.NonNull;
+
 public class User {
     private String firstName;
     private String lastName;
     private String username;
-    private String email;
-    private String profilePictureUrl;
+    private String image;
 
-    public User(String firstName, String lastName, String username, String email, String profilePictureUrl) {
+    @NonNull
+    @Override
+    public String toString() {
+        return "User{" +
+                "firstName='" + firstName + '\'' +
+                ", lastName='" + lastName + '\'' +
+                ", username='" + username + '\'' +
+                ", image='" + image + '\'' +
+                '}';
+    }
+
+    public User(String firstName, String lastName, String username, String profilePictureUrl) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.username = username;
-        this.email = email;
-        this.profilePictureUrl = profilePictureUrl;
+        this.image = profilePictureUrl;
+    }
+
+    public User() {
+
     }
 
     public String getFirstName() {
@@ -39,19 +54,11 @@ public class User {
         this.username = username;
     }
 
-    public String getEmail() {
-        return email;
+    public String getImage() {
+        return image;
     }
 
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getProfilePictureUrl() {
-        return profilePictureUrl;
-    }
-
-    public void setProfilePictureUrl(String profilePictureUrl) {
-        this.profilePictureUrl = profilePictureUrl;
+    public void setImage(String image) {
+        this.image = image;
     }
 }

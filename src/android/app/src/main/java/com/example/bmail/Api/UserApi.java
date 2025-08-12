@@ -6,10 +6,8 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 
-import com.example.bmail.Entities.LoginRequest;
-import com.example.bmail.Entities.LoginResponse;
-import com.example.bmail.Entities.SignupRequest;
 import com.example.bmail.Entities.User;
+import com.example.bmail.Repositories.UserRepository.UserData;
 import com.example.bmail.R;
 
 import retrofit2.Call;
@@ -21,9 +19,11 @@ public class UserApi {
 
     private final WebServiceApi webServiceApi;
     private final Context context;
+    private final UserData userData;
 
-    public UserApi(@NonNull Context context) {
+    public UserApi(@NonNull Context context, UserData userData) {
         this.context = context.getApplicationContext();
+        this.userData = userData;
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl(context.getString(R.string.api))
                 .addConverterFactory(GsonConverterFactory.create())
@@ -53,6 +53,7 @@ public class UserApi {
             public void onResponse(@NonNull Call<User> call, @NonNull Response<User> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     User user = response.body();
+                    userData.postValue(user);
                     Log.i("UserApi", "User details loaded: " + user);
                     // Handle the loaded user details as needed
                 } else {
