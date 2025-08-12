@@ -9,11 +9,4 @@ public class AttachLabelRequest {
     public AttachLabelRequest(String labelId) {
         this.labelId = labelId;
     }
-
-    public String getLabelId() {
-        return labelId;
-    }
-    public void setLabelId(String labelId) {
-        this.labelId = labelId;
-    }
 }
