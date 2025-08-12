@@ -15,6 +15,7 @@ import com.example.bmail.db.MailDao;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import retrofit2.Call;
@@ -196,8 +197,26 @@ public class MailApi {
                                    @NonNull Response<Void> response) {
                 if (response.isSuccessful()) {
                     Log.i("MailApi", "Label added successfully");
+                    new Thread(() -> {
+                        ServerMail mail = mailDao.getById(mailId);
+                        if (mail != null) {
+                            List<String> updatedLabels = new ArrayList<>(mail.getLabels());
+                            updatedLabels.add(labelId);
+                            mailDao.updateMailLabels(mailId, updatedLabels);
+
+                            List<ServerMail> updatedMails = mailDao.getAllMails();
+                            mailListData.postValue(updatedMails);
+                            Log.i("MailApi", "Label added to local database");
+                        }
+                    }).start();
                 } else {
                     Log.e("MailApi", "Failed to add label: " + response.message());
+                    // get the error message from the response body
+                    try(okhttp3.ResponseBody errorBody = response.errorBody()) {
+                        Log.e("MailApi", "Error body: " + errorBody);
+                    } catch (Exception e) {
+                        Log.e("MailApi", "Error reading error body: " + e.getMessage());
+                    }
                 }
             }
 
@@ -220,7 +239,19 @@ public class MailApi {
                                    @NonNull Response<Void> response) {
                 if (response.isSuccessful()) {
                     Log.i("MailApi", "Label removed successfully");
-                } else {
+                    // Remove the label from the local database
+                    new Thread(() -> {
+                        ServerMail mail = mailDao.getById(mailId);
+                        if (mail != null) {
+                            List<String> updatedLabels = new ArrayList<>(mail.getLabels());
+                            updatedLabels.remove(labelId);
+                            mailDao.updateMailLabels(mailId, updatedLabels);
+
+                            List<ServerMail> updatedMails = mailDao.getAllMails();
+                            mailListData.postValue(updatedMails);
+                            Log.i("MailApi", "Label removed from local database");
+                        }
+                    }).start();                } else {
                     Log.e("MailApi", "Failed to remove label: " + response.message());
                 }
             }

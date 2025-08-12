@@ -15,7 +15,7 @@ public interface MailDao {
     @Query("SELECT * from ServerMail")
     List<ServerMail> getAllMails();
     @Query("SELECT * from ServerMail WHERE id = :id")
-    ServerMail getById(int id);
+    ServerMail getById(String id);
 
     @Insert
     void insert(ServerMail mail);
@@ -33,5 +33,6 @@ public interface MailDao {
     @Insert
     void insertList(List<ServerMail> mails);
 
-
+    @Query("UPDATE ServerMail SET labels = :labels WHERE id = :mailId")
+    void updateMailLabels(String mailId, List<String> labels);
 }

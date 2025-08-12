@@ -6,8 +6,10 @@ import android.util.Log;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.lifecycle.LiveData;
@@ -19,6 +21,7 @@ import com.example.bmail.R;
 import com.example.bmail.Repositories.LabelRepository;
 import com.example.bmail.Repositories.MailRepository;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -57,13 +60,23 @@ public class MailContentActivity extends AppCompatActivity {
         setupStarButton(mail);
         setupTrashButton(mail);
         setupReplyButtons(mail);
+        setupLabelButton(mail);
     }
 
+    /**
+     * @brief Sets up the toolbar for this activity.
+     * This method initializes the toolbar and sets it as the support action bar.
+     */
     private void setupToolbar() {
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
     }
 
+    /**
+     * @brief Retrieves the email by its ID from the repository.
+     * @param mailId The ID of the email to retrieve
+     * @return The ServerMail object if found, null otherwise
+     */
     private ServerMail getMailById(String mailId) {
         ServerMail mail = mailRepository.getMailById(mailId);
         if (mail == null) {
@@ -72,6 +85,10 @@ public class MailContentActivity extends AppCompatActivity {
         return mail;
     }
 
+    /**
+     * @brief Displays the content of the email in the UI.
+     * @param mail The email to display
+     */
     private void displayMailContent(@NonNull ServerMail mail) {
         TextView tvMailTitle = findViewById(R.id.tv_mail_title);
         TextView tvSender = findViewById(R.id.tv_sender_name);
@@ -84,6 +101,10 @@ public class MailContentActivity extends AppCompatActivity {
         tvMailBody.setText(mail.getBody());
     }
 
+    /**
+     * @brief Sets up the star button to toggle the starred status of the email.
+     * @param mail The email being displayed
+     */
     private void setupStarButton(ServerMail mail) {
         if (starredId.isEmpty()) {
             return;
@@ -107,6 +128,10 @@ public class MailContentActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * @brief Sets up the trash button to move the email to the trash or delete it if already in trash.
+     * @param mail The email being displayed
+     */
     private void setupTrashButton(ServerMail mail) {
         if (trashId.isEmpty()) {
             return;
@@ -125,6 +150,11 @@ public class MailContentActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * @brief Fetches the IDs of the default labels (Starred and Trash).
+     * This method retrieves the label IDs from the LabelRepository and stores them in
+     * starredId and trashId for later use.
+     */
     private void fetchLabelIds() {
         LabelRepository labelRepository = BmailApplication.getInstance().getLabelRepository();
         LiveData<List<Label>> labels = labelRepository.getLabels();
@@ -160,7 +190,7 @@ public class MailContentActivity extends AppCompatActivity {
     }
 
     /**
-     * Sets up the reply, reply all, and forward buttons.
+     * @brief Sets up the reply, reply all, and forward buttons.
      * @param mail The email being displayed
      */
     private void setupReplyButtons(ServerMail mail) {
@@ -174,7 +204,7 @@ public class MailContentActivity extends AppCompatActivity {
     }
 
     /**
-     * Handles reply and reply all functionality
+     * @brief Handles reply and reply all functionality
      * @param mail The original email
      * @param replyAll Whether to include all recipients
      */
@@ -211,7 +241,7 @@ public class MailContentActivity extends AppCompatActivity {
     }
 
     /**
-     * Handles forward functionality
+     * @brief Handles forward functionality
      * @param mail The original email
      */
     private void handleForward(@NonNull ServerMail mail) {
@@ -229,5 +259,93 @@ public class MailContentActivity extends AppCompatActivity {
         intent.putExtra("body", forwardBody);
 
         startActivity(intent);
+    }
+    /**
+     * @brief Sets up the label button to change labels for the email.
+     * @param mail The email being displayed
+     */
+    private void setupLabelButton(ServerMail mail) {
+        ImageButton btnChangeLabel = findViewById(R.id.btn_change_label);
+        btnChangeLabel.setOnClickListener(v -> {
+            showLabelSelectionDialog(mail);
+        });
+    }
+
+    /**
+     * @brief Shows a dialog to manage labels for the email.
+     * This method retrieves all labels, excluding system labels like Inbox, Sent, Trash, and Starred,
+     * and allows the user to select or deselect labels for the current email.
+     * @param mail The email for which labels are being managed
+     */
+    private void showLabelSelectionDialog(ServerMail mail) {
+        // Get the label repository
+        LabelRepository labelRepository = BmailApplication.getInstance().getLabelRepository();
+
+        // Get all labels
+        LiveData<List<Label>> labelsLiveData = labelRepository.getLabels();
+        List<Label> allLabels = labelsLiveData.getValue();
+
+        if (allLabels == null || allLabels.isEmpty()) {
+            Toast.makeText(this, "No labels available", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Create arrays for the dialog
+        final List<Label> userLabels = new ArrayList<>();
+        final List<String> labelNames = new ArrayList<>();
+        final boolean[] checkedItems = new boolean[allLabels.size()];
+
+        // Current mail labels
+        Set<String> currentLabels = new HashSet<>(mail.getLabels());
+
+        // Fill the arrays with user labels (excluding system labels like Inbox, Sent, etc.)
+        int index = 0;
+        for (Label label : allLabels) {
+            // Skip "Inbox", "Sent", "Trash", "Starred" as these are handled differently
+            if (label.isAttachable() && !label.isDefault()) {
+                userLabels.add(label);
+                labelNames.add(label.getName());
+                checkedItems[index] = currentLabels.contains(label.getId());
+                index++;
+            }
+        }
+
+        // Create the dialog
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Manage Labels");
+
+        if (labelNames.isEmpty()) {
+            builder.setMessage("No custom labels available");
+            builder.setPositiveButton("OK", (dialog, which) -> dialog.dismiss());
+        } else {
+            builder.setMultiChoiceItems(labelNames.toArray(new String[0]), checkedItems,
+                    (dialog, which, isChecked) -> {
+                        // Update the checked items array
+                        checkedItems[which] = isChecked;
+                    });
+
+            builder.setPositiveButton("Apply", (dialog, which) -> {
+                // Apply changes
+                for (int i = 0; i < checkedItems.length; i++) {
+                    if (i < userLabels.size()) {
+                        String labelId = userLabels.get(i).getId();
+                        boolean hasLabel = currentLabels.contains(labelId);
+
+                        if (checkedItems[i] && !hasLabel) {
+                            // Add the label
+                            mailRepository.addLabelToMail(mail.getId(), labelId);
+                        } else if (!checkedItems[i] && hasLabel) {
+                            // Remove the label
+                            mailRepository.removeLabelFromMail(mail.getId(), labelId);
+                        }
+                    }
+                }
+                Toast.makeText(this, "Labels updated", Toast.LENGTH_SHORT).show();
+            });
+
+            builder.setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss());
+        }
+
+        builder.show();
     }
 }
