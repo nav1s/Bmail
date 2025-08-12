@@ -8,6 +8,7 @@ import androidx.annotation.NonNull;
 import androidx.lifecycle.MutableLiveData;
 
 import com.example.bmail.Entities.Label;
+import com.example.bmail.Entities.LabelRequest;
 import com.example.bmail.R;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -55,7 +56,7 @@ public class LabelApi {
         return prefs.getString(TOKEN_KEY, null);
     }
 
-    public void getLabels() {
+    public void loadLabels() {
         String token = getToken();
         Log.i(TAG, "Token: " + token);
 
@@ -63,7 +64,14 @@ public class LabelApi {
         call.enqueue(new Callback<>() {
             @Override
             public void onResponse(@NonNull Call<List<Label>> call, @NonNull Response<List<Label>> response) {
-                handleResponse(response);
+                if (response.isSuccessful() && response.body() != null) {
+                    List<Label> labels = response.body();
+                    Log.i(TAG, "Labels loaded successfully: " + labels.size() + " labels found.");
+                    labelListData.postValue(labels);
+                } else {
+                    Log.e(TAG, "Failed to load labels: " + response.message());
+                    labelListData.postValue(null);
+                }
             }
 
             @Override
@@ -74,15 +82,12 @@ public class LabelApi {
         });
     }
 
-    private void handleResponse(@NonNull Response<List<Label>> response) {
-        if (response.isSuccessful() && response.body() != null) {
-            List<Label> labels = response.body();
-            Log.i(TAG, "Labels loaded successfully: " + labels.size() + " labels found.");
-            labelListData.postValue(labels);
-        } else {
-            Log.e(TAG, "Failed to load labels: " + response.message());
-            labelListData.postValue(null);
-        }
+
+    public void createLabel(LabelRequest labelRequest, retrofit2.Callback<Void> callback) {
+        String token = getToken();
+        Log.i(TAG, "Creating label with token: " + token);
+        Call<Void> call = webServiceApi.createLabel(BEARER_PREFIX + token, labelRequest);
+        call.enqueue(callback);
     }
 
 }

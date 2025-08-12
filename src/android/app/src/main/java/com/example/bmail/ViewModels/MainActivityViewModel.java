@@ -43,9 +43,12 @@ public class MainActivityViewModel extends androidx.lifecycle.ViewModel {
         mailRepository.searchMail(query);
     }
 
-    public LiveData<List<Label>> loadLabels() {
-        // todo check if the implementation is correct
+    public LiveData<List<Label>> getLabels() {
         return labelRepository.getLabels();
+    }
+
+    public void loadLabels() {
+        labelRepository.loadLabels();
     }
 
     public void delete(ServerMail mail) {
@@ -61,6 +64,10 @@ public class MainActivityViewModel extends androidx.lifecycle.ViewModel {
 
     public void loadImage(String url) {
         userRepository.loadImage(url);
+    }
+
+    public void createLabel(String name, retrofit2.Callback<Void> callback) {
+        labelRepository.createLabel(name, callback);
     }
 
 }

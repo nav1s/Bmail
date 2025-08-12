@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.Editable;
-import android.text.InputType;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.Menu;
@@ -15,6 +14,7 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
@@ -169,6 +169,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
         refreshLayout.setOnRefreshListener(() -> {
+            viewModel.loadUserDetails();
             viewModel.loadLabels();
             viewModel.loadMails(currentLabel);
             refreshLayout.setRefreshing(true);
@@ -245,7 +246,7 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-        viewModel.loadLabels().observe(this, labels -> {
+        viewModel.getLabels().observe(this, labels -> {
             if (labels == null) {
                 Log.w("MailActivity", "Labels are null, cannot setup custom labels.");
                 return;
@@ -256,7 +257,8 @@ public class MainActivity extends AppCompatActivity {
                 if (!label.isDefault()) {
                     Log.i("MailActivity", "Found non default: " + label.getName());
                     Log.i("MailActivity", "Adding custom label to menu: " + label.getName());
-                    MenuItem labelItem = menu.add(R.id.nav_custom_labels, this.labelCounter, this.labelCounter, label.getName())
+                    MenuItem labelItem = menu.add(R.id.nav_custom_labels, this.labelCounter,
+                                    this.labelCounter, label.getName())
                             .setIcon(R.drawable.ic_label)
                             .setCheckable(true);
 
@@ -307,8 +309,26 @@ public class MainActivity extends AppCompatActivity {
      */
     private void addNewLabel(String labelName) {
         Log.i("MainActivity", "Adding new label: " + labelName);
-//        viewModel.createLabel(labelName);
-        // The UI will be updated automatically via the LiveData observation
+        viewModel.createLabel(labelName, new retrofit2.Callback<>() {
+            @Override
+            public void onResponse(@NonNull retrofit2.Call<Void> call, @NonNull retrofit2.Response<Void> response) {
+                if (response.isSuccessful()) {
+                    Log.i("MainActivity", "Label added successfully: " + labelName);
+                    Toast.makeText(MainActivity.this, "Label added: " + labelName, Toast.LENGTH_SHORT).show();
+                    viewModel.loadLabels();
+                } else {
+                    Toast.makeText(MainActivity.this, "Failed to add label: " +
+                            response.message(), Toast.LENGTH_SHORT).show();
+                    Log.e("MainActivity", "Failed to add label: " + response.message());
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull retrofit2.Call<Void> call, @NonNull Throwable t) {
+                Log.e("MainActivity", "Network Error: ", t);
+                Toast.makeText(MainActivity.this, "Network Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     /**

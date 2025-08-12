@@ -6,12 +6,14 @@ public class SignupRequest {
     private String lastName;
     private String username;
     private String password;
+    private String image;
 
-    public SignupRequest(String firstName, String lastName, String username, String password) {
+    public SignupRequest(String firstName, String lastName, String username, String password, String image) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.username = username;
         this.password = password;
+        this.image = image;
     }
 
     public String getFirstName() {
@@ -44,5 +46,13 @@ public class SignupRequest {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public String getImage() {
+        return image;
+    }
+
+    public void setImage(String image) {
+        this.image = image;
     }
 }

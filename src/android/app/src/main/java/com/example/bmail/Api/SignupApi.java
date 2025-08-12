@@ -70,7 +70,7 @@ public class SignupApi {
 
     public void signup(String firstName, String lastName, String username,
                        String password, callback signupCallback) {
-        SignupRequest request = new SignupRequest(firstName, lastName, username, password);
+        SignupRequest request = new SignupRequest(firstName, lastName, username, password, null);
 
         Call<Void> call = webServiceApi.signup(request);
         call.enqueue(new retrofit2.Callback<>() {

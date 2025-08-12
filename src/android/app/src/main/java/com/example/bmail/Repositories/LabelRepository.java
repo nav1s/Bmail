@@ -9,6 +9,7 @@ import androidx.lifecycle.MutableLiveData;
 
 import com.example.bmail.Api.LabelApi;
 import com.example.bmail.Entities.Label;
+import com.example.bmail.Entities.LabelRequest;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -29,7 +30,7 @@ public class LabelRepository {
         protected void onActive() {
             super.onActive();
             Log.d("LabelListData", "LabelListData is now active");
-            labelApi.getLabels();
+            labelApi.loadLabels();
         }
     }
 
@@ -40,6 +41,15 @@ public class LabelRepository {
 
     public LiveData<List<Label>> getLabels() {
         return labelListData;
+    }
+
+    public void loadLabels() {
+        labelApi.loadLabels();
+    }
+
+    public void createLabel(String name, retrofit2.Callback<Void> callback) {
+        LabelRequest labelRequest = new LabelRequest(name);
+        labelApi.createLabel(labelRequest, callback);
     }
 
 }
