@@ -25,36 +25,36 @@ public interface WebServiceApi {
     @GET("{url}")
     Call<ResponseBody> downloadImage(@Header("Authorization") String token,
                                        @Path("url") String url);
-    @POST("api/users")
+    @POST("/api/users")
     Call<Void> signup(@Body SignupRequest request);
-    @GET("api/users/{id}")
+    @GET("/api/users/{id}")
     Call<User> getUserDetails(@Header("Authorization") String token, @Path("id") String userId);
 
-    @POST("api/tokens")
+    @POST("/api/tokens")
     Call<LoginResponse> login(@Body LoginRequest request);
 
-    @GET("api/mails/byLabel/{label}")
+    @GET("/api/mails/byLabel/{label}")
 
     Call<List<ServerMail>> getMails(@Header("Authorization") String token, @Path ("label") String label);
 
-    @POST("api/mails")
+    @POST("/api/mails")
     Call<Void> sendMail(@Header("Authorization") String token, @Body ClientMail mail);
 
-    @PATCH("api/mails/{id}")
+    @PATCH("/api/mails/{id}")
     Call<Void> updateDraft(@Header("Authorization") String token, @Body ServerMail mail,
                            @Path("id") String id);
 
-    @GET("api/mails/search/{query}")
+    @GET("/api/mails/search/{query}")
     Call<List<ServerMail>> searchMails(@Header("Authorization") String token,
                                        @Path ("query") String query);
 
-    @GET("api/labels")
+    @GET("/api/labels")
     Call <List<Label>> getLabels(@Header("Authorization") String token);
 
-    @POST("api/mails/{id}/labels")
+    @POST("/api/mails/{id}/labels")
     Call<Void> addLabelToMail(@Header("Authorization") String token, @Path("id") String mailId,
                               @Body LabelRequest request);
-    @DELETE("api/mails/{id}/labels/{labelId}")
+    @DELETE("/api/mails/{id}/labels/{labelId}")
     Call<Void> removeLabelFromMail(@Header("Authorization") String token, @Path("id") String mailId,
                                    @Path("labelId") String labelId);
 }

@@ -18,7 +18,7 @@ public class UserRepository {
         public UserData() {
             super();
             // Initialize with an empty User object or null
-            setValue(new User());
+            setValue(null);
         }
 
         @Override
