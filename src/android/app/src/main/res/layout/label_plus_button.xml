@@ -6,7 +6,7 @@
     >
 
     <ImageButton
-        android:id="@+id/label_add"
+        android:id="@+id/add_label_button"
         android:layout_width="48dp"
         android:layout_height="48dp"
         android:background="?attr/selectableItemBackgroundBorderless"

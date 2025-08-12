@@ -8,13 +8,16 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.drawerlayout.widget.DrawerLayout;
@@ -46,7 +49,7 @@ public class MainActivity extends AppCompatActivity {
 
     // Current label for the mail view
     private String currentLabel = LABEL_INBOX;
-    private int labelCounter = 7;
+    private int labelCounter = 9;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -176,6 +179,8 @@ public class MainActivity extends AppCompatActivity {
         });
 
         logout.setOnClickListener(v -> showLogoutDialog());
+
+
     }
 
     /**
@@ -185,13 +190,6 @@ public class MainActivity extends AppCompatActivity {
     private void setupNavigationListener() {
         navigationView.setNavigationItemSelectedListener(item -> {
             drawer.closeDrawers();
-
-//            int itemId = item.getItemId();
-//            if (itemId == R.id.nav_add_label) {
-//                Log.i("MailActivity", "Add label clicked, opening AddLabelActivity.");
-//                // todo create a dialog that asks for the label name
-//                return false;
-//            }
 
             this.currentLabel = (String) item.getTitle();
             Log.i("MailActivity", "Custom label selected: " + this.currentLabel);
@@ -231,6 +229,21 @@ public class MainActivity extends AppCompatActivity {
     private void setupCustomLabels() {
         Menu menu = navigationView.getMenu();
 
+        // Find the labels menu item which has the custom action layout
+        MenuItem labelsItem = menu.findItem(R.id.nav_labels);
+
+        // Access the action view (label_plus_button layout)
+        if (labelsItem != null) {
+            View actionView = labelsItem.getActionView();
+            if (actionView != null) {
+                // Find the add button in the action view
+                ImageButton addLabelButton = actionView.findViewById(R.id.add_label_button);
+                if (addLabelButton != null) {
+                    addLabelButton.setOnClickListener(v -> showAddLabelDialog());
+                }
+            }
+        }
+
         viewModel.loadLabels().observe(this, labels -> {
             if (labels == null) {
                 Log.w("MailActivity", "Labels are null, cannot setup custom labels.");
@@ -241,23 +254,77 @@ public class MainActivity extends AppCompatActivity {
             for (Label label : labels) {
                 if (!label.isDefault()) {
                     Log.i("MailActivity", "Found non default: " + label.getName());
-//                    if (menu.findItem(label.getId()) != null) {
-//                        Log.w("MailActivity", "Label already exists in menu: "
-//                                + label.getName());
-//                        continue;
-//                    }
-
-                    Log.i("MailActivity", "Adding custom label to menu: "
-                            + label.getName());
-                    menu.add(R.id.nav_custom_labels, this.labelCounter, this.labelCounter, label.getName())
+                    Log.i("MailActivity", "Adding custom label to menu: " + label.getName());
+                    MenuItem labelItem = menu.add(R.id.nav_custom_labels, this.labelCounter, this.labelCounter, label.getName())
                             .setIcon(R.drawable.ic_label)
                             .setCheckable(true);
+
+                    // Set action layout for the custom label item
+                    labelItem.setActionView(R.layout.label_button);
+                    View labelActionView = labelItem.getActionView();
+                    if (labelActionView != null) {
+                        ImageButton deleteButton = labelActionView.findViewById(R.id.label_delete);
+                        if (deleteButton != null) {
+                            deleteButton.setOnClickListener(v -> showDeleteLabelDialog(label));
+                        }
+                    }
+
                     this.labelCounter++;
                 }
             }
         });
     }
 
+    /**
+     * Show a dialog to add a new label
+     */
+    private void showAddLabelDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Add Label");
+
+        // Set up the input
+        final EditText input = new EditText(this);
+        input.setHint("Label name");
+        input.setPadding(8, 8, 8, 8);
+        builder.setView(input);
+
+        // Set up the buttons
+        builder.setPositiveButton("Add", (dialog, which) -> {
+            String labelName = input.getText().toString().trim();
+            if (!labelName.isEmpty()) {
+                addNewLabel(labelName);
+            }
+        });
+        builder.setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());
+
+        builder.show();
+    }
+
+    /**
+     * Add a new label to the system
+     * @param labelName The name of the new label
+     */
+    private void addNewLabel(String labelName) {
+        Log.i("MainActivity", "Adding new label: " + labelName);
+//        viewModel.createLabel(labelName);
+        // The UI will be updated automatically via the LiveData observation
+    }
+
+    /**
+     * Show a dialog to confirm deletion of a label
+     * @param label The label to delete
+     */
+    private void showDeleteLabelDialog(@NonNull Label label) {
+        new AlertDialog.Builder(this)
+                .setTitle("Delete Label")
+                .setMessage("Are you sure you want to delete the label '" + label.getName() + "'?")
+                .setPositiveButton("Delete", (dialog, which) -> {
+//                    viewModel.deleteLabel(label.getId());
+                    dialog.dismiss();
+                })
+                .setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss())
+                .show();
+    }
     /**
      * @brief Show a dialog to confirm logout.
      * If confirmed, clears user preferences and redirects to the login activity.
