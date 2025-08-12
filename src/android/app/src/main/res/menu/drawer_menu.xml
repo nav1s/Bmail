@@ -53,16 +53,8 @@
             android:id="@+id/nav_labels"
             android:orderInCategory="8"
             android:title="@string/labels"
+            android:enabled="false"
             app:actionLayout="@layout/label_plus_button" />
-        <item
-            android:title="foo"
-            android:orderInCategory="9"
-            app:actionLayout="@layout/label_button" />
-        <item
-            android:title="bar"
-            android:orderInCategory="10"
-            app:actionLayout="@layout/label_button" />
-
 
     </group>
 
