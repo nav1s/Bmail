@@ -18,11 +18,13 @@ import com.example.bmail.Repositories.LabelRepository;
 import com.example.bmail.Repositories.MailRepository;
 
 import java.util.List;
-import java.util.Objects;
 
 public class MailContentActivity extends AppCompatActivity {
     boolean isStarred = false;
     String starredId = "";
+    String trashId = "";
+    private final MailRepository mailRepository =
+            BmailApplication.getInstance().getMailRepository();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,12 +46,12 @@ public class MailContentActivity extends AppCompatActivity {
             return;
         }
 
-        starredId = getStarredLabelId();
+        fetchLabelIds();
         isStarred = mail.getLabels().contains(starredId);
 
         displayMailContent(mail);
         setupStarButton(mail);
-        setupDeleteButton();
+        setupTrashButton(mail);
     }
 
     private void setupToolbar() {
@@ -58,7 +60,6 @@ public class MailContentActivity extends AppCompatActivity {
     }
 
     private ServerMail getMailById(String mailId) {
-        MailRepository mailRepository = BmailApplication.getInstance().getMailRepository();
         ServerMail mail = mailRepository.getMailById(mailId);
         if (mail == null) {
             Log.e("MailContentActivity", "Mail not found for ID: " + mailId);
@@ -89,7 +90,6 @@ public class MailContentActivity extends AppCompatActivity {
         btnStar.setImageResource(isStarred ? R.drawable.ic_star_filled : R.drawable.ic_star);
         Log.d("MailContentActivity", "Starred status: " + isStarred);
         btnStar.setOnClickListener(v -> {
-            MailRepository mailRepository = BmailApplication.getInstance().getMailRepository();
             if (isStarred) {
                 btnStar.setImageResource(R.drawable.ic_star);
                 mailRepository.removeLabelFromMail(mail.getId(), starredId);
@@ -102,25 +102,51 @@ public class MailContentActivity extends AppCompatActivity {
         });
     }
 
-    private String getStarredLabelId() {
+    private void setupTrashButton(ServerMail mail) {
+        if (trashId.isEmpty()) {
+            return;
+        }
+
+        ImageButton btnTrash = findViewById(R.id.btn_trash);
+        btnTrash.setOnClickListener(v -> {
+            if (mail.getLabels().contains(trashId)) {
+                Log.d("MailContentActivity", "Mail already in trash, deleting it");
+                // todo delete mail from database
+                return;
+            } else {
+                Log.d("MailContentActivity", "Adding mail to trash");
+                mailRepository.addLabelToMail(mail.getId(), trashId);
+            }
+            finish();
+        });
+    }
+
+    private void fetchLabelIds() {
         LabelRepository labelRepository = BmailApplication.getInstance().getLabelRepository();
         LiveData<List<Label>> labels = labelRepository.getLabels();
 
         List<Label> labelList = labels.getValue();
         if (labelList == null) {
-            return "";
+            starredId = "";
+            trashId = "";
+            return;
         }
 
-        return labelList.stream()
-                .filter(label -> label.isDefault() && "starred".equalsIgnoreCase(label.getName()))
-                .findFirst()
-                .map(Label::getId)
-                .orElse("");
-    }
+        for (Label label : labelList) {
+            if (label.isDefault()) {
+                String labelName = label.getName().toLowerCase();
+                switch (labelName) {
+                    case "starred":
+                        starredId = label.getId();
+                        break;
+                    case "trash":
+                        trashId = label.getId();
+                        break;
+                }
+            }
+        }
 
-    private void setupDeleteButton() {
-        ImageButton btnDelete = findViewById(R.id.btn_delete);
-        btnDelete.setOnClickListener(v -> finish());
+        Log.d("MailContentActivity", "Fetched label IDs - Starred: " + starredId + ", Trash: " + trashId);
     }
 
     @Override

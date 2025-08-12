@@ -22,10 +22,9 @@
             android:orientation="horizontal">
 
             <ImageButton
-                android:id="@+id/btn_delete"
+                android:id="@+id/btn_trash"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
-                android:tooltipText="@string/delete"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:contentDescription="@string/delete"
                 android:src="@android:drawable/ic_menu_delete" />
