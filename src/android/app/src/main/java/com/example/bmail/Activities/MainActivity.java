@@ -145,12 +145,33 @@ public class MainActivity extends AppCompatActivity {
                 Log.i("MainActivity", "User data loaded: " + user);
                 viewModel.getImage(user.getImage(), new retrofit2.Callback<>() {
                     @Override
-                    public void onResponse(@NonNull retrofit2.Call<okhttp3.ResponseBody> call, @NonNull retrofit2.Response<okhttp3.ResponseBody> response) {
-                        if (response.isSuccessful() && response.body() != null) {
-                            Bitmap bitmap = BitmapFactory.decodeStream(response.body().byteStream());
-                            btnProfile.setImageBitmap(bitmap);
-                        } else {
+                    public void onResponse(
+                            @NonNull retrofit2.Call<okhttp3.ResponseBody> call,
+                            @NonNull retrofit2.Response<okhttp3.ResponseBody> response) {
+                        if (!response.isSuccessful()) {
                             Log.e("MainActivity", "Failed to load profile image: " + response.message());
+                            Log.e("MainActivity", "Response code: " + response.code());
+
+                            try (okhttp3.ResponseBody errorBody = response.errorBody()) {
+                                if (errorBody != null) {
+                                    Log.e("MainActivity", "Error body: " + errorBody.string());
+                                } else {
+                                    Log.e("MainActivity", "No error body available.");
+                                }
+                            } catch (Exception e) {
+                                Log.e("MainActivity", "Error reading error body", e);
+                            }
+                            return;
+
+                        }
+
+                        try(okhttp3.ResponseBody responseBody = response.body()) {
+                            if (responseBody == null) {
+                                Log.e("MainActivity", "Response body is null.");
+                                return;
+                            }
+                            Bitmap bitmap = BitmapFactory.decodeStream(responseBody.byteStream());
+                            btnProfile.setImageBitmap(bitmap);
                         }
                     }
 

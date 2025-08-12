@@ -20,11 +20,12 @@ import retrofit2.http.Header;
 import retrofit2.http.PATCH;
 import retrofit2.http.POST;
 import retrofit2.http.Path;
+import retrofit2.http.Url;
 
 public interface WebServiceApi {
-    @GET("{url}")
+    @GET
     Call<ResponseBody> downloadImage(@Header("Authorization") String token,
-                                       @Path("url") String url);
+                                       @Url String url);
     @POST("/api/users")
     Call<Void> signup(@Body SignupRequest request);
     @GET("/api/users/{id}")
