@@ -63,7 +63,6 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onResume() {
-        // todo add periodic updates for mails
         super.onResume();
         viewModel.loadUserDetails();
         viewModel.loadLabels();
@@ -257,6 +256,12 @@ public class MainActivity extends AppCompatActivity {
                 if (!label.isDefault()) {
                     Log.i("MailActivity", "Found non default: " + label.getName());
                     Log.i("MailActivity", "Adding custom label to menu: " + label.getName());
+
+                    // Skip if the label already exists
+                    if (LabelExists(label.getName(), menu)) {
+                        continue;
+                    }
+
                     MenuItem labelItem = menu.add(R.id.nav_custom_labels, this.labelCounter,
                                     this.labelCounter, label.getName())
                             .setIcon(R.drawable.ic_label)
@@ -276,6 +281,28 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+    }
+
+    private boolean LabelExists(String labelName, @NonNull Menu menu) {
+        for (int i = 0; i <= menu.size() - 1; i++) {
+            MenuItem item = menu.getItem(i);
+
+            // Skip if item is null
+            if (item == null) {
+                continue;
+            }
+            // Skip if title is null
+            if (item.getTitle() == null) {
+                continue;
+            }
+
+            // return true if the label exists
+            if (item.getTitle().toString().equals(labelName)) {
+                return true;
+            }
+        }
+        // Label does not exist
+        return false;
     }
 
     /**
@@ -317,8 +344,7 @@ public class MainActivity extends AppCompatActivity {
                     Toast.makeText(MainActivity.this, "Label added: " + labelName, Toast.LENGTH_SHORT).show();
                     viewModel.loadLabels();
                 } else {
-                    Toast.makeText(MainActivity.this, "Failed to add label: " +
-                            response.message(), Toast.LENGTH_SHORT).show();
+                    // get the error message from the response
                     Log.e("MainActivity", "Failed to add label: " + response.message());
                 }
             }
