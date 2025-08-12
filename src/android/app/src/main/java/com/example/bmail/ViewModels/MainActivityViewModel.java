@@ -1,5 +1,7 @@
 package com.example.bmail.ViewModels;
 
+import android.graphics.Bitmap;
+
 import androidx.lifecycle.LiveData;
 
 import com.example.bmail.Entities.BmailApplication;
@@ -33,6 +35,10 @@ public class MainActivityViewModel extends androidx.lifecycle.ViewModel {
         return userRepository.getUserData();
     }
 
+    public LiveData<Bitmap> getUserImage() {
+        return userRepository.getUserImage();
+    }
+
     public void searchMail(String query) {
         mailRepository.searchMail(query);
     }
@@ -53,8 +59,8 @@ public class MainActivityViewModel extends androidx.lifecycle.ViewModel {
         userRepository.loadUserDetails();
     }
 
-    public void getImage(String url, retrofit2.Callback<okhttp3.ResponseBody> callback) {
-        userRepository.getImage(url, callback);
+    public void loadImage(String url) {
+        userRepository.loadImage(url);
     }
 
 }

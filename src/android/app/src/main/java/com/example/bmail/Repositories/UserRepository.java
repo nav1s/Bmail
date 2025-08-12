@@ -1,6 +1,7 @@
 package com.example.bmail.Repositories;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
@@ -13,6 +14,9 @@ public class UserRepository {
 
     private final UserApi userApi;
     private final UserData userData;
+
+    private final MutableLiveData<Bitmap> userImage = new MutableLiveData<>();
+
 
     public class UserData extends MutableLiveData<User>{
         public UserData() {
@@ -32,7 +36,7 @@ public class UserRepository {
 
     public UserRepository(@NonNull Context context) {
         userData = new UserData();
-        userApi = new UserApi(context, userData);
+        userApi = new UserApi(context, userData, userImage);
     }
 
     public void loadUserDetails() {
@@ -43,9 +47,12 @@ public class UserRepository {
         return userData;
     }
 
-    public void getImage(String url, retrofit2.Callback<okhttp3.ResponseBody> callback) {
-        userApi.getImage(url, callback);
+    public void loadImage(String url) {
+        userApi.loadImage(url);
     }
 
+    public LiveData<Bitmap> getUserImage() {
+        return userImage;
+    }
 
 }

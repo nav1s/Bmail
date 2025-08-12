@@ -143,48 +143,17 @@ public class MainActivity extends AppCompatActivity {
         viewModel.getUserData().observe(this, user -> {
             if (user != null) {
                 Log.i("MainActivity", "User data loaded: " + user);
-                viewModel.getImage(user.getImage(), new retrofit2.Callback<>() {
-                    @Override
-                    public void onResponse(
-                            @NonNull retrofit2.Call<okhttp3.ResponseBody> call,
-                            @NonNull retrofit2.Response<okhttp3.ResponseBody> response) {
-                        if (!response.isSuccessful()) {
-                            Log.e("MainActivity", "Failed to load profile image: " + response.message());
-                            Log.e("MainActivity", "Response code: " + response.code());
-
-                            try (okhttp3.ResponseBody errorBody = response.errorBody()) {
-                                if (errorBody != null) {
-                                    Log.e("MainActivity", "Error body: " + errorBody.string());
-                                } else {
-                                    Log.e("MainActivity", "No error body available.");
-                                }
-                            } catch (Exception e) {
-                                Log.e("MainActivity", "Error reading error body", e);
-                            }
-                            return;
-
-                        }
-
-                        try(okhttp3.ResponseBody responseBody = response.body()) {
-                            if (responseBody == null) {
-                                Log.e("MainActivity", "Response body is null.");
-                                return;
-                            }
-                            Bitmap bitmap = BitmapFactory.decodeStream(responseBody.byteStream());
-                            btnProfile.setImageBitmap(bitmap);
-                        }
-                    }
-
-                    @Override
-                    public void onFailure(@NonNull retrofit2.Call<okhttp3.ResponseBody> call, @NonNull Throwable t) {
-                        Log.e("MainActivity", "Error loading profile image", t);
-                    }
-                });
-            } else {
-                Log.w("MainActivity", "User data is null.");
+                viewModel.loadImage(user.getImage());
             }
         });
-
+        viewModel.getUserImage().observe(this, image -> {
+            if (image != null) {
+                Log.i("MainActivity", "User image loaded.");
+                btnProfile.setImageBitmap(image);
+            } else {
+                Log.w("MainActivity", "User image is null, using default image.");
+            }
+        });
     }
 
     /**

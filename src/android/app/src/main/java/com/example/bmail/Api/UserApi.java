@@ -2,9 +2,12 @@ package com.example.bmail.Api;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
+import androidx.lifecycle.MutableLiveData;
 
 import com.example.bmail.Entities.User;
 import com.example.bmail.Repositories.UserRepository.UserData;
@@ -20,10 +23,12 @@ public class UserApi {
     private final WebServiceApi webServiceApi;
     private final Context context;
     private final UserData userData;
+    private final MutableLiveData<Bitmap> userImage;
 
-    public UserApi(@NonNull Context context, UserData userData) {
+    public UserApi(@NonNull Context context, UserData userData, MutableLiveData<Bitmap> userImage) {
         this.context = context.getApplicationContext();
         this.userData = userData;
+        this.userImage = userImage;
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl(context.getString(R.string.api))
                 .addConverterFactory(GsonConverterFactory.create())
@@ -68,12 +73,53 @@ public class UserApi {
         });
     }
 
-    public void getImage(String url, retrofit2.Callback<okhttp3.ResponseBody> callback) {
+    public void loadImage(String url) {
         String token = getToken();
         Log.d("UserApi", "Token: " + token);
         Log.d("UserApi", "Image URL: " + url);
         Call<okhttp3.ResponseBody> call = webServiceApi.downloadImage(token, url);
-        call.enqueue(callback);
+        call.enqueue(new retrofit2.Callback<>() {
+            @Override
+            public void onResponse(
+                    @NonNull retrofit2.Call<okhttp3.ResponseBody> call,
+                    @NonNull retrofit2.Response<okhttp3.ResponseBody> response) {
+                if (!response.isSuccessful()) {
+                    Log.e("MainActivity", "Failed to load profile image: " + response.message());
+                    Log.e("MainActivity", "Response code: " + response.code());
+
+                    try (okhttp3.ResponseBody errorBody = response.errorBody()) {
+                        if (errorBody != null) {
+                            Log.e("MainActivity", "Error body: " + errorBody.string());
+                        } else {
+                            Log.e("MainActivity", "No error body available.");
+                        }
+                    } catch (Exception e) {
+                        Log.e("MainActivity", "Error reading error body", e);
+                    }
+                    return;
+
+                }
+
+                try(okhttp3.ResponseBody responseBody = response.body()) {
+                    if (responseBody == null) {
+                        Log.e("MainActivity", "Response body is null.");
+                        return;
+                    }
+                    Bitmap bitmap = BitmapFactory.decodeStream(responseBody.byteStream());
+                    if (bitmap != null) {
+                        userImage.postValue(bitmap);
+                        Log.i("MainActivity", "Profile image loaded successfully.");
+                    } else {
+                        Log.e("MainActivity", "Failed to decode profile image.");
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull retrofit2.Call<okhttp3.ResponseBody> call, @NonNull Throwable t) {
+                Log.e("MainActivity", "Error loading profile image", t);
+            }
+        });
 
     }
 

@@ -4,13 +4,14 @@ import android.app.AlertDialog;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
 import com.example.bmail.Entities.BmailApplication;
-import com.example.bmail.Entities.User;
 import com.example.bmail.R;
 import com.example.bmail.Repositories.UserRepository;
 import com.google.android.material.textfield.TextInputEditText;
@@ -24,6 +25,7 @@ public class ProfileActivity extends AppCompatActivity {
     private TextInputEditText currentPasswordEditText;
     private TextInputEditText newPasswordEditText;
     private TextInputEditText confirmPasswordEditText;
+    private ImageView profileImage;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,11 +38,28 @@ public class ProfileActivity extends AppCompatActivity {
         // Initialize input fields
         initializeInputFields();
 
-        // Setup text watchers to detect changes
-        setupTextWatchers();
-
         // fetch the user data and populate the fields
         UserRepository userRepository = BmailApplication.getInstance().getUserRepository();
+        userRepository.getUserData().observe(this, user -> {
+            if (user != null) {
+                firstNameEditText.setText(user.getFirstName());
+                lastNameEditText.setText(user.getLastName());
+                usernameEditText.setText(user.getUsername());
+                userRepository.loadImage(user.getImage());
+                userRepository.getUserImage().observe(this, image -> {
+                    if (image == null) {
+                        Log.e("ProfileActivity", "User image is null");
+                        return;
+                    }
+                    Log.d("ProfileActivity", "User image loaded successfully");
+                    profileImage.setImageBitmap(image);
+                });
+
+            }
+        });
+
+        // Setup text watchers to detect changes
+        setupTextWatchers();
 
         // Setup change photo click listener
         TextView changePhotoText = findViewById(R.id.change_photo_text);
@@ -60,6 +79,7 @@ public class ProfileActivity extends AppCompatActivity {
         currentPasswordEditText = findViewById(R.id.current_password_edit_text);
         newPasswordEditText = findViewById(R.id.new_password_edit_text);
         confirmPasswordEditText = findViewById(R.id.confirm_password_edit_text);
+        profileImage = findViewById(R.id.profile_image);
     }
 
     private void setupTextWatchers() {
