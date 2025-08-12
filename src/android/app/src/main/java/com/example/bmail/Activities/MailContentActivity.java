@@ -111,8 +111,7 @@ public class MailContentActivity extends AppCompatActivity {
         btnTrash.setOnClickListener(v -> {
             if (mail.getLabels().contains(trashId)) {
                 Log.d("MailContentActivity", "Mail already in trash, deleting it");
-                // todo delete mail from database
-                return;
+                mailRepository.deleteMail(mail.getId());
             } else {
                 Log.d("MailContentActivity", "Adding mail to trash");
                 mailRepository.addLabelToMail(mail.getId(), trashId);

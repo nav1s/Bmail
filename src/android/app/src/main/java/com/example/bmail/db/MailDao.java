@@ -23,6 +23,9 @@ public interface MailDao {
     void update(ServerMail mail);
     @Delete
     void delete(ServerMail mail);
+
+    @Query("DELETE FROM ServerMail WHERE id = :id")
+    void deleteById(String id);
     // delete all mails
     @Query("DELETE FROM ServerMail")
     void clear();

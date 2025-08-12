@@ -88,6 +88,11 @@ public class MailRepository {
         return null;
     }
 
+    public void deleteMail(String id) {
+        Log.d("MailRepository", "Deleting mail with ID: " + id);
+        mailApi.deleteMail(id);
+    }
+
     public void removeLabelFromMail(String mailId, String labelId){
         Log.d("MailRepository", "Removing label " + labelId + " from mail " + mailId);
         mailApi.removeLabelFromMail(mailId, labelId);

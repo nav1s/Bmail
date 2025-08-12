@@ -242,6 +242,13 @@ public class MailApi {
                                    @NonNull Response<Void> response) {
                 if (response.isSuccessful()) {
                     Log.i("MailApi", "Mail deleted successfully");
+                    // Remove the mail from the local database
+                    new Thread(() -> {
+                        mailDao.deleteById(mailId);
+                        List<ServerMail> updatedMails = mailDao.getAllMails();
+                        mailListData.postValue(updatedMails);
+                        Log.i("MailApi", "Mail removed from local database");
+                    });
                 } else {
                     Log.e("MailApi", "Failed to delete mail: " + response.message());
                 }
