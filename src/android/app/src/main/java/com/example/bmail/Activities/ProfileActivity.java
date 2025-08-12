@@ -26,6 +26,7 @@ public class ProfileActivity extends AppCompatActivity {
     private TextInputEditText newPasswordEditText;
     private TextInputEditText confirmPasswordEditText;
     private ImageView profileImage;
+    private boolean isInitializing = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,6 +55,7 @@ public class ProfileActivity extends AppCompatActivity {
                     Log.d("ProfileActivity", "User image loaded successfully");
                     profileImage.setImageBitmap(image);
                 });
+                isInitializing = true; // Prevent text change detection during initialization
 
             }
         });
@@ -89,6 +91,9 @@ public class ProfileActivity extends AppCompatActivity {
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
+            if (isInitializing) {
+                return;
+            }
                 hasUnsavedChanges = true;
             }
 
