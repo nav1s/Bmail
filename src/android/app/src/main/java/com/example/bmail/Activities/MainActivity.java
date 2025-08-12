@@ -180,7 +180,6 @@ public class MainActivity extends AppCompatActivity {
                         Log.e("MainActivity", "Error loading profile image", t);
                     }
                 });
-                // Update UI with user data if needed
             } else {
                 Log.w("MainActivity", "User data is null.");
             }
