@@ -231,4 +231,27 @@ public class MailApi {
         });
 
     }
+    public void deleteMail(String mailId){
+        String token = getToken();
+        Log.i("MailApi", "Deleting mail with ID: " + mailId);
+
+        Call<Void> call = webServiceApi.deleteMail("Bearer " + token, mailId);
+        call.enqueue(new Callback<>() {
+            @Override
+            public void onResponse(@NonNull Call<Void> call,
+                                   @NonNull Response<Void> response) {
+                if (response.isSuccessful()) {
+                    Log.i("MailApi", "Mail deleted successfully");
+                } else {
+                    Log.e("MailApi", "Failed to delete mail: " + response.message());
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<Void> call, @NonNull Throwable t) {
+                Log.e("MailApi", "Network error while deleting mail: " + t.getMessage());
+            }
+        });
+
+    }
 }

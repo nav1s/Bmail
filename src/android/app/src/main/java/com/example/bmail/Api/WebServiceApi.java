@@ -58,4 +58,6 @@ public interface WebServiceApi {
     @DELETE("/api/mails/{id}/labels/{labelId}")
     Call<Void> removeLabelFromMail(@Header("Authorization") String token, @Path("id") String mailId,
                                    @Path("labelId") String labelId);
+    @DELETE("/api/mails/{id}")
+    Call<Void> deleteMail(@Header("Authorization") String token, @Path("id") String mailId);
 }
