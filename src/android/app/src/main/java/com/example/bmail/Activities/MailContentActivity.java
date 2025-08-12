@@ -1,7 +1,9 @@
 package com.example.bmail.Activities;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
@@ -52,6 +54,7 @@ public class MailContentActivity extends AppCompatActivity {
         displayMailContent(mail);
         setupStarButton(mail);
         setupTrashButton(mail);
+        setupReplyButtons(mail);
     }
 
     private void setupToolbar() {
@@ -152,5 +155,71 @@ public class MailContentActivity extends AppCompatActivity {
     public boolean onSupportNavigateUp() {
         finish();
         return true;
+    }
+
+    /**
+     * Sets up the reply, reply all, and forward buttons.
+     * @param mail The email being displayed
+     */
+    private void setupReplyButtons(ServerMail mail) {
+        Button btnReply = findViewById(R.id.btn_reply);
+        Button btnReplyAll = findViewById(R.id.btn_reply_all);
+        Button btnForward = findViewById(R.id.btn_forward);
+
+        btnReply.setOnClickListener(v -> handleReply(mail, false));
+        btnReplyAll.setOnClickListener(v -> handleReply(mail, true));
+        btnForward.setOnClickListener(v -> handleForward(mail));
+    }
+
+    /**
+     * Handles reply and reply all functionality
+     * @param mail The original email
+     * @param replyAll Whether to include all recipients
+     */
+    private void handleReply(@NonNull ServerMail mail, boolean replyAll) {
+        Intent intent = new Intent(this, ComposeActivity.class);
+
+        // Set recipient to original sender
+        String recipients = mail.getFrom();
+
+        // For reply all, add all other recipients
+        if (replyAll && !mail.getTo().isEmpty()) {
+            recipients += ", " + String.join(", ", mail.getTo());
+        }
+
+        intent.putExtra("to", recipients);
+        intent.putExtra("subject", "Re: " + mail.getTitle());
+
+        // Create quoted reply format
+        String replyBody = "\n\n---------- Original Message ----------\n";
+        replyBody += "From: " + mail.getFrom() + "\n";
+        replyBody += "Subject: " + mail.getTitle() + "\n";
+        replyBody += "To: " + String.join(", ", mail.getTo()) + "\n\n";
+        replyBody += mail.getBody();
+
+        intent.putExtra("body", replyBody);
+
+        startActivity(intent);
+    }
+
+    /**
+     * Handles forward functionality
+     * @param mail The original email
+     */
+    private void handleForward(@NonNull ServerMail mail) {
+        Intent intent = new Intent(this, ComposeActivity.class);
+
+        intent.putExtra("subject", "Fwd: " + mail.getTitle());
+
+        // Create forwarded message format
+        String forwardBody = "\n\n---------- Forwarded Message ----------\n";
+        forwardBody += "From: " + mail.getFrom() + "\n";
+        forwardBody += "Subject: " + mail.getTitle() + "\n";
+        forwardBody += "To: " + String.join(", ", mail.getTo()) + "\n\n";
+        forwardBody += mail.getBody();
+
+        intent.putExtra("body", forwardBody);
+
+        startActivity(intent);
     }
 }

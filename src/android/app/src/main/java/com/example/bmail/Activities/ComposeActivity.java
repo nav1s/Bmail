@@ -38,29 +38,14 @@ public class ComposeActivity extends AppCompatActivity {
 
         initViews();
 
-        // todo move this part into a function
-        // check if we are editing a mail
-        String mailId = getIntent().getStringExtra("mail_id");
-        MailRepository mailRepository = BmailApplication.getInstance().getMailRepository();
-        if (mailId != null && !mailId.isEmpty()) {
-            ServerMail mail = mailRepository.getMailById(mailId);
-            // fill the content from the mail
-            if (mail != null) {
-                // log the mail for debugging
-                Log.d("ComposeActivity", "Editing mail: " + mail);
-
-                etTo.setText(String.join(", ", mail.getTo()));
-                etSubject.setText(mail.getTitle());
-                etMessage.setText(mail.getBody());
-                draftId = mail.getId();
-            }
-        }
-
-
+        loadMailIfEditing();
         setupViewModel();
         setupListeners();
     }
 
+    /**
+     * @brief Initializes the views used in this activity.
+     */
     private void initViews() {
         etTo = findViewById(R.id.et_to);
         etSubject = findViewById(R.id.et_subject);
@@ -68,6 +53,44 @@ public class ComposeActivity extends AppCompatActivity {
         btnSend = findViewById(R.id.btn_send);
     }
 
+    /**
+     * @brief Loads the mail content if we are editing an existing mail.
+     * If a mail ID is provided in the intent, it fetches the mail from the repository
+     * and fills the EditText fields with the mail's content.
+     */
+    private void loadMailIfEditing() {
+        // Check if we are editing a mail
+        String mailId = getIntent().getStringExtra("mail_id");
+        MailRepository mailRepository = BmailApplication.getInstance().getMailRepository();
+        if (mailId != null && !mailId.isEmpty()) {
+            ServerMail mail = mailRepository.getMailById(mailId);
+            // Fill the content from the mail
+            if (mail != null) {
+                // Log the mail for debugging
+                Log.d("ComposeActivity", "Editing mail: " + mail);
+
+                etTo.setText(String.join(", ", mail.getTo()));
+                etSubject.setText(mail.getTitle());
+                etMessage.setText(mail.getBody());
+                draftId = mail.getId();
+            }
+            return;
+        }
+
+        // If we are not editing a mail, check if we are forwarding or replying to a mail
+        String to = getIntent().getStringExtra("to");
+        String subject = getIntent().getStringExtra("subject");
+        String body = getIntent().getStringExtra("body");
+
+        if (to != null) etTo.setText(to);
+        if (subject != null) etSubject.setText(subject);
+        if (body != null) etMessage.setText(body);
+    }
+
+    /**
+     * @brief Sets up the ViewModel for this activity.
+     * This method initializes the ComposeViewModel using a factory that provides the MailRepository.
+     */
     private void setupViewModel() {
         MailRepository mailRepository = BmailApplication.getInstance().getMailRepository();
 
@@ -76,10 +99,19 @@ public class ComposeActivity extends AppCompatActivity {
                 .get(ComposeViewModel.class);
     }
 
+    /**
+     * @brief Sets up the listeners for the buttons in this activity.
+     * This method sets an OnClickListener on the send button to handle sending the mail.
+     */
     private void setupListeners() {
         btnSend.setOnClickListener(v -> sendMail());
     }
 
+    /**
+     * @brief Sends the mail or updates the draft based on the current state.
+     * If the mail is a draft, it updates the draft; otherwise, it sends the mail.
+     * If no recipient is provided, it shows an error dialog.
+     */
     private void sendMail() {
         Log.i("ComposeActivity", "Sending mail...");
 
@@ -111,9 +143,14 @@ public class ComposeActivity extends AppCompatActivity {
         finish();
     }
 
+    /**
+     * @brief Handles the back navigation in this activity.
+     * When the user presses the back button, it saves the draft if there is any content
+     * in the subject or message fields.
+     * If the draft ID is not empty, it updates the existing draft; otherwise, it creates a new draft.
+     */
     @Override
     public boolean onSupportNavigateUp() {
-        // todo update the same draft if the mail is a draft
         String to = etTo.getText().toString().trim();
         String subject = etSubject.getText().toString().trim();
         String message = etMessage.getText().toString().trim();
@@ -123,8 +160,7 @@ public class ComposeActivity extends AppCompatActivity {
             if (this.draftId != null && !this.draftId.isEmpty()) {
                 // todo check gmail behavior
                 viewModel.updateDraft(to, subject, message, this.draftId, true);
-            }
-            else {
+            } else {
                 viewModel.createDraft(to, subject, message);
                 Toast.makeText(this, R.string.message_saved_as_draft, Toast.LENGTH_SHORT).show();
             }
