@@ -3,6 +3,7 @@ package com.example.bmail.Activities;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -142,6 +143,21 @@ public class MainActivity extends AppCompatActivity {
             if (user != null) {
                 Log.i("MainActivity", "User data loaded: " + user);
                 ImageView profileImage = findViewById(R.id.profile_image);
+                viewModel.getImage(user.getImage(), new retrofit2.Callback<>() {
+                    @Override
+                    public void onResponse(@NonNull retrofit2.Call<okhttp3.ResponseBody> call, @NonNull retrofit2.Response<okhttp3.ResponseBody> response) {
+                        if (response.isSuccessful() && response.body() != null) {
+                            profileImage.setImageBitmap(BitmapFactory.decodeStream(response.body().byteStream()));
+                        } else {
+                            Log.e("MainActivity", "Failed to load profile image: " + response.message());
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(@NonNull retrofit2.Call<okhttp3.ResponseBody> call, @NonNull Throwable t) {
+                        Log.e("MainActivity", "Error loading profile image", t);
+                    }
+                });
                 // Update UI with user data if needed
             } else {
                 Log.w("MainActivity", "User data is null.");

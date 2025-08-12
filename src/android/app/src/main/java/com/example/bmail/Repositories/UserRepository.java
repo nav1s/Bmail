@@ -43,6 +43,9 @@ public class UserRepository {
         return userData;
     }
 
+    public void getImage(String url, retrofit2.Callback<okhttp3.ResponseBody> callback) {
+        userApi.getImage(url, callback);
+    }
 
 
 }

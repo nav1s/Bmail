@@ -11,6 +11,7 @@ import com.example.bmail.Entities.User;
 
 import java.util.List;
 
+import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.DELETE;
@@ -21,6 +22,9 @@ import retrofit2.http.POST;
 import retrofit2.http.Path;
 
 public interface WebServiceApi {
+    @GET
+    Call<ResponseBody> downloadImage(@Header("Authorization") String token,
+                                       @Path("url") String url);
     @POST("api/users")
     Call<Void> signup(@Body SignupRequest request);
     @GET("api/users/{id}")

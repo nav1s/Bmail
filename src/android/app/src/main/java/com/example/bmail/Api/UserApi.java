@@ -68,4 +68,12 @@ public class UserApi {
         });
     }
 
+    public void getImage(String url, retrofit2.Callback<okhttp3.ResponseBody> callback) {
+        String token = getToken();
+        Call<okhttp3.ResponseBody> call = webServiceApi.downloadImage(token, url);
+        call.enqueue(callback);
+
+    }
+
+
 }

@@ -53,4 +53,8 @@ public class MainActivityViewModel extends androidx.lifecycle.ViewModel {
         userRepository.loadUserDetails();
     }
 
+    public void getImage(String url, retrofit2.Callback<okhttp3.ResponseBody> callback) {
+        userRepository.getImage(url, callback);
+    }
+
 }
