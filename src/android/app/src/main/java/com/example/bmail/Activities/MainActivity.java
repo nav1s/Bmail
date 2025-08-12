@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.Editable;
+import android.text.InputType;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.Menu;
@@ -283,10 +284,10 @@ public class MainActivity extends AppCompatActivity {
         builder.setTitle("Add Label");
 
         // Set up the input
-        final EditText input = new EditText(this);
-        input.setHint("Label name");
-        input.setPadding(8, 8, 8, 8);
-        builder.setView(input);
+        // Inflate the custom layout
+        View viewInflated = View.inflate(this, R.layout.dialog_add_label, null);
+        final EditText input = viewInflated.findViewById(R.id.edit_label);
+        builder.setView(viewInflated);
 
         // Set up the buttons
         builder.setPositiveButton("Add", (dialog, which) -> {

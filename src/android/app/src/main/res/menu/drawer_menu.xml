@@ -55,12 +55,6 @@
             android:title="@string/labels"
             android:enabled="false"
             app:actionLayout="@layout/label_plus_button" />
-        <item
-            android:orderInCategory="9"
-            android:title="bar"
-            android:icon="@drawable/ic_label"
-            app:actionLayout="@layout/label_button"
-            />
 
     </group>
 
