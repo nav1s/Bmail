@@ -1,49 +1,51 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <group android:id="@+id/group_main" android:checkableBehavior="single">
+    <group
+        android:id="@+id/group_main"
+        android:checkableBehavior="single">
         <item
             android:id="@+id/nav_inbox"
-            android:title="@string/inbox"
+            android:checked="true"
             android:icon="@android:drawable/ic_dialog_email"
             android:orderInCategory="1"
-            android:checked="true" />
+            android:title="@string/inbox" />
 
         <item
             android:id="@+id/nav_starred"
-            android:title="@string/starred"
+            android:icon="@android:drawable/btn_star_big_on"
             android:orderInCategory="2"
-            android:icon="@android:drawable/btn_star_big_on" />
+            android:title="@string/starred" />
 
         <item
             android:id="@+id/nav_sent"
+            android:icon="@android:drawable/ic_menu_send"
             android:orderInCategory="3"
-            android:title="@string/sent"
-            android:icon="@android:drawable/ic_menu_send" />
+            android:title="@string/sent" />
 
         <item
             android:id="@+id/nav_drafts"
+            android:icon="@android:drawable/ic_menu_edit"
             android:orderInCategory="4"
-            android:title="@string/drafts"
-            android:icon="@android:drawable/ic_menu_edit" />
+            android:title="@string/drafts" />
 
         <item
             android:id="@+id/nav_spam"
+            android:icon="@android:drawable/ic_delete"
             android:orderInCategory="5"
-            android:title="@string/spam"
-            android:icon="@android:drawable/ic_delete" />
+            android:title="@string/spam" />
 
         <item
             android:id="@+id/nav_trash"
+            android:icon="@android:drawable/ic_menu_delete"
             android:orderInCategory="6"
-            android:title="@string/trash"
-            android:icon="@android:drawable/ic_menu_delete" />
+            android:title="@string/trash" />
 
         <item
             android:id="@+id/nav_all_mail"
+            android:icon="@drawable/ic_folder"
             android:orderInCategory="7"
-            android:title="@string/all_mail"
-            android:icon="@drawable/ic_folder" />
+            android:title="@string/all_mail" />
 
     </group>
     <group android:id="@+id/nav_custom_labels">
@@ -51,21 +53,15 @@
             android:id="@+id/nav_labels"
             android:orderInCategory="8"
             android:title="@string/labels"
-            app:actionLayout="@layout/label_button"
-            >
-            <menu>
-                <item
-                    android:title="foo"
-                    app:actionLayout="@layout/label_button"
-                    />
-                <item
-                    android:title="bar"
-                    app:actionLayout="@layout/label_button"
-                    />
-
-            </menu>
-
-        </item>
+            app:actionLayout="@layout/label_plus_button" />
+        <item
+            android:title="foo"
+            android:orderInCategory="9"
+            app:actionLayout="@layout/label_button" />
+        <item
+            android:title="bar"
+            android:orderInCategory="10"
+            app:actionLayout="@layout/label_button" />
 
 
     </group>
