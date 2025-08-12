@@ -19,7 +19,9 @@ import com.example.bmail.R;
 import com.example.bmail.Repositories.LabelRepository;
 import com.example.bmail.Repositories.MailRepository;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class MailContentActivity extends AppCompatActivity {
     boolean isStarred = false;
@@ -179,13 +181,19 @@ public class MailContentActivity extends AppCompatActivity {
     private void handleReply(@NonNull ServerMail mail, boolean replyAll) {
         Intent intent = new Intent(this, ComposeActivity.class);
 
-        // Set recipient to original sender
-        String recipients = mail.getFrom();
+        // Create a set to ensure no duplicate emails
+        Set<String> recipientSet = new HashSet<>();
 
-        // For reply all, add all other recipients
+        // Add original sender
+        recipientSet.add(mail.getFrom());
+
+        // For reply all, add all original recipients
         if (replyAll && !mail.getTo().isEmpty()) {
-            recipients += ", " + String.join(", ", mail.getTo());
+            recipientSet.addAll(mail.getTo());
         }
+
+        // Convert set to comma-separated string (excluding the first email which is already set)
+        String recipients = String.join(", ", recipientSet);
 
         intent.putExtra("to", recipients);
         intent.putExtra("subject", "Re: " + mail.getTitle());
