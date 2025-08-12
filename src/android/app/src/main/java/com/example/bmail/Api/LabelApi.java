@@ -8,7 +8,7 @@ import androidx.annotation.NonNull;
 import androidx.lifecycle.MutableLiveData;
 
 import com.example.bmail.Entities.Label;
-import com.example.bmail.Entities.LabelRequest;
+import com.example.bmail.Entities.CreateLabelRequest;
 import com.example.bmail.R;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -83,7 +83,7 @@ public class LabelApi {
     }
 
 
-    public void createLabel(LabelRequest labelRequest, retrofit2.Callback<Void> callback) {
+    public void createLabel(CreateLabelRequest labelRequest, retrofit2.Callback<Void> callback) {
         String token = getToken();
         Log.i(TAG, "Creating label with token: " + token);
         Call<Void> call = webServiceApi.createLabel(BEARER_PREFIX + token, labelRequest);

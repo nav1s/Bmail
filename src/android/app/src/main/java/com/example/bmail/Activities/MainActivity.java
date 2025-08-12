@@ -152,6 +152,7 @@ public class MainActivity extends AppCompatActivity {
                 btnProfile.setImageBitmap(image);
             } else {
                 Log.w("MainActivity", "User image is null, using default image.");
+                btnProfile.setImageResource(R.drawable.ic_person);
             }
         });
     }

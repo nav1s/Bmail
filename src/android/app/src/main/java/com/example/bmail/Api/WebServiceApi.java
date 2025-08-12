@@ -1,7 +1,8 @@
 package com.example.bmail.Api;
 
+import com.example.bmail.Entities.AttachLabelRequest;
 import com.example.bmail.Entities.ClientMail;
-import com.example.bmail.Entities.LabelRequest;
+import com.example.bmail.Entities.CreateLabelRequest;
 import com.example.bmail.Entities.LoginRequest;
 import com.example.bmail.Entities.LoginResponse;
 import com.example.bmail.Entities.ServerMail;
@@ -52,11 +53,11 @@ public interface WebServiceApi {
     @GET("/api/labels")
     Call <List<Label>> getLabels(@Header("Authorization") String token);
     @POST("/api/labels")
-    Call<Void> createLabel(@Header("Authorization") String token, @Body LabelRequest request);
+    Call<Void> createLabel(@Header("Authorization") String token, @Body CreateLabelRequest request);
 
     @POST("/api/mails/{id}/labels")
     Call<Void> addLabelToMail(@Header("Authorization") String token, @Path("id") String mailId,
-                              @Body LabelRequest request);
+                              @Body AttachLabelRequest request);
     @DELETE("/api/mails/{id}/labels/{labelId}")
     Call<Void> removeLabelFromMail(@Header("Authorization") String token, @Path("id") String mailId,
                                    @Path("labelId") String labelId);

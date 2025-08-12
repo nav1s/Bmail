@@ -9,7 +9,7 @@ import androidx.lifecycle.MutableLiveData;
 
 import com.example.bmail.Api.LabelApi;
 import com.example.bmail.Entities.Label;
-import com.example.bmail.Entities.LabelRequest;
+import com.example.bmail.Entities.CreateLabelRequest;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -48,7 +48,7 @@ public class LabelRepository {
     }
 
     public void createLabel(String name, retrofit2.Callback<Void> callback) {
-        LabelRequest labelRequest = new LabelRequest(name);
+        CreateLabelRequest labelRequest = new CreateLabelRequest(name);
         labelApi.createLabel(labelRequest, callback);
     }
 

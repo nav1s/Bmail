@@ -2,11 +2,11 @@ package com.example.bmail.Entities;
 
 import com.google.gson.annotations.Expose;
 
-public class LabelRequest {
+public class CreateLabelRequest {
     @Expose
     private String name;
 
-    public LabelRequest(String name) {
+    public CreateLabelRequest(String name) {
         this.name = name;
     }
 
