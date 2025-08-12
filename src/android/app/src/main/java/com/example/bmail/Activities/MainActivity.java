@@ -11,6 +11,7 @@ import android.view.Menu;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -140,6 +141,7 @@ public class MainActivity extends AppCompatActivity {
         viewModel.getUserData().observe(this, user -> {
             if (user != null) {
                 Log.i("MainActivity", "User data loaded: " + user);
+                ImageView profileImage = findViewById(R.id.profile_image);
                 // Update UI with user data if needed
             } else {
                 Log.w("MainActivity", "User data is null.");
