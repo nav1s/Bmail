@@ -334,9 +334,11 @@ public class MailContentActivity extends AppCompatActivity {
                         if (checkedItems[i] && !hasLabel) {
                             // Add the label
                             mailRepository.addLabelToMail(mail.getId(), labelId);
+                            mail.getLabels().add(labelId);
                         } else if (!checkedItems[i] && hasLabel) {
                             // Remove the label
                             mailRepository.removeLabelFromMail(mail.getId(), labelId);
+                            mail.getLabels().remove(labelId);
                         }
                     }
                 }
