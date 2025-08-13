@@ -251,7 +251,17 @@ public class MainActivity extends AppCompatActivity {
                 Log.w("MailActivity", "Labels are null, cannot setup custom labels.");
                 return;
             }
-            // todo delete existing custom labels
+            // Delete existing custom labels
+            // Iterate backwards to avoid index issues when removing items
+            for (int i = menu.size() - 1; i >= 0; i--) {
+                MenuItem item = menu.getItem(i);
+                if (item.getGroupId() == R.id.nav_custom_labels && item.getItemId() != R.id.nav_labels) {
+                    menu.removeItem(item.getItemId());
+                }
+            }
+
+            // Reset the label counter
+            this.labelCounter = 9;
 
             Log.i("MailActivity", "Labels loaded: " + labels.size());
             for (Label label : labels) {
@@ -307,6 +317,7 @@ public class MainActivity extends AppCompatActivity {
 
     /**
      * Add a new label to the system
+     *
      * @param labelName The name of the new label
      */
     private void addNewLabel(String labelName) {
@@ -334,6 +345,7 @@ public class MainActivity extends AppCompatActivity {
 
     /**
      * Show a dialog to confirm deletion of a label
+     *
      * @param label The label to delete
      */
     private void showDeleteLabelDialog(@NonNull Label label) {
@@ -364,6 +376,7 @@ public class MainActivity extends AppCompatActivity {
                 .setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss())
                 .show();
     }
+
     /**
      * @brief Show a dialog to confirm logout.
      * If confirmed, clears user preferences and redirects to the login activity.
@@ -407,7 +420,7 @@ public class MainActivity extends AppCompatActivity {
         if (clickedMail.getDraft()) {
             Log.i("MailActivity", "Clicked mail is a draft, opening ComposeActivity.");
             intent = new Intent(this, ComposeActivity.class);
-        } else{
+        } else {
             Log.i("MailActivity", "Clicked mail is not a draft, opening MailContentActivity.");
             intent = new Intent(this, MailContentActivity.class);
         }
