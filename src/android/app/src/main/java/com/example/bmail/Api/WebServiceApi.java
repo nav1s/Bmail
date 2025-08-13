@@ -7,19 +7,22 @@ import com.example.bmail.Entities.LoginRequest;
 import com.example.bmail.Entities.LoginResponse;
 import com.example.bmail.Entities.ServerMail;
 import com.example.bmail.Entities.Label;
-import com.example.bmail.Entities.SignupRequest;
 import com.example.bmail.Entities.User;
 
 import java.util.List;
 
+import okhttp3.MultipartBody;
+import okhttp3.RequestBody;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.DELETE;
 import retrofit2.http.GET;
 import retrofit2.http.Header;
+import retrofit2.http.Multipart;
 import retrofit2.http.PATCH;
 import retrofit2.http.POST;
+import retrofit2.http.Part;
 import retrofit2.http.Path;
 import retrofit2.http.Url;
 
@@ -27,8 +30,15 @@ public interface WebServiceApi {
     @GET
     Call<ResponseBody> downloadImage(@Header("Authorization") String token,
                                        @Url String url);
+
+    @Multipart
     @POST("/api/users")
-    Call<Void> signup(@Body SignupRequest request);
+    Call<Void> signup(@Part("firstName") RequestBody firstName,
+                              @Part("lastName") RequestBody lastName,
+                              @Part("username") RequestBody username,
+                              @Part("password") RequestBody password,
+                              @Part MultipartBody.Part image);
+
     @GET("/api/users/{id}")
     Call<User> getUserDetails(@Header("Authorization") String token, @Path("id") String userId);
 

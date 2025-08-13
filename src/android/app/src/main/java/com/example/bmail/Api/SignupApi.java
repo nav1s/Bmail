@@ -1,15 +1,25 @@
 package com.example.bmail.Api;
 
+import android.content.ContentResolver;
 import android.content.Context;
+
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.RequestBody;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.example.bmail.Entities.LoginRequest;
 import com.example.bmail.Entities.LoginResponse;
-import com.example.bmail.Entities.SignupRequest;
 import com.example.bmail.R;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 
 import retrofit2.Call;
 import retrofit2.Response;
@@ -68,11 +78,13 @@ public class SignupApi {
         });
     }
 
-    public void signup(String firstName, String lastName, String username,
-                       String password, callback signupCallback) {
-        SignupRequest request = new SignupRequest(firstName, lastName, username, password, null);
+    public void signup(RequestBody firstName, RequestBody lastName,
+                        RequestBody username, RequestBody password, String imageUri,
+                       callback signupCallback) {
 
-        Call<Void> call = webServiceApi.signup(request);
+        MultipartBody.Part image = createImagePart(imageUri);
+        Call<Void> call = webServiceApi.signup(firstName,
+                lastName, username, password, image);
         call.enqueue(new retrofit2.Callback<>() {
             @Override
             public void onResponse(@NonNull Call<Void> call, @NonNull Response<Void> response) {
@@ -95,6 +107,42 @@ public class SignupApi {
         });
     }
 
+    private MultipartBody.Part createImagePart(String imageUri) {
+
+        // Handle the image file
+        MultipartBody.Part imagePart;
+        if (imageUri != null && !imageUri.isEmpty()) {
+            try {
+                Uri uri = Uri.parse(imageUri);
+                byte[] imageBytes = getBytesFromUri(uri);
+                if (imageBytes != null) {
+                    RequestBody imageBody = RequestBody.create(imageBytes, MediaType.parse("image/*"));
+                    imagePart = MultipartBody.Part.createFormData("image", "profile_image.jpg", imageBody);
+                    return imagePart;
+                }
+            } catch (IOException e) {
+                Log.e(TAG, "Error reading image file", e);
+            }
+        }
+        return null;
+    }
+
+    @Nullable
+    private byte[] getBytesFromUri(Uri uri) throws IOException {
+        ContentResolver contentResolver = context.getContentResolver();
+        try (InputStream inputStream = contentResolver.openInputStream(uri)) {
+            if (inputStream == null) return null;
+
+            ByteArrayOutputStream byteBuffer = new ByteArrayOutputStream();
+            int bufferSize = 1024;
+            byte[] buffer = new byte[bufferSize];
+            int len;
+            while ((len = inputStream.read(buffer)) != -1) {
+                byteBuffer.write(buffer, 0, len);
+            }
+            return byteBuffer.toByteArray();
+        }
+    }
     private void saveToken(String token) {
         SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();

@@ -1,9 +1,18 @@
 package com.example.bmail.ViewModels;
 
+import android.util.Log;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.example.bmail.Api.SignupApi;
+
+import java.io.IOException;
+import java.io.InputStream;
+
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.RequestBody;
 
 // todo check whether this class need to extend ViewModel or not
 public class SignupViewModel {
@@ -63,10 +72,19 @@ public class SignupViewModel {
     }
 
     public void signup(@NonNull String firstName, @NonNull String lastName,
-                        @NonNull String username, @NonNull String password,
+                        @NonNull String username, @NonNull String password, @NonNull String imageUri,
                        SignupApi.callback signupCallback
                        ) {
-        userApi.signup(firstName, lastName, username, password, signupCallback);
+
+        // Create RequestBody instances from strings
+        RequestBody firstNameBody = RequestBody.create(firstName, MediaType.parse("text/plain"));
+        RequestBody lastNameBody = RequestBody.create(lastName, MediaType.parse("text/plain"));
+        RequestBody usernameBody = RequestBody.create(username, MediaType.parse("text/plain"));
+        RequestBody passwordBody = RequestBody.create(password, MediaType.parse("text/plain"));
+
+        userApi.signup(firstNameBody, lastNameBody, usernameBody,
+                passwordBody, imageUri, signupCallback);
     }
+
 
 }

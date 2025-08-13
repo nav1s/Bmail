@@ -22,6 +22,7 @@ import com.example.bmail.ViewModels.SignupViewModel;
 
 public class SignupActivity extends AppCompatActivity implements SignupApi.callback {
     private ImageView profileImageView;
+    private String profileImagePath = null; // Path to the selected profile image
     private SignupViewModel viewModel;
 
     private EditText firstNameET;
@@ -39,9 +40,11 @@ public class SignupActivity extends AppCompatActivity implements SignupApi.callb
             Uri selectedImageUri = result.getData().getData();
             Log.i("SignupActivity", "Selected Image URI: " + selectedImageUri);
             if (selectedImageUri != null) {
+                profileImagePath = selectedImageUri.toString(); // Store the image path
                 profileImageView.setImageURI(selectedImageUri);
             } else {
                 Log.e("SignupActivity", "Selected image URI is null");
+                profileImagePath = null; // Reset if no image is selected
             }
         }
     });
@@ -110,7 +113,8 @@ public class SignupActivity extends AppCompatActivity implements SignupApi.callb
         }
 
         // otherwise, proceed with signup
-        viewModel.signup(firstName, lastName, username, password, this);
+        viewModel.signup(firstName, lastName, username, password, profileImagePath,
+                this);
 
 
     }
