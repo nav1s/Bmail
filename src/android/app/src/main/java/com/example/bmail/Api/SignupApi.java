@@ -48,6 +48,12 @@ public class SignupApi {
         webServiceApi = retrofit.create(WebServiceApi.class);
     }
 
+    /**
+     * @brief Logs in a user with the provided username and password.
+     * @param username the username of the user
+     * @param password the password of the user
+     * @param loginCallback the callback to handle the login result
+     */
     public void login(String username, String password, callback loginCallback) {
         LoginRequest request = new LoginRequest(username, password);
         Call<LoginResponse> call = webServiceApi.login(request);
@@ -78,6 +84,15 @@ public class SignupApi {
         });
     }
 
+    /**
+     * @brief Signs up a new user with the provided details.
+     * @param firstName the first name of the user
+     * @param lastName the last name of the user
+     * @param username the username for the new account
+     * @param password the password for the new account
+     * @param imageUri the URI of the profile image to upload
+     * @param signupCallback the callback to handle the signup result
+     */
     public void signup(RequestBody firstName, RequestBody lastName,
                         RequestBody username, RequestBody password, String imageUri,
                        callback signupCallback) {
@@ -107,6 +122,11 @@ public class SignupApi {
         });
     }
 
+    /**
+     * @brief Creates a MultipartBody.Part for the image file.
+     * @param imageUri The URI of the image file.
+     * @return A MultipartBody.Part containing the image data, or null if the imageUri is empty or invalid.
+     */
     private MultipartBody.Part createImagePart(String imageUri) {
 
         // Handle the image file
@@ -127,6 +147,12 @@ public class SignupApi {
         return null;
     }
 
+    /**
+     * @brief Reads bytes from a URI and returns them as a byte array.
+     * @param uri The URI to read from.
+     * @return A byte array containing the data from the URI, or null if an error occurs.
+     * @throws IOException If an error occurs while reading from the URI.
+     */
     @Nullable
     private byte[] getBytesFromUri(Uri uri) throws IOException {
         ContentResolver contentResolver = context.getContentResolver();
@@ -143,6 +169,11 @@ public class SignupApi {
             return byteBuffer.toByteArray();
         }
     }
+
+    /**
+     * @brief Saves the authentication token in SharedPreferences.
+     * @param token The authentication token to save.
+     */
     private void saveToken(String token) {
         SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
@@ -150,6 +181,10 @@ public class SignupApi {
         editor.apply();
     }
 
+    /**
+     * @brief Saves the user ID in SharedPreferences.
+     * @param userId The user ID to save.
+     */
     private void saveUserId(String userId) {
         SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
