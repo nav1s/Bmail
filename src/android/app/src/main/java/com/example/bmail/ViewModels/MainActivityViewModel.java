@@ -70,4 +70,8 @@ public class MainActivityViewModel extends androidx.lifecycle.ViewModel {
         labelRepository.createLabel(name, callback);
     }
 
+    public void deleteLabel(String labelId, retrofit2.Callback<Void> callback) {
+        labelRepository.deleteLabel(labelId, callback);
+    }
+
 }

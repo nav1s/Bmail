@@ -52,4 +52,8 @@ public class LabelRepository {
         labelApi.createLabel(labelRequest, callback);
     }
 
+    public void deleteLabel(String labelId, retrofit2.Callback<Void> callback) {
+        labelApi.deleteLabel(labelId, callback);
+    }
+
 }

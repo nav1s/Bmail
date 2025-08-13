@@ -90,4 +90,11 @@ public class LabelApi {
         call.enqueue(callback);
     }
 
+    public void deleteLabel(String labelId, retrofit2.Callback<Void> callback) {
+        String token = getToken();
+        Log.i(TAG, "Deleting label with ID: " + labelId + " using token: " + token);
+        Call<Void> call = webServiceApi.deleteLabel(BEARER_PREFIX + token, labelId);
+        call.enqueue(callback);
+    }
+
 }

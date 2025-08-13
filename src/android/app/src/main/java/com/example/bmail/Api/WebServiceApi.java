@@ -64,6 +64,8 @@ public interface WebServiceApi {
     Call <List<Label>> getLabels(@Header("Authorization") String token);
     @POST("/api/labels")
     Call<Void> createLabel(@Header("Authorization") String token, @Body CreateLabelRequest request);
+    @DELETE("/api/labels/{id}")
+    Call<Void> deleteLabel(@Header("Authorization") String token, @Path("id") String labelId);
 
     @POST("/api/mails/{id}/labels")
     Call<Void> addLabelToMail(@Header("Authorization") String token, @Path("id") String mailId,

@@ -251,17 +251,13 @@ public class MainActivity extends AppCompatActivity {
                 Log.w("MailActivity", "Labels are null, cannot setup custom labels.");
                 return;
             }
+            // todo delete existing custom labels
 
             Log.i("MailActivity", "Labels loaded: " + labels.size());
             for (Label label : labels) {
                 if (!label.isDefault()) {
                     Log.i("MailActivity", "Found non default: " + label.getName());
                     Log.i("MailActivity", "Adding custom label to menu: " + label.getName());
-
-                    // Skip if the label already exists
-                    if (LabelExists(label.getName(), menu)) {
-                        continue;
-                    }
 
                     MenuItem labelItem = menu.add(R.id.nav_custom_labels, this.labelCounter,
                                     this.labelCounter, label.getName())
@@ -282,28 +278,6 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
-    }
-
-    private boolean LabelExists(String labelName, @NonNull Menu menu) {
-        for (int i = 0; i <= menu.size() - 1; i++) {
-            MenuItem item = menu.getItem(i);
-
-            // Skip if item is null
-            if (item == null) {
-                continue;
-            }
-            // Skip if title is null
-            if (item.getTitle() == null) {
-                continue;
-            }
-
-            // return true if the label exists
-            if (item.getTitle().toString().equals(labelName)) {
-                return true;
-            }
-        }
-        // Label does not exist
-        return false;
     }
 
     /**
@@ -367,7 +341,24 @@ public class MainActivity extends AppCompatActivity {
                 .setTitle("Delete Label")
                 .setMessage("Are you sure you want to delete the label '" + label.getName() + "'?")
                 .setPositiveButton("Delete", (dialog, which) -> {
-//                    viewModel.deleteLabel(label.getId());
+                    viewModel.deleteLabel(label.getId(), new retrofit2.Callback<>() {
+                        @Override
+                        public void onResponse(@NonNull retrofit2.Call<Void> call, @NonNull retrofit2.Response<Void> response) {
+                            if (response.isSuccessful()) {
+                                Log.i("MainActivity", "Label deleted successfully: " + label.getName());
+                                Toast.makeText(MainActivity.this, "Label deleted: " + label.getName(), Toast.LENGTH_SHORT).show();
+                                viewModel.loadLabels();
+                            } else {
+                                Log.e("MainActivity", "Failed to delete label: " + response.message());
+                            }
+                        }
+
+                        @Override
+                        public void onFailure(@NonNull retrofit2.Call<Void> call, @NonNull Throwable t) {
+                            Log.e("MainActivity", "Network Error: ", t);
+                            Toast.makeText(MainActivity.this, "Network Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                        }
+                    });
                     dialog.dismiss();
                 })
                 .setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss())
