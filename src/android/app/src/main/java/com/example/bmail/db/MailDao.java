@@ -3,6 +3,7 @@ package com.example.bmail.db;
 import androidx.room.Dao;
 import androidx.room.Delete;
 import androidx.room.Insert;
+import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
 import androidx.room.Update;
 
@@ -17,12 +18,8 @@ public interface MailDao {
     @Query("SELECT * from ServerMail WHERE id = :id")
     ServerMail getById(String id);
 
-    @Insert
-    void insert(ServerMail mail);
     @Update
     void update(ServerMail mail);
-    @Delete
-    void delete(ServerMail mail);
 
     @Query("DELETE FROM ServerMail WHERE id = :id")
     void deleteById(String id);
@@ -30,7 +27,7 @@ public interface MailDao {
     @Query("DELETE FROM ServerMail")
     void clear();
 
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insertList(List<ServerMail> mails);
 
     @Query("UPDATE ServerMail SET labels = :labels WHERE id = :mailId")

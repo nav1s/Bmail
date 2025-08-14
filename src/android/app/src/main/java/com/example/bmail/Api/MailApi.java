@@ -17,7 +17,6 @@ import com.google.gson.GsonBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -70,29 +69,32 @@ public class MailApi {
                     public void onResponse(@NonNull Call<List<ServerMail>> call,
                                            @NonNull Response<List<ServerMail>> response) {
                         new Thread(() -> {
-                            if (response.isSuccessful() && response.body() != null) {
-                                Log.i("MailApi", "Fetched mails successfully");
-                                // log the response body size
-                                // log the first mail if available
-                                List<ServerMail> mails = response.body();
-                                // log the mails fetched
-                                Log.i("MailApi", "Mails fetched: " + mails.size());
-                                // log the first mail's title if available
-                                if (!mails.isEmpty()) {
-                                    Log.i("MailApi", "First mail: " + mails.get(0));
-                                }
-                                // Clear the existing mails in the database
-                                mailDao.clear();
-                                mailDao.insertList(mails);
-
-                                List<ServerMail> dbMails = mailDao.getAllMails();
-                                mailListData.postValue(dbMails);
-                                // log the number of mails fetched
-                                Log.i("MailApi", "Number of mails fetched: " + mails.size());
-                            } else {
-                                Log.e("MailApi", "Failed to fetch mails: " + response.message());
+                            if (response == null) {
+                                Log.e("MailApi", "Response is null");
                                 mailListData.postValue(null);
+                                return;
                             }
+                            if (response.body() == null) {
+                                Log.e("MailApi", "Response body is null");
+                                mailListData.postValue(null);
+                                return;
+                            }
+                            Log.i("MailApi", "Fetched mails successfully");
+                            // log the response body size
+                            // log the first mail if available
+                            List<ServerMail> mails = response.body();
+                            // log the first mail's title if available
+                            if (!mails.isEmpty()) {
+                                Log.i("MailApi", "First mail: " + mails.get(0));
+                            }
+                            // Clear the existing mails in the database
+                            mailDao.clear();
+                            mailDao.insertList(mails);
+
+                            List<ServerMail> dbMails = mailDao.getAllMails();
+                            mailListData.postValue(dbMails);
+                            // log the number of mails fetched
+                            Log.i("MailApi", "Number of mails fetched: " + mails.size());
                         }).start();
 
                     }
@@ -107,6 +109,7 @@ public class MailApi {
         );
 
     }
+
     public void sendMail(ClientMail mail) {
         String token = getToken();
         Log.i("MailApi", "Sending mail with token: " + token);
@@ -136,7 +139,7 @@ public class MailApi {
     public void updateDraft(ServerMail mail, String mailId) {
         String token = getToken();
         Log.i("MailApi", "Updating draft with token: " + token);
-        Call <Void> call = webServiceApi.updateDraft("Bearer " + token, mail, mailId);
+        Call<Void> call = webServiceApi.updateDraft("Bearer " + token, mail, mailId);
         call.enqueue(new Callback<>() {
             @Override
             public void onResponse(@NonNull Call<Void> call,
@@ -214,7 +217,7 @@ public class MailApi {
                 } else {
                     Log.e("MailApi", "Failed to add label: " + response.message());
                     // get the error message from the response body
-                    try(okhttp3.ResponseBody errorBody = response.errorBody()) {
+                    try (okhttp3.ResponseBody errorBody = response.errorBody()) {
                         Log.e("MailApi", "Error body: " + errorBody);
                     } catch (Exception e) {
                         Log.e("MailApi", "Error reading error body: " + e.getMessage());
@@ -253,7 +256,8 @@ public class MailApi {
                             mailListData.postValue(updatedMails);
                             Log.i("MailApi", "Label removed from local database");
                         }
-                    }).start();                } else {
+                    }).start();
+                } else {
                     Log.e("MailApi", "Failed to remove label: " + response.message());
                 }
             }
@@ -265,7 +269,8 @@ public class MailApi {
         });
 
     }
-    public void deleteMail(String mailId){
+
+    public void deleteMail(String mailId) {
         String token = getToken();
         Log.i("MailApi", "Deleting mail with ID: " + mailId);
 
