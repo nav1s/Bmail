@@ -17,6 +17,7 @@ import com.google.gson.GsonBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -54,13 +55,14 @@ public class MailApi {
         return prefs.getString("auth_token", null);
     }
 
-    public void reload(String label) {
+    public void reload(@NonNull String label) {
         String token = getToken();
         Log.i("MailApi", "Token: " + token);
         // log the label being fetched
         Log.i("MailApi", "Fetching mails for label: " + label);
 
-        Call<List<ServerMail>> call = webServiceApi.getMails("Bearer " + token, label);
+        Call<List<ServerMail>> call = webServiceApi.getMails("Bearer " + token,
+                label.toLowerCase());
         call.enqueue(
                 new Callback<>() {
 
