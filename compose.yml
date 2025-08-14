@@ -2,6 +2,8 @@
 services:
   mongo:
     image: mongo:8-noble
+    # mutes logs spam by mongo
+    command: ["mongod", "--quiet", "--logpath", "/dev/null", "--auth", "--bind_ip_all"]
     container_name: mongo
     hostname: mongo
     ports:
@@ -37,6 +39,10 @@ services:
     ports:
       - "8080:8080"
     restart: "no"
+    env_file:
+      - ./src/webServer/.env.prod
+    environment:
+      - NODE_ENV=prod
     command: bash -c "
               cd /app/src/webServer && \
               npm install && \
@@ -46,8 +52,11 @@ services:
     depends_on:
       bloom-filter:
         condition: service_healthy
+      mongo:
+        condition: service_started
     networks:
       - bmail
+
 
   bloom-filter:
     build:
