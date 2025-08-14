@@ -69,11 +69,6 @@ public class MailApi {
                     public void onResponse(@NonNull Call<List<ServerMail>> call,
                                            @NonNull Response<List<ServerMail>> response) {
                         new Thread(() -> {
-                            if (response == null) {
-                                Log.e("MailApi", "Response is null");
-                                mailListData.postValue(null);
-                                return;
-                            }
                             if (response.body() == null) {
                                 Log.e("MailApi", "Response body is null");
                                 mailListData.postValue(null);
