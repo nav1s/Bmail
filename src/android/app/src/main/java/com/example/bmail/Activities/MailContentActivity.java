@@ -331,6 +331,7 @@ public class MailContentActivity extends AppCompatActivity {
                         String labelId = userLabels.get(i).getId();
                         boolean hasLabel = currentLabels.contains(labelId);
 
+                        // todo check if we can do it in one call
                         if (checkedItems[i] && !hasLabel) {
                             // Add the label
                             mailRepository.addLabelToMail(mail.getId(), labelId);

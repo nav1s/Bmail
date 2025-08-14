@@ -2,8 +2,7 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    >
+    android:layout_height="match_parent">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -16,32 +15,31 @@
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             android:elevation="4dp"
-            app:title="Profile"
-            app:navigationIcon="?attr/homeAsUpIndicator" />
+            app:navigationIcon="?attr/homeAsUpIndicator"
+            app:title="Profile" />
 
         <!-- Profile Picture Section -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="24dp"
+            android:layout_marginTop="8dp"
             android:gravity="center"
-            android:layout_marginTop="8dp">
+            android:orientation="vertical"
+            android:padding="24dp">
 
             <androidx.cardview.widget.CardView
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
-                app:cardCornerRadius="1024dp"
-                >
+                app:cardCornerRadius="1024dp">
 
                 <ImageView
                     android:id="@+id/profile_image"
                     android:layout_width="120dp"
                     android:layout_height="120dp"
                     android:background="#a2c4fd"
+                    android:contentDescription="@string/profile_picture"
                     android:scaleType="centerCrop"
-                    android:src="@drawable/ic_person"
-                    android:contentDescription="@string/profile_picture" />
+                    android:src="@drawable/ic_person" />
 
             </androidx.cardview.widget.CardView>
 
@@ -49,14 +47,14 @@
                 android:id="@+id/change_photo_text"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/change_photo"
-                android:textSize="14sp"
                 android:layout_marginTop="8dp"
+                android:background="?android:attr/selectableItemBackground"
                 android:clickable="true"
                 android:focusable="true"
                 android:padding="8dp"
-                android:background="?android:attr/selectableItemBackground"
-                android:textColor="@android:color/holo_blue_dark" />
+                android:text="@string/change_photo"
+                android:textColor="@android:color/holo_blue_dark"
+                android:textSize="14sp" />
 
         </LinearLayout>
 
@@ -64,84 +62,109 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
             android:layout_marginTop="8dp"
+            android:orientation="vertical"
             android:padding="16dp">
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
                 android:text="@string/personal_information"
                 android:textSize="16sp"
-                android:textStyle="bold"
-                android:layout_marginBottom="16dp" />
+                android:textStyle="bold" />
 
             <!-- First Name -->
             <com.google.android.material.textfield.TextInputLayout
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="8dp"
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+                android:layout_marginBottom="8dp">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/first_name_edit_text"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:autofillHints="name"
                     android:hint="@string/first_name"
-                    android:inputType="textPersonName"
-                    android:autofillHints="name" />
+                    android:inputType="textPersonName" />
 
             </com.google.android.material.textfield.TextInputLayout>
 
             <!-- Last Name -->
             <com.google.android.material.textfield.TextInputLayout
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="8dp"
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+                android:layout_marginBottom="8dp">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/last_name_edit_text"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:autofillHints="name"
                     android:hint="@string/last_name"
-                    android:inputType="textPersonName"
-                    android:autofillHints="name" />
+                    android:inputType="textPersonName" />
 
             </com.google.android.material.textfield.TextInputLayout>
 
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:layout_marginStart="8dp"
+                android:gravity="center_vertical"
+                android:clickable="true"
+                android:focusable="true"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/dark_mode"
+                    android:textSize="16sp" />
+
+                <com.google.android.material.switchmaterial.SwitchMaterial
+                    android:id="@+id/theme_switch"
+                    android:layout_width="wrap_content"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:layout_height="wrap_content" />
+            </LinearLayout>
         </LinearLayout>
 
         <!-- Account Information Section -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
             android:layout_marginTop="8dp"
+            android:orientation="vertical"
             android:padding="16dp">
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
                 android:text="@string/account_information"
                 android:textSize="16sp"
-                android:textStyle="bold"
-                android:layout_marginBottom="16dp" />
+                android:textStyle="bold" />
 
             <!-- Username -->
             <com.google.android.material.textfield.TextInputLayout
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="8dp"
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+                android:layout_marginBottom="8dp">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/username_edit_text"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:autofillHints="username"
                     android:hint="@string/username"
-                    android:inputType="text"
-                    android:autofillHints="username" />
+                    android:inputType="text" />
 
             </com.google.android.material.textfield.TextInputLayout>
 
@@ -151,69 +174,69 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
             android:layout_marginTop="8dp"
+            android:orientation="vertical"
             android:padding="16dp">
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
                 android:text="@string/change_password"
                 android:textSize="16sp"
-                android:textStyle="bold"
-                android:layout_marginBottom="16dp" />
+                android:textStyle="bold" />
 
             <!-- Current Password -->
             <com.google.android.material.textfield.TextInputLayout
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="8dp"
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                 app:passwordToggleEnabled="true">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/current_password_edit_text"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:autofillHints="password"
                     android:hint="@string/current_password"
-                    android:inputType="textPassword"
-                    android:autofillHints="password" />
+                    android:inputType="textPassword" />
 
             </com.google.android.material.textfield.TextInputLayout>
 
             <!-- New Password -->
             <com.google.android.material.textfield.TextInputLayout
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="8dp"
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                 app:passwordToggleEnabled="true">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/new_password_edit_text"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:autofillHints="newPassword"
                     android:hint="@string/new_password"
-                    android:inputType="textPassword"
-                    android:autofillHints="newPassword" />
+                    android:inputType="textPassword" />
 
             </com.google.android.material.textfield.TextInputLayout>
 
             <!-- Confirm New Password -->
             <com.google.android.material.textfield.TextInputLayout
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                 app:passwordToggleEnabled="true">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/confirm_password_edit_text"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:autofillHints="newPassword"
                     android:hint="@string/confirm_new_password"
-                    android:inputType="textPassword"
-                    android:autofillHints="newPassword" />
+                    android:inputType="textPassword" />
 
             </com.google.android.material.textfield.TextInputLayout>
 
@@ -222,12 +245,12 @@
         <!-- Save Button -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/save_button"
+            style="@style/Widget.MaterialComponents.Button"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="16dp"
             android:text="@string/save_changes"
-            android:textSize="16sp"
-            style="@style/Widget.MaterialComponents.Button" />
+            android:textSize="16sp" />
 
     </LinearLayout>
 

@@ -1,6 +1,5 @@
 package com.example.bmail.Activities;
 
-import android.app.AlertDialog;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -8,12 +7,15 @@ import android.util.Log;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.widget.Toolbar;
 
 import com.example.bmail.Entities.BmailApplication;
 import com.example.bmail.R;
 import com.example.bmail.Repositories.UserRepository;
+import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.google.android.material.textfield.TextInputEditText;
 
 public class ProfileActivity extends AppCompatActivity {
@@ -26,7 +28,8 @@ public class ProfileActivity extends AppCompatActivity {
     private TextInputEditText newPasswordEditText;
     private TextInputEditText confirmPasswordEditText;
     private ImageView profileImage;
-    private boolean isInitializing = true;
+    private SwitchMaterial themeSwitch;
+    private boolean checkChanges = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,6 +41,9 @@ public class ProfileActivity extends AppCompatActivity {
 
         // Initialize input fields
         initializeInputFields();
+
+        // Initialize theme switch
+        setupThemeSwitch();
 
         // fetch the user data and populate the fields
         UserRepository userRepository = BmailApplication.getInstance().getUserRepository();
@@ -55,7 +61,7 @@ public class ProfileActivity extends AppCompatActivity {
                     Log.d("ProfileActivity", "User image loaded successfully");
                     profileImage.setImageBitmap(image);
                 });
-                isInitializing = true; // Prevent text change detection during initialization
+                checkChanges = true; // Prevent text change detection during initialization
 
             }
         });
@@ -82,6 +88,7 @@ public class ProfileActivity extends AppCompatActivity {
         newPasswordEditText = findViewById(R.id.new_password_edit_text);
         confirmPasswordEditText = findViewById(R.id.confirm_password_edit_text);
         profileImage = findViewById(R.id.profile_image);
+        themeSwitch = findViewById(R.id.theme_switch);
     }
 
     private void setupTextWatchers() {
@@ -91,7 +98,7 @@ public class ProfileActivity extends AppCompatActivity {
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-            if (isInitializing) {
+            if (checkChanges) {
                 return;
             }
                 hasUnsavedChanges = true;
@@ -155,4 +162,27 @@ public class ProfileActivity extends AppCompatActivity {
         finish();
         return true;
     }
+
+    private void setupThemeSwitch() {
+        // Check the current theme mode
+        int nightModeFlags = getResources().getConfiguration().uiMode
+                & android.content.res.Configuration.UI_MODE_NIGHT_MASK;
+        boolean isDarkMode = nightModeFlags == android.content.res.Configuration.UI_MODE_NIGHT_YES;
+        Log.d("ProfileActivity", "Current theme mode: " + (isDarkMode ? "Dark" : "Light"));
+        themeSwitch.setChecked(isDarkMode);
+
+        // Set the listener for theme changes
+        themeSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            // Apply the theme
+            if (isChecked) {
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+            } else {
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+            }
+
+        });
+    }
+
+
+
 }

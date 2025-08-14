@@ -11,7 +11,7 @@ import java.util.List;
 public class ServerMail {
 
     @PrimaryKey
-    @Expose(serialize = false) // Exclude when sending, include when receiving
+    @Expose
     @NonNull
     private String id = "";
 

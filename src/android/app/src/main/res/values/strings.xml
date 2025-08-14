@@ -59,4 +59,5 @@
     <string name="sign_in_to_your_account">Sign in to your account</string>
     <string name="add_label">Add Label</string>
     <string name="label_name">Label name</string>
+    <string name="dark_mode">Dark Mode</string>
 </resources>
