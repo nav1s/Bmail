@@ -30,12 +30,12 @@ public class MailContentActivity extends AppCompatActivity {
     boolean isStarred = false;
     String starredId = "";
     String trashId = "";
+    String spamId = "";
     private final MailRepository mailRepository =
             BmailApplication.getInstance().getMailRepository();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        // todo add spam button
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_mail_content);
 
@@ -59,6 +59,7 @@ public class MailContentActivity extends AppCompatActivity {
 
         displayMailContent(mail);
         setupStarButton(mail);
+        setupSpamButton(mail);
         setupTrashButton(mail);
         setupReplyButtons(mail);
         setupLabelButton(mail);
@@ -130,6 +131,36 @@ public class MailContentActivity extends AppCompatActivity {
     }
 
     /**
+     * @brief Sets up the spam button to toggle the starred status of the email.
+     * @param mail The email being displayed
+     */
+    public void setupSpamButton(ServerMail mail) {
+        if (spamId.isEmpty()) {
+            return;
+        }
+
+        ImageButton btnSpam = findViewById(R.id.btn_spam);
+        boolean isSpam = mail.getLabels().contains(spamId);
+        btnSpam.setImageResource(isSpam ? R.drawable.ic_warning_off : R.drawable.ic_warning_on);
+        // set the correct tooltip
+        btnSpam.setContentDescription(isSpam ? "Remove from Spam" : "Add to Spam");
+        btnSpam.setOnClickListener(v -> {
+            if (isSpam) {
+                Log.d("MailContentActivity", "Mail already in spam, deleting it");
+                btnSpam.setImageResource(R.drawable.ic_warning_off);
+                btnSpam.setContentDescription("Remove from Spam");
+                mailRepository.removeLabelFromMail(mail.getId(), spamId);
+            } else {
+                Log.d("MailContentActivity", "Adding mail to spam");
+                btnSpam.setImageResource(R.drawable.ic_warning_on);
+                btnSpam.setContentDescription("Add to Spam");
+                mailRepository.addLabelToMail(mail.getId(), spamId);
+            }
+            finish();
+        });
+    }
+
+    /**
      * @brief Sets up the trash button to move the email to the trash or delete it if already in trash.
      * @param mail The email being displayed
      */
@@ -164,6 +195,7 @@ public class MailContentActivity extends AppCompatActivity {
         if (labelList == null) {
             starredId = "";
             trashId = "";
+            spamId = "";
             return;
         }
 
@@ -176,6 +208,9 @@ public class MailContentActivity extends AppCompatActivity {
                         break;
                     case "trash":
                         trashId = label.getId();
+                        break;
+                    case "spam":
+                        spamId = label.getId();
                         break;
                 }
             }
