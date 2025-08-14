@@ -6,6 +6,7 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.provider.MediaStore;
 import android.util.Log;
+import android.widget.Toast;
 
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -183,4 +184,22 @@ public class PhotoSelectionHelper {
         profileImagePath = image.getAbsolutePath();
         return image;
     }
-}
+
+       /**
+        * Handle permission request results
+        */
+       public void handlePermissionResult(int requestCode, @NonNull String[] permissions,
+                                          @NonNull int[] grantResults) {
+           if (requestCode == REQUEST_CAMERA_PERMISSION) {
+               if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                   // Permission granted, launch camera directly
+                   launchCamera();
+               } else {
+                   // Permission denied
+                   Toast.makeText(activity,
+                           "Camera permission is required to take photos", Toast.LENGTH_SHORT).show();
+               }
+           }
+       }
+
+   }

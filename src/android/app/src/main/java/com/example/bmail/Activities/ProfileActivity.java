@@ -219,20 +219,15 @@ public class ProfileActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * @brief Handles the result of permission requests.
+     * This method is called when the user responds to a permission request dialog.
+     */
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
                                            @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == PhotoSelectionHelper.REQUEST_CAMERA_PERMISSION) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                // Permission granted, launch camera directly
-                photoSelectionHelper.launchCamera();
-            } else {
-                // Permission denied
-                Toast.makeText(this,
-                        "Camera permission is required to take photos", Toast.LENGTH_SHORT).show();
-            }
-        }
+        photoSelectionHelper.handlePermissionResult(requestCode, permissions, grantResults);
     }
 
    }

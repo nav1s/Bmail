@@ -1,6 +1,7 @@
 package com.example.bmail.Activities;
 
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -13,15 +14,18 @@ import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
 import com.example.bmail.Api.SignupApi;
 import com.example.bmail.R;
+import com.example.bmail.Utils.PhotoSelectionHelper;
 import com.example.bmail.ViewModels.SignupViewModel;
 
 public class SignupActivity extends AppCompatActivity implements SignupApi.callback {
-    private ImageView profileImageView;
+    private PhotoSelectionHelper photoSelectionHelper;
+    private ImageView profileImage;
     private String profileImagePath = null; // Path to the selected profile image
     private SignupViewModel viewModel;
 
@@ -32,22 +36,6 @@ public class SignupActivity extends AppCompatActivity implements SignupApi.callb
     private EditText confirmPasswordET;
     private Button signupBtn;
     private TextView choosePhotoBtn;
-
-    private final ActivityResultLauncher<Intent> galleryLauncher = registerForActivityResult(
-                new ActivityResultContracts.StartActivityForResult(),
-    result -> {
-        if (result.getResultCode() == RESULT_OK && result.getData() != null) {
-            Uri selectedImageUri = result.getData().getData();
-            Log.i("SignupActivity", "Selected Image URI: " + selectedImageUri);
-            if (selectedImageUri != null) {
-                profileImagePath = selectedImageUri.toString(); // Store the image path
-                profileImageView.setImageURI(selectedImageUri);
-            } else {
-                Log.e("SignupActivity", "Selected image URI is null");
-                profileImagePath = null; // Reset if no image is selected
-            }
-        }
-    });
 
 
     @Override
@@ -64,17 +52,26 @@ public class SignupActivity extends AppCompatActivity implements SignupApi.callb
 
         signupBtn.setOnClickListener(view -> handleSignupButtonClick());
 
-        choosePhotoBtn.setOnClickListener(view -> {
-            Intent intent = new Intent(Intent.ACTION_PICK);
-            intent.setDataAndType(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, "image/*");
-            galleryLauncher.launch(intent);
-        });
+        // Initialize the photo selection helper
+        photoSelectionHelper = new PhotoSelectionHelper(this,
+                (imagePath, imageUri) -> {
+                    profileImagePath = imagePath;
+                    // Update the ImageView in the activity
+                    if (imageUri != null) {
+                        Log.d("ProfileActivity", "Selected Image URI: " + imageUri);
+                        profileImage.setImageURI(imageUri);
+                        profileImage.postInvalidate();
+                    }
+                });
+
+        choosePhotoBtn.setOnClickListener(v ->
+                photoSelectionHelper.showPhotoSelectionOptions());
     }
 
     private void initViews() {
         SignupApi userApi = new SignupApi(this);
         viewModel = new SignupViewModel(userApi);
-        profileImageView = findViewById(R.id.profile_image);
+        profileImage = findViewById(R.id.profile_image);
 
         firstNameET = findViewById(R.id.firstname);
         lastNameET = findViewById(R.id.lastname);
@@ -136,5 +133,12 @@ public class SignupActivity extends AppCompatActivity implements SignupApi.callb
     public void onFailure(String errorMessage) {
         Toast.makeText(SignupActivity.this, errorMessage, Toast.LENGTH_LONG).show();
 
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        photoSelectionHelper.handlePermissionResult(requestCode, permissions, grantResults);
     }
 }
