@@ -1,5 +1,6 @@
 package com.example.bmail.Activities;
 
+import com.example.bmail.Utils.PhotoSelectionHelper;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -13,7 +14,6 @@ import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.widget.Toolbar;
 
 import com.example.bmail.Entities.BmailApplication;
-import com.example.bmail.Entities.User;
 import com.example.bmail.R;
 import com.example.bmail.Repositories.UserRepository;
 import com.google.android.material.switchmaterial.SwitchMaterial;
@@ -22,6 +22,9 @@ import com.google.android.material.textfield.TextInputEditText;
 import java.util.Objects;
 
 public class ProfileActivity extends AppCompatActivity {
+
+    private PhotoSelectionHelper photoSelectionHelper;
+    private String profileImagePath = null;
 
     private boolean hasUnsavedChanges = false;
     private TextInputEditText firstNameEditText;
@@ -32,7 +35,9 @@ public class ProfileActivity extends AppCompatActivity {
     private TextInputEditText confirmPasswordEditText;
     private ImageView profileImage;
     private SwitchMaterial themeSwitch;
-    private boolean checkChanges = true;
+    private boolean initializingFields = true;
+
+    private boolean manualImageSelected = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,10 +66,16 @@ public class ProfileActivity extends AppCompatActivity {
                         Log.e("ProfileActivity", "User image is null");
                         return;
                     }
+                    if (manualImageSelected) {
+                        Log.d("ProfileActivity", "Manual image selection detected," +
+                                "skipping automatic image load");
+                        return;
+                    }
                     Log.d("ProfileActivity", "User image loaded successfully");
                     profileImage.setImageBitmap(image);
                 });
-                checkChanges = true; // Prevent text change detection during initialization
+                // Set to false after initial population
+                initializingFields = false;
 
             }
         });
@@ -72,17 +83,31 @@ public class ProfileActivity extends AppCompatActivity {
         // Setup text watchers to detect changes
         setupTextWatchers();
 
-        // Setup change photo click listener
+        // Initialize the photo selection helper
+        photoSelectionHelper = new PhotoSelectionHelper(this,
+                (imagePath, imageUri) -> {
+                    profileImagePath = imagePath;
+                    manualImageSelected = true;
+                    // Update the ImageView in the activity
+                    if (imageUri != null) {
+                        Log.d("ProfileActivity", "Selected Image URI: " + imageUri);
+                        profileImage.setImageURI(imageUri);
+                        profileImage.postInvalidate();
+                    }
+                    hasUnsavedChanges = true;
+                });
+        // Update the change photo click listener
         TextView changePhotoText = findViewById(R.id.change_photo_text);
-        changePhotoText.setOnClickListener(v -> {
-            // TODO: Implement photo selection logic
-            checkForUnsavedChanges();
-        });
+        changePhotoText.setOnClickListener(v ->
+                photoSelectionHelper.selectPhotoFromGallery());
 
         // Setup save button click listener
         findViewById(R.id.save_button).setOnClickListener(v -> saveChanges());
     }
 
+    /**
+     * @brief Initializes the input fields for the profile activity.
+     */
     private void initializeInputFields() {
         firstNameEditText = findViewById(R.id.first_name_edit_text);
         lastNameEditText = findViewById(R.id.last_name_edit_text);
@@ -94,6 +119,9 @@ public class ProfileActivity extends AppCompatActivity {
         themeSwitch = findViewById(R.id.theme_switch);
     }
 
+    /**
+     * @brief Sets up text watchers for the input fields to detect changes.
+     */
     private void setupTextWatchers() {
         TextWatcher textWatcher = new TextWatcher() {
             @Override
@@ -101,7 +129,7 @@ public class ProfileActivity extends AppCompatActivity {
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-            if (checkChanges) {
+            if (initializingFields) {
                 return;
             }
                 hasUnsavedChanges = true;
@@ -119,18 +147,14 @@ public class ProfileActivity extends AppCompatActivity {
         confirmPasswordEditText.addTextChangedListener(textWatcher);
     }
 
-    private void checkForUnsavedChanges() {
-        if (hasUnsavedChanges) {
-            showUnsavedChangesAlert();
-        }
-    }
-
+    /**
+     * @brief Shows an alert dialog when there are unsaved changes.
+     */
     private void showUnsavedChangesAlert() {
         new AlertDialog.Builder(this)
                 .setTitle("Unsaved Changes")
                 .setMessage("You have unsaved changes. Do you want to save them before continuing?")
                 .setPositiveButton("Save", (dialog, which) -> {
-                    // TODO: Implement save logic
                     saveChanges();
                     dialog.dismiss();
                 })
@@ -142,25 +166,22 @@ public class ProfileActivity extends AppCompatActivity {
                 .show();
     }
 
+    /**
+     * @brief Saves the changes made in the profile activity.
+     */
     private void saveChanges() {
         hasUnsavedChanges = false;
         String firstName = Objects.requireNonNull(firstNameEditText.getText()).toString().trim();
         String lastName = Objects.requireNonNull(lastNameEditText.getText()).toString().trim();
         UserRepository userRepository = BmailApplication.getInstance().getUserRepository();
-        userRepository.updateProfile(firstName, lastName, null);
+        userRepository.updateProfile(firstName, lastName, profileImagePath);
 
-
-        // Show confirmation
-        new AlertDialog.Builder(this)
-                .setTitle("Success")
-                .setMessage("Your profile has been updated successfully!")
-                .setPositiveButton("OK", (dialog, which) -> {
-                    dialog.dismiss();
-                    finish(); // Close the activity after saving
-                })
-                .show();
+        finish();
     }
 
+    /**
+     * @brief Handles the back button press in the profile activity.
+     */
     @Override
     public boolean onSupportNavigateUp() {
         if (hasUnsavedChanges) {
@@ -171,6 +192,9 @@ public class ProfileActivity extends AppCompatActivity {
         return true;
     }
 
+    /**
+     * @brief Handles the back button press in the profile activity.
+     */
     private void setupThemeSwitch() {
         // Check the current theme mode
         int nightModeFlags = getResources().getConfiguration().uiMode

@@ -42,7 +42,9 @@ public interface WebServiceApi {
     @PATCH("/api/users")
     Call<Void> updateProfile(@Header("Authorization") String token,
                              @Part("firstName") RequestBody firstName,
-                             @Part("lastName") RequestBody lastName);
+                             @Part("lastName") RequestBody lastName,
+                             @Part MultipartBody.Part image
+    );
 
     @GET("/api/users/{id}")
     Call<User> getUserDetails(@Header("Authorization") String token, @Path("id") String userId);

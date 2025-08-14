@@ -147,7 +147,8 @@ public class UserApi {
         MultipartBody.Part imagePart = imageUri == null ? null:
                 ImageUtils.createImagePart(context, imageUri, "image");
 
-        Call <Void> call = webServiceApi.updateProfile("Bearer " + token, firstName, lastName);
+        Call <Void> call = webServiceApi.updateProfile("Bearer " + token, firstName,
+                lastName, imagePart);
 
         call.enqueue(new retrofit2.Callback<>() {
             @Override
