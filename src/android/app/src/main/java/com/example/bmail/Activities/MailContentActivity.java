@@ -35,6 +35,7 @@ public class MailContentActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        // todo add spam button
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_mail_content);
 

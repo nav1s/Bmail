@@ -16,6 +16,7 @@ import androidx.annotation.Nullable;
 import com.example.bmail.Entities.LoginRequest;
 import com.example.bmail.Entities.LoginResponse;
 import com.example.bmail.R;
+import com.example.bmail.Utils.ImageUtils;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -97,7 +98,7 @@ public class SignupApi {
                         RequestBody username, RequestBody password, String imageUri,
                        callback signupCallback) {
 
-        MultipartBody.Part image = createImagePart(imageUri);
+        MultipartBody.Part image = ImageUtils.createImagePart(context, imageUri, "image");
         Call<Void> call = webServiceApi.signup(firstName,
                 lastName, username, password, image);
         call.enqueue(new retrofit2.Callback<>() {
@@ -120,54 +121,6 @@ public class SignupApi {
                 signupCallback.onFailure(errorMsg);
             }
         });
-    }
-
-    /**
-     * @brief Creates a MultipartBody.Part for the image file.
-     * @param imageUri The URI of the image file.
-     * @return A MultipartBody.Part containing the image data, or null if the imageUri is empty or invalid.
-     */
-    private MultipartBody.Part createImagePart(String imageUri) {
-
-        // Handle the image file
-        MultipartBody.Part imagePart;
-        if (imageUri != null && !imageUri.isEmpty()) {
-            try {
-                Uri uri = Uri.parse(imageUri);
-                byte[] imageBytes = getBytesFromUri(uri);
-                if (imageBytes != null) {
-                    RequestBody imageBody = RequestBody.create(imageBytes, MediaType.parse("image/*"));
-                    imagePart = MultipartBody.Part.createFormData("image", "profile_image.jpg", imageBody);
-                    return imagePart;
-                }
-            } catch (IOException e) {
-                Log.e(TAG, "Error reading image file", e);
-            }
-        }
-        return null;
-    }
-
-    /**
-     * @brief Reads bytes from a URI and returns them as a byte array.
-     * @param uri The URI to read from.
-     * @return A byte array containing the data from the URI, or null if an error occurs.
-     * @throws IOException If an error occurs while reading from the URI.
-     */
-    @Nullable
-    private byte[] getBytesFromUri(Uri uri) throws IOException {
-        ContentResolver contentResolver = context.getContentResolver();
-        try (InputStream inputStream = contentResolver.openInputStream(uri)) {
-            if (inputStream == null) return null;
-
-            ByteArrayOutputStream byteBuffer = new ByteArrayOutputStream();
-            int bufferSize = 1024;
-            byte[] buffer = new byte[bufferSize];
-            int len;
-            while ((len = inputStream.read(buffer)) != -1) {
-                byteBuffer.write(buffer, 0, len);
-            }
-            return byteBuffer.toByteArray();
-        }
     }
 
     /**
