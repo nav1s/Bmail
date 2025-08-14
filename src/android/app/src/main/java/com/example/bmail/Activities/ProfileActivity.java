@@ -1,13 +1,17 @@
 package com.example.bmail.Activities;
 
 import com.example.bmail.Utils.PhotoSelectionHelper;
+
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
@@ -99,7 +103,7 @@ public class ProfileActivity extends AppCompatActivity {
         // Update the change photo click listener
         TextView changePhotoText = findViewById(R.id.change_photo_text);
         changePhotoText.setOnClickListener(v ->
-                photoSelectionHelper.selectPhotoFromGallery());
+                photoSelectionHelper.showPhotoSelectionOptions());
 
         // Setup save button click listener
         findViewById(R.id.save_button).setOnClickListener(v -> saveChanges());
@@ -215,6 +219,22 @@ public class ProfileActivity extends AppCompatActivity {
         });
     }
 
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == PhotoSelectionHelper.REQUEST_CAMERA_PERMISSION) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // Permission granted, launch camera directly
+                photoSelectionHelper.launchCamera();
+            } else {
+                // Permission denied
+                Toast.makeText(this,
+                        "Camera permission is required to take photos", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+   }
 
 
-}
