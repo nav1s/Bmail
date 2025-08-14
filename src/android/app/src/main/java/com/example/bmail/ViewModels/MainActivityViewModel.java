@@ -51,9 +51,6 @@ public class MainActivityViewModel extends androidx.lifecycle.ViewModel {
         labelRepository.loadLabels();
     }
 
-    public void delete(ServerMail mail) {
-        mailRepository.deleteMail(mail);
-    }
     public void loadMails(String label) {
         mailRepository.reloadMails(label);
     }
