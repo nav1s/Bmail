@@ -10,6 +10,9 @@ import androidx.lifecycle.MutableLiveData;
 import com.example.bmail.Api.UserApi;
 import com.example.bmail.Entities.User;
 
+import okhttp3.MediaType;
+import okhttp3.RequestBody;
+
 public class UserRepository {
 
     private final UserApi userApi;
@@ -53,6 +56,18 @@ public class UserRepository {
 
     public LiveData<Bitmap> getUserImage() {
         return userImage;
+    }
+
+    public void updateProfile(String firstName, String lastName, String imageUri){
+        MediaType textPlainType = MediaType.parse("text/plain");
+
+        RequestBody firstNameBody = (firstName != null && !firstName.isEmpty()) ?
+                RequestBody.create(firstName, textPlainType) : null;
+
+        RequestBody lastNameBody = (lastName != null && !lastName.isEmpty()) ?
+                RequestBody.create(lastName, textPlainType) : null;
+
+        userApi.updateProfile(firstNameBody, lastNameBody, imageUri);
     }
 
 }

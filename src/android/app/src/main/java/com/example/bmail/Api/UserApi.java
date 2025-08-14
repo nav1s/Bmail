@@ -12,7 +12,10 @@ import androidx.lifecycle.MutableLiveData;
 import com.example.bmail.Entities.User;
 import com.example.bmail.Repositories.UserRepository.UserData;
 import com.example.bmail.R;
+import com.example.bmail.Utils.ImageUtils;
 
+import okhttp3.MultipartBody;
+import okhttp3.RequestBody;
 import retrofit2.Call;
 import retrofit2.Response;
 import retrofit2.Retrofit;
@@ -123,5 +126,43 @@ public class UserApi {
 
     }
 
+    /**
+     * @brief Updates the user's profile with the provided details.
+     * @param firstName the first name of the user
+     * @param lastName the last name of the user
+     * @param imageUri the URI of the profile image to upload
+     */
+    public void updateProfile(RequestBody firstName, RequestBody lastName, String imageUri) {
+
+        String token = getToken();
+        if (token == null) {
+            Log.e("UserApi", "No authentication token found");
+            return;
+        }
+
+        // Create MultipartBody.Part for the image
+        MultipartBody.Part imagePart = imageUri == null ? null:
+                ImageUtils.createImagePart(context, imageUri, "image");
+
+        Call <Void> call = webServiceApi.updateProfile(token, firstName, lastName, imagePart);
+
+        call.enqueue(new retrofit2.Callback<>() {
+            @Override
+            public void onResponse(@NonNull Call<Void> call, @NonNull Response<Void> response) {
+                if (response.isSuccessful()) {
+                    Log.i("UserApi", "Profile updated successfully");
+                    // Reload user details after update
+                    loadUserDetails();
+                } else {
+                    Log.e("UserApi", "Failed to update profile: " + response.message());
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<Void> call, @NonNull Throwable t) {
+                Log.e("UserApi", "Network error updating profile", t);
+            }
+        });
+    }
 
 }

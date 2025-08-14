@@ -38,6 +38,12 @@ public interface WebServiceApi {
                               @Part("username") RequestBody username,
                               @Part("password") RequestBody password,
                               @Part MultipartBody.Part image);
+    @Multipart
+    @PATCH("/api/users")
+    Call<Void> updateProfile(@Header("Authorization") String token,
+                             @Part("firstName") RequestBody firstName,
+                             @Part("lastName") RequestBody lastName,
+                             @Part MultipartBody.Part image);
 
     @GET("/api/users/{id}")
     Call<User> getUserDetails(@Header("Authorization") String token, @Path("id") String userId);

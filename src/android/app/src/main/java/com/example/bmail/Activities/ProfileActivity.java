@@ -13,10 +13,13 @@ import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.widget.Toolbar;
 
 import com.example.bmail.Entities.BmailApplication;
+import com.example.bmail.Entities.User;
 import com.example.bmail.R;
 import com.example.bmail.Repositories.UserRepository;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.google.android.material.textfield.TextInputEditText;
+
+import java.util.Objects;
 
 public class ProfileActivity extends AppCompatActivity {
 
@@ -141,6 +144,11 @@ public class ProfileActivity extends AppCompatActivity {
 
     private void saveChanges() {
         hasUnsavedChanges = false;
+        String firstName = Objects.requireNonNull(firstNameEditText.getText()).toString().trim();
+        String lastName = Objects.requireNonNull(lastNameEditText.getText()).toString().trim();
+        UserRepository userRepository = BmailApplication.getInstance().getUserRepository();
+        userRepository.updateProfile(firstName, lastName, null);
+
 
         // Show confirmation
         new AlertDialog.Builder(this)
