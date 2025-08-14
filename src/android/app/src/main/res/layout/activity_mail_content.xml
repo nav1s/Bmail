@@ -27,7 +27,7 @@
                 android:layout_height="48dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:contentDescription="@string/mark_as_spam"
-                android:src="@drawable/baseline_warning_24" />
+                android:src="@drawable/ic_warning_on" />
             <ImageButton
                 android:id="@+id/btn_trash"
                 android:layout_width="48dp"
