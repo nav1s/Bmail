@@ -15,7 +15,9 @@ import com.example.bmail.R;
 import com.example.bmail.Utils.ImageUtils;
 
 import okhttp3.MultipartBody;
+import okhttp3.OkHttp;
 import okhttp3.RequestBody;
+import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Response;
 import retrofit2.Retrofit;
@@ -139,6 +141,7 @@ public class UserApi {
             Log.e("UserApi", "No authentication token found");
             return;
         }
+        Log.i("UserApi", "Updating profile with token: " + token);
 
         // Create MultipartBody.Part for the image
         MultipartBody.Part imagePart = imageUri == null ? null:
@@ -151,13 +154,16 @@ public class UserApi {
             public void onResponse(@NonNull Call<Void> call, @NonNull Response<Void> response) {
                 if (response.isSuccessful()) {
                     Log.i("UserApi", "Profile updated successfully");
-                    // Reload user details after update
                     loadUserDetails();
                 } else {
-                    Log.e("UserApi", "Failed to update profile: " + response.message());
+                    try(okhttp3.ResponseBody errorBody = response.errorBody()) {
+                        Log.e("UserApi", "Failed to update profile. Code: " + response.code() +
+                                ", Message: " + response.message() + ", Error: " + errorBody);
+                    } catch (Exception e) {
+                        Log.e("UserApi", "Failed to update profile: " + response.message(), e);
+                    }
                 }
             }
-
             @Override
             public void onFailure(@NonNull Call<Void> call, @NonNull Throwable t) {
                 Log.e("UserApi", "Network error updating profile", t);

@@ -60,4 +60,5 @@
     <string name="add_label">Add Label</string>
     <string name="label_name">Label name</string>
     <string name="dark_mode">Dark Mode</string>
+    <string name="mark_as_spam">Mark as Spam</string>
 </resources>
