@@ -1,6 +1,7 @@
 package com.example.bmail.Activities;
 
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Button;
@@ -116,14 +117,23 @@ public class MailContentActivity extends AppCompatActivity {
 
         // Set correct icon: filled star if starred, empty star if not starred
         btnStar.setImageResource(isStarred ? R.drawable.ic_star_filled : R.drawable.ic_star);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            btnStar.setTooltipText(isStarred ? "Start" : "Unstar");
+        }
         Log.d("MailContentActivity", "Starred status: " + isStarred);
         btnStar.setOnClickListener(v -> {
             if (isStarred) {
                 btnStar.setImageResource(R.drawable.ic_star);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    btnStar.setTooltipText("Star");
+                }
                 mailRepository.removeLabelFromMail(mail.getId(), starredId);
                 isStarred = false;
             } else {
                 btnStar.setImageResource(R.drawable.ic_star_filled);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    btnStar.setTooltipText("Unstar");
+                }
                 mailRepository.addLabelToMail(mail.getId(), starredId);
                 isStarred = true;
             }
@@ -144,16 +154,25 @@ public class MailContentActivity extends AppCompatActivity {
         btnSpam.setImageResource(isSpam ? R.drawable.ic_warning_off : R.drawable.ic_warning_on);
         // set the correct tooltip
         btnSpam.setContentDescription(isSpam ? "Remove from Spam" : "Add to Spam");
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            btnSpam.setTooltipText(isSpam ? "Remove from Spam" : "Add to Spam");
+        }
         btnSpam.setOnClickListener(v -> {
             if (isSpam) {
                 Log.d("MailContentActivity", "Mail already in spam, deleting it");
                 btnSpam.setImageResource(R.drawable.ic_warning_off);
                 btnSpam.setContentDescription("Remove from Spam");
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    btnSpam.setTooltipText("Remove from Spam");
+                }
                 mailRepository.removeLabelFromMail(mail.getId(), spamId);
             } else {
                 Log.d("MailContentActivity", "Adding mail to spam");
                 btnSpam.setImageResource(R.drawable.ic_warning_on);
                 btnSpam.setContentDescription("Add to Spam");
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    btnSpam.setTooltipText("Add to Spam");
+                }
                 mailRepository.addLabelToMail(mail.getId(), spamId);
             }
             finish();
@@ -170,6 +189,10 @@ public class MailContentActivity extends AppCompatActivity {
         }
 
         ImageButton btnTrash = findViewById(R.id.btn_trash);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            btnTrash.setTooltipText(mail.getLabels().contains(trashId) ? "Delete Permanently"
+                    : "Move to Trash");
+        }
         btnTrash.setOnClickListener(v -> {
             if (mail.getLabels().contains(trashId)) {
                 Log.d("MailContentActivity", "Mail already in trash, deleting it");
@@ -302,6 +325,9 @@ public class MailContentActivity extends AppCompatActivity {
      */
     private void setupLabelButton(ServerMail mail) {
         ImageButton btnChangeLabel = findViewById(R.id.btn_change_label);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            btnChangeLabel.setTooltipText("Change Labels");
+        }
         btnChangeLabel.setOnClickListener(v -> {
             showLabelSelectionDialog(mail);
         });
@@ -337,7 +363,6 @@ public class MailContentActivity extends AppCompatActivity {
         // Fill the arrays with user labels (excluding system labels like Inbox, Sent, etc.)
         int index = 0;
         for (Label label : allLabels) {
-            // Skip "Inbox", "Sent", "Trash", "Starred" as these are handled differently
             if (label.isAttachable() && !label.isDefault()) {
                 userLabels.add(label);
                 labelNames.add(label.getName());
@@ -367,7 +392,6 @@ public class MailContentActivity extends AppCompatActivity {
                         String labelId = userLabels.get(i).getId();
                         boolean hasLabel = currentLabels.contains(labelId);
 
-                        // todo check if we can do it in one call
                         if (checkedItems[i] && !hasLabel) {
                             // Add the label
                             mailRepository.addLabelToMail(mail.getId(), labelId);
