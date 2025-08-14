@@ -37,6 +37,15 @@
                 android:src="@android:drawable/ic_menu_delete" />
 
             <ImageButton
+                android:id="@+id/btn_delete_permanent"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/delete_permanently"
+                android:visibility="gone"
+                android:src="@android:drawable/ic_menu_delete" />
+
+            <ImageButton
                 android:id="@+id/btn_change_label"
                 android:layout_width="48dp"
                 android:layout_height="48dp"

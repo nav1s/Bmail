@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TextView;
@@ -76,9 +77,9 @@ public class MailContentActivity extends AppCompatActivity {
     }
 
     /**
-     * @brief Retrieves the email by its ID from the repository.
      * @param mailId The ID of the email to retrieve
      * @return The ServerMail object if found, null otherwise
+     * @brief Retrieves the email by its ID from the repository.
      */
     private ServerMail getMailById(String mailId) {
         ServerMail mail = mailRepository.getMailById(mailId);
@@ -89,8 +90,8 @@ public class MailContentActivity extends AppCompatActivity {
     }
 
     /**
-     * @brief Displays the content of the email in the UI.
      * @param mail The email to display
+     * @brief Displays the content of the email in the UI.
      */
     private void displayMailContent(@NonNull ServerMail mail) {
         TextView tvMailTitle = findViewById(R.id.tv_mail_title);
@@ -105,8 +106,8 @@ public class MailContentActivity extends AppCompatActivity {
     }
 
     /**
-     * @brief Sets up the star button to toggle the starred status of the email.
      * @param mail The email being displayed
+     * @brief Sets up the star button to toggle the starred status of the email.
      */
     private void setupStarButton(ServerMail mail) {
         if (starredId.isEmpty()) {
@@ -141,8 +142,8 @@ public class MailContentActivity extends AppCompatActivity {
     }
 
     /**
-     * @brief Sets up the spam button to toggle the starred status of the email.
      * @param mail The email being displayed
+     * @brief Sets up the spam button to toggle the starred status of the email.
      */
     public void setupSpamButton(ServerMail mail) {
         if (spamId.isEmpty()) {
@@ -180,8 +181,8 @@ public class MailContentActivity extends AppCompatActivity {
     }
 
     /**
-     * @brief Sets up the trash button to move the email to the trash or delete it if already in trash.
      * @param mail The email being displayed
+     * @brief Sets up the trash button to move the email to the trash or delete it if already in trash.
      */
     private void setupTrashButton(ServerMail mail) {
         if (trashId.isEmpty()) {
@@ -189,21 +190,81 @@ public class MailContentActivity extends AppCompatActivity {
         }
 
         ImageButton btnTrash = findViewById(R.id.btn_trash);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            btnTrash.setTooltipText(mail.getLabels().contains(trashId) ? "Delete Permanently"
-                    : "Move to Trash");
-        }
-        btnTrash.setOnClickListener(v -> {
-            if (mail.getLabels().contains(trashId)) {
-                Log.d("MailContentActivity", "Mail already in trash, deleting it");
-                mailRepository.deleteMail(mail.getId());
-            } else {
+        ImageButton btnDeletePermanent = findViewById(R.id.btn_delete_permanent);
+        boolean isInTrash = mail.getLabels().contains(trashId);
+
+        if (isInTrash) {
+            // Email is in trash - show restore icon on trash button
+            btnTrash.setImageResource(R.drawable.ic_restore);
+            btnTrash.setContentDescription("Restore from Trash");
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                btnTrash.setTooltipText("Restore from Trash");
+            }
+
+            // Show permanent delete button
+            btnDeletePermanent.setVisibility(View.VISIBLE);
+
+            // Set up permanent delete button
+            setupPermanentDeleteButton(mail, btnDeletePermanent);
+
+            btnTrash.setOnClickListener(v -> {
+                // Restore email
+                Log.d("MailContentActivity", "Restoring mail from trash");
+                mailRepository.removeLabelFromMail(mail.getId(), trashId);
+                Toast.makeText(this, "Mail restored", Toast.LENGTH_SHORT).show();
+                finish();
+            });
+        } else {
+            // Email is not in trash - show trash icon
+            btnTrash.setImageResource(android.R.drawable.ic_menu_delete);
+            btnTrash.setContentDescription("Move to Trash");
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                btnTrash.setTooltipText("Move to Trash");
+            }
+
+            // Hide permanent delete button
+            btnDeletePermanent.setVisibility(View.GONE);
+
+            btnTrash.setOnClickListener(v -> {
+                // Move to trash
                 Log.d("MailContentActivity", "Adding mail to trash");
                 mailRepository.addLabelToMail(mail.getId(), trashId);
-            }
-            finish();
-        });
+                Toast.makeText(this, "Mail moved to trash", Toast.LENGTH_SHORT).show();
+                finish();
+            });
+        }
     }
+
+    /**
+     * @brief Sets up the permanent delete button to delete the email permanently.
+     * @param mail The email being displayed
+     * @param btnDeletePermanent The button to permanently delete the email
+     * @brief Sets up the permanent delete button to delete the email permanently.
+     */
+    private void setupPermanentDeleteButton(ServerMail mail, @NonNull ImageButton btnDeletePermanent) {
+       // Set content description for accessibility
+       btnDeletePermanent.setContentDescription("Delete Permanently");
+
+       // Set tooltip
+       if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+           btnDeletePermanent.setTooltipText("Delete Permanently");
+       }
+
+       btnDeletePermanent.setOnClickListener(v -> {
+           // Show confirmation dialog before permanent deletion
+           AlertDialog.Builder builder = new AlertDialog.Builder(this);
+           builder.setTitle("Confirm Delete");
+           builder.setMessage("Permanently delete this email? This action cannot be undone.");
+           builder.setPositiveButton("Delete", (dialog, which) -> {
+               Log.d("MailContentActivity", "Permanently deleting mail");
+               mailRepository.deleteMail(mail.getId());
+               Toast.makeText(this, "Mail permanently deleted", Toast.LENGTH_SHORT).show();
+               finish();
+           });
+           builder.setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss());
+           builder.show();
+       });
+   }
 
     /**
      * @brief Fetches the IDs of the default labels (Starred and Trash).
@@ -249,8 +310,8 @@ public class MailContentActivity extends AppCompatActivity {
     }
 
     /**
-     * @brief Sets up the reply, reply all, and forward buttons.
      * @param mail The email being displayed
+     * @brief Sets up the reply, reply all, and forward buttons.
      */
     private void setupReplyButtons(ServerMail mail) {
         Button btnReply = findViewById(R.id.btn_reply);
@@ -263,9 +324,9 @@ public class MailContentActivity extends AppCompatActivity {
     }
 
     /**
-     * @brief Handles reply and reply all functionality
-     * @param mail The original email
+     * @param mail     The original email
      * @param replyAll Whether to include all recipients
+     * @brief Handles reply and reply all functionality
      */
     private void handleReply(@NonNull ServerMail mail, boolean replyAll) {
         Intent intent = new Intent(this, ComposeActivity.class);
@@ -300,8 +361,8 @@ public class MailContentActivity extends AppCompatActivity {
     }
 
     /**
-     * @brief Handles forward functionality
      * @param mail The original email
+     * @brief Handles forward functionality
      */
     private void handleForward(@NonNull ServerMail mail) {
         Intent intent = new Intent(this, ComposeActivity.class);
@@ -319,9 +380,10 @@ public class MailContentActivity extends AppCompatActivity {
 
         startActivity(intent);
     }
+
     /**
-     * @brief Sets up the label button to change labels for the email.
      * @param mail The email being displayed
+     * @brief Sets up the label button to change labels for the email.
      */
     private void setupLabelButton(ServerMail mail) {
         ImageButton btnChangeLabel = findViewById(R.id.btn_change_label);
@@ -334,10 +396,10 @@ public class MailContentActivity extends AppCompatActivity {
     }
 
     /**
+     * @param mail The email for which labels are being managed
      * @brief Shows a dialog to manage labels for the email.
      * This method retrieves all labels, excluding system labels like Inbox, Sent, Trash, and Starred,
      * and allows the user to select or deselect labels for the current email.
-     * @param mail The email for which labels are being managed
      */
     private void showLabelSelectionDialog(ServerMail mail) {
         // Get the label repository
