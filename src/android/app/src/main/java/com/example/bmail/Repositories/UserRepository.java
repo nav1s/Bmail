@@ -2,6 +2,7 @@ package com.example.bmail.Repositories;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
@@ -59,6 +60,9 @@ public class UserRepository {
     }
 
     public void updateProfile(String firstName, String lastName, String imageUri){
+        Log.i("UserRepository",
+                "updateProfile called with firstName: " + firstName + ", lastName: "
+                        + lastName + ", imageUri: " + imageUri);
         MediaType textPlainType = MediaType.parse("text/plain");
 
         RequestBody firstNameBody = (firstName != null && !firstName.isEmpty()) ?

@@ -15,9 +15,7 @@ import com.example.bmail.R;
 import com.example.bmail.Utils.ImageUtils;
 
 import okhttp3.MultipartBody;
-import okhttp3.OkHttp;
 import okhttp3.RequestBody;
-import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Response;
 import retrofit2.Retrofit;
@@ -82,7 +80,7 @@ public class UserApi {
         String token = getToken();
         Log.d("UserApi", "Token: " + token);
         Log.d("UserApi", "Image URL: " + url);
-        Call<okhttp3.ResponseBody> call = webServiceApi.downloadImage(token, url);
+        Call<okhttp3.ResponseBody> call = webServiceApi.downloadImage("Bearer " + token, url);
         call.enqueue(new retrofit2.Callback<>() {
             @Override
             public void onResponse(
@@ -135,19 +133,21 @@ public class UserApi {
      * @param imageUri the URI of the profile image to upload
      */
     public void updateProfile(RequestBody firstName, RequestBody lastName, String imageUri) {
-
         String token = getToken();
+
         if (token == null) {
             Log.e("UserApi", "No authentication token found");
             return;
         }
         Log.i("UserApi", "Updating profile with token: " + token);
+        Log.i("UserApi", "First Name: " + firstName);
+        Log.i("UserApi", "Last Name: " + lastName);
 
         // Create MultipartBody.Part for the image
         MultipartBody.Part imagePart = imageUri == null ? null:
                 ImageUtils.createImagePart(context, imageUri, "image");
 
-        Call <Void> call = webServiceApi.updateProfile(token, firstName, lastName, imagePart);
+        Call <Void> call = webServiceApi.updateProfile("Bearer " + token, firstName, lastName);
 
         call.enqueue(new retrofit2.Callback<>() {
             @Override
