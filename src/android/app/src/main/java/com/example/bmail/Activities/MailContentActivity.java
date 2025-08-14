@@ -390,9 +390,7 @@ public class MailContentActivity extends AppCompatActivity {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             btnChangeLabel.setTooltipText("Change Labels");
         }
-        btnChangeLabel.setOnClickListener(v -> {
-            showLabelSelectionDialog(mail);
-        });
+        btnChangeLabel.setOnClickListener(v -> showLabelSelectionDialog(mail));
     }
 
     /**
