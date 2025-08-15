@@ -19,7 +19,6 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class MailContentViewModel extends ViewModel {
-    private final MutableLiveData<String> formattedDate = new MutableLiveData<>("");
     private final MailRepository mailRepository;
     private final LabelRepository labelRepository;
 
@@ -302,11 +301,4 @@ public class MailContentViewModel extends ViewModel {
         }
     }
 
-    /**
-     * @brief Sets the formatted date for the mail.
-     * @param date The formatted date string to be set.
-     */
-    public MutableLiveData<String> getFormattedDate() {
-        return formattedDate;
-    }
 }
