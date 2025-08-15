@@ -1,6 +1,7 @@
 package com.example.bmail.Activities;
 
 import com.example.bmail.Utils.PhotoSelectionHelper;
+import com.example.bmail.ViewModels.ProfileViewModel;
 
 import android.os.Bundle;
 import android.text.Editable;
@@ -14,10 +15,9 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.widget.Toolbar;
+import androidx.lifecycle.ViewModelProvider;
 
-import com.example.bmail.Entities.BmailApplication;
 import com.example.bmail.R;
-import com.example.bmail.Repositories.UserRepository;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.google.android.material.textfield.TextInputEditText;
 
@@ -26,21 +26,23 @@ import java.util.Objects;
 public class ProfileActivity extends AppCompatActivity {
 
     private PhotoSelectionHelper photoSelectionHelper;
-    private String profileImagePath = null;
-
-    private boolean hasUnsavedChanges = false;
     private TextInputEditText firstNameEditText;
     private TextInputEditText lastNameEditText;
     private ImageView profileImage;
     private SwitchMaterial themeSwitch;
     private boolean initializingFields = true;
+    private boolean hasUnsavedChanges = false;
 
-    private boolean manualImageSelected = false;
+    // ViewModel instance
+    private ProfileViewModel viewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_profile);
+
+        // Initialize ViewModel
+        viewModel = new ViewModelProvider(this).get(ProfileViewModel.class);
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -51,30 +53,32 @@ public class ProfileActivity extends AppCompatActivity {
         // Initialize theme switch
         setupThemeSwitch();
 
-        // fetch the user data and populate the fields
-        UserRepository userRepository = BmailApplication.getInstance().getUserRepository();
-        userRepository.getUserData().observe(this, user -> {
+        // Observe user data from ViewModel
+        viewModel.getUserData().observe(this, user -> {
             if (user != null) {
                 firstNameEditText.setText(user.getFirstName());
                 lastNameEditText.setText(user.getLastName());
-                userRepository.loadImage(user.getImage());
-                userRepository.getUserImage().observe(this, image -> {
-                    if (image == null) {
-                        Log.e("ProfileActivity", "User image is null");
-                        return;
-                    }
-                    if (manualImageSelected) {
-                        Log.d("ProfileActivity", "Manual image selection detected," +
-                                "skipping automatic image load");
-                        return;
-                    }
-                    Log.d("ProfileActivity", "User image loaded successfully");
-                    profileImage.setImageBitmap(image);
-                });
-                // Set to false after initial population
                 initializingFields = false;
-
             }
+        });
+
+        // Observe user image from ViewModel
+        viewModel.getUserImage().observe(this, image -> {
+            if (image == null) {
+                Log.e("ProfileActivity", "User image is null");
+                return;
+            }
+            if (viewModel.isManualImageSelected()) {
+                Log.d("ProfileActivity", "Manual image selection detected, skipping automatic image load");
+                return;
+            }
+            Log.d("ProfileActivity", "User image loaded successfully");
+            profileImage.setImageBitmap(image);
+        });
+
+        // Observe unsaved changes state
+        viewModel.getHasUnsavedChanges().observe(this, unsavedChanges -> {
+            this.hasUnsavedChanges = unsavedChanges;
         });
 
         // Setup text watchers to detect changes
@@ -83,16 +87,15 @@ public class ProfileActivity extends AppCompatActivity {
         // Initialize the photo selection helper
         photoSelectionHelper = new PhotoSelectionHelper(this,
                 (imagePath, imageUri) -> {
-                    profileImagePath = imagePath;
-                    manualImageSelected = true;
+                    viewModel.setProfileImagePath(imagePath);
                     // Update the ImageView in the activity
                     if (imageUri != null) {
                         Log.d("ProfileActivity", "Selected Image URI: " + imageUri);
                         profileImage.setImageURI(imageUri);
                         profileImage.postInvalidate();
                     }
-                    hasUnsavedChanges = true;
                 });
+
         // Update the change photo click listener
         TextView changePhotoText = findViewById(R.id.change_photo_text);
         changePhotoText.setOnClickListener(v ->
@@ -122,10 +125,10 @@ public class ProfileActivity extends AppCompatActivity {
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-            if (initializingFields) {
-                return;
-            }
-                hasUnsavedChanges = true;
+                if (initializingFields) {
+                    return;
+                }
+                viewModel.notifyTextChanged();
             }
 
             @Override
@@ -159,12 +162,9 @@ public class ProfileActivity extends AppCompatActivity {
      * @brief Saves the changes made in the profile activity.
      */
     private void saveChanges() {
-        hasUnsavedChanges = false;
         String firstName = Objects.requireNonNull(firstNameEditText.getText()).toString().trim();
         String lastName = Objects.requireNonNull(lastNameEditText.getText()).toString().trim();
-        UserRepository userRepository = BmailApplication.getInstance().getUserRepository();
-        userRepository.updateProfile(firstName, lastName, profileImagePath);
-
+        viewModel.saveChanges(firstName, lastName);
         finish();
     }
 
@@ -200,7 +200,6 @@ public class ProfileActivity extends AppCompatActivity {
             } else {
                 AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
             }
-
         });
     }
 
@@ -214,7 +213,4 @@ public class ProfileActivity extends AppCompatActivity {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         photoSelectionHelper.handlePermissionResult(requestCode, permissions, grantResults);
     }
-
-   }
-
-
+}
