@@ -119,21 +119,21 @@ public class MailContentActivity extends AppCompatActivity {
         // Set correct icon: filled star if starred, empty star if not starred
         btnStar.setImageResource(isStarred ? R.drawable.ic_star_filled : R.drawable.ic_star);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            btnStar.setTooltipText(isStarred ? "Start" : "Unstar");
+            btnStar.setTooltipText(isStarred ? "Unstar" : "Star");
         }
         Log.d("MailContentActivity", "Starred status: " + isStarred);
         btnStar.setOnClickListener(v -> {
             if (isStarred) {
                 btnStar.setImageResource(R.drawable.ic_star);
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    btnStar.setTooltipText("Star");
+                    btnStar.setTooltipText("Unstar");
                 }
                 mailRepository.removeLabelFromMail(mail.getId(), starredId);
                 isStarred = false;
             } else {
                 btnStar.setImageResource(R.drawable.ic_star_filled);
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    btnStar.setTooltipText("Unstar");
+                    btnStar.setTooltipText("Star");
                 }
                 mailRepository.addLabelToMail(mail.getId(), starredId);
                 isStarred = true;
