@@ -21,6 +21,7 @@ import com.example.bmail.Entities.ServerMail;
 import com.example.bmail.R;
 import com.example.bmail.ViewModels.MailContentViewModel;
 
+import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -207,11 +208,16 @@ public class MailContentActivity extends AppCompatActivity {
         TextView tvSender = findViewById(R.id.tv_sender_name);
         TextView tvRecipients = findViewById(R.id.tv_recipients);
         TextView tvMailBody = findViewById(R.id.tv_mail_body);
+        TextView tvTimestamp = findViewById(R.id.tv_timestamp);
 
         tvMailTitle.setText(mail.getTitle());
         tvSender.setText(mail.getFrom());
         tvRecipients.setText(String.join(", ", mail.getTo()));
         tvMailBody.setText(mail.getBody());
+
+        DateFormat dateFormat = android.text.format.DateFormat.getDateFormat(this);
+        String formattedDate = dateFormat.format(mail.getUpdatedAt());
+        tvTimestamp.setText(formattedDate);
     }
 
     /**

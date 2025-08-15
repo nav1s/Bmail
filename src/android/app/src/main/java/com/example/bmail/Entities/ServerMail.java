@@ -84,6 +84,7 @@ public class ServerMail {
         this.title = title;
     }
 
+    @NonNull
     @Override
     public String toString() {
         return "ServerMail{" +
