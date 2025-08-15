@@ -298,7 +298,7 @@ async function editMailForUser(mailId, username, updates) {
     const toTokens = tokenizeAddresses(updates.to);
     const invalid = toTokens.filter((t) => !EMAIL_RE.test(t));
     if (invalid.length) {
-      throw createError(`Invalid recipient address(es): ${invalid.join(', ')}`, {
+      throw createError(`Invalid recipient mail address: ${invalid.join(', ')}`, {
         type: 'VALIDATION',
         status: 400,
       });
