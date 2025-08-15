@@ -77,9 +77,8 @@ public class ProfileActivity extends AppCompatActivity {
         });
 
         // Observe unsaved changes state
-        viewModel.getHasUnsavedChanges().observe(this, unsavedChanges -> {
-            this.hasUnsavedChanges = unsavedChanges;
-        });
+        viewModel.getHasUnsavedChanges().observe(this, unsavedChanges ->
+                this.hasUnsavedChanges = unsavedChanges);
 
         // Setup text watchers to detect changes
         setupTextWatchers();
