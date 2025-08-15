@@ -126,14 +126,14 @@ public class MailContentActivity extends AppCompatActivity {
             if (isStarred) {
                 btnStar.setImageResource(R.drawable.ic_star);
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    btnStar.setTooltipText("Unstar");
+                    btnStar.setTooltipText("Star");
                 }
                 mailRepository.removeLabelFromMail(mail.getId(), starredId);
                 isStarred = false;
             } else {
                 btnStar.setImageResource(R.drawable.ic_star_filled);
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    btnStar.setTooltipText("Star");
+                    btnStar.setTooltipText("Unstar");
                 }
                 mailRepository.addLabelToMail(mail.getId(), starredId);
                 isStarred = true;
