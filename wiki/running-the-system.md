@@ -13,7 +13,7 @@ cd bmail
 git checkout part4
 ```
 
-## Running the web server
+## Running the web server and client
 ### Prerequisites
 - Docker installed
 - Docker Compose installed
