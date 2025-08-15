@@ -5,50 +5,42 @@ Each screenshot is accompanied by a brief description.
 
 ---
 
+## Registration Screen
+_Description: The registration screen allows new users to create a Bmail account._
+![register page](assets/android-screenshots/signup.jpg)
+
+---
+
 ## Login Screen
-
 _Description: The login screen allows users to sign in to their Bmail account._
-
-![Login Screen](images/login.png)
-
----
-
-## Inbox
-
-_Description: The inbox displays the latest emails received by the user._
-
-![Inbox Screen](images/inbox.png)
+![login page](assets/android-screenshots/login.jpg)
 
 ---
 
-## Mail Details
 
-_Description: View the details of a selected email, including sender, subject, and content._
-
-![Mail Details Screen](images/mail_details.png)
-
----
-
-## Compose Mail
-
-_Description: Create and send a new email to other users._
-
-![Compose Mail Screen](images/compose.png)
+## Compose Screen
+_Description: The compose mail page allows users to create and send a new email._
+![compose mail](assets/android-screenshots/compose.jpg)
 
 ---
 
-## Labels Management
+## Main Screen
+_Description: The main page displays the user's inbox with a list of emails and _
+![main page](assets/android-screenshots/main.jpg)
 
-_Description: Manage labels to organize your emails._
+## Main Screen navigation drawer
+_Description: The main navigation bar allows users to switch between different sections of the app._
+![main navigation](assets/android-screenshots/main-nav.jpg)
 
-![Labels Screen](images/labels.png)
+---
+## Mail Content Screen
+_Description: The mail details page shows the content of a selected email._
+![mail details](assets/android-screenshots/mail-content.jpg)
 
 ---
 
-## Settings
-
-_Description: Configure app preferences and account settings._
-
-![Settings Screen](images/settings.png)
+## Profile Screen
+_Description: The profile page displays the user's account information and allows updates._
+![update profile](assets/android-screenshots/profile.jpg)
 
 ---
