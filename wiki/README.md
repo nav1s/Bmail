@@ -11,6 +11,6 @@ and understand the Bmail system.
 1. [Running the System](running-the-system.md)
 2. [Web Screenshots](web-screenshots.md)
 3. [Android Screenshots](android-screenshots.md)
-4. [System Architecture](system-architecture.md)
+4. [Routes](routes.md)
 
 ---
