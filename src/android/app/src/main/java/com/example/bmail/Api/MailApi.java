@@ -39,6 +39,7 @@ public class MailApi {
 
         gson = new GsonBuilder()
                 .excludeFieldsWithoutExposeAnnotation()
+                .setDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'") // ISO 8601 format
                 .create();
 
         Retrofit retrofit = new Retrofit.Builder()

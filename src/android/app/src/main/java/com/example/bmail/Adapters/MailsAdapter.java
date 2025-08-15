@@ -64,7 +64,6 @@ public class MailsAdapter extends RecyclerView.Adapter<MailsAdapter.mailViewHold
     @Override
     public void onBindViewHolder(@NonNull mailViewHolder holder, int position) {
         ServerMail currentMail = mailList.get(position);
-        // todo add different view when the label is sent and draft
         Log.i("MailsAdapter", "Binding mail at position: " + position);
         Log.i("MailsAdapter", "Mail sender: " + currentMail.getFrom());
         Log.i("MailsAdapter", "Mail subject: " + currentMail.getTitle());

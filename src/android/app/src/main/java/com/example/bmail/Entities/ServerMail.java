@@ -5,6 +5,7 @@ import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 import com.google.gson.annotations.Expose;
 
+import java.util.Date;
 import java.util.List;
 
 @Entity
@@ -25,8 +26,10 @@ public class ServerMail {
     private List<String> to;
     @Expose
     private Boolean draft;
-    @Expose()
+    @Expose
     private List<String> labels;
+    @Expose
+    private Date updatedAt;
 
     public ServerMail() {
     }
@@ -81,10 +84,9 @@ public class ServerMail {
         this.title = title;
     }
 
-    @NonNull
     @Override
     public String toString() {
-        return "Mail{" +
+        return "ServerMail{" +
                 "id='" + id + '\'' +
                 ", title='" + title + '\'' +
                 ", body='" + body + '\'' +
@@ -92,6 +94,7 @@ public class ServerMail {
                 ", to=" + to +
                 ", draft=" + draft +
                 ", labels=" + labels +
+                ", updatedAt=" + updatedAt +
                 '}';
     }
 
@@ -109,5 +112,13 @@ public class ServerMail {
     }
     public void setId(@NonNull String id) {
         this.id = id;
+    }
+
+    public Date getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(Date updatedAt) {
+        this.updatedAt = updatedAt;
     }
 }
