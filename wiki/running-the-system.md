@@ -15,8 +15,8 @@ git checkout part4
 
 ## Running the web server and client
 ### Prerequisites
-- Docker installed
-- Docker Compose installed
+- Docker
+- Docker Compose
 
 ### Steps to run the web server
 After cloning the repository, navigate to the `bmail` directory and run the following commands:
@@ -39,8 +39,7 @@ rm data/bloomFilter.txt
 
 ## Running the Android client
 ### Prerequisites
-- Android Studio installed
-- Android SDK and emulator set up
+- Android Studio
 - Android device connected or emulator running
 
 ### Steps to run the Android client
@@ -50,7 +49,7 @@ rm data/bloomFilter.txt
 
 ### Configuration
 #### Default
-The app connects to http://localhost:8080, 
+The app connects to http://localhost:8080,
 Run the following command in your terminal
 to reverse the port from your host machine to the Android device/emulator:
 ```bash
@@ -70,4 +69,3 @@ adb -s <device-id> reverse tcp:8080 tcp:8080
 Change the `api` value in `src/android/app/src/main/res/values/Strings.xml`
 to `http://<your-host-ip>:8080` in order to
 connect via your host's IP address (for android emulators use `http://10.0.2.2:8080`)
- 
