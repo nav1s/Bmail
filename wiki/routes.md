@@ -84,6 +84,7 @@ This document outlines the available API endpoints for the application, grouped 
 
 - **POST** `/api/tokens`
     - Description: Logs in a user.
+    - Auth: Not required
 
 ---
 
@@ -91,12 +92,15 @@ This document outlines the available API endpoints for the application, grouped 
 
 - **POST** `/api/users`
     - Description: Creates a new user, optionally with an image file.
+    - Auth: Not required
 
 - **GET** `/api/users/username/:username`
     - Description: Gets a user by username, also returns path of image file if it exists.
+    - Auth: Not Required
 
 - **GET** `/api/users/:id`
     - Description: Gets a user by their ID.
+    - Auth: Not Required
 
 - **PATCH** `/api/users`
     - Description: Updates a user by ID, optionally with an image.
