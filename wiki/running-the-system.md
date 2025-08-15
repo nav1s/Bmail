@@ -1,5 +1,5 @@
-## Running the System
-### Cloning the Repository
+# Running the System
+## Cloning the Repository
 
 ```bash
 # Using HTTPS
@@ -13,8 +13,12 @@ cd bmail
 git checkout part4
 ```
 
-### Running the Application
+## Running the web server
+### Prerequisites
+- Docker installed
+- Docker Compose installed
 
+### Steps to run the web server
 ```bash
 docker compose down --remove-orphans
 docker compose up --detach --pull always --remove-orphans --build --wait bloom-filter web-server mongo mongo-express
@@ -32,3 +36,21 @@ docker compose down --remove-orphans
 rm data/bloomFilter.txt
 ```
 
+## Starting the Android client
+### Prerequisites
+- Android Studio installed
+- Android SDK and emulator set up
+- Android device connected or emulator running
+
+### Steps to run the Android client
+1. Open the Android project in Android Studio.
+2. Connect an Android device or start an emulator.
+3. Run the project from Android Studio.
+
+### Configuration
+- Default: The app connects to http://localhost:8080. Use
+```adb reverse tcp:8080 tcp:8080```
+to forward the port from your host to the device/emulator.
+- Custom: Change the `api` value in `Strings.xml` to
+http://<your-host-ip>:8080 to connect via your host's IP address
+(for android emulator use `http://10.0.2.2`)
