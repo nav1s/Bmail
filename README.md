@@ -1,22 +1,24 @@
 # Bmail
 
 ## Previous parts of this project
-> - Part 1: https://github.com/Binja12/Bmail/tree/part1
-> - Part 2: https://github.com/Binja12/Bmail/tree/part2
-> - Part 3: https://github.com/Binja12/Bmail/tree/part3
-> - Part 4: https://github.com/Binja12/Bmail/tree/part4
-> - Part 5: will be completed past the deadline due to miluim service
+- Part 1: https://github.com/Binja12/Bmail/tree/part1
+- Part 2: https://github.com/Binja12/Bmail/tree/part2
+- Part 3: https://github.com/Binja12/Bmail/tree/part3
+- Part 4: https://github.com/Binja12/Bmail/tree/part4
+- Part 5: will be completed past the deadline due to miluim service
 
-## Overview
-Bmail is a mail server application featuring a C++-based Bloom filter for blacklist management and
-a Node.js web server providing a RESTful API for mail operations.
-The system includes Android and web clients for user interaction, with MongoDB for data storage.
-Docker support simplifies deployment and testing.
+## Features
+- **C++ Bloom Filter**: Efficiently manages blacklists to prevent spam.
+- **Node.js REST API**: Provides endpoints for mail operations, user management, and more
+- **Android Client**: A mobile application for accessing and managing emails.
+- **Web Client**: A web-based interface for email management.
+- **MongoDB**: Used for data storage, ensuring scalability and flexibility.
+- **Docker Support**: Simplifies deployment and testing with containerization.
 
 ## Documentation
 Documentation can be found on [wiki](wiki/README.md).
 
-## Jira
+## Task Management
 For task management and issue tracking, we use
 [Jira](https://live-team-binja.atlassian.net/jira/software/projects/BMAIL/boards/34/timeline)
 
