@@ -14,7 +14,7 @@ The system includes Android and web clients for user interaction, with MongoDB f
 Docker support simplifies deployment and testing.
 
 ## Documentation
-All of the documentation for this project is available in the [wiki](wiki/README.md).
+Documentation can be found on [wiki](wiki/README.md).
 
 ## License
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details
