@@ -56,5 +56,5 @@ adb reverse tcp:8080 tcp:8080
 to forward the port from your host to the device/emulator.
 - Custom: Change the `api` value in `Strings.xml` to
 `http://<your-host-ip>:8080` to connect via your host's IP address
-(for android emulators use `http://10.0.2.2`)
+(for android emulators use `http://10.0.2.2:8080`)
  
