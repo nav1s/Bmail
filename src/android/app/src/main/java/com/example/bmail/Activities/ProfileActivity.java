@@ -2,14 +2,12 @@ package com.example.bmail.Activities;
 
 import com.example.bmail.Utils.PhotoSelectionHelper;
 
-import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
@@ -33,10 +31,6 @@ public class ProfileActivity extends AppCompatActivity {
     private boolean hasUnsavedChanges = false;
     private TextInputEditText firstNameEditText;
     private TextInputEditText lastNameEditText;
-    private TextInputEditText usernameEditText;
-    private TextInputEditText currentPasswordEditText;
-    private TextInputEditText newPasswordEditText;
-    private TextInputEditText confirmPasswordEditText;
     private ImageView profileImage;
     private SwitchMaterial themeSwitch;
     private boolean initializingFields = true;
@@ -63,7 +57,6 @@ public class ProfileActivity extends AppCompatActivity {
             if (user != null) {
                 firstNameEditText.setText(user.getFirstName());
                 lastNameEditText.setText(user.getLastName());
-                usernameEditText.setText(user.getUsername());
                 userRepository.loadImage(user.getImage());
                 userRepository.getUserImage().observe(this, image -> {
                     if (image == null) {
@@ -115,10 +108,6 @@ public class ProfileActivity extends AppCompatActivity {
     private void initializeInputFields() {
         firstNameEditText = findViewById(R.id.first_name_edit_text);
         lastNameEditText = findViewById(R.id.last_name_edit_text);
-        usernameEditText = findViewById(R.id.username_edit_text);
-        currentPasswordEditText = findViewById(R.id.current_password_edit_text);
-        newPasswordEditText = findViewById(R.id.new_password_edit_text);
-        confirmPasswordEditText = findViewById(R.id.confirm_password_edit_text);
         profileImage = findViewById(R.id.profile_image);
         themeSwitch = findViewById(R.id.theme_switch);
     }
@@ -145,10 +134,6 @@ public class ProfileActivity extends AppCompatActivity {
 
         firstNameEditText.addTextChangedListener(textWatcher);
         lastNameEditText.addTextChangedListener(textWatcher);
-        usernameEditText.addTextChangedListener(textWatcher);
-        currentPasswordEditText.addTextChangedListener(textWatcher);
-        newPasswordEditText.addTextChangedListener(textWatcher);
-        confirmPasswordEditText.addTextChangedListener(textWatcher);
     }
 
     /**
