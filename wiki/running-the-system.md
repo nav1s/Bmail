@@ -50,7 +50,9 @@ rm data/bloomFilter.txt
 
 ### Configuration
 - Default: The app connects to http://localhost:8080. Use
-```adb reverse tcp:8080 tcp:8080```
+```bash
+adb reverse tcp:8080 tcp:8080
+```
 to forward the port from your host to the device/emulator.
 - Custom: Change the `api` value in `Strings.xml` to
 http://<your-host-ip>:8080 to connect via your host's IP address
