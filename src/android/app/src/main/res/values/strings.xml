@@ -62,4 +62,13 @@
     <string name="dark_mode">Dark Mode</string>
     <string name="mark_as_spam">Mark as Spam</string>
     <string name="delete_permanently">Delete Permanently</string>
+    <string name="mail_restored">Mail restored</string>
+    <string name="mail_moved_to_trash">Mail moved to trash</string>
+    <string name="change_labels">Change Labels</string>
+    <string name="confirm_delete">Confirm Delete</string>
+    <string name="permanently_delete_this_email_this_action_cannot_be_undone">Permanently delete this email? This action cannot be undone.</string>
+    <string name="mail_permanently_deleted">Mail permanently deleted</string>
+    <string name="cancel">Cancel</string>
+    <string name="restore_from_trash">Restore from Trash</string>
+    <string name="move_to_trash">Move to Trash</string>
 </resources>
