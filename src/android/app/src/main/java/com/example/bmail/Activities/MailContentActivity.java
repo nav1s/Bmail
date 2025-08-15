@@ -22,9 +22,11 @@ import com.example.bmail.R;
 import com.example.bmail.ViewModels.MailContentViewModel;
 
 import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -215,7 +217,8 @@ public class MailContentActivity extends AppCompatActivity {
         tvRecipients.setText(String.join(", ", mail.getTo()));
         tvMailBody.setText(mail.getBody());
 
-        DateFormat dateFormat = android.text.format.DateFormat.getDateFormat(this);
+        DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm",
+                Locale.getDefault());
         String formattedDate = dateFormat.format(mail.getUpdatedAt());
         tvTimestamp.setText(formattedDate);
     }

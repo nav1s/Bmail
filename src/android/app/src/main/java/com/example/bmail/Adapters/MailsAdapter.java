@@ -13,7 +13,10 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.bmail.Entities.ServerMail;
 import com.example.bmail.R;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.List;
+import java.util.Locale;
 
 public class MailsAdapter extends RecyclerView.Adapter<MailsAdapter.mailViewHolder> {
     private final View.OnClickListener clickListener;
@@ -24,6 +27,7 @@ public class MailsAdapter extends RecyclerView.Adapter<MailsAdapter.mailViewHold
         private final TextView sender;
         private final TextView subject;
         private final TextView body;
+        private final TextView timeTextView;
         private ServerMail currentMail;
 
         public mailViewHolder(@NonNull View itemView, View.OnClickListener clickListener) {
@@ -31,6 +35,7 @@ public class MailsAdapter extends RecyclerView.Adapter<MailsAdapter.mailViewHold
             sender = itemView.findViewById(R.id.senderTextView);
             subject = itemView.findViewById(R.id.subjectTextView);
             body = itemView.findViewById(R.id.previewTextView);
+            timeTextView = itemView.findViewById(R.id.timeTextView);
 
             itemView.setOnClickListener(v -> {
                 if (currentMail != null) {
@@ -71,6 +76,11 @@ public class MailsAdapter extends RecyclerView.Adapter<MailsAdapter.mailViewHold
         holder.sender.setText(currentMail.getFrom());
         holder.subject.setText(currentMail.getTitle());
         holder.body.setText(currentMail.getBody());
+
+        if (currentMail.getUpdatedAt() != null) {
+            DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault());
+            holder.timeTextView.setText(dateFormat.format(currentMail.getUpdatedAt()));
+        }
         holder.setMail(currentMail);
     }
     @Override
