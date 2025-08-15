@@ -57,8 +57,8 @@ public class MailRepository {
         mailApi.searchMail(query);
     }
 
-    public void sendMail(ClientMail mail) {
-        mailApi.sendMail(mail);
+    public void sendMail(ClientMail mail, retrofit2.Callback<Void> callback) {
+        mailApi.sendMail(mail, callback);
     }
 
     public void updateDraft(ServerMail mail, String mailId) {

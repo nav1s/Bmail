@@ -105,7 +105,7 @@ public class MailApi {
 
     }
 
-    public void sendMail(ClientMail mail) {
+    public void sendMail(ClientMail mail, Callback<Void> callback) {
         String token = getToken();
         Log.i("MailApi", "Sending mail with token: " + token);
         String json = gson.toJson(mail);
@@ -113,22 +113,7 @@ public class MailApi {
         Log.i("MailApi", "Mail object: " + json);
 
         Call<Void> call = webServiceApi.sendMail("Bearer " + token, mail);
-        call.enqueue(new Callback<>() {
-            @Override
-            public void onResponse(@NonNull Call<Void> call,
-                                   @NonNull Response<Void> response) {
-                if (response.isSuccessful()) {
-                    Log.i("MailApi", "Mail sent successfully");
-                } else {
-                    Log.e("MailApi", "Failed to send mail: " + response.message());
-                }
-            }
-
-            @Override
-            public void onFailure(@NonNull Call<Void> call, @NonNull Throwable t) {
-                Log.e("MailApi", "Network error while sending mail: " + t.getMessage());
-            }
-        });
+        call.enqueue(callback);
     }
 
     public void updateDraft(ServerMail mail, String mailId) {

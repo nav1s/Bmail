@@ -8,6 +8,7 @@ import com.example.bmail.Entities.BmailApplication;
 import com.example.bmail.Entities.ClientMail;
 import com.example.bmail.Entities.ServerMail;
 import com.example.bmail.Repositories.MailRepository;
+import com.example.bmail.Repositories.UserRepository;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,12 +16,13 @@ import java.util.List;
 public class ComposeViewModel extends androidx.lifecycle.ViewModel {
 
     private final MailRepository mailRepository = BmailApplication.getInstance().getMailRepository();
+    private final UserRepository userRepository = BmailApplication.getInstance().getUserRepository();
 
     public ComposeViewModel(){
 
     }
 
-    public void sendMail(@NonNull String to, String subject, String message) {
+    public void sendMail(@NonNull String to, String subject, String message, retrofit2.Callback<Void> callback) {
 
         // Validate input
         if (to.isEmpty()) {
@@ -35,14 +37,17 @@ public class ComposeViewModel extends androidx.lifecycle.ViewModel {
             message = "";
         }
 
-        // todo replace sender with actual user email
-        ClientMail mail = new ClientMail(subject, message, "Me", List.of(to), false);
+        // get the username from the user repository
+        String username = userRepository.getUserData().getValue() != null ?
+                userRepository.getUserData().getValue().getUsername() :
+                "Me";
+        ClientMail mail = new ClientMail(subject, message, username, List.of(to), false);
         // log the sent mail for debugging
         Log.d("ComposeViewModel", "Sending mail: " + mail);
-        mailRepository.sendMail(mail);
+        mailRepository.sendMail(mail, callback);
     }
 
-    public void createDraft(String to, String subject, String message){
+    public void createDraft(String to, String subject, String message, retrofit2.Callback<Void> callback) {
         List<String> toList;
         if (to != null && !to.isEmpty()) {
             toList = List.of(to);
@@ -50,11 +55,14 @@ public class ComposeViewModel extends androidx.lifecycle.ViewModel {
             toList = new ArrayList<>();
         }
 
-        // todo replace sender with actual user email
-        ClientMail mail = new ClientMail(subject, message, "Me", toList, true);
+        // get the username from the user repository
+        String username = userRepository.getUserData().getValue() != null ?
+                userRepository.getUserData().getValue().getUsername() :
+                "Me";
+        ClientMail mail = new ClientMail(subject, message, username, toList, true);
         // log the sent mail for debugging
         Log.d("ComposeViewModel", "Creating draft: " + mail);
-        mailRepository.sendMail(mail);
+        mailRepository.sendMail(mail, callback);
     }
 
     public void updateDraft(String to, String subject, String message, String mailId, Boolean draft) {
@@ -62,8 +70,12 @@ public class ComposeViewModel extends androidx.lifecycle.ViewModel {
         Log.d("ComposeViewModel", "Updating draft for mailId: " + mailId +
                 " with to: " + to);
 
-        // todo replace sender with actual user email
-        ServerMail mail = new ServerMail(subject, message, "Me", List.of(to), draft, null);
+        // get the username from the user repository
+        String username = userRepository.getUserData().getValue() != null ?
+                userRepository.getUserData().getValue().getUsername() :
+                "Me";
+        ServerMail mail = new ServerMail(subject, message, username,
+                List.of(to), draft, null);
         // log the draft being updated for debugging
         Log.d("ComposeViewModel", "Updating draft: " + mail);
         mailRepository.updateDraft(mail, mailId);
