@@ -40,6 +40,7 @@ rm data/bloomFilter.txt
 ## Running the Android client
 ### Prerequisites
 - Android Studio
+- Android SDK installed
 - Android device connected or emulator running
 
 ### Steps to run the Android client
@@ -47,8 +48,20 @@ rm data/bloomFilter.txt
 2. Connect an Android device or start an emulator.
 3. Run the project from Android Studio.
 
-### Configuration
-#### Default
+### Connecting the Android client to the server
+#### Primary Method
+##### locating adb from Android Studio
+
+If you need to locate the `adb` (Android Debug Bridge) executable from Android Studio:
+
+1. Open Android Studio.
+2. Go to **File > Settings**
+3. Navigate to **Languages & Frameworks > Android SDK**.
+4. The path to `adb` is typically shown at the top as the **Android SDK Location**.
+5. The `adb` executable is located in the `platform-tools` directory inside your SDK location.
+6. add the `platform-tools` directory to your system's PATH environment variable for easier access.
+
+##### Connecting via adb reverse
 The app connects to http://localhost:8080,
 Run the following command in your terminal
 to reverse the port from your host machine to the Android device/emulator:
@@ -65,7 +78,7 @@ Then, to reverse the port for a specific device use:
 adb -s <device-id> reverse tcp:8080 tcp:8080
 ```
 
-#### Custom
+#### Secondary Method
 Change the `api` value in `src/android/app/src/main/res/values/Strings.xml`
 to `http://<your-host-ip>:8080` in order to
 connect via your host's IP address (for android emulators use `http://10.0.2.2:8080`)
