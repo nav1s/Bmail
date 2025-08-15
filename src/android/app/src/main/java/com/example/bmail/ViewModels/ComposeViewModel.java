@@ -4,6 +4,7 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 
+import com.example.bmail.Entities.BmailApplication;
 import com.example.bmail.Entities.ClientMail;
 import com.example.bmail.Entities.ServerMail;
 import com.example.bmail.Repositories.MailRepository;
@@ -13,10 +14,10 @@ import java.util.List;
 
 public class ComposeViewModel extends androidx.lifecycle.ViewModel {
 
-    private final MailRepository mailRepository;
+    private final MailRepository mailRepository = BmailApplication.getInstance().getMailRepository();
 
-    public ComposeViewModel(MailRepository mailRepository) {
-        this.mailRepository = mailRepository;
+    public ComposeViewModel(){
+
     }
 
     public void sendMail(@NonNull String to, String subject, String message) {
