@@ -3,7 +3,8 @@
     android:height="24dp"
     android:viewportWidth="24"
     android:viewportHeight="24"
-    android:tint="?attr/colorOnSurface">
+    android:tint="@color/icon_tint">
+
   <path
       android:fillColor="@android:color/white"
       android:pathData="M360,720L120,480L360,240L416,296L272,440L840,440L840,520L272,520L416,664L360,720Z"/>
