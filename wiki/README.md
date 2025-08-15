@@ -9,8 +9,8 @@ and understand the Bmail system.
 ## Table of Contents
 
 1. [Running the System](running-the-system.md)
-2. [Web Screenshots](web-screenshots.md)
-3. [Android Screenshots](android-screenshots.md)
+2. [Web Client Screenshots](web-screenshots.md)
+3. [Android Client Screenshots](android-screenshots.md)
 4. [Routes](routes.md)
 
 ---

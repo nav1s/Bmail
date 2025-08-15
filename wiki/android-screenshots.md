@@ -52,5 +52,3 @@ _Description: Configure app preferences and account settings._
 ![Settings Screen](images/settings.png)
 
 ---
-
-_Add more screenshots and descriptions as needed._
