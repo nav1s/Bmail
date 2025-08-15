@@ -49,12 +49,25 @@ rm data/bloomFilter.txt
 3. Run the project from Android Studio.
 
 ### Configuration
-- Default: The app connects to http://localhost:8080. Use
+#### Default
+The app connects to http://localhost:8080, 
+Run the following command in your terminal
+to reverse the port from your host machine to the Android device/emulator:
 ```bash
 adb reverse tcp:8080 tcp:8080
 ```
-to forward the port from your host to the device/emulator.
-- Custom: Change the `api` value in `Strings.xml` to
-`http://<your-host-ip>:8080` to connect via your host's IP address
-(for android emulators use `http://10.0.2.2:8080`)
+
+if you have multiple devices/emulators connected find the device ID with:
+```bash
+adb devices
+```
+Then, to reverse the port for a specific device use:
+```bash
+adb -s <device-id> reverse tcp:8080 tcp:8080
+```
+
+#### Custom
+Change the `api` value in `src/android/app/src/main/res/values/Strings.xml`
+to `http://<your-host-ip>:8080` in order to
+connect via your host's IP address (for android emulators use `http://10.0.2.2:8080`)
  
