@@ -1,6 +1,6 @@
 # Bmail
 
-> **Previous parts of this project:**
+## Previous parts of this project
 > - Part 1: https://github.com/Binja12/Bmail/tree/part1
 > - Part 2: https://github.com/Binja12/Bmail/tree/part2
 > - Part 3: https://github.com/Binja12/Bmail/tree/part3
@@ -16,6 +16,9 @@ Docker support simplifies deployment and testing.
 ## Documentation
 Documentation can be found on [wiki](wiki/README.md).
 
+## Jira
+For task management and issue tracking, we use
+[Jira](https://live-team-binja.atlassian.net/jira/software/projects/BMAIL/boards/34/timeline)
+
 ## License
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details
-
