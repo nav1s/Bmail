@@ -7,11 +7,11 @@ This document outlines the available API endpoints for the application, grouped 
 ## Blacklist Routes
 
 - **POST** `/api/blacklist`
-    - Description: Adds an email to the blacklist.
+    - Description: Adds a list of urls to the blacklist.
     - Auth: Required
 
 - **DELETE** `/api/blacklist/:id`
-    - Description: Removes an email from the blacklist by ID.
+    - Description: Removes a list of urls from the blacklist.
     - Auth: Required
 
 ---
@@ -23,7 +23,7 @@ This document outlines the available API endpoints for the application, grouped 
     - Auth: Required
 
 - **POST** `/api/labels`
-    - Description: Creates a new label.
+    - Description: Creates a new label for the authenticated user.
     - Auth: Required
 
 - **GET** `/api/labels/:id`
