@@ -142,8 +142,26 @@ public class ComposeActivity extends AppCompatActivity {
                         finish();
                     } else {
                         Log.e("ComposeActivity", "Failed to send mail: " + response.message());
-                        Toast.makeText(ComposeActivity.this,
-                                "Failed to send mail: " + response.message(), Toast.LENGTH_SHORT).show();
+                        try(
+                                okhttp3.ResponseBody errorBody = response.errorBody()) {
+                            if (errorBody != null) {
+                                String errorMessage = errorBody.string();
+                                Log.e("ComposeActivity", "Error body: " + errorMessage);
+                                Toast.makeText(ComposeActivity.this,
+                                        "Failed to send mail: " + errorMessage,
+                                        Toast.LENGTH_SHORT).show();
+                            } else {
+                                Log.e("ComposeActivity", "No error body available.");
+                                Toast.makeText(ComposeActivity.this,
+                                        "Failed to send mail: " + response.message(),
+                                        Toast.LENGTH_SHORT).show();
+                            }
+                        } catch (Exception e) {
+                            Log.e("ComposeActivity", "Error reading error body", e);
+                            Toast.makeText(ComposeActivity.this,
+                                    "Failed to send mail: " + response.message(),
+                                    Toast.LENGTH_SHORT).show();
+                        }
                     }
                 }
 
@@ -151,7 +169,7 @@ public class ComposeActivity extends AppCompatActivity {
                 public void onFailure(@NonNull retrofit2.Call<Void> call, @NonNull Throwable t) {
                     Log.e("ComposeActivity", "Error sending mail: " + t.getMessage());
                     Toast.makeText(ComposeActivity.this,
-                            "Error sending mail: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                            t.getMessage(), Toast.LENGTH_SHORT).show();
                 }
             });
         }
