@@ -4,6 +4,8 @@ const Mail = require('../models/mailsModel');
 const User = require('../models/usersModel');
 const { Label } = require('../models/labelsModel');
 const { anyUrlBlacklisted, addUrlsToBlacklist } = require('./blacklistService');
+const { findUserByUsername } = require('./userService');
+
 
 /** Minimal "looks like an address": requires exactly one @ and no spaces (demo). */
 const EMAIL_RE = /^[^\s@]+@[^\s@]+$/;
@@ -67,34 +69,44 @@ function normalizeUrl(u) {
  * Reduce a mail doc/object to a safe output DTO based on schema `public` flags.
  * Always exposes a top-level `id` (string) derived from `_id`.
  */
-function filterMailForOutput(mail) {
+async function filterMailForOutput(mail) {
   const output = {};
-
-  // Always expose id (string), even if _id isn't flagged public
-  if (mail && (mail._id || mail.id)) {
-    output.id = String(mail._id || mail.id);
-  }
+  if (mail && (mail._id || mail.id)) output.id = String(mail._id || mail.id);
 
   const schemaPaths = Mail.schema.paths;
-
-  // Include paths flagged as public (path-level OR caster-level for arrays)
   Object.keys(schemaPaths).forEach((path) => {
     const def = schemaPaths[path];
     const isPublic =
       (def.options && def.options.public) ||
       (def.caster && def.caster.options && def.caster.options.public);
-
-    if (!isPublic) return;
-    if (path === '_id') return; // we've already set output.id
-
+    if (!isPublic || path === '_id') return;
     const value = mail[path];
     if (typeof value !== 'undefined') output[path] = value;
   });
 
-  // Ensure labels are present and normalized (critical for UI state like Spam/Starred)
   if (Array.isArray(mail.labels)) {
     const labels = Array.isArray(output.labels) ? output.labels : mail.labels;
     output.labels = labels.map((l) => String(l));
+  }
+
+  // Attach senderImage (try several fields, then a readable fallback)
+  try {
+    if (mail.from) {
+      const sender = await findUserByUsername(mail.from);   // returns lean user
+      const img =
+        sender?.image ||           // your project uses this when users upload a photo :contentReference[oaicite:0]{index=0}
+        sender?.avatarUrl ||       // alternate name (if you add it later)
+        sender?.profileImage ||    // another common alias
+        null;
+
+      // Fallback so UI never gets null — initials via ui-avatars (no account needed)
+      output.senderImage = img || `https://ui-avatars.com/api/?name=${encodeURIComponent(mail.from)}&background=random`;
+    } else {
+      output.senderImage = `https://ui-avatars.com/api/?name=?&background=random`;
+    }
+  } catch {
+    // If lookup fails, still provide a non-null fallback
+    output.senderImage = `https://ui-avatars.com/api/?name=${encodeURIComponent(mail?.from || '?')}&background=random`;
   }
 
   return output;
@@ -137,7 +149,7 @@ function canUserAccessMail(mail, username) {
 async function buildMail(mailData, { userId, system }) {
   const { spamId, sentId, draftsId } = system || {};
 
-  // Sender is always required (same as before)
+  // sender always required
   assertNonEmptyString('from', mailData.from);
   if (/@/.test(mailData.from)) {
     throw createError('Sender username must not contain "@" (demo rule)', { status: 400 });
@@ -145,21 +157,17 @@ async function buildMail(mailData, { userId, system }) {
 
   const isDraft = !!mailData.draft;
 
-  // --- DRAFT: require at least one non-empty field, but do NOT force each to be non-empty ---
+  // compute presence of fields
   const hasTitle = typeof mailData.title === 'string' && mailData.title.trim() !== '';
   const hasBody  = typeof mailData.body  === 'string' && mailData.body.trim()  !== '';
 
-  // For "to", consider only real addresses after tokenization
+  // tokenize / validate recipients only if provided (drafts can omit)
   let toTokens = [];
   if (Array.isArray(mailData.to)) {
     const tokens = tokenizeAddresses(mailData.to);
-    if (!isDraft) {
-      // sending: to[] must exist and be valid
-      if (tokens.length === 0) {
-        throw createError('to must be a non-empty array', { status: 400 });
-      }
+    if (!isDraft && tokens.length === 0) {
+      throw createError('to must be a non-empty array', { status: 400 });
     }
-    // if there ARE tokens, validate them; if zero tokens AND draft, that’s okay
     if (tokens.length > 0) {
       const invalid = tokens.filter((t) => !EMAIL_RE.test(t));
       if (invalid.length) {
@@ -168,40 +176,39 @@ async function buildMail(mailData, { userId, system }) {
       toTokens = tokens;
     }
   } else if (!isDraft) {
-    // sending without any "to" field
     throw createError('to must be a non-empty array', { status: 400 });
   }
 
   if (isDraft) {
-    const hasTo = toTokens.length > 0; // only counts if there are valid recipients
+    const hasTo = toTokens.length > 0;
     if (!(hasTitle || hasBody || hasTo)) {
       throw createError('Draft must include at least one of: title, body, or to', { status: 400 });
     }
-    // IMPORTANT: do NOT assertNonEmptyString for title/body here; empties are allowed in drafts.
+    // do NOT assert non-empty strings for title/body in drafts
   } else {
     // sending: strict
     assertNonEmptyString('title', mailData.title);
-    assertNonEmptyString('body', mailData.body);
+    assertNonEmptyString('body',  mailData.body);
   }
 
-  // URL extraction is safe with missing/empty fields
+  // URLs safe with missing fields
   const rawUrls = extractUrls([mailData.title, mailData.body].filter(Boolean).join(' '));
   const urls = rawUrls.map(normalizeUrl).filter(Boolean);
 
-  // sender-side labels
+  // base labels (sender side)
   const labels = [];
   if (isDraft ? draftsId : sentId) labels.push(isDraft ? draftsId : sentId);
 
-  // spam check (sender copy)
+  // spam flag on sender copy
   const isSpam = urls.length > 0 && (await anyUrlBlacklisted(urls));
   if (isSpam && spamId) labels.push(spamId);
 
-  // recipient inbox labels only when sending
+  // ✨ RECIPIENT INBOX LABELS — ONLY WHEN SENDING
   if (!isDraft && toTokens.length) {
     for (const addr of toTokens) {
       const rUsername = internalUsernameFromAddress(addr);
       if (!rUsername) continue;
-      const recipient = await User.findOne({ username: rUsername }).lean();
+      const recipient = await User.findOne({ username: rUsername }, { _id: 1 }).lean();
       if (!recipient) continue;
       const inboxLabel = await Label.findOne(
         { userId: recipient._id, name: { $regex: '^inbox$', $options: 'i' } },
@@ -217,7 +224,7 @@ async function buildMail(mailData, { userId, system }) {
 
   const mail = await Mail.create({
     ...mailData,
-    to: toTokens.length ? toTokens : undefined, // undefined allowed for drafts
+    to: toTokens.length ? toTokens : undefined,  // drafts can omit or be empty
     labels: dedupedLabelIds,
     urls
   });
@@ -226,8 +233,9 @@ async function buildMail(mailData, { userId, system }) {
     await tagMailsWithUrlsAsSpam(userId, mailData.from, urls, spamId);
   }
 
-  return filterMailForOutput(mail.toObject ? mail.toObject() : mail);
+  return await filterMailForOutput(mail.toObject ? mail.toObject() : mail);
 }
+
 
 
 /**
@@ -281,7 +289,9 @@ async function getMailsForUser(username, spamLabelId, trashLabelId, labelId = nu
     .limit(Math.max(1, Number(limit) || 50))
     .lean();
 
-  return docs.map(filterMailForOutput);
+  const outputs = await Promise.all(docs.map((m) => filterMailForOutput(m)));
+  return outputs;
+
 }
 
 /**
@@ -293,7 +303,7 @@ async function findMailByIdForUser(id, username) {
   if (!canUserAccessMail(mail, username)) {
     throw createError('User does not have access to this mail', { status: 403 });
   }
-  return filterMailForOutput(mail.toObject ? mail.toObject() : mail);
+  return await filterMailForOutput(mail.toObject ? mail.toObject() : mail);
 }
 
 /**
@@ -307,15 +317,13 @@ async function editMailForUser(mailId, username, updates) {
   if (!mail) throw createError('Mail not found', { status: 404 });
   if (mail.from !== username) throw createError('Forbidden', { status: 403 });
 
-  // Apply updates without forcing non-empty strings for drafts
-  // We only enforce strict checks when the result will be NON-DRAFT.
+  // apply updates (drafts can set empties)
   if (typeof updates.title !== 'undefined') mail.title = updates.title;
   if (typeof updates.body  !== 'undefined') mail.body  = updates.body;
 
   if (typeof updates.to !== 'undefined') {
     if (Array.isArray(updates.to)) {
       const tokens = tokenizeAddresses(updates.to);
-      // Only validate tokens if there are any; empty is allowed for drafts
       if (tokens.length > 0) {
         const invalid = tokens.filter((t) => !EMAIL_RE.test(t));
         if (invalid.length) {
@@ -324,57 +332,93 @@ async function editMailForUser(mailId, username, updates) {
       }
       mail.to = tokens; // may be [] for drafts
     } else {
-      mail.to = undefined; // allow removal for drafts
+      mail.to = undefined; // allowed for drafts
     }
   }
 
-  // Recompute URLs if title/body changed
+  // recompute URLs if needed
   if (typeof updates.title !== 'undefined' || typeof updates.body !== 'undefined') {
     const raw = extractUrls([mail.title, mail.body].filter(Boolean).join(' '));
     mail.urls = raw.map(normalizeUrl).filter(Boolean);
   }
 
-  // Determine final draft state
+  // sender (for labels lookup)
+  const sender = await User.findOne({ username }, { _id: 1 }).lean();
+  if (!sender) throw createError('Author user not found', { status: 404 });
+
+  // fetch default labels for sender
+  const [draftsLbl, sentLbl] = await Promise.all([
+    Label.findOne({ userId: sender._id, name: { $regex: '^drafts$', $options: 'i' } }, { _id: 1 }).lean(),
+    Label.findOne({ userId: sender._id, name: { $regex: '^sent$', $options: 'i' } }, { _id: 1 }).lean(),
+  ]);
+  const draftsId = draftsLbl?._id ? String(draftsLbl._id) : null;
+  const sentId   = sentLbl?._id   ? String(sentLbl._id)   : null;
+
+  // current labels set
+  const labelSet = new Set((mail.labels || []).map((id) => String(id)));
+
+  // final draft state after update
   const willBeDraft = typeof updates.draft !== 'undefined' ? !!updates.draft : !!mail.draft;
 
-  // Strict validation ONLY if final state is non-draft (i.e., sending)
-  if (!willBeDraft) {
+  // helper to find/remove/add inbox labels per current recipients
+  async function addRecipientInboxLabels() {
+    if (!Array.isArray(mail.to) || mail.to.length === 0) return;
+    for (const addr of mail.to) {
+      const rUsername = internalUsernameFromAddress(addr);
+      if (!rUsername) continue;
+      const recipient = await User.findOne({ username: rUsername }, { _id: 1 }).lean();
+      if (!recipient) continue;
+      const inbox = await Label.findOne(
+        { userId: recipient._id, name: { $regex: '^inbox$', $options: 'i' } },
+        { _id: 1 }
+      ).lean();
+      if (inbox && inbox._id) labelSet.add(String(inbox._id));
+    }
+  }
+  async function removeRecipientInboxLabels() {
+    if (!Array.isArray(mail.to) || mail.to.length === 0) return;
+    for (const addr of mail.to) {
+      const rUsername = internalUsernameFromAddress(addr);
+      if (!rUsername) continue;
+      const recipient = await User.findOne({ username: rUsername }, { _id: 1 }).lean();
+      if (!recipient) continue;
+      const inbox = await Label.findOne(
+        { userId: recipient._id, name: { $regex: '^inbox$', $options: 'i' } },
+        { _id: 1 }
+      ).lean();
+      if (inbox && inbox._id) labelSet.delete(String(inbox._id));
+    }
+  }
+
+  if (willBeDraft) {
+    // staying/going to draft: no inbox labels
+    if (draftsId) labelSet.add(draftsId);
+    if (sentId)   labelSet.delete(sentId);
+    await removeRecipientInboxLabels();
+    mail.draft = true;
+  } else {
+    // switching to send: enforce strict required fields
     const hasTitle = typeof mail.title === 'string' && mail.title.trim() !== '';
     const hasBody  = typeof mail.body  === 'string' && mail.body.trim()  !== '';
     const hasTo    = Array.isArray(mail.to) && mail.to.length > 0;
     if (!(hasTitle && hasBody && hasTo)) {
       throw createError('Cannot send: title, body and at least one recipient are required', { status: 400 });
     }
-  }
 
-  // Labels (keep existing behavior, minimal)
-  const sender = await User.findOne({ username }, { _id: 1 }).lean();
-  if (!sender) throw createError('Author user not found', { status: 404 });
-
-  const [draftsLbl, sentLbl] = await Promise.all([
-    Label.findOne({ userId: sender._id, name: { $regex: '^drafts$', $options: 'i' } }, { _id: 1 }).lean(),
-    Label.findOne({ userId: sender._id, name: { $regex: '^sent$', $options: 'i' } }, { _id: 1 }).lean(),
-  ]);
-
-  const draftsId = draftsLbl?._id ? String(draftsLbl._id) : null;
-  const sentId   = sentLbl?._id   ? String(sentLbl._id)   : null;
-
-  const labelSet = new Set((mail.labels || []).map((id) => String(id)));
-
-  if (willBeDraft) {
-    if (draftsId) labelSet.add(draftsId);
-    if (sentId)   labelSet.delete(sentId);
-    mail.draft = true;
-  } else {
     if (draftsId) labelSet.delete(draftsId);
     if (sentId)   labelSet.add(sentId);
+
+    // ✨ ensure recipients’ INBOX labels are present on send
+    await addRecipientInboxLabels();
+
     mail.draft = false;
   }
 
   mail.labels = Array.from(labelSet).map((id) => new Types.ObjectId(id));
   await mail.save();
-  return filterMailForOutput(mail.toObject ? mail.toObject() : mail);
+  return await filterMailForOutput(mail.toObject ? mail.toObject() : mail);
 }
+
 
 
 /**
@@ -462,7 +506,10 @@ async function searchMailsForUser(username, query, limit = 50) {
   console.log(raw);
 
   const visible = raw.filter((m) => canUserAccessMail(m, username));
-  return visible.slice(0, limit).map(filterMailForOutput);
+  const slice = visible.slice(0, limit);
+  const outputs = await Promise.all(slice.map((m) => filterMailForOutput(m)));
+  return outputs;
+
 }
 
 /**
@@ -481,7 +528,7 @@ async function addLabelToMail(mailId, labelId, username) {
     await mail.save();
   }
 
-  return filterMailForOutput(mail.toObject ? mail.toObject() : mail);
+  return await filterMailForOutput(mail.toObject ? mail.toObject() : mail);
 }
 
 /**
@@ -498,7 +545,7 @@ async function removeLabelFromMail(mailId, labelId, username) {
   mail.labels = (mail.labels || []).filter((id) => String(id) !== lId);
   await mail.save();
 
-  return filterMailForOutput(mail.toObject ? mail.toObject() : mail);
+  return await filterMailForOutput(mail.toObject ? mail.toObject() : mail);
 }
 
 /**
