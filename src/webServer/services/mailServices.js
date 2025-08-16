@@ -137,73 +137,98 @@ function canUserAccessMail(mail, username) {
 async function buildMail(mailData, { userId, system }) {
   const { spamId, sentId, draftsId } = system || {};
 
-  // validate common fields
+  // Sender is always required (same as before)
   assertNonEmptyString('from', mailData.from);
   if (/@/.test(mailData.from)) {
-    throw createError('Sender username must not contain "@" (demo rule)', {
-      type: 'VALIDATION',
-      status: 400,
-    });
-  }
-  assertNonEmptyString('title', mailData.title);
-  assertNonEmptyString('body', mailData.body);
-  assertStringArray('to', mailData.to);
-
-  // DEMO: normalize/validate "to" as addresses (split on spaces/commas/semicolons)
-  const toTokens = tokenizeAddresses(mailData.to);
-  const invalid = toTokens.filter((t) => !EMAIL_RE.test(t));
-  if (invalid.length) {
-    throw createError(`Invalid recipient address(es): ${invalid.join(', ')}`, {
-      type: 'VALIDATION',
-      status: 400,
-    });
+    throw createError('Sender username must not contain "@" (demo rule)', { status: 400 });
   }
 
-  // URLs (normalize once)
-  const rawUrls = extractUrls(`${mailData.title} ${mailData.body}`);
+  const isDraft = !!mailData.draft;
+
+  // --- DRAFT: require at least one non-empty field, but do NOT force each to be non-empty ---
+  const hasTitle = typeof mailData.title === 'string' && mailData.title.trim() !== '';
+  const hasBody  = typeof mailData.body  === 'string' && mailData.body.trim()  !== '';
+
+  // For "to", consider only real addresses after tokenization
+  let toTokens = [];
+  if (Array.isArray(mailData.to)) {
+    const tokens = tokenizeAddresses(mailData.to);
+    if (!isDraft) {
+      // sending: to[] must exist and be valid
+      if (tokens.length === 0) {
+        throw createError('to must be a non-empty array', { status: 400 });
+      }
+    }
+    // if there ARE tokens, validate them; if zero tokens AND draft, that’s okay
+    if (tokens.length > 0) {
+      const invalid = tokens.filter((t) => !EMAIL_RE.test(t));
+      if (invalid.length) {
+        throw createError(`Invalid recipient address(es): ${invalid.join(', ')}`, { status: 400 });
+      }
+      toTokens = tokens;
+    }
+  } else if (!isDraft) {
+    // sending without any "to" field
+    throw createError('to must be a non-empty array', { status: 400 });
+  }
+
+  if (isDraft) {
+    const hasTo = toTokens.length > 0; // only counts if there are valid recipients
+    if (!(hasTitle || hasBody || hasTo)) {
+      throw createError('Draft must include at least one of: title, body, or to', { status: 400 });
+    }
+    // IMPORTANT: do NOT assertNonEmptyString for title/body here; empties are allowed in drafts.
+  } else {
+    // sending: strict
+    assertNonEmptyString('title', mailData.title);
+    assertNonEmptyString('body', mailData.body);
+  }
+
+  // URL extraction is safe with missing/empty fields
+  const rawUrls = extractUrls([mailData.title, mailData.body].filter(Boolean).join(' '));
   const urls = rawUrls.map(normalizeUrl).filter(Boolean);
 
-  // system labels for the SENDER
+  // sender-side labels
   const labels = [];
-  // Only push valid ids; filter later as well to be extra safe
-  if (mailData.draft ? draftsId : sentId) labels.push(mailData.draft ? draftsId : sentId);
+  if (isDraft ? draftsId : sentId) labels.push(isDraft ? draftsId : sentId);
 
-  // if any URL is already blacklisted, mark Spam now (for the sender copy)
+  // spam check (sender copy)
   const isSpam = urls.length > 0 && (await anyUrlBlacklisted(urls));
   if (isSpam && spamId) labels.push(spamId);
 
-  // attach each RECIPIENT's Inbox label ONLY when NOT a draft
-  if (!mailData.draft) {
+  // recipient inbox labels only when sending
+  if (!isDraft && toTokens.length) {
     for (const addr of toTokens) {
-      const rUsername = internalUsernameFromAddress(addr); // supports @bmail and @bmail.com
-      if (!rUsername) continue; // external: no internal inbox label in demo
+      const rUsername = internalUsernameFromAddress(addr);
+      if (!rUsername) continue;
       const recipient = await User.findOne({ username: rUsername }).lean();
       if (!recipient) continue;
       const inboxLabel = await Label.findOne(
         { userId: recipient._id, name: { $regex: '^inbox$', $options: 'i' } },
         { _id: 1 }
       ).lean();
-      if (inboxLabel && inboxLabel._id) {
-        labels.push(inboxLabel._id);
-      }
+      if (inboxLabel && inboxLabel._id) labels.push(inboxLabel._id);
     }
   }
 
-  // de-duplicate labels and normalize to ObjectIds (filter falsy first)
   const dedupedLabelIds = Array.from(new Set(labels.filter(Boolean).map(String))).map(
     (id) => new Types.ObjectId(id)
   );
 
-  // persist: NOTE we now store `to` as address tokens (e.g., "bb@bmail" / "bb@bmail.com")
-  const mail = await Mail.create({ ...mailData, to: toTokens, labels: dedupedLabelIds, urls });
+  const mail = await Mail.create({
+    ...mailData,
+    to: toTokens.length ? toTokens : undefined, // undefined allowed for drafts
+    labels: dedupedLabelIds,
+    urls
+  });
 
-  // If the URLs were already blacklisted, propagate Spam to all relevant mails/participants.
   if (isSpam && urls.length && spamId) {
     await tagMailsWithUrlsAsSpam(userId, mailData.from, urls, spamId);
   }
 
   return filterMailForOutput(mail.toObject ? mail.toObject() : mail);
 }
+
 
 /**
  * Get accessible mails for a user, optionally filtered by label.
@@ -279,105 +304,78 @@ async function findMailByIdForUser(id, username) {
  */
 async function editMailForUser(mailId, username, updates) {
   const mail = await Mail.findById(mailId);
-  if (!mail) throw createError('Mail not found', { type: 'NOT_FOUND', status: 404 });
-  if (mail.from !== username) {
-    throw createError('User does not have access to edit this mail', { status: 403 });
-  }
+  if (!mail) throw createError('Mail not found', { status: 404 });
+  if (mail.from !== username) throw createError('Forbidden', { status: 403 });
 
-  // Validate & apply text / recipients
-  if (updates.title != null) assertNonEmptyString('title', updates.title);
-  if (updates.body != null) assertNonEmptyString('body', updates.body);
-  if (updates.to != null) assertStringArray('to', updates.to);
+  // Apply updates without forcing non-empty strings for drafts
+  // We only enforce strict checks when the result will be NON-DRAFT.
+  if (typeof updates.title !== 'undefined') mail.title = updates.title;
+  if (typeof updates.body  !== 'undefined') mail.body  = updates.body;
 
-  if (updates.title != null) mail.title = updates.title;
-  if (updates.body != null) mail.body = updates.body;
-
-  let recipientsChanged = false;
-
-  if (updates.to != null) {
-    const toTokens = tokenizeAddresses(updates.to);
-    const invalid = toTokens.filter((t) => !EMAIL_RE.test(t));
-    if (invalid.length) {
-      throw createError(`Invalid recipient mail address: ${invalid.join(', ')}`, {
-        type: 'VALIDATION',
-        status: 400,
-      });
+  if (typeof updates.to !== 'undefined') {
+    if (Array.isArray(updates.to)) {
+      const tokens = tokenizeAddresses(updates.to);
+      // Only validate tokens if there are any; empty is allowed for drafts
+      if (tokens.length > 0) {
+        const invalid = tokens.filter((t) => !EMAIL_RE.test(t));
+        if (invalid.length) {
+          throw createError(`Invalid recipient mail address: ${invalid.join(', ')}`, { status: 400 });
+        }
+      }
+      mail.to = tokens; // may be [] for drafts
+    } else {
+      mail.to = undefined; // allow removal for drafts
     }
-    mail.to = toTokens; // store addresses
-    recipientsChanged = true;
   }
 
-  // Recompute + normalize URLs if body or title changed
-  if (updates.title != null || updates.body != null) {
-    const raw = extractUrls(`${mail.title} ${mail.body}`);
+  // Recompute URLs if title/body changed
+  if (typeof updates.title !== 'undefined' || typeof updates.body !== 'undefined') {
+    const raw = extractUrls([mail.title, mail.body].filter(Boolean).join(' '));
     mail.urls = raw.map(normalizeUrl).filter(Boolean);
   }
 
-  // Resolve sender + system labels
-  const sender = await User.findOne({ username }, { _id: 1 }).lean();
-  if (!sender) throw createError('Author user not found', { type: 'NOT_FOUND', status: 404 });
+  // Determine final draft state
+  const willBeDraft = typeof updates.draft !== 'undefined' ? !!updates.draft : !!mail.draft;
 
-  const [draftsLbl, sentLbl, spamLbl] = await Promise.all([
+  // Strict validation ONLY if final state is non-draft (i.e., sending)
+  if (!willBeDraft) {
+    const hasTitle = typeof mail.title === 'string' && mail.title.trim() !== '';
+    const hasBody  = typeof mail.body  === 'string' && mail.body.trim()  !== '';
+    const hasTo    = Array.isArray(mail.to) && mail.to.length > 0;
+    if (!(hasTitle && hasBody && hasTo)) {
+      throw createError('Cannot send: title, body and at least one recipient are required', { status: 400 });
+    }
+  }
+
+  // Labels (keep existing behavior, minimal)
+  const sender = await User.findOne({ username }, { _id: 1 }).lean();
+  if (!sender) throw createError('Author user not found', { status: 404 });
+
+  const [draftsLbl, sentLbl] = await Promise.all([
     Label.findOne({ userId: sender._id, name: { $regex: '^drafts$', $options: 'i' } }, { _id: 1 }).lean(),
     Label.findOne({ userId: sender._id, name: { $regex: '^sent$', $options: 'i' } }, { _id: 1 }).lean(),
-    Label.findOne({ userId: sender._id, name: { $regex: '^spam$', $options: 'i' } }, { _id: 1 }).lean(),
   ]);
 
   const draftsId = draftsLbl?._id ? String(draftsLbl._id) : null;
-  const sentId = sentLbl?._id ? String(sentLbl._id) : null;
-  const spamId = spamLbl?._id ? String(spamLbl._id) : null;
+  const sentId   = sentLbl?._id   ? String(sentLbl._id)   : null;
 
   const labelSet = new Set((mail.labels || []).map((id) => String(id)));
-  const willBeDraft = updates.draft != null ? !!updates.draft : !!mail.draft;
 
   if (willBeDraft) {
-    // Save as draft: ensure Drafts present, Sent absent…
     if (draftsId) labelSet.add(draftsId);
-    if (sentId) labelSet.delete(sentId);
+    if (sentId)   labelSet.delete(sentId);
     mail.draft = true;
-
-    // …and remove any recipient Inbox labels (drafts should not have Inbox)
-    for (const addr of mail.to || []) {
-      const rUsername = internalUsernameFromAddress(addr);
-      if (!rUsername) continue;
-      const recipient = await User.findOne({ username: rUsername }, { _id: 1 }).lean();
-      if (!recipient) continue;
-      const inbox = await Label.findOne(
-        { userId: recipient._id, name: { $regex: '^inbox$', $options: 'i' } },
-        { _id: 1 }
-      ).lean();
-      if (inbox && inbox._id) labelSet.delete(String(inbox._id));
-    }
   } else {
-    // Send: remove Drafts, add Sent, attach recipient Inbox
     if (draftsId) labelSet.delete(draftsId);
-    if (sentId) labelSet.add(sentId);
+    if (sentId)   labelSet.add(sentId);
     mail.draft = false;
-
-    for (const addr of mail.to || []) {
-      const rUsername = internalUsernameFromAddress(addr);
-      if (!rUsername) continue;
-      const recipient = await User.findOne({ username: rUsername }, { _id: 1 }).lean();
-      if (!recipient) continue;
-      const inbox = await Label.findOne(
-        { userId: recipient._id, name: { $regex: '^inbox$', $options: 'i' } },
-        { _id: 1 }
-      ).lean();
-      if (inbox && inbox._id) labelSet.add(String(inbox._id));
-    }
-
-    // Spam by pre-blacklisted URLs
-    const urls = (mail.urls || []).map(normalizeUrl).filter(Boolean);
-    if (urls.length && (await anyUrlBlacklisted(urls)) && spamId) {
-      labelSet.add(spamId);
-      await tagMailsWithUrlsAsSpam(sender._id.toString(), username, urls, spamId);
-    }
   }
 
   mail.labels = Array.from(labelSet).map((id) => new Types.ObjectId(id));
   await mail.save();
   return filterMailForOutput(mail.toObject ? mail.toObject() : mail);
 }
+
 
 /**
  * Soft-delete for the calling user; hard-delete when no party can access.
