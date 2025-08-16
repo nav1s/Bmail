@@ -188,26 +188,23 @@ async function buildMail(mailData, { userId, system }) {
   // tokenize recipients (keep your existing logic)
   const toTokens = tokenizeAddresses(mailData.to);
 
-  // extract & normalize URLs (existing function)
+  // extract & normalize URLs (always store, even for drafts)
   const rawUrls = extractUrls([mailData.title, mailData.body].filter(Boolean).join(' '));
   const urls = rawUrls.map(normalizeUrl).filter(Boolean);
-  console.log(urls)
 
   // base labels (sender side: sent/drafts)
   const labels = [];
   if (isDraft ? draftsId : sentId) labels.push(isDraft ? draftsId : sentId);
 
-  // spam check (only if URLs exist)
+  // spam check ONLY for non-drafts
   let isSpam = false;
-  if (urls.length) {
-    console.log("scanning mails")
+  if (!isDraft && urls.length) {
     const result = await scanMail({ urls });
-    console.log(result)
     isSpam = result.hasTaggedUrl;
   }
-  if (isSpam && spamId) labels.push(spamId);
+  if (!isDraft && isSpam && spamId) labels.push(spamId);
 
-  // recipient "inbox" labeling for non-drafts (keep your existing logic)
+  // recipient "inbox" labeling for non-drafts
   if (!isDraft && toTokens.length) {
     for (const addr of toTokens) {
       const rUsername = internalUsernameFromAddress(addr);
@@ -232,13 +229,14 @@ async function buildMail(mailData, { userId, system }) {
     urls
   });
 
-  // if this new message contains tagged URLs, propagate spam tag to matching mails
+  // propagate spam label to matching mails ONLY for non-drafts
   if (!isDraft && isSpam && urls.length && spamId) {
     await tagMailsWithUrlsAsSpam(userId, mailData.from, urls, spamId);
   }
 
   return await filterMailForOutput(mail.toObject ? mail.toObject() : mail);
 }
+
 
 /**
  * Update spam labels across all mails for a user.
@@ -407,10 +405,19 @@ async function findMailByIdForUser(id, username) {
  * - When recipients change (or draft flips), operate on address tokens in `mail.to`.
  * - For inbox label attach/remove, only consider internal recipients via internalUsernameFromAddress().
  */
+/**
+ * Edit a draft (owner-only) and handle draft/send transitions.
+ * Draft gating for spam:
+ *  - draft -> draft: no scan/updates
+ *  - create draft: no scan/updates (handled in buildMail)
+ *  - draft -> send: scan & label spam if any URL is already blacklisted; propagate labels
+ */
 async function editMailForUser(mailId, username, updates) {
   const mail = await Mail.findById(mailId);
   if (!mail) throw createError('Mail not found', { status: 404 });
   if (mail.from !== username) throw createError('Forbidden', { status: 403 });
+
+  const wasDraft = !!mail.draft;
 
   // apply updates (drafts can set empties)
   if (typeof updates.title !== 'undefined') mail.title = updates.title;
@@ -431,7 +438,7 @@ async function editMailForUser(mailId, username, updates) {
     }
   }
 
-  // recompute URLs if needed
+  // recompute URLs if title/body changed (always store URLs)
   if (typeof updates.title !== 'undefined' || typeof updates.body !== 'undefined') {
     const raw = extractUrls([mail.title, mail.body].filter(Boolean).join(' '));
     mail.urls = raw.map(normalizeUrl).filter(Boolean);
@@ -442,12 +449,14 @@ async function editMailForUser(mailId, username, updates) {
   if (!sender) throw createError('Author user not found', { status: 404 });
 
   // fetch default labels for sender
-  const [draftsLbl, sentLbl] = await Promise.all([
+  const [draftsLbl, sentLbl, spamLbl] = await Promise.all([
     Label.findOne({ userId: sender._id, name: { $regex: '^drafts$', $options: 'i' } }, { _id: 1 }).lean(),
-    Label.findOne({ userId: sender._id, name: { $regex: '^sent$', $options: 'i' } }, { _id: 1 }).lean(),
+    Label.findOne({ userId: sender._id, name: { $regex: '^sent$',   $options: 'i' } }, { _id: 1 }).lean(),
+    Label.findOne({ userId: sender._id, name: { $regex: '^spam$',   $options: 'i' } }, { _id: 1 }).lean(),
   ]);
   const draftsId = draftsLbl?._id ? String(draftsLbl._id) : null;
   const sentId   = sentLbl?._id   ? String(sentLbl._id)   : null;
+  const spamId   = spamLbl?._id   ? String(spamLbl._id)   : null;
 
   // current labels set
   const labelSet = new Set((mail.labels || []).map((id) => String(id)));
@@ -455,7 +464,7 @@ async function editMailForUser(mailId, username, updates) {
   // final draft state after update
   const willBeDraft = typeof updates.draft !== 'undefined' ? !!updates.draft : !!mail.draft;
 
-  // helper to find/remove/add inbox labels per current recipients
+  // helpers to add/remove recipient inbox labels
   async function addRecipientInboxLabels() {
     if (!Array.isArray(mail.to) || mail.to.length === 0) return;
     for (const addr of mail.to) {
@@ -486,33 +495,51 @@ async function editMailForUser(mailId, username, updates) {
   }
 
   if (willBeDraft) {
-    // staying/going to draft: no inbox labels
+    // staying/going to draft: no inbox labels; DO NOT scan for spam
     if (draftsId) labelSet.add(draftsId);
     if (sentId)   labelSet.delete(sentId);
     await removeRecipientInboxLabels();
     mail.draft = true;
-  } else {
-    // switching to send: enforce strict required fields
-    const hasTitle = typeof mail.title === 'string' && mail.title.trim() !== '';
-    const hasBody  = typeof mail.body  === 'string' && mail.body.trim()  !== '';
-    const hasTo    = Array.isArray(mail.to) && mail.to.length > 0;
-    if (!(hasTitle && hasBody && hasTo)) {
-      throw createError('Cannot send: title, body and at least one recipient are required', { status: 400 });
+
+    mail.labels = Array.from(labelSet).map((id) => new Types.ObjectId(id));
+    await mail.save();
+    return await filterMailForOutput(mail.toObject ? mail.toObject() : mail);
+  }
+
+  // switching to send: enforce required fields
+  const hasTitle = typeof mail.title === 'string' && mail.title.trim() !== '';
+  const hasBody  = typeof mail.body  === 'string' && mail.body.trim()  !== '';
+  const hasTo    = Array.isArray(mail.to) && mail.to.length > 0;
+  if (!(hasTitle && hasBody && hasTo)) {
+    throw createError('Cannot send: title, body and at least one recipient are required', { status: 400 });
+  }
+
+  if (draftsId) labelSet.delete(draftsId);
+  if (sentId)   labelSet.add(sentId);
+  await addRecipientInboxLabels();
+  mail.draft = false;
+
+  // ✨ spam scan ONLY on transition draft -> send
+  let isSpamOnSend = false;
+  if (wasDraft && !willBeDraft && Array.isArray(mail.urls) && mail.urls.length) {
+    const { hasTaggedUrl } = await scanMail(mail);
+    isSpamOnSend = !!hasTaggedUrl;
+    if (isSpamOnSend && spamId) {
+      labelSet.add(String(spamId));
     }
-
-    if (draftsId) labelSet.delete(draftsId);
-    if (sentId)   labelSet.add(sentId);
-
-    // ✨ ensure recipients’ INBOX labels are present on send
-    await addRecipientInboxLabels();
-
-    mail.draft = false;
   }
 
   mail.labels = Array.from(labelSet).map((id) => new Types.ObjectId(id));
   await mail.save();
+
+  // propagate spam labels (no blacklist changes) ONLY if draft -> send and URLs were tagged
+  if (wasDraft && !willBeDraft && isSpamOnSend && spamId && Array.isArray(mail.urls) && mail.urls.length) {
+    await tagMailsWithUrlsAsSpam(sender._id, username, mail.urls, spamId);
+  }
+
   return await filterMailForOutput(mail.toObject ? mail.toObject() : mail);
 }
+
 
 
 
@@ -696,24 +723,52 @@ async function removeLabelFromMail(mailId, labelId, username) {
  * DEMO adjustment: recipient matching uses both `${username}@bmail` and `${username}@bmail.com`
  * (and legacy bare username). Guard against missing spamLabelId.
  */
+/**
+ * Add the user's Spam label to all of *their* mails that contain any of the given URLs.
+ * IMPORTANT: Ignores drafts.
+ * @param {ObjectId|string} userId   // owner of the Spam label (per-user)
+ * @param {string} username          // viewer username (for access scoping)
+ * @param {string[]} urls            // normalized URLs to match against
+ * @param {ObjectId|string} spamLabelId
+ * @returns {Promise<{matched:number, tagged:number}>}
+ */
 async function tagMailsWithUrlsAsSpam(userId, username, urls, spamLabelId) {
-  const norms = Array.from(new Set((urls || []).map(normalizeUrl).filter(Boolean)));
-  if (!norms.length || !spamLabelId) return;
+  const list = Array.from(new Set((urls || []).map(normalizeUrl).filter(Boolean)));
+  if (!list.length || !spamLabelId) return { matched: 0, tagged: 0 };
 
-  const internalAddrs = [`${username}@bmail`, `${username}@bmail.com`];
+  const spamObjId = new Types.ObjectId(spamLabelId);
+  const internalAddrs = [`${username}`, `${username}@bmail`, `${username}@bmail.com`];
 
-  await Mail.updateMany(
+  // Candidate mails that belong to this user's scope, contain any URL, and are NOT drafts
+  const candidates = await Mail.find(
     {
-      urls: { $in: norms },
+      draft: { $ne: true },                // <-- skip drafts
+      urls: { $in: list },
       $or: [
-        { from: username, deletedBySender: { $ne: true } },
-        { to: { $in: [...internalAddrs, username] }, draft: false, deletedByRecipient: { $ne: username } },
+        { from: username },
+        { to: { $in: internalAddrs }, draft: false },
       ],
-      labels: { $ne: new Types.ObjectId(spamLabelId) },
     },
-    { $addToSet: { labels: new Types.ObjectId(spamLabelId) } }
-  );
+    { _id: 1, labels: 1 }
+  ).lean();
+
+  const toAdd = [];
+  for (const m of candidates) {
+    const hasSpam = (m.labels || []).some((id) => String(id) === String(spamObjId));
+    if (!hasSpam) toAdd.push(m._id);
+  }
+
+  let tagged = 0;
+  if (toAdd.length) {
+    const res = await Mail.updateMany(
+      { _id: { $in: toAdd } },
+      { $addToSet: { labels: spamObjId } }
+    );
+    tagged = res?.modifiedCount || res?.nModified || 0;
+  }
+  return { matched: candidates.length, tagged };
 }
+
 
 module.exports = {
   canUserAccessMail,
