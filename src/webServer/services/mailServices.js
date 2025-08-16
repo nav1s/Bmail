@@ -319,45 +319,64 @@ async function updateMailsSpamLabel(userId, username) {
  * - Inbox recipient matching uses both `${username}@bmail` and `${username}@bmail.com`.
  * - Back-compat: also matches legacy mails where `to` stored the bare username.
  */
+// webServer/services/mailServices.js
 async function getMailsForUser(username, spamLabelId, trashLabelId, labelId = null, limit = 50) {
-  const internalAddrs = [`${username}@bmail`, `${username}@bmail.com`];
+  const internalAddrs = [`${username}`, `${username}@bmail`, `${username}@bmail.com`];
 
-  const baseQuery = {
+  // figure out which label is being viewed (by name)
+  let viewLabelName = null;
+  if (labelId) {
+    const lab = await Label.findById(labelId, { name: 1 }).lean();
+    viewLabelName = (lab?.name || '').toLowerCase();
+  }
+
+  const spamObjId  = spamLabelId  ? new Types.ObjectId(spamLabelId)  : null;
+  const trashObjId = trashLabelId ? new Types.ObjectId(trashLabelId) : null;
+
+  // base access scope (who can see the mail)
+  const accessScope = {
     $or: [
-      // Sent by me (and I didn't delete it)
-      { from: username, deletedBySender: { $ne: true } },
-      // To me (not a draft, and I didn't delete it)
-      {
-        to: { $in: [...internalAddrs, username] }, // include both address forms + legacy bare username
-        draft: false,
-        deletedByRecipient: { $ne: username },
-      },
+      { from: username },
+      { to: { $in: internalAddrs }, draft: false },
     ],
   };
 
-  const and = [];
+  const and = [accessScope];
 
-  if (labelId) {
-    // Explicit label filter
-    const lid = new Types.ObjectId(labelId);
-    and.push({ labels: lid });
-
-    // Unless we are explicitly viewing Spam or Trash, exclude them
-    const spamObjId = spamLabelId ? new Types.ObjectId(spamLabelId) : null;
-    const trashObjId = trashLabelId ? new Types.ObjectId(trashLabelId) : null;
-
-    const isSpamView = spamObjId && String(lid) === String(spamObjId);
-    const isTrashView = trashObjId && String(lid) === String(trashObjId);
-
-    if (!isSpamView && spamObjId) and.push({ labels: { $ne: spamObjId } });
-    if (!isTrashView && trashObjId) and.push({ labels: { $ne: trashObjId } });
+  if (viewLabelName === 'trash' && trashObjId) {
+    // TRASH view: show only mails that HAVE trash (even if they also have spam)
+    and.push({ labels: trashObjId });
+    // no soft-delete filters here — explicit Trash view
+  } else if (viewLabelName === 'spam' && spamObjId) {
+    // SPAM view: show only mails that HAVE spam
+    and.push({ labels: spamObjId });
+    // EXCLUDE mails that are also in Trash
+    if (trashObjId) and.push({ labels: { $ne: trashObjId } });
+    // no soft-delete filters here — explicit Spam view
   } else {
-    // Inbox behavior: exclude spam + trash (only if ids exist)
-    if (spamLabelId) and.push({ labels: { $ne: new Types.ObjectId(spamLabelId) } });
-    if (trashLabelId) and.push({ labels: { $ne: new Types.ObjectId(trashLabelId) } });
+    // Inbox / Starred / any other label (or no label)
+    if (labelId && viewLabelName) {
+      and.push({ labels: new Types.ObjectId(labelId) });
+    }
+
+    // Exclude spam and trash from these views
+    if (spamObjId)  and.push({ labels: { $ne: spamObjId } });
+    if (trashObjId) and.push({ labels: { $ne: trashObjId } });
+
+    // Apply soft-delete visibility for the requesting user
+    and.push({
+      $or: [
+        { from: username, deletedBySender: { $ne: true } },
+        {
+          to: { $in: internalAddrs },
+          draft: false,
+          deletedByRecipient: { $ne: username },
+        },
+      ],
+    });
   }
 
-  const query = and.length ? { $and: [baseQuery, ...and] } : baseQuery;
+  const query = { $and: and };
 
   const docs = await Mail.find(query)
     .sort({ createdAt: -1 })
@@ -366,8 +385,9 @@ async function getMailsForUser(username, spamLabelId, trashLabelId, labelId = nu
 
   const outputs = await Promise.all(docs.map((m) => filterMailForOutput(m)));
   return outputs;
-
 }
+
+
 
 /**
  * Read a mail by id, enforce access, and return the public DTO.
@@ -505,16 +525,45 @@ async function deleteMail(mailId, username) {
   const mail = await Mail.findById(mailId);
   if (!mail) throw createError('Mail not found', { type: 'NOT_FOUND', status: 404 });
 
+  // fetch this user's TRASH label
+  const me = await User.findOne({ username }, { _id: 1 }).lean();
+  if (!me) throw createError('User not found', { status: 404 });
+
+  const trashLabel = await Label.findOne(
+    { userId: me._id, name: { $regex: '^trash$', $options: 'i' } },
+    { _id: 1 }
+  ).lean();
+
+  // if the user doesn't have a Trash label, just soft-delete visibility and return
+  const trashId = trashLabel?._id ? new Types.ObjectId(trashLabel._id) : null;
+
+  const alreadyHasTrash = !!(trashId && (mail.labels || []).some((id) => String(id) === String(trashId)));
+
+  if (alreadyHasTrash) {
+    // Rule: if already tagged as trash and trash request -> hard delete the mail
+    // (do NOT remove spam label; mail is being removed entirely)
+    await Mail.deleteOne({ _id: mail._id });
+    return;
+  }
+
+  // First-time "trash" → attach Trash label and mark soft-deleted for this user
   let changed = false;
-  const internalAddrs = [`${username}@bmail`, `${username}@bmail.com`];
+
+  if (trashId) {
+    if (!Array.isArray(mail.labels)) mail.labels = [];
+    mail.labels.push(trashId);
+    changed = true;
+  }
+
+  // mark soft-deleted flags for the requesting user
+  const internalAddrs = [`${username}`, `${username}@bmail`, `${username}@bmail.com`];
 
   if (mail.from === username && !mail.deletedBySender) {
     mail.deletedBySender = true;
     changed = true;
   }
 
-  const toArr = Array.isArray(mail.to) ? mail.to : [];
-  if (toArr.includes(internalAddrs[0]) || toArr.includes(internalAddrs[1]) || toArr.includes(username)) {
+  if (Array.isArray(mail.to) && mail.to.some((u) => internalAddrs.includes(u))) {
     if (!Array.isArray(mail.deletedByRecipient)) mail.deletedByRecipient = [];
     if (!mail.deletedByRecipient.includes(username)) {
       mail.deletedByRecipient.push(username);
@@ -522,23 +571,9 @@ async function deleteMail(mailId, username) {
     }
   }
 
-  // If neither side can see it anymore, hard-delete
-  const visibleToSender = !mail.deletedBySender && mail.from === username;
-  const visibleToAnyRecipient =
-    Array.isArray(mail.to) &&
-    mail.to.some(
-      (u) =>
-        (u === internalAddrs[0] || u === internalAddrs[1] || u === username) &&
-        !mail.deletedByRecipient?.includes(username)
-    );
-
-  if (!visibleToSender && !visibleToAnyRecipient) {
-    await Mail.deleteOne({ _id: mail._id });
-    return;
-  }
-
   if (changed) await mail.save();
 }
+
 
 function escapeRegex(s = '') {
   return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
