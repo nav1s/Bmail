@@ -133,7 +133,6 @@ public class MainActivity extends AppCompatActivity {
      */
     private void setupViewModel() {
         viewModel = new MainActivityViewModel();
-        viewModel.setMailsAdapter(adapter);
 
         viewModel.getMails().observe(this, mails -> {
             if (mails != null) {
@@ -196,7 +195,8 @@ public class MainActivity extends AppCompatActivity {
             drawer.closeDrawers();
 
             this.currentLabel = (String) item.getTitle();
-            Log.i("MailActivity", "Custom label selected: " + this.currentLabel);
+            Log.i("MailActivity", "label selected: " + this.currentLabel);
+            // todo handle all mail
 
             viewModel.loadMails(this.currentLabel);
             return true;
@@ -230,6 +230,10 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * @brief Setup custom labels in the navigation drawer.
+     *
+     */
     private void setupCustomLabels() {
         Menu menu = navigationView.getMenu();
 
@@ -347,7 +351,6 @@ public class MainActivity extends AppCompatActivity {
 
     /**
      * Show a dialog to confirm deletion of a label
-     *
      * @param label The label to delete
      */
     private void showDeleteLabelDialog(@NonNull Label label) {

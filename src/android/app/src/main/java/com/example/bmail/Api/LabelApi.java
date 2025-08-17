@@ -83,6 +83,11 @@ public class LabelApi {
     }
 
 
+    /**
+     * @brief Creates a new label.
+     * @param labelRequest The request object containing label details.
+     * @param callback The callback to handle the response.
+     */
     public void createLabel(CreateLabelRequest labelRequest, retrofit2.Callback<Void> callback) {
         String token = getToken();
         Log.i(TAG, "Creating label with token: " + token);
@@ -90,6 +95,11 @@ public class LabelApi {
         call.enqueue(callback);
     }
 
+    /**
+     * @brief Deletes a label by its ID.
+     * @param labelId The ID of the label to delete.
+     * @param callback The callback to handle the response.
+     */
     public void deleteLabel(String labelId, retrofit2.Callback<Void> callback) {
         String token = getToken();
         Log.i(TAG, "Deleting label with ID: " + labelId + " using token: " + token);

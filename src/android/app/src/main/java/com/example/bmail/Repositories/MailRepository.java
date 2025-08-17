@@ -144,7 +144,4 @@ public class MailRepository {
         mailApi.reload(label);
     }
 
-    public void setMailsAdapter(MailsAdapter adapter) {
-        mailApi.setMailsAdapter(adapter);
-    }
 }

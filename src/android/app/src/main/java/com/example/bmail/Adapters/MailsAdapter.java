@@ -1,6 +1,5 @@
 package com.example.bmail.Adapters;
 
-import android.graphics.Bitmap;
 import android.util.Log;
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -30,7 +29,7 @@ public class MailsAdapter extends RecyclerView.Adapter<MailsAdapter.mailViewHold
         private final TextView subject;
         private final TextView body;
         private final TextView timeTextView;
-        private final ImageView avaterImageView;
+        private final ImageView avatarImageView;
         private ServerMail currentMail;
 
         public mailViewHolder(@NonNull View itemView, View.OnClickListener clickListener) {
@@ -39,7 +38,7 @@ public class MailsAdapter extends RecyclerView.Adapter<MailsAdapter.mailViewHold
             subject = itemView.findViewById(R.id.subjectTextView);
             body = itemView.findViewById(R.id.previewTextView);
             timeTextView = itemView.findViewById(R.id.timeTextView);
-            avaterImageView = itemView.findViewById(R.id.avatarImageView);
+            avatarImageView = itemView.findViewById(R.id.avatarImageView);
 
             itemView.setOnClickListener(v -> {
                 if (currentMail != null) {
@@ -47,15 +46,14 @@ public class MailsAdapter extends RecyclerView.Adapter<MailsAdapter.mailViewHold
                     v.setTag(currentMail);
                     clickListener.onClick(v);
                 } else {
-                    Log.w("MailsAdapter", "Current mail is null, cannot handle click.");
-                }
-
+                    Log.w("MailsAdapter", "Current mail is null, cannot handle click."); }
             });
         }
 
         public void setMail(ServerMail mail) {
             this.currentMail = mail;
         }
+
     }
 
     public MailsAdapter(Context context, View.OnClickListener clickListener) {
@@ -80,6 +78,12 @@ public class MailsAdapter extends RecyclerView.Adapter<MailsAdapter.mailViewHold
         holder.sender.setText(currentMail.getFrom());
         holder.subject.setText(currentMail.getTitle());
         holder.body.setText(currentMail.getBody());
+        if (currentMail.getUserImageBitmap() != null) {
+            holder.avatarImageView.setImageBitmap(currentMail.getUserImageBitmap());
+        } else {
+            Log.w("MailsAdapter", "Sender image bitmap is null, using default avatar.");
+            holder.avatarImageView.setImageResource(R.drawable.ic_person);
+        }
 
         if (currentMail.getUpdatedAt() != null) {
             DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault());
@@ -103,24 +107,6 @@ public class MailsAdapter extends RecyclerView.Adapter<MailsAdapter.mailViewHold
         notifyItemRangeRemoved(0, mailList == null ? 0 : mailList.size());
         this.mailList = mails;
         notifyItemRangeInserted(0, mailList.size());
-    }
-
-    /**
-     * @brief Updates the image of a mail item by its ID.
-     * @param mailId The ID of the mail to update.
-     * @param bitmap The new image to set for the mail.
-     */
-    public void updateMailImage(String mailId, Bitmap bitmap) {
-        if (mailList == null) return;
-
-        for (int i = 0; i < mailList.size(); i++) {
-            ServerMail mail = mailList.get(i);
-            if (mail.getId().equals(mailId)) {
-                mail.setSenderImageBitmap(bitmap);
-                notifyItemChanged(i);
-                break;
-            }
-        }
     }
 
 }

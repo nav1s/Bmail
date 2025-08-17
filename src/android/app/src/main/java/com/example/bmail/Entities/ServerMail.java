@@ -50,7 +50,7 @@ public class ServerMail {
     private Date updatedAt;
     @Expose
     private String userImage;
-    private Bitmap senderImageBitmap;
+    private Bitmap userImageBitmap;
 
     public ServerMail() {
     }
@@ -136,12 +136,12 @@ public class ServerMail {
         this.userImage = userImage;
     }
 
-    public Bitmap getSenderImageBitmap() {
-        return senderImageBitmap;
+    public Bitmap getUserImageBitmap() {
+        return userImageBitmap;
     }
 
-    public void setSenderImageBitmap(Bitmap senderImageBitmap) {
-        this.senderImageBitmap = senderImageBitmap;
+    public void setUserImageBitmap(Bitmap userImageBitmap) {
+        this.userImageBitmap = userImageBitmap;
     }
 
 }
