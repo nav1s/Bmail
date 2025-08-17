@@ -73,6 +73,14 @@ public class ImageUtils {
         }
     }
 
+
+    /**
+     * Downloads an image from a given URL using the provided WebServiceApi and token.
+     * @param webServiceApi The WebServiceApi instance to use for the request.
+     * @param token The authentication token to include in the request header.
+     * @param url The URL of the image to download.
+     * @param callback The callback to handle the success or failure of the image download.
+     */
    public static void downloadImage(
            @NonNull WebServiceApi webServiceApi,
            String token,
