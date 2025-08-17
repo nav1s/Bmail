@@ -20,7 +20,6 @@ async function requireAuth(req, res, next) {
         user.id = user._id.toString();
       }
       req.user = user;
-      console.log('The logged in user is: ' + data.username + ' id: ' + user.id );
 
       return next()
     } catch (err) {

@@ -17,9 +17,24 @@ const { Schema, model, Types } = require('mongoose');
  */
 const MailSchema = new Schema({
   from: { type: String, required: true, public: true },
-  to: { type: [String], required: true, public: true },
-  title: { type: String, required: true, public: true },
-  body: { type: String, required: true, public: true },
+
+  // Conditionally required only when not a draft
+  to: {
+    type: [String],
+    public: true,
+    required: function () { return this && this.draft === false; }
+  },
+  title: {
+    type: String,
+    public: true,
+    required: function () { return this && this.draft === false; }
+  },
+  body: {
+    type: String,
+    public: true,
+    required: function () { return this && this.draft === false; }
+  },
+
   draft: { type: Boolean, default: false, public: true },
   labels: [{ type: Schema.Types.ObjectId, ref: 'Label', public: true }],
   urls: { type: [String], default: [], public: true },
@@ -34,5 +49,4 @@ MailSchema.path('updatedAt').options.public = true;
 // text index for search endpoint (/api/mails/search)
 MailSchema.index({ title: 'text', body: 'text' });
 
-// export using mongoose.model via the imported `model` helper
 module.exports = model('Mail', MailSchema);

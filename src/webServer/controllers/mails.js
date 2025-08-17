@@ -103,13 +103,22 @@ async function listMailsByLabel(req, res) {
  *   - Validation & auto-labeling (sent/drafts/spam) happen in the service.
  */
 async function createMail(req, res) {
-  console.log(req.user);
   const userId = req.user.id;
   const username = req.user.username;
   const { title, body, to, draft } = req.body || {};
+  const isDraft = !!draft;
 
-  if (!title || !body || !Array.isArray(to)) {
-    return badRequest(res, 'Missing required fields: title, body, to[]');
+  if (!isDraft) {
+    if (!title || !body || !Array.isArray(to)) {
+      return badRequest(res, 'Missing required fields: title, body, to[]');
+    }
+  } else {
+    const hasTitle = typeof title === 'string' && title.trim() !== '';
+    const hasBody  = typeof body  === 'string' && body.trim()  !== '';
+    const hasTo    = Array.isArray(to) && to.length > 0;
+    if (!(hasTitle || hasBody || hasTo)) {
+      return badRequest(res, 'Draft must include at least one of: title, body, or to[]');
+    }
   }
 
   try {
@@ -118,17 +127,8 @@ async function createMail(req, res) {
     const draftsId = await getisDefaultLabelId(userId, 'drafts');
 
     const newMail = await buildMail(
-      {
-        from: username,
-        to,
-        title,
-        body,
-        draft: Boolean(draft),
-      },
-      {
-        userId,
-        system: { spamId, sentId, draftsId },
-      }
+      { from: username, to, title, body, draft: isDraft },
+      { userId, system: { spamId, sentId, draftsId } }
     );
 
     return created(res, newMail);
@@ -136,6 +136,7 @@ async function createMail(req, res) {
     return httpError(res, err);
   }
 }
+
 
 /**
  * GET /api/mails/:id

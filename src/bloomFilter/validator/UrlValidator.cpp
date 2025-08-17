@@ -4,8 +4,7 @@ using namespace std;
 
 UrlValidator::UrlValidator()
     : url(
-        R"(^((https?:\/\/)?(www\.)?([a-zA-Z0-9-]+\.)+[a-zA-Z0-9]{2,})(\/\S*)?$)"
-    ) {}
+        R"(^((https?:\/\/)?(www\.)?([a-zA-Z0-9-]+\.)+[a-zA-Z0-9]{2,})(\/\S*)?$)") {}
 
 UrlValidator::UrlValidator(const UrlValidator& other)
     : url(other.url) {}
