@@ -95,52 +95,17 @@ public class UserApi {
      */
     public void loadImage(String url) {
         String token = getToken();
-        Log.d(TAG, "Token: " + token);
-        Log.d(TAG, "Image URL: " + url);
-        Call<okhttp3.ResponseBody> call = webServiceApi.downloadImage("Bearer " + token, url);
-        call.enqueue(new retrofit2.Callback<>() {
+        ImageUtils.downloadImage(webServiceApi, token, url, new ImageUtils.ImageDownloadCallback() {
             @Override
-            public void onResponse(
-                    @NonNull retrofit2.Call<okhttp3.ResponseBody> call,
-                    @NonNull retrofit2.Response<okhttp3.ResponseBody> response) {
-                if (!response.isSuccessful()) {
-                    Log.e(TAG, "Failed to load profile image: " + response.message());
-                    Log.e(TAG, "Response code: " + response.code());
-
-                    try (okhttp3.ResponseBody errorBody = response.errorBody()) {
-                        if (errorBody != null) {
-                            Log.e(TAG, "Error body: " + errorBody.string());
-                        } else {
-                            Log.e(TAG, "No error body available.");
-                        }
-                    } catch (Exception e) {
-                        Log.e(TAG, "Error reading error body", e);
-                    }
-                    return;
-
-                }
-
-                try(okhttp3.ResponseBody responseBody = response.body()) {
-                    if (responseBody == null) {
-                        Log.e(TAG, "Response body is null.");
-                        return;
-                    }
-                    Bitmap bitmap = BitmapFactory.decodeStream(responseBody.byteStream());
-                    if (bitmap != null) {
-                        userImage.postValue(bitmap);
-                        Log.i(TAG, "Profile image loaded successfully.");
-                    } else {
-                        Log.e(TAG, "Failed to decode profile image.");
-                    }
-                }
+            public void onSuccess(Bitmap bitmap) {
+                userImage.postValue(bitmap);
+                Log.i(TAG, "Profile image loaded successfully.");
             }
-
             @Override
-            public void onFailure(@NonNull retrofit2.Call<okhttp3.ResponseBody> call, @NonNull Throwable t) {
-                Log.e("MainActivity", "Error loading profile image", t);
+            public void onFailure(Throwable t) {
+                Log.e(TAG, "Error loading profile image", t);
             }
         });
-
     }
 
     /**
