@@ -2,6 +2,7 @@ package com.example.bmail.Api;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -11,6 +12,7 @@ import com.example.bmail.Entities.AttachLabelRequest;
 import com.example.bmail.Entities.ClientMail;
 import com.example.bmail.Entities.ServerMail;
 import com.example.bmail.R;
+import com.example.bmail.Utils.ImageUtils;
 import com.example.bmail.db.MailDao;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -31,6 +33,7 @@ public class MailApi {
     WebServiceApi webServiceApi;
     private final Context context;
     private final Gson gson;
+    private final String TAG = "MailApi";
 
     public MailApi(MailDao mailDao, MutableLiveData<List<ServerMail>> mailListData, @NonNull Context context) {
         this.mailDao = mailDao;
@@ -49,12 +52,49 @@ public class MailApi {
         webServiceApi = retrofit.create(WebServiceApi.class);
     }
 
+    /**
+     * @brief Retrieves the authentication token from SharedPreferences.
+     * @return The authentication token, or null if not found.
+     */
     public String getToken() {
         SharedPreferences prefs = context.getSharedPreferences("user_prefs",
                 Context.MODE_PRIVATE);
         return prefs.getString("auth_token", null);
     }
 
+    /**
+     * @brief This function fetches the profile images of the senders of the mails.
+     */
+    private void fetchSenderImages(@NonNull List<ServerMail> mails) {
+        String token = getToken();
+        Log.i(TAG, "Fetching sender images for mails with token: " + token);
+        for (ServerMail mail : mails) {
+            String senderImage = mail.getSenderImage();
+            Log.i(TAG, "Processing mail with ID: " + mail.getId() + ", sender image URL: "
+                    + senderImage);
+            if (senderImage != null && senderImage.isEmpty()) {
+                ImageUtils.downloadImage(webServiceApi, token, mail.getSenderImage(),
+                        new ImageUtils.ImageDownloadCallback() {
+                            @Override
+                            public void onSuccess(Bitmap bitmap) {
+                                mail.setSenderImageBitmap(bitmap);
+                                Log.i(TAG, "Profile image loaded successfully for mail: "
+                                        + mail.getId());
+                            }
+
+                            @Override
+                            public void onFailure(Throwable t) {
+                                Log.e(TAG, "Error loading profile image for mail: "
+                                        + mail.getId(), t);
+                            }
+                        });
+            }
+        }
+    }
+    /**
+     * @brief Fetches mails for a specific label from the server and updates the local database.
+     * @param label The label for which to fetch mails.
+     */
     public void reload(@NonNull String label) {
         String token = getToken();
         Log.i("MailApi", "Token: " + token);
@@ -83,6 +123,8 @@ public class MailApi {
                             if (!mails.isEmpty()) {
                                 Log.i("MailApi", "First mail: " + mails.get(0));
                             }
+                            // Fetch sender images for the mails
+                            fetchSenderImages(mails);
                             // Clear the existing mails in the database
                             mailDao.clear();
                             mailDao.insertList(mails);
@@ -106,6 +148,9 @@ public class MailApi {
 
     }
 
+    /**
+     * @brief Fetches all mails from the server and updates the local database.
+     */
     public void sendMail(ClientMail mail, Callback<Void> callback) {
         String token = getToken();
         Log.i("MailApi", "Sending mail with token: " + token);
@@ -117,6 +162,9 @@ public class MailApi {
         call.enqueue(callback);
     }
 
+    /**
+     * @brief Fetches all mails from the server and updates the local database.
+     */
     public void updateDraft(ServerMail mail, String mailId, Callback<Void> callback) {
         String token = getToken();
         Log.i("MailApi", "Updating draft with token: " + token);
@@ -124,6 +172,10 @@ public class MailApi {
         call.enqueue(callback);
     }
 
+    /**
+     * @brief Searches for mails based on a query and updates the live data.
+     * @param query The search query.
+     */
     public void searchMail(String query) {
         String token = getToken();
         Log.i("MailApi", "Searching mail with token: " + token);
@@ -151,6 +203,11 @@ public class MailApi {
         });
     }
 
+    /**
+     * @brief Adds a label to a mail and updates the local database.
+     * @param mailId The ID of the mail to which the label will be added.
+     * @param labelId The ID of the label to be added.
+     */
     public void addLabelToMail(String mailId, String labelId) {
         AttachLabelRequest attachLabelRequest = new AttachLabelRequest(labelId);
         String json = gson.toJson(attachLabelRequest);
@@ -198,6 +255,11 @@ public class MailApi {
         });
     }
 
+    /**
+     * @brief Removes a label from a mail and updates the local database.
+     * @param mailId The ID of the mail from which the label will be removed.
+     * @param labelId The ID of the label to be removed.
+     */
     public void removeLabelFromMail(String mailId, String labelId) {
         String token = getToken();
         Log.i("MailApi", "Removing label from mail with ID: "
@@ -236,6 +298,10 @@ public class MailApi {
 
     }
 
+    /**
+     * @brief Deletes a mail from the server and updates the local database.
+     * @param mailId The ID of the mail to be deleted.
+     */
     public void deleteMail(String mailId) {
         String token = getToken();
         Log.i("MailApi", "Deleting mail with ID: " + mailId);

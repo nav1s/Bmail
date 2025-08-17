@@ -143,4 +143,5 @@ public class ServerMail {
     public void setSenderImageBitmap(Bitmap senderImageBitmap) {
         this.senderImageBitmap = senderImageBitmap;
     }
+
 }
