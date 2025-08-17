@@ -3,73 +3,48 @@ const { createError } = require('../utils/error');
 const { ensureDefaultLabels } = require('./labelServices');
 
 /**
- * @brief Checks if the provided password is strong enough.
- * A strong password must:
- * - Be at least 8 characters long
- * - Contain at least one uppercase letter
- * - Contain at least one lowercase letter
- * - Contain at least one digit
- * - Contain at least one special character
+ * Check if a password meets basic strength requirements.
+ * Requires min 8 chars, with uppercase, lowercase, digit, and special char.
  *
- * @param {string} password - The password to check.
- * @returns {boolean} True if the password is strong enough, false otherwise.
+ * @param {string} password - Password string to validate.
+ * @returns {boolean} True if strong enough, false if not.
  */
 isPasswordStrongEnough = (password) => {
-  // Check if the password is at least 8 characters long
-  if (password.length < 8) {
-    return false;
-  }
-
-  // Check if the password contains at least one uppercase letter
-  if (!/[A-Z]/.test(password)) {
-    return false;
-  }
-
-  // Check if the password contains at least one lowercase letter
-  if (!/[a-z]/.test(password)) {
-    return false;
-  }
-
-  // Check if the password contains at least one digit
-  if (!/\d/.test(password)) {
-    return false;
-  }
-
-  // Check if the password contains at least one special character
-  if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
-    return false;
-  }
+  if (password.length < 8) return false;
+  if (!/[A-Z]/.test(password)) return false;
+  if (!/[a-z]/.test(password)) return false;
+  if (!/\d/.test(password)) return false;
+  if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) return false;
 
   return true;
-}
+};
 
 /**
- * Authenticates a user by username and password (plain-text compare).
- * Mirrors the old in-memory behavior but uses the DB.
+ * Authenticate a user with username and password (plain-text compare).
+ * Looks up the DB and returns the user object if valid.
  *
- * @param {string} username
- * @param {string} password
- * @returns {Promise<object>} The user document (lean object).
- * @throws {Error} AUTH (401) if credentials are invalid.
+ * @param {string} username - User’s login name.
+ * @param {string} password - User’s password (plain text).
+ * @returns {Promise<object>} The user object from DB (lean).
+ * @throws {Error} AUTH (401) if username or password is invalid.
  */
 async function login(username, password) {
   assertNonEmptyString('username', username);
   assertNonEmptyString('password', password);
 
-  // fetch user;
   const user = await User.findOne({ username }).lean();
   if (!user || user.password !== password) {
     throw createError('Invalid username or password', { status: 401, type: 'AUTH' });
   }
   console.log(user);
 
-  // return the full user (lean). Controller can filter or mint JWT as needed.
   return user;
 }
 
 /**
- * Get the list of required fields for user creation.
- * Reads from the model's fieldConfig (`required: true`) with a safe fallback.
+ * Get list of required fields for creating a user.
+ * Reads from model config, falls back to defaults if missing.
+ *
  * @returns {string[]} Array of required field names.
  */
 function getRequiredFields() {
@@ -81,35 +56,31 @@ function getRequiredFields() {
 }
 
 /**
- * Create a public-safe DTO by projecting only fields marked `public: true`
+ * Create a safe public version of a user object.
+ * Keeps only fields marked as public in config.
  *
- * @param {object} user - A mongoose user document or plain object.
- * @param {'public'} [visibility='public'] - Visibility level (future extension).
- * @throws {Error} NOT_FOUND when `user` is falsy.
- * @returns {object} Public-safe user projection.
+ * @param {object} user - A user document or plain object.
+ * @param {'public'} [visibility='public'] - Visibility level (default: public).
+ * @returns {object} A filtered user object safe to send to clients.
+ * @throws {Error} NOT_FOUND if user is null/undefined.
  */
 function filterUserByVisibility(user, visibility = 'public') {
   if (!user) {
     throw createError('User not found', { status: 404, type: 'NOT_FOUND' });
   }
 
-  // ✅ correct static name on the model
   const cfg = User.fieldConfig || null;
-
-  const src = user;   // can be a lean object or a hydrated doc
+  const src = user;
   const out = {};
 
-  // Always provide "id" (string). We do this up front so clients can rely on it.
   if (src._id) out.id = String(src._id);
 
   if (cfg) {
     for (const [field, meta] of Object.entries(cfg)) {
-      // basic “public” support; extend later for owner/admin/etc.
       const isVisible = visibility === 'public' ? meta.public === true : true;
       if (!isVisible) continue;
 
       if (field === 'id') {
-        // already set above from _id; ensure present even if config lists it
         if (!('id' in out) && src._id) out.id = String(src._id);
         continue;
       }
@@ -119,27 +90,25 @@ function filterUserByVisibility(user, visibility = 'public') {
       }
     }
   } else {
-    // Fallback shape if no fieldConfig is present
     const { username, firstName, lastName } = src;
     Object.assign(out, { username, firstName, lastName });
   }
 
-  // Ensure timestamps are available (generally safe to expose)
   if (src.createdAt != null && !('createdAt' in out)) out.createdAt = src.createdAt;
   if (src.updatedAt != null && !('updatedAt' in out)) out.updatedAt = src.updatedAt;
 
-  // 🚫 Do not expose Mongo "_id" in the filtered output (frontend expects "id")
   if ('_id' in out) delete out._id;
 
   return out;
 }
 
-
 /**
- * Ensure a value is a non-empty string (labels-style validation).
- * @param {string} field - Logical field name (for the error message).
- * @param {any} value - Value to validate.
- * @throws {Error} VALIDATION when value is not a non-empty trimmed string.
+ * Ensure a value is a non-empty string.
+ * Throws if input is invalid.
+ *
+ * @param {string} field - Logical field name (used in error message).
+ * @param {any} value - Value to check.
+ * @throws {Error} VALIDATION if not a non-empty trimmed string.
  */
 function assertNonEmptyString(field, value) {
   if (typeof value !== 'string' || value.trim() === '') {
@@ -149,30 +118,27 @@ function assertNonEmptyString(field, value) {
     });
   }
 }
-
-/* ------------------------------ service ---------------------------- */
-
 /**
- * Create a new user document.
+ * Create a new user record in the database.
+ * Validates fields, checks duplicates, enforces strong password.
  *
- * @param {object} userData - Input payload (already minimally validated in controller).
- * @returns {Promise<object>} Created user as a plain object.
- * @throws {Error} VALIDATION for missing/invalid fields, DUPLICATE for taken username.
+ * @param {object} userData - Input object with user fields.
+ * @returns {Promise<object>} The newly created user as a plain object.
+ * @throws {Error} VALIDATION if fields are missing/invalid.
+ * @throws {Error} DUPLICATE if username already exists.
  */
 async function createUser(userData) {
-  // presence check (already done in controller, but we re-check)
   for (const f of getRequiredFields()) {
     if (!userData || userData[f] == null || String(userData[f]).trim() === '') {
       throw createError(`Missing required field: ${f}`, { type: 'VALIDATION', status: 400 });
     }
   }
 
-  // type/format validations
   assertNonEmptyString('username', userData.username);
   assertNonEmptyString('firstName', userData.firstName);
   assertNonEmptyString('lastName', userData.lastName);
   assertNonEmptyString('password', userData.password);
-   // Password strength
+
   if (!isPasswordStrongEnough(userData.password)) {
     throw createError(
       'Password is too weak. Use at least 8 characters including letters and numbers.',
@@ -180,7 +146,6 @@ async function createUser(userData) {
     );
   }
 
-  // uniqueness (case-sensitive as before)
   const existing = await User.findOne({ username: userData.username }).lean();
   if (existing) {
     throw createError('Username already exists', { type: 'DUPLICATE', status: 400 });
@@ -192,22 +157,23 @@ async function createUser(userData) {
 }
 
 /**
- * Update an existing user document.
+ * Update an existing user by ID.
+ * Supports firstName, lastName, and image updates.
  *
- * @param {string|import('mongoose').Types.ObjectId} userId - The user id to update.
- * @param {object} patch - Partial user fields to update.
- * @returns {Promise<object>} Updated user as a plain object.
- * @throws {Error} VALIDATION for bad values, NOT_FOUND when user is missing.
+ * @param {string|import('mongoose').Types.ObjectId} userId - The user’s ID.
+ * @param {object} patch - Partial object with fields to update.
+ * @returns {Promise<object>} The updated user as a plain object.
+ * @throws {Error} NOT_FOUND if user does not exist.
+ * @throws {Error} VALIDATION if input values are invalid.
  */
 async function updateUserById(userId, patch) {
   const user = await User.findById(userId);
   if (!user) throw createError('User not found', { type: 'NOT_FOUND', status: 404 });
 
-  // If you have fieldConfig.editable flags, enforce them here
   const cfg = User.fieldConfig || {};
   const applyIfAllowed = (key, val) => {
     const meta = cfg[key];
-    if (meta && meta.editable === false) return; // skip non-editable
+    if (meta && meta.editable === false) return;
     user[key] = val;
   };
 
@@ -221,7 +187,6 @@ async function updateUserById(userId, patch) {
     applyIfAllowed('lastName', String(patch.lastName));
   }
 
-  // ✅ NEW: support image updates (multer sets req.file → controller sets patch.image)
   if (patch.image != null) {
     if (typeof patch.image !== 'string' || !patch.image.trim()) {
       throw createError('image must be a non-empty string path', { type: 'VALIDATION', status: 400 });
@@ -229,17 +194,16 @@ async function updateUserById(userId, patch) {
     applyIfAllowed('image', patch.image.trim());
   }
 
-  // NOTE: password changes should use a dedicated flow (old password check + hashing)
-
   await user.save();
   return user.toObject();
 }
 
 /**
- * Find a user by id (lean).
- * @param {string|import('mongoose').Types.ObjectId} id - The user id.
- * @returns {Promise<object>} The user as a plain object.
- * @throws {Error} NOT_FOUND when the user does not exist.
+ * Find a user by ID.
+ *
+ * @param {string|import('mongoose').Types.ObjectId} id - User’s ID.
+ * @returns {Promise<object>} The user object.
+ * @throws {Error} NOT_FOUND if no user exists with this ID.
  */
 async function findUserById(id) {
   const doc = await User.findById(id).lean();
@@ -248,10 +212,11 @@ async function findUserById(id) {
 }
 
 /**
- * Find a user by username (lean).
- * @param {string} username - Username to look up.
- * @returns {Promise<object>} The user as a plain object.
- * @throws {Error} NOT_FOUND when the user does not exist.
+ * Find a user by username.
+ *
+ * @param {string} username - Username to search for.
+ * @returns {Promise<object>} The user object.
+ * @throws {Error} NOT_FOUND if username does not exist.
  */
 async function findUserByUsername(username) {
   const doc = await User.findOne({ username }).lean();

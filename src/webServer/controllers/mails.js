@@ -23,11 +23,13 @@ const isValidObjectId = (id) => Types.ObjectId.isValid(id);
 const mailLimit = 50;
 
 /**
- * GET /api/mails
- * List inbox for the current user (excludes spam/trash by default).
- * Optional query:
- *   - labelId: string (ObjectId) — filter by label
- *   - limit: number — max number of mails (default 50)
+ * List mails for the inbox view of the current user.
+ * Supports optional filtering by label and a limit.
+ *
+ * @param {import('express').Request} req - Uses `user.username`, `user.id`, and query `{ labelId?, limit? }`.
+ * @param {import('express').Response} res - Sends 200 with an array of mails.
+ * @returns {Promise<void>} Sends the HTTP response.
+ * @throws Sends 400 if labelId is invalid; 500 via httpError on service errors.
  */
 async function listInbox(req, res) {
   const username = req.user.username;
@@ -58,11 +60,13 @@ async function listInbox(req, res) {
 }
 
 /**
- * GET /api/mails/byLabel/:label
- * List mails for a given label.
- * - :label can be either a label ObjectId or a label name (case-insensitive).
- * Optional query:
- *   - limit: number — max number of mails (default 50)
+ * List mails by a label id or by label name.
+ * Accepts either an ObjectId-like string or a label name.
+ *
+ * @param {import('express').Request} req - `params.label` (id or name), query `{ limit? }`.
+ * @param {import('express').Response} res - Sends 200 with matching mails.
+ * @returns {Promise<void>} Sends the HTTP response.
+ * @throws Sends 500 via httpError if label resolution or fetch fails.
  */
 async function listMailsByLabel(req, res) {
   
@@ -96,11 +100,13 @@ async function listMailsByLabel(req, res) {
 }
 
 /**
- * POST /api/mails
- * Create a new mail or draft for the current user.
- * Required body: { title: string, body: string, to: string[], draft?: boolean }
- * Notes:
- *   - Validation & auto-labeling (sent/drafts/spam) happen in the service.
+ * Create a new mail or a draft for the current user.
+ * Non-drafts require title/body/to; drafts may include any of them.
+ *
+ * @param {import('express').Request} req - Body `{ title?, body?, to?, draft? }`.
+ * @param {import('express').Response} res - Sends 201 with the created mail.
+ * @returns {Promise<void>} Sends the HTTP response.
+ * @throws Sends 400 for missing required fields; 500 via httpError on service errors.
  */
 async function createMail(req, res) {
   const userId = req.user.id;
@@ -139,8 +145,13 @@ async function createMail(req, res) {
 
 
 /**
- * GET /api/mails/:id
- * Return a single mail if the current user has access to it.
+ * Fetch a single mail by id if the user has access.
+ * Useful for opening a message view.
+ *
+ * @param {import('express').Request} req - `params.id` must be a valid ObjectId.
+ * @param {import('express').Response} res - Sends 200 with the mail object.
+ * @returns {Promise<void>} Sends the HTTP response.
+ * @throws Sends 400 for invalid id; 500 via httpError on service errors.
  */
 async function getMailById(req, res) {
   const id = req.params.id;
@@ -155,9 +166,13 @@ async function getMailById(req, res) {
 }
 
 /**
- * PATCH /api/mails/:id
- * Edit a draft mail. Only the owner (from=me) may edit drafts.
- * Body may include title/body (service will whitelist & validate).
+ * Update a draft mail’s content for the owner.
+ * Body may include title/body changes.
+ *
+ * @param {import('express').Request} req - `params.id` and a partial body.
+ * @param {import('express').Response} res - Sends 200 with the updated mail.
+ * @returns {Promise<void>} Sends the HTTP response.
+ * @throws Sends 400 for invalid id; 500 via httpError on service errors.
  */
 async function updateMailById(req, res) {
   const id = req.params.id;
@@ -172,8 +187,13 @@ async function updateMailById(req, res) {
 }
 
 /**
- * DELETE /api/mails/:id
- * Soft-deletes for the current user; hard-deletes when no one can access anymore.
+ * Delete a mail for the current user (soft delete).
+ * It may be hard-deleted when no one else retains access.
+ *
+ * @param {import('express').Request} req - `params.id` must be a valid ObjectId.
+ * @param {import('express').Response} res - Sends 204 on success.
+ * @returns {Promise<void>} Sends the HTTP response.
+ * @throws Sends 400 for invalid id; 500 via httpError on service errors.
  */
 async function deleteMailById(req, res) {
   const id = req.params.id;
@@ -188,8 +208,13 @@ async function deleteMailById(req, res) {
 }
 
 /**
- * GET /api/mails/search/:query
- * Returns all mails accessible to the user where title/body includes the query (case-insensitive).
+ * Full-text search across the user’s mails.
+ * Looks in title/body; case-insensitive.
+ *
+ * @param {import('express').Request} req - `params.query` or `query.q`, plus optional `query.limit`.
+ * @param {import('express').Response} res - Sends 200 with array of results.
+ * @returns {Promise<void>} Sends the HTTP response.
+ * @throws Sends 400 for empty query; 500 via httpError on service errors.
  */
 async function searchMails(req, res) {
   const username = req.user.username;
@@ -211,6 +236,15 @@ async function searchMails(req, res) {
 
 
 // POST /api/mails/:mailId/labels
+/**
+ * Attach a label to a specific mail.
+ * Requires both mailId and labelId to be valid ObjectIds.
+ *
+ * @param {import('express').Request} req - `params.mailId`, body `{ labelId }`.
+ * @param {import('express').Response} res - Sends 200 with updated mail.
+ * @returns {Promise<void>} Sends the HTTP response.
+ * @throws Sends 400 for invalid ids; 500 via httpError on service errors.
+ */
 async function attachLabelToMail(req, res) {
   const { mailId } = req.params;
   const { labelId } = req.body || {};
@@ -229,8 +263,13 @@ async function attachLabelToMail(req, res) {
 
 
 /**
- * DELETE /api/mails/:mailId/labels/:labelId
- * Detach a label from a mail.
+ * Remove a label from a mail.
+ * Both ids must be valid ObjectIds.
+ *
+ * @param {import('express').Request} req - `params.mailId` and `params.labelId`.
+ * @param {import('express').Response} res - Sends 200 with updated mail.
+ * @returns {Promise<void>} Sends the HTTP response.
+ * @throws Sends 400 for invalid ids; 500 via httpError on service errors.
  */
 async function detachLabelFromMail(req, res) {
   const { mailId, labelId } = req.params;

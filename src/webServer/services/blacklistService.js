@@ -4,10 +4,13 @@ const BLOOM_HOST = process.env.BLOOM_HOST || 'bloom-filter';
 const BLOOM_PORT = Number(process.env.BLOOM_PORT || 12345);
 
 /**
- * Low-level single-line request/response to bloom server.
- * Update this if your protocol differs. For example:
- *  - CHECK <url>\n  -> returns "1" or "0"
- *  - ADD <url>\n    -> returns "OK"
+ * Send a single-line command to the bloom server and read its reply.
+ * The protocol is simple: `${CMD} ${payload}\n` → one short textual response.
+ *
+ * @param {string} cmd - e.g., 'GET' | 'POST' | 'DELETE'.
+ * @param {string} payload - Usually the URL to act on.
+ * @returns {Promise<string>} Raw server response (trimmed).
+ * @throws {Error} Socket timeout or connection error.
  */
 function sendBloomCommand(cmd, payload) {
   const line = `${cmd} ${payload}\n`;
@@ -72,8 +75,13 @@ function sendBloomCommand(cmd, payload) {
   });
 }
 
-
-
+/**
+ * Normalize an array of URLs: trim strings and drop falsy values.
+ * Used before batch operations.
+ *
+ * @param {string[]} urls - Raw list (may contain non-strings/empties).
+ * @returns {string[]} Cleaned, non-empty strings.
+ */
 function normalizeUrls(urls) {
   return (urls || [])
     .map(u => (typeof u === 'string' ? u.trim() : ''))
@@ -81,9 +89,12 @@ function normalizeUrls(urls) {
 }
 
 /**
- * Check if a single URL is blacklisted.
- * @param {string} url
- * @returns {Promise<boolean>}
+ * Check if a single URL is currently blacklisted by the bloom service.
+ * Accepts several response formats (1/0, "true"/"false", or "200 OK …").
+ *
+ * @param {string} url - URL to check.
+ * @returns {Promise<boolean>} True if blacklisted, else false.
+ * @throws {Error} If the bloom command fails.
  */
 async function isUrlBlacklisted(url) {
   console.log("checking if url: " + url + "is blacklisted")
@@ -101,9 +112,12 @@ async function isUrlBlacklisted(url) {
 }
 
 /**
- * Returns true if ANY of the given URLs are blacklisted.
- * @param {string[]} urls
- * @returns {Promise<boolean>}
+ * Quick boolean: return true if any URL in the list is blacklisted.
+ * Iterates sequentially; fine for small arrays.
+ *
+ * @param {string[]} urls - URLs to test.
+ * @returns {Promise<boolean>} True if at least one is blacklisted.
+ * @throws {Error} Propagates network/protocol failures.
  */
 async function anyUrlBlacklisted(urls) {
   for (const u of urls) {
@@ -113,9 +127,12 @@ async function anyUrlBlacklisted(urls) {
 }
 
 /**
- * Add a set of URLs to the blacklist.
- * @param {string[]} urls
- * @returns {Promise<number>} how many were attempted/added
+ * Add each URL to the blacklist via the bloom server.
+ * Counts how many succeeded based on permissive OK patterns.
+ *
+ * @param {string[]} urls - URLs to add.
+ * @returns {Promise<number>} Number of URLs that were accepted.
+ * @throws {Error} If the bloom command fails.
  */
 async function addUrlsToBlacklist(urls) {
   let count = 0;
@@ -130,7 +147,12 @@ async function addUrlsToBlacklist(urls) {
 }
 
 /**
- * Optional: remove urls (only if your server supports it)
+ * Remove URLs from the blacklist (if the server supports DELETE).
+ * Uses the same permissive success patterns as add.
+ *
+ * @param {string[]} urls - URLs to remove.
+ * @returns {Promise<number>} Number of URLs confirmed removed.
+ * @throws {Error} If the bloom command fails.
  */
 async function removeUrlsFromBlacklist(urls) {
   let count = 0;
@@ -143,14 +165,28 @@ async function removeUrlsFromBlacklist(urls) {
   return count;
 }
 
-/** Check if a URL is currently tagged in the bloomfilter. */
+/**
+ * Check a single URL through the public API wrapper.
+ * Normalizes input and delegates to the checker.
+ *
+ * @param {string} url - URL to check.
+ * @returns {Promise<boolean>} True if blacklisted, else false.
+ * @throws {Error} 400 if URL is invalid; network/protocol errors otherwise.
+ */
 async function checkUrl(url) {
   const u = normalizeUrl(url);
   if (!u) throw createError('Invalid URL', { status: 400 });
   return await isUrlBlacklisted(u);
 }
 
-/** Add a URL to the bloomfilter blacklist. */
+/**
+ * Add one URL to the blacklist through the public API wrapper.
+ * Normalizes input and uses the batch adder under the hood.
+ *
+ * @param {string} url - URL to add.
+ * @returns {Promise<boolean>} True on success.
+ * @throws {Error} 400 if URL is invalid; network/protocol errors otherwise.
+ */
 async function addUrl(url) {
   const u = normalizeUrl(url);
   if (!u) throw createError('Invalid URL', { status: 400 });
@@ -158,14 +194,20 @@ async function addUrl(url) {
   return true;
 }
 
-/** Remove a URL from the bloomfilter blacklist. */
+/**
+ * Remove one URL from the blacklist through the public API wrapper.
+ * Normalizes input and uses the batch remover.
+ *
+ * @param {string} url - URL to remove.
+ * @returns {Promise<boolean>} True on success.
+ * @throws {Error} 400 if URL is invalid; network/protocol errors otherwise.
+ */
 async function removeUrl(url) {
   const u = normalizeUrl(url);
   if (!u) throw createError('Invalid URL', { status: 400 });
   await removeUrlsFromBlacklist([u]);
   return true;
 }
-
 
 module.exports = {
   isUrlBlacklisted,

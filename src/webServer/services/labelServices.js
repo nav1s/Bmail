@@ -5,6 +5,13 @@ const { canUserAccessMail, tagMailsWithUrlsAsSpam } = require('./mailServices');
 const { addUrlsToBlacklist } = require('./blacklistService');
 const Mail = require('../models/mailsModel'); // ← needed for attach/detach mail label operations
 
+/**
+ * Convert a Label doc/plain object to a simple DTO with `id` instead of `_id`.
+ * Keeps the rest of the fields as-is.
+ *
+ * @param {object} doc - Mongoose document or plain object.
+ * @returns {object|null} DTO with `id` or null if falsy input.
+ */
 function toLabelDTO(doc) {
   if (!doc) return doc;
   // Works for Mongoose docs and plain objects
@@ -13,6 +20,14 @@ function toLabelDTO(doc) {
   return { id: String(_id), ...rest };
 }
 
+/**
+ * Validate a MongoDB ObjectId and return a normalized Types.ObjectId.
+ * Throws a 400 error if invalid.
+ *
+ * @param {string|import('mongoose').Types.ObjectId} id - Candidate id.
+ * @returns {import('mongoose').Types.ObjectId} Safe ObjectId instance.
+ * @throws {Error} VALIDATION (400) if invalid.
+ */
 function validateUserId(id) {
   if (!Types.ObjectId.isValid(id)) {
     throw createError('User ID is invalid', { type: 'VALIDATION', status: 400 });
@@ -21,13 +36,13 @@ function validateUserId(id) {
 }
 
 /**
- * Get labels for a user.
- * If `name` is provided, returns only that label (case-insensitive) or throws if not found.
- * Otherwise, returns all labels for the user.
+ * Fetch labels for a user; optionally look up a single name (case-insensitive).
+ * Returns DTOs; name lookup throws 404 if not found.
  *
- * @param {import('mongoose').Types.ObjectId|string} userId - The user's ID.
- * @param {string} [name = null] - Optional label name to filter by.
- * @returns {Promise<import('../models/labelsModel').LabelDoc[]>}
+ * @param {string|import('mongoose').Types.ObjectId} userId - Owner id.
+ * @param {string|null} [name=null] - Specific label name to match exactly (i).
+ * @returns {Promise<object[]>} Array of label DTOs.
+ * @throws {Error} VALIDATION (400) for bad ids; NOT_FOUND (404) if name not found.
  */
 async function getLabelsForUser(userId, name = null) {
   try {
@@ -52,16 +67,14 @@ async function getLabelsForUser(userId, name = null) {
   }
 }
 
-
-
 /**
- * Get a label by its id for a specific user.
- * Validates ObjectId format and enforces ownership.
+ * Get a specific label by id and user ownership.
+ * Uses lean query + DTO shape.
  *
- * @param {import('mongoose').Types.ObjectId|string} userId - The user's ID.
- * @param {string} labelId - The label's ObjectId string.
- * @returns {Promise<import('../models/labelsModel').LabelDoc>}
- * @throws {Error} 400 if id(s) are invalid, 404 if not found for this user.
+ * @param {string|import('mongoose').Types.ObjectId} userId - Owner id.
+ * @param {string} labelId - Label ObjectId string.
+ * @returns {Promise<object>} The label DTO.
+ * @throws {Error} VALIDATION (400) for bad ids; NOT_FOUND (404) if missing.
  */
 async function getLabelForUserById(userId, labelId) {
   try {
@@ -87,15 +100,16 @@ async function getLabelForUserById(userId, labelId) {
   }
 }
 
-
 /**
- * Adds a new label for a given user.
- * @param {import('mongoose').Types.ObjectId|string} userId - The user's ID.
- * @param {string} name - The label's name.
- * @param {boolean} [isDefault=false] - Whether this is a isDefault label.
- * @param {boolean} [isAttachable=true] - Whether this label can be manually attached/removed.
- * @returns {Promise<import('../models/labelsModel').LabelDoc>} The created label document.
- * @throws {Error} If the label name already exists or is invalid.
+ * Create a new custom (non-default) label for a user.
+ * Enforces name validity and duplicate checks.
+ *
+ * @param {string|import('mongoose').Types.ObjectId} userId - Owner id.
+ * @param {string} name - New label name.
+ * @param {boolean} [isDefault=false] - Whether label is a system default.
+ * @param {boolean} [isAttachable=true] - Whether users can attach/detach it.
+ * @returns {Promise<object>} Created label DTO.
+ * @throws {Error} VALIDATION (400) for reserved/invalid/duplicate names.
  */
 async function addLabelForUser(userId, name, isDefault = false, isAttachable = true) {
   try {
@@ -111,7 +125,6 @@ async function addLabelForUser(userId, name, isDefault = false, isAttachable = t
         type: 'VALIDATION', status: 400
       });
     }
-
 
     // Check for duplicate name for this user (case-insensitive)
     const duplicate = await Label.findOne({
@@ -135,9 +148,13 @@ async function addLabelForUser(userId, name, isDefault = false, isAttachable = t
   }
 }
 
-
-
-/** simple format validation; you can also keep this in controller if you prefer */
+/**
+ * Quick label name validator used by add/update.
+ * Only checks non-empty trimmed string.
+ *
+ * @param {string} name - Proposed label name.
+ * @throws {Error} VALIDATION (400) for empty/invalid name.
+ */
 function validateLabelName(name) {
   if (typeof name !== 'string' || name.trim() === '') {
     throw createError('Label name must be a non-empty string', {
@@ -147,16 +164,15 @@ function validateLabelName(name) {
   }
 }
 
-
-
 /**
- * Updates the name of a custom label for a given user.
- * 
- * @param {string|ObjectId} userId - The ID of the user who owns the label.
- * @param {string|ObjectId} labelId - The label's ID.
- * @param {string} newName - The new label name.
- * @returns {Promise<Object>} Updated label document as plain object.
- * @throws {Error} If validation fails or label cannot be updated.
+ * Update a non-default label’s name.
+ * Prevents renaming into a reserved default name or duplicates.
+ *
+ * @param {string|import('mongoose').Types.ObjectId} userId - Owner id.
+ * @param {string|import('mongoose').Types.ObjectId} labelId - Label id.
+ * @param {string} newName - New label name.
+ * @returns {Promise<object>} Updated label DTO.
+ * @throws {Error} VALIDATION (400), NOT_FOUND (404), DUPLICATE (11000) mapped to VALIDATION.
  */
 async function updateLabelForUser(userId, labelId, newName) {
   try {
@@ -213,17 +229,14 @@ async function updateLabelForUser(userId, labelId, newName) {
   }
 }
 
-
 /**
- * Deletes a label for a specific user by ID.
- * - Validates userId and labelId
- * - Ensures the label belongs to the user
- * - Blocks deletion of isDefault/default labels
+ * Delete a custom (non-default) label owned by a user.
+ * Hard-deletes the label document after checks.
  *
- * @param {import('mongoose').Types.ObjectId|string} userId
- * @param {import('mongoose').Types.ObjectId|string} labelId
- * @returns {Promise<void>}
- * @throws {Error} 400 if IDs invalid, 404 if not found, 400 if isDefault/default
+ * @param {string|import('mongoose').Types.ObjectId} userId - Owner id.
+ * @param {string|import('mongoose').Types.ObjectId} labelId - Label id.
+ * @returns {Promise<void>} No content on success.
+ * @throws {Error} VALIDATION (400), NOT_FOUND (404), VALIDATION (400) for default labels.
  */
 async function deleteLabelForUser(userId, labelId) {
   try {
@@ -251,13 +264,13 @@ async function deleteLabelForUser(userId, labelId) {
   }
 }
 
-
-
 /**
- * Ensure default labels exist for a user.
- * Safe to call multiple times.
- * @param {import('mongoose').Types.ObjectId|string} userId
- * @returns {Promise<void>}
+ * Ensure all default labels exist for the user.
+ * Idempotent: safe to call multiple times.
+ *
+ * @param {string|import('mongoose').Types.ObjectId} userId - Owner id.
+ * @returns {Promise<void>} Nothing on success.
+ * @throws {Error} DB errors bubble up.
  */
 async function ensureDefaultLabels(userId) {
   try {
@@ -281,12 +294,13 @@ async function ensureDefaultLabels(userId) {
 }
 
 /**
- * Get a label's id by name (case-insensitive) for a user.
- * Keeps your existing "single name lookup" behavior.
- * @param {import('mongoose').Types.ObjectId|string} userId
- * @param {string} name
- * @returns {Promise<string>} label id as string
- * @throws 404 if not found
+ * Resolve a label id by name (case-insensitive) for a user.
+ * Delegates to getLabelsForUser(name) which throws 404 when absent.
+ *
+ * @param {string|import('mongoose').Types.ObjectId} userId - Owner id.
+ * @param {string} name - Label name.
+ * @returns {Promise<string>} Label id as a string.
+ * @throws {Error} NOT_FOUND (404) if name not found.
  */
 async function getLabelIdByName(userId, name) {
   const [label] = await getLabelsForUser(userId, name); // throws 404 if not found (unchanged behavior)
@@ -295,17 +309,27 @@ async function getLabelIdByName(userId, name) {
 }
 
 /**
- * Get a isDefault label id by name: 'inbox' | 'sent' | 'drafts' | 'spam' | 'trash' | 'starred'
- * Ensures defaults exist first.
- * @param {import('mongoose').Types.ObjectId|string} userId
- * @param {string} isDefaultName
- * @returns {Promise<string>}
+ * Get a default label id by reserved name.
+ * Ensures defaults exist, then resolves the id.
+ *
+ * @param {string|import('mongoose').Types.ObjectId} userId - Owner id.
+ * @param {string} isDefaultName - One of 'inbox'|'sent'|'drafts'|'spam'|'trash'|'starred'.
+ * @returns {Promise<string>} Label id string.
+ * @throws {Error} DB errors bubble up.
  */
 async function getisDefaultLabelId(userId, isDefaultName) {
   await ensureDefaultLabels(userId);
   return getLabelIdByName(userId, isDefaultName);
 }
 
+/**
+ * Validate a label id string.
+ * Throws on invalid values; returns a Types.ObjectId for convenience.
+ *
+ * @param {string} labelId - Candidate ObjectId string.
+ * @returns {import('mongoose').Types.ObjectId} Normalized id.
+ * @throws {Error} VALIDATION (400) when invalid.
+ */
 function validateLabelId(labelId) {
   if (!Types.ObjectId.isValid(labelId)) {
     throw createError('Label ID is invalid', { type: 'VALIDATION', status: 400 });
@@ -313,17 +337,16 @@ function validateLabelId(labelId) {
   return new Types.ObjectId(labelId);
 }
 
-
 /**
- * Attach a label to a mail. If the attached label is the user's Spam label:
- *  - blacklist the mail's URLs via Bloom,
- *  - auto-tag other accessible mails containing those URLs.
+ * Attach a label to a mail the user can see.
+ * If the label is Spam, also: add URLs to bloom and auto-tag matching mails.
  *
- * @param {string} mailId
- * @param {string} labelId
- * @param {string} username
- * @param {string|import('mongoose').Types.ObjectId} userId
- * @returns {Promise<object>} updated mail DTO (id, from, to, title, body, draft, labels, urls, timestamps)
+ * @param {string} mailId - Mail ObjectId string.
+ * @param {string} labelId - Label ObjectId string.
+ * @param {string} username - Actor username (access check).
+ * @param {string|import('mongoose').Types.ObjectId} userId - Owner of Spam label.
+ * @returns {Promise<object>} Updated mail DTO (public fields only).
+ * @throws {Error} VALIDATION (400), NOT_FOUND (404), FORBIDDEN (403).
  */
 async function attachLabelToMail(mailId, labelId, username, userId) {
   if (!Types.ObjectId.isValid(mailId) || !Types.ObjectId.isValid(labelId)) {
@@ -364,15 +387,15 @@ async function attachLabelToMail(mailId, labelId, username, userId) {
   return out;
 }
 
-
-
 /**
- * Detach a label (idempotent), enforcing access. No propagation on removal.
+ * Detach a label from a mail (idempotent) after access checks.
+ * No extra propagation on removal.
  *
- * @param {string} mailId
- * @param {string} labelId
- * @param {string} username
- * @returns {Promise<object>} updated mail DTO
+ * @param {string} mailId - Mail id string.
+ * @param {string} labelId - Label id string.
+ * @param {string} username - Actor username.
+ * @returns {Promise<object>} Updated mail DTO (public fields only).
+ * @throws {Error} VALIDATION (400), NOT_FOUND (404), FORBIDDEN (403).
  */
 async function detachLabelFromMail(mailId, labelId, username) {
   if (!Types.ObjectId.isValid(mailId) || !Types.ObjectId.isValid(labelId)) {
@@ -400,7 +423,6 @@ async function detachLabelFromMail(mailId, labelId, username) {
   if (out.labels && Array.isArray(out.labels)) out.labels = out.labels.map((l) => String(l));
   return out;
 }
-
 
 module.exports = {
   getLabelsForUser,
