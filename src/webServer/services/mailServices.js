@@ -105,6 +105,7 @@ async function filterMailForOutput(mail) {
   const output = {};
   if (mail && (mail._id || mail.id)) output.id = String(mail._id || mail.id);
 
+  // project only fields marked `public` in the Mail schema
   const schemaPaths = Mail.schema.paths;
   Object.keys(schemaPaths).forEach((path) => {
     const def = schemaPaths[path];
@@ -116,33 +117,27 @@ async function filterMailForOutput(mail) {
     if (typeof value !== 'undefined') output[path] = value;
   });
 
+  // normalize label ids to strings (if present)
   if (Array.isArray(mail.labels)) {
     const labels = Array.isArray(output.labels) ? output.labels : mail.labels;
     output.labels = labels.map((l) => String(l));
   }
-
-  // Attach senderImage (try several fields, then a readable fallback)
-  try {
-    if (mail.from) {
-      const sender = await findUserByUsername(mail.from);   // returns lean user
-      const img =
-        sender?.image ||           // your project uses this when users upload a photo :contentReference[oaicite:0]{index=0}
-        sender?.avatarUrl ||       // alternate name (if you add it later)
-        sender?.profileImage ||    // another common alias
-        null;
-
-      // Fallback so UI never gets null — initials via ui-avatars (no account needed)
-      output.senderImage = img || `https://ui-avatars.com/api/?name=${encodeURIComponent(mail.from)}&background=random`;
-    } else {
-      output.senderImage = `https://ui-avatars.com/api/?name=?&background=random`;
-    }
-  } catch {
-    // If lookup fails, still provide a non-null fallback
-    output.senderImage = `https://ui-avatars.com/api/?name=${encodeURIComponent(mail?.from || '?')}&background=random`;
+try {
+  if (mail.from) {
+    // this already applies the same projection as user service
+    const username = mail.from
+    const sender = await User.findOne({ username }).lean();
+    // always include the key (mirror user service behavior)
+    output.userImage = sender?.image ?? null;
+  } else {
+    output.userImage = null;
   }
-
+} catch {
+  output.userImage = null;
+}
   return output;
 }
+
 
 /**
  * Check whether a user can see a mail.
