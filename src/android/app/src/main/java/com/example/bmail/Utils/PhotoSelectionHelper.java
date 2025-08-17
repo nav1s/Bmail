@@ -166,9 +166,9 @@ public class PhotoSelectionHelper {
 
 
     /**
+     * @brief Creates an image file with a unique name.
      * @return The created file
      * @throws IOException if file creation fails
-     * @brief Creates an image file with a unique name.
      */
     @NonNull
     private File createImageFile() throws IOException {
@@ -186,10 +186,11 @@ public class PhotoSelectionHelper {
     }
 
        /**
-        * Handle permission request results
+        * @brief Handle permission request results
+        * @param requestCode The request code passed in requestPermissions
+        * @param grantResults The permission results
         */
-       public void handlePermissionResult(int requestCode, @NonNull String[] permissions,
-                                          @NonNull int[] grantResults) {
+       public void handlePermissionResult(int requestCode, @NonNull int[] grantResults) {
            if (requestCode == REQUEST_CAMERA_PERMISSION) {
                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                    // Permission granted, launch camera directly
@@ -197,7 +198,8 @@ public class PhotoSelectionHelper {
                } else {
                    // Permission denied
                    Toast.makeText(activity,
-                           "Camera permission is required to take photos", Toast.LENGTH_SHORT).show();
+                           "Camera permission is required to take photos",
+                           Toast.LENGTH_SHORT).show();
                }
            }
        }

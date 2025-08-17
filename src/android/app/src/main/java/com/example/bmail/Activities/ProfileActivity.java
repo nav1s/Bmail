@@ -210,6 +210,6 @@ public class ProfileActivity extends AppCompatActivity {
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
                                            @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        photoSelectionHelper.handlePermissionResult(requestCode, permissions, grantResults);
+        photoSelectionHelper.handlePermissionResult(requestCode, grantResults);
     }
 }

@@ -49,6 +49,16 @@ public class SignupViewModel {
     }
 
 
+    /**
+     * Validates the fields for the signup form.
+     *
+     * @param firstName       The first name of the user.
+     * @param lastName        The last name of the user.
+     * @param username        The username of the user.
+     * @param password        The password of the user.
+     * @param confirmPassword The confirmation password.
+     * @return A ValidationResult object containing error messages for each field, if any.
+     */
     public ValidationResult validateFields(@NonNull String firstName, @NonNull String lastName,
                                            @NonNull String username, String password,
                                            String confirmPassword) {
@@ -64,6 +74,16 @@ public class SignupViewModel {
         return result;
     }
 
+    /**
+     * Signs up a new user with the provided details.
+     *
+     * @param firstName   The first name of the user.
+     * @param lastName    The last name of the user.
+     * @param username    The username of the user.
+     * @param password    The password of the user.
+     * @param imageUri    The URI of the user's profile image.
+     * @param signupCallback The callback to handle the signup response.
+     */
     public void signup(@NonNull String firstName, @NonNull String lastName,
                         @NonNull String username, @NonNull String password, @NonNull String imageUri,
                        SignupApi.callback signupCallback

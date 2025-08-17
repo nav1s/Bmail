@@ -128,7 +128,7 @@ public class ComposeActivity extends AppCompatActivity {
         if (this.draftId != null && !this.draftId.isEmpty()) {
             CallbackUtil callback = new CallbackUtil(
                     "Draft updated successfully.",
-                    "Draft updated successfully.",
+                    "Failed to update draft: ",
                     true,
                     this,
                     "ComposeActivity"
@@ -139,7 +139,7 @@ public class ComposeActivity extends AppCompatActivity {
             Log.i("ComposeActivity", "Sending mail with subject: " + subject);
             CallbackUtil callback = new CallbackUtil(
                     "Mail sent successfully.",
-                    "Mail sent successfully.",
+                    "Failed to send mail: ",
                     true,
                     this,
                     "ComposeActivity"
@@ -165,7 +165,7 @@ public class ComposeActivity extends AppCompatActivity {
             if (this.draftId != null && !this.draftId.isEmpty()) {
                 CallbackUtil callback = new CallbackUtil(
                         "Draft updated successfully.",
-                        "Draft updated successfully.",
+                        "Failed to update draft: ",
                         false,
                         this,
                         "ComposeActivity"
@@ -174,7 +174,7 @@ public class ComposeActivity extends AppCompatActivity {
             } else {
                 CallbackUtil callback = new CallbackUtil(
                         "Draft created successfully.",
-                        "Draft created successfully.",
+                        "Failed to create draft: ",
                         false,
                         this,
                         "ComposeActivity"

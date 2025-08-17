@@ -63,6 +63,10 @@ public class SignupActivity extends AppCompatActivity implements SignupApi.callb
                 photoSelectionHelper.showPhotoSelectionOptions());
     }
 
+    /**
+     * Initializes the views used in the signup activity.
+     * This method sets up the EditTexts, Buttons, and ImageView for user input and interaction.
+     */
     private void initViews() {
         SignupApi userApi = new SignupApi(this);
         viewModel = new SignupViewModel(userApi);
@@ -77,6 +81,10 @@ public class SignupActivity extends AppCompatActivity implements SignupApi.callb
         choosePhotoBtn = findViewById(R.id.change_photo_text);
     }
 
+    /**
+     * Handles the click event for the signup button.
+     * Validates the input fields and initiates the signup process if validation passes.
+     */
     private void handleSignupButtonClick() {
         String firstName = String.valueOf(firstNameET.getText()).trim();
         String lastName = String.valueOf(lastNameET.getText()).trim();
@@ -138,6 +146,6 @@ public class SignupActivity extends AppCompatActivity implements SignupApi.callb
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
                                            @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        photoSelectionHelper.handlePermissionResult(requestCode, permissions, grantResults);
+        photoSelectionHelper.handlePermissionResult(requestCode, grantResults);
     }
 }

@@ -28,6 +28,7 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.example.bmail.Entities.Label;
 import com.example.bmail.Entities.ServerMail;
+import com.example.bmail.Utils.CallbackUtil;
 import com.example.bmail.ViewModels.MainActivityViewModel;
 import com.example.bmail.R;
 import com.example.bmail.Adapters.MailsAdapter;
@@ -330,8 +331,8 @@ public class MainActivity extends AppCompatActivity {
                     Toast.makeText(MainActivity.this, "Label added: " + labelName, Toast.LENGTH_SHORT).show();
                     viewModel.loadLabels();
                 } else {
-                    // get the error message from the response
-                    Log.e("MainActivity", "Failed to add label: " + response.message());
+                    CallbackUtil.handleErrorResponse(response, MainActivity.this,
+                            "Failed to add label: ", "MainActivity");
                 }
             }
 
@@ -361,7 +362,10 @@ public class MainActivity extends AppCompatActivity {
                                 Toast.makeText(MainActivity.this, "Label deleted: " + label.getName(), Toast.LENGTH_SHORT).show();
                                 viewModel.loadLabels();
                             } else {
-                                Log.e("MainActivity", "Failed to delete label: " + response.message());
+                                CallbackUtil.handleErrorResponse(response,
+                                        MainActivity.this,
+                                        "Failed to delete label: ",
+                                        "MainActivity");
                             }
                         }
 
