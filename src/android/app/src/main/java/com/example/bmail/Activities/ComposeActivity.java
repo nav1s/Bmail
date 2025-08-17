@@ -4,9 +4,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.widget.EditText;
 import android.widget.ImageButton;
-import android.widget.Toast;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
@@ -14,6 +12,7 @@ import com.example.bmail.Entities.BmailApplication;
 import com.example.bmail.Entities.ServerMail;
 import com.example.bmail.R;
 import com.example.bmail.Repositories.MailRepository;
+import com.example.bmail.Utils.CallbackUtil;
 import com.example.bmail.ViewModels.ComposeViewModel;
 
 public class ComposeActivity extends AppCompatActivity {
@@ -127,51 +126,25 @@ public class ComposeActivity extends AppCompatActivity {
 
         // If it's a draft, send the draft
         if (this.draftId != null && !this.draftId.isEmpty()) {
-            viewModel.updateDraft(to, subject, message, this.draftId, false);
+            CallbackUtil callback = new CallbackUtil(
+                    "Draft updated successfully.",
+                    "Draft updated successfully.",
+                    true,
+                    this,
+                    "ComposeActivity"
+            );
+            viewModel.updateDraft(to, subject, message, this.draftId, false, callback);
         } else {
             // If it's not a draft, send the mail
             Log.i("ComposeActivity", "Sending mail with subject: " + subject);
-            viewModel.sendMail(to, subject, message, new retrofit2.Callback<>() {
-                @Override
-                public void onResponse(@NonNull retrofit2.Call<Void> call,
-                                       @NonNull retrofit2.Response<Void> response) {
-                    if (response.isSuccessful()) {
-                        Log.i("ComposeActivity", "Mail sent successfully.");
-                        Toast.makeText(ComposeActivity.this, "Mail sent successfully.",
-                                Toast.LENGTH_SHORT).show();
-                        finish();
-                    } else {
-                        Log.e("ComposeActivity", "Failed to send mail: " + response.message());
-                        try(
-                                okhttp3.ResponseBody errorBody = response.errorBody()) {
-                            if (errorBody != null) {
-                                String errorMessage = errorBody.string();
-                                Log.e("ComposeActivity", "Error body: " + errorMessage);
-                                Toast.makeText(ComposeActivity.this,
-                                        "Failed to send mail: " + errorMessage,
-                                        Toast.LENGTH_SHORT).show();
-                            } else {
-                                Log.e("ComposeActivity", "No error body available.");
-                                Toast.makeText(ComposeActivity.this,
-                                        "Failed to send mail: " + response.message(),
-                                        Toast.LENGTH_SHORT).show();
-                            }
-                        } catch (Exception e) {
-                            Log.e("ComposeActivity", "Error reading error body", e);
-                            Toast.makeText(ComposeActivity.this,
-                                    "Failed to send mail: " + response.message(),
-                                    Toast.LENGTH_SHORT).show();
-                        }
-                    }
-                }
-
-                @Override
-                public void onFailure(@NonNull retrofit2.Call<Void> call, @NonNull Throwable t) {
-                    Log.e("ComposeActivity", "Error sending mail: " + t.getMessage());
-                    Toast.makeText(ComposeActivity.this,
-                            t.getMessage(), Toast.LENGTH_SHORT).show();
-                }
-            });
+            CallbackUtil callback = new CallbackUtil(
+                    "Mail sent successfully.",
+                    "Mail sent successfully.",
+                    true,
+                    this,
+                    "ComposeActivity"
+            );
+            viewModel.sendMail(to, subject, message, callback);
         }
     }
 
@@ -190,33 +163,23 @@ public class ComposeActivity extends AppCompatActivity {
         // save draft
         if (!subject.isEmpty() || !message.isEmpty()) {
             if (this.draftId != null && !this.draftId.isEmpty()) {
-                viewModel.updateDraft(to, subject, message, this.draftId, true);
+                CallbackUtil callback = new CallbackUtil(
+                        "Draft updated successfully.",
+                        "Draft updated successfully.",
+                        false,
+                        this,
+                        "ComposeActivity"
+                );
+                viewModel.updateDraft(to, subject, message, this.draftId, true, callback);
             } else {
-                viewModel.createDraft(to, subject, message, new retrofit2.Callback<>() {
-                    @Override
-                    public void onResponse(@NonNull retrofit2.Call<Void> call,
-                                           @NonNull retrofit2.Response<Void> response) {
-                        if (response.isSuccessful()) {
-                            Log.i("ComposeActivity", "Draft created successfully.");
-                            Toast.makeText(ComposeActivity.this,
-                                    R.string.message_saved_as_draft, Toast.LENGTH_SHORT).show();
-                        } else {
-                            Log.e("ComposeActivity", "Failed to create draft: " + response.message());
-                            // send a toast with the error message
-                            Toast.makeText(ComposeActivity.this,
-                                    "Failed to create draft: " + response.message(),
-                                    Toast.LENGTH_SHORT).show();
-                        }
-                    }
-
-                    @Override
-                    public void onFailure(@NonNull retrofit2.Call<Void> call, @NonNull Throwable t) {
-                        Log.e("ComposeActivity", "Error creating draft: " + t.getMessage());
-                        Toast.makeText(ComposeActivity.this,
-                                "Error creating draft: " + t.getMessage(),
-                                Toast.LENGTH_SHORT).show();
-                    }
-                });
+                CallbackUtil callback = new CallbackUtil(
+                        "Draft created successfully.",
+                        "Draft created successfully.",
+                        false,
+                        this,
+                        "ComposeActivity"
+                );
+                viewModel.createDraft(to, subject, message, callback);
             }
         }
         finish();

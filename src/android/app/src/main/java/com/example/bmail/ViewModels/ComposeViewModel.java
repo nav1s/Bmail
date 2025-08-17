@@ -65,7 +65,8 @@ public class ComposeViewModel extends androidx.lifecycle.ViewModel {
         mailRepository.sendMail(mail, callback);
     }
 
-    public void updateDraft(String to, String subject, String message, String mailId, Boolean draft) {
+    public void updateDraft(String to, String subject, String message,
+                            String mailId, Boolean draft, retrofit2.Callback<Void> callback) {
         // print the to address for debugging
         Log.d("ComposeViewModel", "Updating draft for mailId: " + mailId +
                 " with to: " + to);
@@ -78,6 +79,6 @@ public class ComposeViewModel extends androidx.lifecycle.ViewModel {
                 List.of(to), draft, null);
         // log the draft being updated for debugging
         Log.d("ComposeViewModel", "Updating draft: " + mail);
-        mailRepository.updateDraft(mail, mailId);
+        mailRepository.updateDraft(mail, mailId, callback);
     }
 }

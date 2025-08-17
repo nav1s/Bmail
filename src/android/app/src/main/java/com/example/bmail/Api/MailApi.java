@@ -117,26 +117,11 @@ public class MailApi {
         call.enqueue(callback);
     }
 
-    public void updateDraft(ServerMail mail, String mailId) {
+    public void updateDraft(ServerMail mail, String mailId, Callback<Void> callback) {
         String token = getToken();
         Log.i("MailApi", "Updating draft with token: " + token);
         Call<Void> call = webServiceApi.updateDraft("Bearer " + token, mail, mailId);
-        call.enqueue(new Callback<>() {
-            @Override
-            public void onResponse(@NonNull Call<Void> call,
-                                   @NonNull Response<Void> response) {
-                if (response.isSuccessful()) {
-                    Log.i("MailApi", "Draft updated successfully");
-                } else {
-                    Log.e("MailApi", "Failed to update draft: " + response.message());
-                }
-            }
-
-            @Override
-            public void onFailure(@NonNull Call<Void> call, @NonNull Throwable t) {
-                Log.e("MailApi", "Network error while updating draft: " + t.getMessage());
-            }
-        });
+        call.enqueue(callback);
     }
 
     public void searchMail(String query) {

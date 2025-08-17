@@ -48,30 +48,47 @@ public class MailRepository {
         mailApi = new MailApi(mailDao, mailListData, context);
     }
 
+    /**
+     * @brief Retrieves the list of mails.
+     * @return A LiveData object containing the list of mails.
+     */
     public LiveData<List<ServerMail>> getMails() {
         return mailListData;
     }
 
+    /**
+     * @brief Searches for mails based on a query.
+     * @param query The search query to filter mails.
+     */
     public void searchMail(String query) {
         Log.d("MailRepository", "Searching for mail with query: " + query);
         mailApi.searchMail(query);
     }
 
+    /**
+     * @brief Sends a mail.
+     * @param mail The mail object to be sent.
+     * @param callback The callback to handle the response of the mail sending operation.
+     */
     public void sendMail(ClientMail mail, retrofit2.Callback<Void> callback) {
         mailApi.sendMail(mail, callback);
     }
 
-    public void updateDraft(ServerMail mail, String mailId) {
+    /**
+     * @brief Updates a draft mail.
+     * @param mail The new draft object
+     * @param mailId the id of the draft
+     */
+    public void updateDraft(ServerMail mail, String mailId, retrofit2.Callback<Void> callback) {
         Log.d("MailRepository", "Updating draft for mail: " + mail);
-        mailApi.updateDraft(mail, mailId);
+        mailApi.updateDraft(mail, mailId, callback);
     }
 
-    public void deleteMail(ServerMail mail) {
-        Log.d("MailRepository", "Deleting mail: " + mail);
-//        mailApi.deleteMail(mail);
-
-    }
-
+    /**
+     * @brief Retrieves a mail by its ID.
+     * @param id The ID of the mail to be retrieved.
+     * @return The mail object if found, otherwise null.
+     */
     public ServerMail getMailById(String id) {
         List<ServerMail> mails = mailListData.getValue();
         if (mails != null) {
@@ -88,22 +105,40 @@ public class MailRepository {
         return null;
     }
 
+    /**
+     * @brief Deletes a mail by its ID.
+     * @param id The ID of the mail to be deleted.
+     */
     public void deleteMail(String id) {
         Log.d("MailRepository", "Deleting mail with ID: " + id);
         mailApi.deleteMail(id);
     }
 
+    /**
+     * @brief Removes a label from a mail.
+     * @param mailId The ID of the mail from which the label will be removed.
+     * @param labelId The ID of the label to be removed.
+     */
     public void removeLabelFromMail(String mailId, String labelId){
         Log.d("MailRepository", "Removing label " + labelId + " from mail " + mailId);
         mailApi.removeLabelFromMail(mailId, labelId);
 
     }
 
+    /**
+     * @brief Adds a label to a mail.
+     * @param mailId The ID of the mail to which the label will be added.
+     * @param labelId The ID of the label to be added.
+     */
     public void addLabelToMail(String mailId, String labelId) {
         Log.d("MailRepository", "Adding label " + labelId + " to mail " + mailId);
         mailApi.addLabelToMail(mailId, labelId);
     }
 
+    /**
+     * @brief Reloads the mails for a specific label.
+     * @param label The label for which to reload the mails.
+     */
     public void reloadMails(String label) {
         mailApi.reload(label);
     }
