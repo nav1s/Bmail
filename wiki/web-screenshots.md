@@ -17,7 +17,7 @@ _Description: The login page allows users to sign in to their Bmail account._
 ---
 
 ## Main Page
-_Description: The main page displays the user's inbox with a list of emails and _
+_Description: The main page allows users to access all of the website functionallity._
 ![main page](assets/web-screenshots/main-page.png)
 
 ---
