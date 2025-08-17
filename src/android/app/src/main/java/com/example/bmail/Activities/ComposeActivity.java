@@ -127,7 +127,7 @@ public class ComposeActivity extends AppCompatActivity {
         // If it's a draft, send the draft
         if (this.draftId != null && !this.draftId.isEmpty()) {
             CallbackUtil callback = new CallbackUtil(
-                    "Draft updated successfully.",
+                    "sent",
                     "Failed to update draft: ",
                     true,
                     this,
@@ -138,7 +138,7 @@ public class ComposeActivity extends AppCompatActivity {
             // If it's not a draft, send the mail
             Log.i("ComposeActivity", "Sending mail with subject: " + subject);
             CallbackUtil callback = new CallbackUtil(
-                    "Mail sent successfully.",
+                    "sent",
                     "Failed to send mail: ",
                     true,
                     this,
@@ -164,7 +164,7 @@ public class ComposeActivity extends AppCompatActivity {
         if (!subject.isEmpty() || !message.isEmpty()) {
             if (this.draftId != null && !this.draftId.isEmpty()) {
                 CallbackUtil callback = new CallbackUtil(
-                        "Draft updated successfully.",
+                        "Message saved as draft.",
                         "Failed to update draft: ",
                         false,
                         this,
@@ -173,7 +173,7 @@ public class ComposeActivity extends AppCompatActivity {
                 viewModel.updateDraft(to, subject, message, this.draftId, true, callback);
             } else {
                 CallbackUtil callback = new CallbackUtil(
-                        "Draft created successfully.",
+                        "Message saved as draft.",
                         "Failed to create draft: ",
                         false,
                         this,
