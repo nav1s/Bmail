@@ -3,7 +3,6 @@ package com.example.bmail.Api;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -93,7 +92,7 @@ public class UserApi {
      * @brief Loads the user's profile image from the server.
      * @param url the URL of the profile image to load
      */
-    public void loadImage(String url) {
+    public void loadCurrentUserImage(String url) {
         String token = getToken();
         ImageUtils.downloadImage(webServiceApi, token, url, new ImageUtils.ImageDownloadCallback() {
             @Override

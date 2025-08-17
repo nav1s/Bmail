@@ -52,7 +52,7 @@ public class UserRepository {
     }
 
     public void loadImage(String url) {
-        userApi.loadImage(url);
+        userApi.loadCurrentUserImage(url);
     }
 
     public LiveData<Bitmap> getUserImage() {

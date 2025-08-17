@@ -1,5 +1,7 @@
 package com.example.bmail.Entities;
 
+import android.graphics.Bitmap;
+
 import androidx.annotation.NonNull;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
@@ -48,6 +50,7 @@ public class ServerMail {
     private Date updatedAt;
     @Expose
     private String senderImage;
+    private Bitmap senderImageBitmap;
 
     public ServerMail() {
     }
@@ -131,5 +134,13 @@ public class ServerMail {
     }
     public void setSenderImage(String senderImage) {
         this.senderImage = senderImage;
+    }
+
+    public Bitmap getSenderImageBitmap() {
+        return senderImageBitmap;
+    }
+
+    public void setSenderImageBitmap(Bitmap senderImageBitmap) {
+        this.senderImageBitmap = senderImageBitmap;
     }
 }

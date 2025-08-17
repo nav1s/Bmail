@@ -5,6 +5,7 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -28,6 +29,7 @@ public class MailsAdapter extends RecyclerView.Adapter<MailsAdapter.mailViewHold
         private final TextView subject;
         private final TextView body;
         private final TextView timeTextView;
+        private final ImageView avaterImageView;
         private ServerMail currentMail;
 
         public mailViewHolder(@NonNull View itemView, View.OnClickListener clickListener) {
@@ -36,6 +38,7 @@ public class MailsAdapter extends RecyclerView.Adapter<MailsAdapter.mailViewHold
             subject = itemView.findViewById(R.id.subjectTextView);
             body = itemView.findViewById(R.id.previewTextView);
             timeTextView = itemView.findViewById(R.id.timeTextView);
+            avaterImageView = itemView.findViewById(R.id.avatarImageView);
 
             itemView.setOnClickListener(v -> {
                 if (currentMail != null) {
@@ -76,6 +79,7 @@ public class MailsAdapter extends RecyclerView.Adapter<MailsAdapter.mailViewHold
         holder.sender.setText(currentMail.getFrom());
         holder.subject.setText(currentMail.getTitle());
         holder.body.setText(currentMail.getBody());
+        holder.avaterImageView.setImageResource(R.drawable.ic_person);
 
         if (currentMail.getUpdatedAt() != null) {
             DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault());
