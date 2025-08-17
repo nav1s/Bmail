@@ -1,5 +1,7 @@
 package com.example.bmail.ViewModels;
 
+import android.util.Log;
+
 import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
@@ -16,6 +18,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class MailContentViewModel extends ViewModel {
@@ -58,6 +61,7 @@ public class MailContentViewModel extends ViewModel {
                         .filter(label -> !label.isDefault())
                         .collect(Collectors.toList());
 
+                Log.d("MailContentViewModel", "Manageable labels: " + manageable);
                 userManageableLabels.setValue(manageable);
 
                 ServerMail currentMail = mail.getValue();
@@ -83,48 +87,48 @@ public class MailContentViewModel extends ViewModel {
     }
 
     /**
-     * @brief Returns a LiveData object containing the current mail.
      * @return LiveData containing the current ServerMail object.
+     * @brief Returns a LiveData object containing the current mail.
      */
     public LiveData<ServerMail> getMail() {
         return mail;
     }
 
     /**
-     * @brief Returns a LiveData object indicating whether the current mail is starred.
      * @return LiveData containing a boolean indicating if the mail is starred.
+     * @brief Returns a LiveData object indicating whether the current mail is starred.
      */
     public LiveData<Boolean> getIsStarred() {
         return isStarred;
     }
 
     /**
-     * @brief Returns a LiveData object indicating whether the current mail is in trash.
      * @return LiveData containing a boolean indicating if the mail is in trash.
+     * @brief Returns a LiveData object indicating whether the current mail is in trash.
      */
     public LiveData<Boolean> getIsInTrash() {
         return isInTrash;
     }
 
     /**
-     * @brief Returns a LiveData object indicating whether the current mail is in spam.
      * @return LiveData containing a boolean indicating if the mail is in spam.
+     * @brief Returns a LiveData object indicating whether the current mail is in spam.
      */
     public LiveData<Boolean> getIsInSpam() {
         return isInSpam;
     }
 
     /**
-     * @brief Returns a LiveData object containing the list of labels that the user can manage.
      * @return LiveData containing a list of user-manageable labels.
+     * @brief Returns a LiveData object containing the list of labels that the user can manage.
      */
     public LiveData<List<Label>> getUserManageableLabels() {
         return userManageableLabels;
     }
 
     /**
-     * @brief Loads the mail data by its ID and updates the starred, trash, and spam states.
      * @param mailId The ID of the mail to be loaded.
+     * @brief Loads the mail data by its ID and updates the starred, trash, and spam states.
      */
     public void loadMailById(String mailId) {
         ServerMail mailData = mailRepository.getMailById(mailId);
@@ -135,8 +139,8 @@ public class MailContentViewModel extends ViewModel {
     }
 
     /**
-     * @brief Updates the starred, trash, and spam states based on the provided mail data.
      * @param mailData The mail data to update the states from.
+     * @brief Updates the starred, trash, and spam states based on the provided mail data.
      */
     private void updateLabelStates(@NonNull ServerMail mailData) {
         isStarred.setValue(mailData.getLabels().contains(starredLabelId));
@@ -145,8 +149,8 @@ public class MailContentViewModel extends ViewModel {
     }
 
     /**
-     * @brief Fetches the default label IDs (starred, trash, spam) from the provided list of labels.
      * @param labels List of labels to search for default labels.
+     * @brief Fetches the default label IDs (starred, trash, spam) from the provided list of labels.
      */
     private void fetchDefaultLabelIds(@NonNull List<Label> labels) {
         for (Label label : labels) {
@@ -238,8 +242,8 @@ public class MailContentViewModel extends ViewModel {
     }
 
     /**
-     * @brief Gets a map of labels and their selection state for the current mail.
      * @return Map where keys are labels and values are booleans indicating if the label is selected for the current mail.
+     * @brief Gets a map of labels and their selection state for the current mail.
      */
     public Map<Label, Boolean> getLabelSelectionMap() {
         ServerMail currentMail = mail.getValue();
@@ -258,21 +262,18 @@ public class MailContentViewModel extends ViewModel {
     }
 
     /**
-     * @brief Updates the labels of the current mail based on the selected label IDs.
      * @param selectedLabelIds List of label IDs to be applied to the current mail.
+     * @brief Updates the labels of the current mail based on the selected label IDs.
      */
     public void updateLabels(List<String> selectedLabelIds) {
         ServerMail currentMail = mail.getValue();
         if (currentMail == null) return;
 
-        // Get current labels excluding system labels
-        List<String> currentUserLabelIds = new ArrayList<>(currentMail.getLabels());
-
-        // Keep system labels
-        List<String> systemLabelIds = new ArrayList<>();
-        if (currentMail.getLabels().contains(starredLabelId)) systemLabelIds.add(starredLabelId);
-        if (currentMail.getLabels().contains(trashLabelId)) systemLabelIds.add(trashLabelId);
-        if (currentMail.getLabels().contains(spamLabelId)) systemLabelIds.add(spamLabelId);
+        // get the label id from the user manageable labels
+        List<String> currentUserLabelIds =
+                Objects.requireNonNull(userManageableLabels.getValue()).stream()
+                .map(Label::getId)
+                .collect(Collectors.toList());
 
         // Add new labels
         for (String labelId : selectedLabelIds) {
@@ -283,9 +284,7 @@ public class MailContentViewModel extends ViewModel {
 
         // Remove unselected labels
         for (String labelId : currentUserLabelIds) {
-            if (!systemLabelIds.contains(labelId) && !selectedLabelIds.contains(labelId)) {
-                mailRepository.removeLabelFromMail(currentMail.getId(), labelId);
-            }
+            mailRepository.removeLabelFromMail(currentMail.getId(), labelId);
         }
 
         refreshMailData();

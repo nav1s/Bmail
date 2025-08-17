@@ -24,6 +24,7 @@ import com.example.bmail.ViewModels.MailContentViewModel;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -49,6 +50,9 @@ public class MailContentActivity extends AppCompatActivity {
         }
 
         viewModel.loadMailById(mailId);
+
+        // Setup button listeners
+        setupButtonListeners();
     }
 
     /**
@@ -82,8 +86,6 @@ public class MailContentActivity extends AppCompatActivity {
         // Observe spam state
         viewModel.getIsInSpam().observe(this, this::updateSpamButtonState);
 
-        // Setup button listeners
-        setupButtonListeners();
     }
 
     /**
@@ -312,13 +314,13 @@ public class MailContentActivity extends AppCompatActivity {
         }
 
         Map<Label, Boolean> labelSelectionMap = viewModel.getLabelSelectionMap();
+        Log.d("MailContentActivity", "Label selection map: " + labelSelectionMap);
 
         // Create arrays for the dialog
         final String[] labelNames = userLabels.stream()
                 .map(Label::getName)
                 .toArray(String[]::new);
 
-        // Fix: Use traditional loop for primitive boolean array
         final boolean[] checkedItems = new boolean[userLabels.size()];
         for (int i = 0; i < userLabels.size(); i++) {
             checkedItems[i] = Boolean.TRUE.equals(labelSelectionMap.get(userLabels.get(i)));
