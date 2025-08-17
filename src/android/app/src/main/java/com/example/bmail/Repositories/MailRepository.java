@@ -8,7 +8,6 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.room.Room;
 
-import com.example.bmail.Adapters.MailsAdapter;
 import com.example.bmail.Api.MailApi;
 import com.example.bmail.Entities.ClientMail;
 import com.example.bmail.Entities.ServerMail;

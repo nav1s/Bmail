@@ -6,7 +6,6 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
 
-import com.example.bmail.Adapters.MailsAdapter;
 import com.example.bmail.Entities.BmailApplication;
 import com.example.bmail.Entities.Label;
 import com.example.bmail.Entities.ServerMail;

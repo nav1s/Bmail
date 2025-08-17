@@ -2,7 +2,6 @@ package com.example.bmail.Api;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.graphics.Bitmap;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -12,7 +11,6 @@ import com.example.bmail.Entities.AttachLabelRequest;
 import com.example.bmail.Entities.ClientMail;
 import com.example.bmail.Entities.ServerMail;
 import com.example.bmail.R;
-import com.example.bmail.Utils.ImageUtils;
 import com.example.bmail.db.MailDao;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -32,7 +30,6 @@ public class MailApi {
     WebServiceApi webServiceApi;
     private final Context context;
     private final Gson gson;
-    private final String TAG = "MailApi";
 
     public MailApi(MailDao mailDao, MutableLiveData<List<ServerMail>> mailListData, @NonNull Context context) {
         this.mailDao = mailDao;
