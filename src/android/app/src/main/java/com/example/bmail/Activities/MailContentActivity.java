@@ -319,20 +319,24 @@ public class MailContentActivity extends AppCompatActivity {
         final String[] labelNames = userLabels.stream()
                 .map(Label::getName)
                 .toArray(String[]::new);
+        Log.d("MailContentActivity", "Label names: " + String.join(", ", labelNames));
 
         final boolean[] checkedItems = new boolean[userLabels.size()];
         for (int i = 0; i < userLabels.size(); i++) {
             checkedItems[i] = Boolean.TRUE.equals(labelSelectionMap.get(userLabels.get(i)));
         }
+        Log.d("MailContentActivity", "Checked items: " + java.util.Arrays.toString(checkedItems));
 
         // Create the dialog
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Manage Labels");
 
         if (labelNames.length == 0) {
+            Log.d("MailContentActivity", "No custom labels available");
             builder.setMessage("No custom labels available");
             builder.setPositiveButton("OK", (dialog, which) -> dialog.dismiss());
         } else {
+            Log.d("MailContentActivity", "Showing label selection dialog");
             builder.setMultiChoiceItems(labelNames, checkedItems,
                     (dialog, which, isChecked) -> {
                         // Update the checked items array

@@ -185,7 +185,6 @@ public class MailContentViewModel extends ViewModel {
         }
 
         isStarred.setValue(!currentStarredState);
-        refreshMailData();
     }
 
     /**
@@ -203,7 +202,6 @@ public class MailContentViewModel extends ViewModel {
         }
 
         isInSpam.setValue(!currentSpamState);
-        refreshMailData();
     }
 
     /**
@@ -215,7 +213,6 @@ public class MailContentViewModel extends ViewModel {
 
         mailRepository.addLabelToMail(currentMail.getId(), trashLabelId);
         isInTrash.setValue(true);
-        refreshMailData();
     }
 
     /**
@@ -227,7 +224,6 @@ public class MailContentViewModel extends ViewModel {
 
         mailRepository.removeLabelFromMail(currentMail.getId(), trashLabelId);
         isInTrash.setValue(false);
-        refreshMailData();
     }
 
     /**
@@ -268,35 +264,30 @@ public class MailContentViewModel extends ViewModel {
         ServerMail currentMail = mail.getValue();
         if (currentMail == null) return;
 
-        // get the label id from the user manageable labels
         List<String> currentUserLabelIds =
                 Objects.requireNonNull(userManageableLabels.getValue()).stream()
-                .map(Label::getId)
-                .collect(Collectors.toList());
+                        .map(Label::getId)
+                        .filter(id -> currentMail.getLabels().contains(id))
+                        .collect(Collectors.toList());
 
         // Add new labels
         for (String labelId : selectedLabelIds) {
-            if (!currentUserLabelIds.contains(labelId)) {
-                mailRepository.addLabelToMail(currentMail.getId(), labelId);
+            mailRepository.addLabelToMail(currentMail.getId(), labelId);
+            // add the label to the mail if it is selected
+            if (!currentMail.getLabels().contains(labelId)) {
+                currentMail.getLabels().add(labelId);
             }
         }
 
         // Remove unselected labels
         for (String labelId : currentUserLabelIds) {
-            mailRepository.removeLabelFromMail(currentMail.getId(), labelId);
+            if (!selectedLabelIds.contains(labelId)) {
+                mailRepository.removeLabelFromMail(currentMail.getId(), labelId);
+                // remove the label from the mail if it is not selected
+                currentMail.getLabels().remove(labelId);
+            }
         }
 
-        refreshMailData();
-    }
-
-    /**
-     * @brief Refreshes the mail data by reloading the current mail.
-     */
-    private void refreshMailData() {
-        ServerMail currentMail = mail.getValue();
-        if (currentMail != null) {
-            loadMailById(currentMail.getId());
-        }
     }
 
 }
