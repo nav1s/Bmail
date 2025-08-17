@@ -87,6 +87,7 @@ public class ImageUtils {
            String url,
            ImageDownloadCallback callback
    ) {
+
        Call<ResponseBody> call = webServiceApi.downloadImage("Bearer " + token, url);
        call.enqueue(new retrofit2.Callback<>() {
            @Override

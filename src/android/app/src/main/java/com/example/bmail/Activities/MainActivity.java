@@ -144,7 +144,10 @@ public class MainActivity extends AppCompatActivity {
         viewModel.getUserData().observe(this, user -> {
             if (user != null) {
                 Log.i("MainActivity", "User data loaded: " + user);
-                viewModel.loadImage(user.getImage());
+                String image = user.getImage();
+                if (image != null)
+                    if (!image.isEmpty())
+                        viewModel.loadImage(user.getImage());
             }
         });
         viewModel.getUserImage().observe(this, image -> {
