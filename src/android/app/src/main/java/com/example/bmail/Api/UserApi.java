@@ -27,6 +27,7 @@ public class UserApi {
     private final Context context;
     private final UserData userData;
     private final MutableLiveData<Bitmap> userImage;
+    private final String TAG = "UserApi";
 
     public UserApi(@NonNull Context context, UserData userData, MutableLiveData<Bitmap> userImage) {
         this.context = context.getApplicationContext();
@@ -40,17 +41,29 @@ public class UserApi {
     }
 
 
+    /**
+     * @brief Retrieves the authentication token from shared preferences.
+     * @return the authentication token, or null if not found
+     */
     public String getToken() {
         SharedPreferences prefs = context.getSharedPreferences("user_prefs",
                 Context.MODE_PRIVATE);
         return prefs.getString("auth_token", null);
     }
 
+    /**
+     * @brief Retrieves the user ID from shared preferences.
+     * @return the user ID, or null if not found
+     */
     public String getUserId() {
         SharedPreferences prefs = context.getSharedPreferences("user_prefs",
                 Context.MODE_PRIVATE);
         return prefs.getString("user_id", null);
     }
+
+    /**
+     * @brief Loads the user's details from the server and updates the userData LiveData.
+     */
     public void loadUserDetails() {
         String token = getToken();
         String userID = getUserId();
@@ -62,24 +75,28 @@ public class UserApi {
                 if (response.isSuccessful() && response.body() != null) {
                     User user = response.body();
                     userData.postValue(user);
-                    Log.i("UserApi", "User details loaded: " + user);
+                    Log.i(TAG, "User details loaded: " + user);
                     // Handle the loaded user details as needed
                 } else {
-                    Log.e("UserApi", "Failed to load user details: " + response.message());
+                    Log.e(TAG, "Failed to load user details: " + response.message());
                 }
             }
 
             @Override
             public void onFailure(@NonNull Call<User> call, @NonNull Throwable t) {
-                Log.e("UserApi", "Error loading user details", t);
+                Log.e(TAG, "Error loading user details", t);
             }
         });
     }
 
+    /**
+     * @brief Loads the user's profile image from the server.
+     * @param url the URL of the profile image to load
+     */
     public void loadImage(String url) {
         String token = getToken();
-        Log.d("UserApi", "Token: " + token);
-        Log.d("UserApi", "Image URL: " + url);
+        Log.d(TAG, "Token: " + token);
+        Log.d(TAG, "Image URL: " + url);
         Call<okhttp3.ResponseBody> call = webServiceApi.downloadImage("Bearer " + token, url);
         call.enqueue(new retrofit2.Callback<>() {
             @Override
@@ -87,17 +104,17 @@ public class UserApi {
                     @NonNull retrofit2.Call<okhttp3.ResponseBody> call,
                     @NonNull retrofit2.Response<okhttp3.ResponseBody> response) {
                 if (!response.isSuccessful()) {
-                    Log.e("MainActivity", "Failed to load profile image: " + response.message());
-                    Log.e("MainActivity", "Response code: " + response.code());
+                    Log.e(TAG, "Failed to load profile image: " + response.message());
+                    Log.e(TAG, "Response code: " + response.code());
 
                     try (okhttp3.ResponseBody errorBody = response.errorBody()) {
                         if (errorBody != null) {
-                            Log.e("MainActivity", "Error body: " + errorBody.string());
+                            Log.e(TAG, "Error body: " + errorBody.string());
                         } else {
-                            Log.e("MainActivity", "No error body available.");
+                            Log.e(TAG, "No error body available.");
                         }
                     } catch (Exception e) {
-                        Log.e("MainActivity", "Error reading error body", e);
+                        Log.e(TAG, "Error reading error body", e);
                     }
                     return;
 
@@ -105,15 +122,15 @@ public class UserApi {
 
                 try(okhttp3.ResponseBody responseBody = response.body()) {
                     if (responseBody == null) {
-                        Log.e("MainActivity", "Response body is null.");
+                        Log.e(TAG, "Response body is null.");
                         return;
                     }
                     Bitmap bitmap = BitmapFactory.decodeStream(responseBody.byteStream());
                     if (bitmap != null) {
                         userImage.postValue(bitmap);
-                        Log.i("MainActivity", "Profile image loaded successfully.");
+                        Log.i(TAG, "Profile image loaded successfully.");
                     } else {
-                        Log.e("MainActivity", "Failed to decode profile image.");
+                        Log.e(TAG, "Failed to decode profile image.");
                     }
                 }
             }
@@ -139,9 +156,9 @@ public class UserApi {
             Log.e("UserApi", "No authentication token found");
             return;
         }
-        Log.i("UserApi", "Updating profile with token: " + token);
-        Log.i("UserApi", "First Name: " + firstName);
-        Log.i("UserApi", "Last Name: " + lastName);
+        Log.i(TAG, "Updating profile with token: " + token);
+        Log.i(TAG, "First Name: " + firstName);
+        Log.i(TAG, "Last Name: " + lastName);
 
         // Create MultipartBody.Part for the image
         MultipartBody.Part imagePart = imageUri == null ? null:
@@ -154,20 +171,20 @@ public class UserApi {
             @Override
             public void onResponse(@NonNull Call<Void> call, @NonNull Response<Void> response) {
                 if (response.isSuccessful()) {
-                    Log.i("UserApi", "Profile updated successfully");
+                    Log.i(TAG, "Profile updated successfully");
                     loadUserDetails();
                 } else {
                     try(okhttp3.ResponseBody errorBody = response.errorBody()) {
-                        Log.e("UserApi", "Failed to update profile. Code: " + response.code() +
+                        Log.e(TAG, "Failed to update profile. Code: " + response.code() +
                                 ", Message: " + response.message() + ", Error: " + errorBody);
                     } catch (Exception e) {
-                        Log.e("UserApi", "Failed to update profile: " + response.message(), e);
+                        Log.e(TAG, "Failed to update profile: " + response.message(), e);
                     }
                 }
             }
             @Override
             public void onFailure(@NonNull Call<Void> call, @NonNull Throwable t) {
-                Log.e("UserApi", "Network error updating profile", t);
+                Log.e(TAG, "Network error updating profile", t);
             }
         });
     }

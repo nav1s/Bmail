@@ -11,6 +11,22 @@ import java.util.List;
 @Entity
 public class ServerMail {
 
+    @NonNull
+    @Override
+    public String toString() {
+        return "ServerMail{" +
+                "id='" + id + '\'' +
+                ", title='" + title + '\'' +
+                ", body='" + body + '\'' +
+                ", from='" + from + '\'' +
+                ", to=" + to +
+                ", draft=" + draft +
+                ", labels=" + labels +
+                ", updatedAt=" + updatedAt +
+                ", senderImage='" + senderImage + '\'' +
+                '}';
+    }
+
     @PrimaryKey
     @Expose
     @NonNull
@@ -30,6 +46,8 @@ public class ServerMail {
     private List<String> labels;
     @Expose
     private Date updatedAt;
+    @Expose
+    private String senderImage;
 
     public ServerMail() {
     }
@@ -84,21 +102,6 @@ public class ServerMail {
         this.title = title;
     }
 
-    @NonNull
-    @Override
-    public String toString() {
-        return "ServerMail{" +
-                "id='" + id + '\'' +
-                ", title='" + title + '\'' +
-                ", body='" + body + '\'' +
-                ", from='" + from + '\'' +
-                ", to=" + to +
-                ", draft=" + draft +
-                ", labels=" + labels +
-                ", updatedAt=" + updatedAt +
-                '}';
-    }
-
     public List<String> getLabels() {
         return labels;
     }
@@ -121,5 +124,12 @@ public class ServerMail {
 
     public void setUpdatedAt(Date updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public String getSenderImage() {
+        return senderImage;
+    }
+    public void setSenderImage(String senderImage) {
+        this.senderImage = senderImage;
     }
 }

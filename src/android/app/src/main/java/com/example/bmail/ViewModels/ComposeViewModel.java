@@ -22,6 +22,13 @@ public class ComposeViewModel extends androidx.lifecycle.ViewModel {
 
     }
 
+    /**
+     * @brief Sends an email with the provided details.
+     * @param to      The recipient's email address.
+     * @param subject The subject of the email.
+     * @param message The body of the email.
+     * @param callback The callback to handle the response.
+     */
     public void sendMail(@NonNull String to, String subject, String message, retrofit2.Callback<Void> callback) {
 
         // Validate input
@@ -47,6 +54,13 @@ public class ComposeViewModel extends androidx.lifecycle.ViewModel {
         mailRepository.sendMail(mail, callback);
     }
 
+    /**
+     * @brief Creates a draft email with the provided details.
+     * @param to      The recipient's email address.
+     * @param subject The subject of the email.
+     * @param message The body of the email.
+     * @param callback The callback to handle the response.
+     */
     public void createDraft(String to, String subject, String message, retrofit2.Callback<Void> callback) {
         List<String> toList;
         if (to != null && !to.isEmpty()) {
@@ -65,6 +79,15 @@ public class ComposeViewModel extends androidx.lifecycle.ViewModel {
         mailRepository.sendMail(mail, callback);
     }
 
+    /**
+     * @brief Updates an existing draft with the provided details.
+     * @param to      The recipient's email address.
+     * @param subject The subject of the email.
+     * @param message The body of the email.
+     * @param mailId  The ID of the draft to update.
+     * @param draft   Indicates whether this is a draft.
+     * @param callback The callback to handle the response.
+     */
     public void updateDraft(String to, String subject, String message,
                             String mailId, Boolean draft, retrofit2.Callback<Void> callback) {
         // print the to address for debugging
