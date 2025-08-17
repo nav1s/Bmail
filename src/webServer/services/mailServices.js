@@ -741,13 +741,14 @@ async function addLabelToMail(mailId, labelId, username) {
   const labelDoc = await Label.findById(lId, { _id: 1, name: 1, userId: 1 }).lean();
   const isSpam = !!labelDoc && /^spam$/i.test(labelDoc.name);
   if (isSpam) {
-    const urls = Array.from(new Set((mail.urls || []).map(normalizeUrl).filter(Boolean)));
-    if (urls.length) {
-      console.log("tagging urls as spam" + urls)
-      await addUrlsToBlacklist(urls); // on tag attach — add URLs to blacklist
-    }
-    // propagate for this label's owner (spam is per user)
-    await updateMailsSpamLabel(labelDoc.userId, username);
+  const urls = Array.from(new Set((mail.urls || []).map(normalizeUrl).filter(Boolean)));
+  if (urls.length) {
+    await addUrlsToBlacklist(urls);
+    // tag for all users (not just this label's owner)
+    await tagMailsWithUrlsAsSpamForAllUsers(username, urls);
+  }
+  // refresh spam labeling for all users
+  await updateMailsSpamLabelForAllUsers(username);
   }
 
   return await filterMailForOutput(mail.toObject ? mail.toObject() : mail);
@@ -778,11 +779,12 @@ async function removeLabelFromMail(mailId, labelId, username) {
   const labelDoc = await Label.findById(lId, { _id: 1, name: 1, userId: 1 }).lean();
   const isSpam = !!labelDoc && /^spam$/i.test(labelDoc.name);
   if (isSpam) {
-    const urls = Array.from(new Set((mail.urls || []).map(normalizeUrl).filter(Boolean)));
-    if (urls.length) {
-      await removeUrlsFromBlacklist(urls); // on tag detach — remove URLs from blacklist
-    }
-    await updateMailsSpamLabel(labelDoc.userId, username);
+  const urls = Array.from(new Set((mail.urls || []).map(normalizeUrl).filter(Boolean)));
+  if (urls.length) {
+    await removeUrlsFromBlacklist(urls);
+  }
+  // refresh spam labeling for all users
+  await updateMailsSpamLabelForAllUsers(username);
   }
 
   return await filterMailForOutput(mail.toObject ? mail.toObject() : mail);
@@ -808,7 +810,7 @@ async function tagMailsWithUrlsAsSpam(userId, username, urls, spamLabelId) {
   // Candidate mails that belong to this user's scope, contain any URL, and are NOT drafts
   const candidates = await Mail.find(
     {
-      draft: { $ne: true },                // <-- skip drafts
+      draft: { $ne: true },
       urls: { $in: list },
       $or: [
         { from: username },
@@ -833,6 +835,31 @@ async function tagMailsWithUrlsAsSpam(userId, username, urls, spamLabelId) {
     tagged = res?.modifiedCount || res?.nModified || 0;
   }
   return { matched: candidates.length, tagged };
+}
+
+// Fetch all Spam labels across all users (ids + owners)
+async function getAllSpamLabels() {
+  return await Label.find(
+    { name: { $regex: '^spam$', $options: 'i' } },
+    { _id: 1, userId: 1 }
+  ).lean();
+}
+
+// Re-run the per-user spam sweep for every user who has a Spam label
+async function updateMailsSpamLabelForAllUsers(username) {
+  const allSpam = await getAllSpamLabels();
+  for (const s of allSpam) {
+    await updateMailsSpamLabel(s.userId, username);
+  }
+}
+
+// Given some URLs, tag every user's Spam label wherever applicable
+async function tagMailsWithUrlsAsSpamForAllUsers(username, urls) {
+  const allSpam = await getAllSpamLabels();
+  const list = Array.from(new Set((urls || []).map(normalizeUrl).filter(Boolean)));
+  for (const s of allSpam) {
+    await tagMailsWithUrlsAsSpam(s.userId, username, list, s._id);
+  }
 }
 
 
