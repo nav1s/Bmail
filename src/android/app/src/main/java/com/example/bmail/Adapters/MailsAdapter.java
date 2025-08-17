@@ -79,7 +79,11 @@ public class MailsAdapter extends RecyclerView.Adapter<MailsAdapter.mailViewHold
         holder.sender.setText(currentMail.getFrom());
         holder.subject.setText(currentMail.getTitle());
         holder.body.setText(currentMail.getBody());
-        holder.avaterImageView.setImageResource(R.drawable.ic_person);
+        if (currentMail.getSenderImageBitmap() != null) {
+            holder.avaterImageView.setImageBitmap(currentMail.getSenderImageBitmap());
+        } else {
+            holder.avaterImageView.setImageResource(R.drawable.ic_person);
+        }
 
         if (currentMail.getUpdatedAt() != null) {
             DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault());
