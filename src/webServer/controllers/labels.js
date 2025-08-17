@@ -16,11 +16,13 @@ function isValidObjectId(id) {
 }
 
 /**
- * Lists all labels for the authenticated user.
- * Also ensures that system default labels exist for that user.
+ * List all labels that belong to the current user.
+ * Useful for populating label selectors in the UI.
  *
- * @param {object} req - Express request object (requires `req.user.id`)
- * @param {object} res - Express response object
+ * @param {import('express').Request} req - Requires `req.user.id`.
+ * @param {import('express').Response} res - Sends 200 with labels array.
+ * @returns {Promise<void>} Sends the HTTP response.
+ * @throws Sends 500 via httpError if the service call fails.
  */
 async function listLabels(req, res) {
   const userId = req.user.id;
@@ -33,12 +35,13 @@ async function listLabels(req, res) {
 }
 
 /**
- * Creates a new custom label for the authenticated user.
+ * Create a new custom label for the current user.
+ * Body must contain exactly one field: "name".
  *
- * @param {object} req - Express request object
- * @param {object} req.body - Request body
- * @param {string} req.body.name - Name of the label (non-empty string)
- * @param {object} res - Express response object
+ * @param {import('express').Request} req - Body `{ name: string }`.
+ * @param {import('express').Response} res - Sends 201 with created label.
+ * @returns {Promise<void>} Sends the HTTP response.
+ * @throws Sends 400 for invalid body; 500 via httpError on service errors.
  */
 async function createLabel(req, res) {
   const userId = req.user.id;
@@ -60,12 +63,13 @@ async function createLabel(req, res) {
 }
 
 /**
- * Retrieves a label (owned by the authenticated user) by its ID.
+ * Get a single label by id for the current user.
+ * Accepts a string id (ObjectId or other supported form).
  *
- * @param {object} req - Express request object
- * @param {object} req.params - Route params
- * @param {string} req.params.id - Label identifier (required, non-empty string)
- * @param {object} res - Express response object
+ * @param {import('express').Request} req - `params.id` is the label id.
+ * @param {import('express').Response} res - Sends 200 with the label object.
+ * @returns {Promise<void>} Sends the HTTP response.
+ * @throws Sends 400 for missing/empty id; 500 via httpError on failures.
  */
 async function getLabelById(req, res) {
   const userId = req.user.id;
@@ -85,22 +89,22 @@ async function getLabelById(req, res) {
 
 
 /**
- * Updates the name of a custom label for the authenticated user.
+ * Update a label’s name for the current user.
+ * Only the "name" field is allowed.
  *
- * Expects:
- * - req.params.id: string (Label ID)
- * - req.body.name: string (non-empty)
+ * @param {import('express').Request} req - `params.id` and body `{ name: string }`.
+ * @param {import('express').Response} res - Sends 200 with the updated label.
+ * @returns {Promise<void>} Sends the HTTP response.
+ * @throws Sends 400 for invalid input; 500 via httpError on service errors.
  */
 async function updateLabelById(req, res) {
   const userId = req.user.id;
   const labelId = req.params.id;
 
-  // Ensure label ID is provided
   if (!labelId) {
     return badRequest(res, 'Label ID is required');
   }
 
-  // Ensure request body has only "name" and it's a non-empty string
   if (!req.body || typeof req.body !== 'object') {
     return badRequest(res, 'Request body is required');
   }
@@ -122,10 +126,13 @@ async function updateLabelById(req, res) {
 
 
 /**
- * Deletes a custom label owned by the authenticated user.
+ * Delete a label owned by the current user.
+ * If successful, the response has no body.
  *
- * Expects:
- * - req.params.id: string (label identifier, required; service will validate format)
+ * @param {import('express').Request} req - `params.id` is the label id.
+ * @param {import('express').Response} res - Sends 204 on success.
+ * @returns {Promise<void>} Sends the HTTP response.
+ * @throws Sends 400 for invalid id; 500 via httpError on service errors.
  */
 async function deleteLabelById(req, res) {
   const userId = req.user.id;

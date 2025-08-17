@@ -10,13 +10,25 @@ const { findUserByUsername } = require('./userService');
 /** Minimal "looks like an address": requires exactly one @ and no spaces (demo). */
 const EMAIL_RE = /^[^\s@]+@[^\s@]+$/;
 
-/** Internal address → username, supports bb@bmail and bb@bmail.com (demo). */
+/**
+ * Convert an internal address to a username.
+ * Supports `user@bmail` and `user@bmail.com`.
+ *
+ * @param {string} addr - Email-like address.
+ * @returns {string|null} Username if it’s an internal address; otherwise null.
+ */
 function internalUsernameFromAddress(addr) {
   const m = /^([^@\s]+)@bmail(?:\.com)?$/i.exec(String(addr || ''));
   return m ? m[1] : null;
 }
 
-/** Split an array of "to" inputs on whitespace, commas, or semicolons; trim & drop empties. */
+/**
+ * Tokenize recipients from mixed delimiters.
+ * Splits on spaces, commas, and semicolons; trims and filters empties.
+ *
+ * @param {string[]} toArray - Original recipients array (possibly messy).
+ * @returns {string[]} Clean list of recipient tokens.
+ */
 function tokenizeAddresses(toArray) {
   if (!Array.isArray(toArray)) return [];
   return toArray
@@ -26,8 +38,13 @@ function tokenizeAddresses(toArray) {
 }
 
 /**
- * Ensure a value is a non-empty string.
- * Mirrors labels/users validation behavior.
+ * Require a non-empty string.
+ * Mirrors label/user validation style.
+ *
+ * @param {string} field - Field name for error message.
+ * @param {any} value - Value to check.
+ * @returns {void}
+ * @throws {Error} VALIDATION (400) if value is not a trimmed non-empty string.
  */
 function assertNonEmptyString(field, value) {
   if (typeof value !== 'string' || value.trim() === '') {
@@ -36,7 +53,12 @@ function assertNonEmptyString(field, value) {
 }
 
 /**
- * Ensure a value is an array of non-empty strings.
+ * Require an array of non-empty strings.
+ *
+ * @param {string} field - Field name for error message.
+ * @param {any[]} arr - Candidate array.
+ * @returns {void}
+ * @throws {Error} VALIDATION (400) if not an array or elements are empty strings.
  */
 function assertStringArray(field, arr) {
   if (!Array.isArray(arr) || arr.length === 0) {
@@ -50,14 +72,24 @@ function assertStringArray(field, arr) {
 }
 
 /**
- * Extract URLs from a text blob (title/body). Keep simple & robust.
+ * Pull out URLs from text (title/body).
+ * Keeps the regex simple and robust enough for common cases.
+ *
+ * @param {string} text - Text to scan.
+ * @returns {string[]} Array of raw URL-like strings (possibly unnormalized).
  */
 function extractUrls(text) {
   const urlRe = /(?:https?:\/\/)?(?:www\.)?(?:[a-z0-9-]+\.)+[a-z0-9]{2,}(?:\/[^\s<>"'()[\]{}]*)?/ig;
   return text.match(urlRe) || [];
 }
 
-/** Normalize URL (lowercase, trim, strip trailing slash) */
+/**
+ * Normalize a URL for matching.
+ * Lowercases, trims, and strips a trailing slash.
+ *
+ * @param {string} u - Raw URL string.
+ * @returns {string|null} Normalized URL, or null if input isn’t a string/empty.
+ */
 function normalizeUrl(u) {
   if (typeof u !== 'string') return null;
   const s = u.trim().toLowerCase();
@@ -66,9 +98,11 @@ function normalizeUrl(u) {
 }
 
 /**
- * Scan a mail's URL list via the bloomfilter.
- * @param {object} mailOrObj - Mongoose doc or plain object with { urls: string[] }
- * @returns {Promise<{ hasTaggedUrl: boolean, taggedUrls: string[] }>}
+ * Check a mail’s URL list against the bloomfilter.
+ * Fast path uses a single “any blacklisted?” check, then confirms per-URL.
+ *
+ * @param {object} mailOrObj - Mail doc/object with `{ urls: string[] }`.
+ * @returns {Promise<{hasTaggedUrl:boolean, taggedUrls:string[]}>} Flags and matched URLs.
  */
 async function scanMail(mailOrObj) {
   const urls = Array.from(new Set(((mailOrObj?.urls) || [])
@@ -98,8 +132,11 @@ async function scanMail(mailOrObj) {
 
 
 /**
- * Reduce a mail doc/object to a safe output DTO based on schema `public` flags.
- * Always exposes a top-level `id` (string) derived from `_id`.
+ * Make a safe DTO from a mail document based on schema `public` flags.
+ * Always returns an `id` (string) derived from `_id`.
+ *
+ * @param {object} mail - Mongoose doc or plain object.
+ * @returns {Promise<object>} Public-safe DTO with `id`, public fields, and `userImage`.
  */
 async function filterMailForOutput(mail) {
   const output = {};
@@ -140,11 +177,12 @@ try {
 
 
 /**
- * Check whether a user can see a mail.
- * Demo routing rule (no schema change):
- * - Recipients are stored as addresses (e.g., "bb@bmail" or "bb@bmail.com").
- * - A user "bb" has access if the "to" array contains either internal form.
- * Back-compat: if older mails stored bare usernames, we still honor those.
+ * Check if a user can access a mail.
+ * Sender sees their own (unless soft-deleted); recipients see non-drafts not soft-deleted for them.
+ *
+ * @param {object} mail - Mail doc/object.
+ * @param {string} username - Current viewer’s username.
+ * @returns {boolean} True if accessible by the user, false otherwise.
  */
 function canUserAccessMail(mail, username) {
   const internalAddrs = [`${username}@bmail`, `${username}@bmail.com`];
@@ -165,10 +203,13 @@ function canUserAccessMail(mail, username) {
 }
 
 /**
- * Build (create) a mail. Also extracts URLs and spam-tags if bloomfilter says so.
- * Notes:
- *  - does not touch editMail
- *  - ignores drafts for inbox-spam propagation (sender draft not spammed)
+ * Create (send or draft) a mail and set system labels.
+ * Extracts URLs and marks spam for non-drafts by consulting the bloomfilter.
+ *
+ * @param {object} mailData - `{ from, to?, title?, body?, draft? }` payload.
+ * @param {{userId:any, system:{spamId?:any, sentId?:any, draftsId?:any}}} context - IDs for system labels.
+ * @returns {Promise<object>} Public-safe mail DTO after creation.
+ * @throws {Error} VALIDATION (400) for bad input; other create/DB errors as thrown.
  */
 async function buildMail(mailData, { userId, system }) {
   const { spamId, sentId, draftsId } = system || {};
@@ -232,15 +273,14 @@ async function buildMail(mailData, { userId, system }) {
   return await filterMailForOutput(mail.toObject ? mail.toObject() : mail);
 }
 
-
 /**
- * Update spam labels across all mails for a user.
- * - Spam label is per-user.
- * - Ignores drafts.
- * - Adds spam to mails that contain any blacklisted URL; removes spam otherwise.
- * @param {Types.ObjectId|string} userId
- * @param {string} username - the user's username (for access scoping)
- * @returns {Promise<{added: number, removed: number}>}
+ * Update Spam labels across all mails for a user.
+ * Adds/removes Spam based on blacklist hits; ignores drafts.
+ *
+ * @param {Types.ObjectId|string} userId - Owner of the Spam label.
+ * @param {string} username - Username for access scoping.
+ * @returns {Promise<{added:number, removed:number}>} Count of label changes.
+ * @throws {Error} VALIDATION (400) if userId/username missing; DB errors as thrown.
  */
 async function updateMailsSpamLabel(userId, username) {
   if (!userId) throw createError('userId is required', { status: 400 });
@@ -303,16 +343,17 @@ async function updateMailsSpamLabel(userId, username) {
   return { added, removed };
 }
 
-
-
-
 /**
- * Get accessible mails for a user, optionally filtered by label.
- * DEMO adjustments:
- * - Inbox recipient matching uses both `${username}@bmail` and `${username}@bmail.com`.
- * - Back-compat: also matches legacy mails where `to` stored the bare username.
+ * Get mails visible to a user, with optional label filter.
+ * Spam/Trash views are special-cased; normal views exclude them.
+ *
+ * @param {string} username - Current user.
+ * @param {string|null} spamLabelId - Spam label ObjectId string (optional).
+ * @param {string|null} trashLabelId - Trash label ObjectId string (optional).
+ * @param {string|null} labelId - Label to filter on (optional).
+ * @param {number} [limit=50] - Max results.
+ * @returns {Promise<object[]>} Public-safe mail DTOs sorted by newest first.
  */
-// webServer/services/mailServices.js
 async function getMailsForUser(username, spamLabelId, trashLabelId, labelId = null, limit = 50) {
   const internalAddrs = [`${username}`, `${username}@bmail`, `${username}@bmail.com`];
 
@@ -380,10 +421,14 @@ async function getMailsForUser(username, spamLabelId, trashLabelId, labelId = nu
   return outputs;
 }
 
-
-
 /**
- * Read a mail by id, enforce access, and return the public DTO.
+ * Read a single mail with access enforcement.
+ * Returns a public-safe DTO if found/accessible.
+ *
+ * @param {string} id - Mail ObjectId string.
+ * @param {string} username - Current user.
+ * @returns {Promise<object>} Public-safe mail DTO.
+ * @throws {Error} NOT_FOUND (404) if missing; 403 if user cannot access.
  */
 async function findMailByIdForUser(id, username) {
   const mail = await Mail.findById(id);
@@ -395,17 +440,14 @@ async function findMailByIdForUser(id, username) {
 }
 
 /**
- * Edit a draft (owner-only) and handle draft/send label transitions.
- * DEMO adjustments:
- * - When recipients change (or draft flips), operate on address tokens in `mail.to`.
- * - For inbox label attach/remove, only consider internal recipients via internalUsernameFromAddress().
- */
-/**
- * Edit a draft (owner-only) and handle draft/send transitions.
- * Draft gating for spam:
- *  - draft -> draft: no scan/updates
- *  - create draft: no scan/updates (handled in buildMail)
- *  - draft -> send: scan & label spam if any URL is already blacklisted; propagate labels
+ * Edit a draft and handle draft→send transitions.
+ * Also manages recipient inbox labels and optional spam scan on send.
+ *
+ * @param {string} mailId - Mail ObjectId string.
+ * @param {string} username - Sender username (must match `from`).
+ * @param {object} updates - Partial `{ title?, body?, to?, draft? }`.
+ * @returns {Promise<object>} Public-safe mail DTO after update.
+ * @throws {Error} 404 if missing, 403 if not owner, 400 if sending with incomplete fields.
  */
 async function editMailForUser(mailId, username, updates) {
   const mail = await Mail.findById(mailId);
@@ -535,13 +577,14 @@ async function editMailForUser(mailId, username, updates) {
   return await filterMailForOutput(mail.toObject ? mail.toObject() : mail);
 }
 
-
-
-
 /**
- * Soft-delete for the calling user; hard-delete when no party can access.
- * DEMO adjustment: recipient match checks both `${username}@bmail` and `${username}@bmail.com`
- * (and legacy bare username).
+ * Soft-delete a mail for the calling user (Trash).
+ * If it’s already in Trash for this user, hard-delete it.
+ *
+ * @param {string} mailId - Mail ObjectId string.
+ * @param {string} username - Current user.
+ * @returns {Promise<void>} Resolves when delete/flagging is done.
+ * @throws {Error} 404 if mail/user not found.
  */
 async function deleteMail(mailId, username) {
   const mail = await Mail.findById(mailId);
@@ -596,18 +639,25 @@ async function deleteMail(mailId, username) {
   if (changed) await mail.save();
 }
 
-
+/**
+ * Escape a string for use inside a regex.
+ *
+ * @param {string} s - Raw string.
+ * @returns {string} Escaped version safe for `new RegExp`.
+ */
 function escapeRegex(s = '') {
   return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
 /**
- * Searches for mails accessible to `username` where title/body contains `query` (case-insensitive).
- * Mirrors the old in-memory behavior:
- *  - uses "includes" semantics via case-insensitive regex
- *  - preserves access filtering with canUserAccessMail(...)
- *  - newest first (reverse)
- *  - slice(0, limit)
+ * Search mails visible to a user by substring match.
+ * Case-insensitive search over title/body; preserves visibility rules.
+ *
+ * @param {string} username - Current user.
+ * @param {string} query - Raw search string.
+ * @param {number} [limit=50] - Max number of results (caps internal fetch).
+ * @returns {Promise<object[]>} Public-safe mail DTOs.
+ * @throws {Error} DB errors as thrown; empty query handled by caller/controller.
  */
 async function searchMailsForUser(username, query, limit = 50) {
   const q = query.trim();
@@ -644,10 +694,14 @@ async function searchMailsForUser(username, query, limit = 50) {
 }
 
 /**
- * Attach a label to a mail.
- * If the label is the user's SPAM label:
- *  - add the mail's URLs to the bloomfilter list
- *  - update spam labels across all mails for that user
+ * Attach a label to a mail and optionally propagate Spam effects.
+ * If the label is Spam, add mail URLs to the blacklist and update other mails.
+ *
+ * @param {string} mailId - Mail ObjectId string.
+ * @param {string} labelId - Label ObjectId string.
+ * @param {string} username - Current user (for access).
+ * @returns {Promise<object>} Updated public-safe mail DTO.
+ * @throws {Error} 404 if mail missing, 403 if no access, validation/db errors as thrown.
  */
 async function addLabelToMail(mailId, labelId, username) {
   const mail = await Mail.findById(mailId);
@@ -680,12 +734,15 @@ async function addLabelToMail(mailId, labelId, username) {
   return await filterMailForOutput(mail.toObject ? mail.toObject() : mail);
 }
 
-
 /**
- * Detach a label from a mail.
- * If the label is the user's SPAM label:
- *  - remove the mail's URLs from the bloomfilter list
- *  - update spam labels across all mails for that user
+ * Detach a label from a mail and optionally propagate Spam effects.
+ * If the label is Spam, remove URLs from blacklist and refresh Spam labels.
+ *
+ * @param {string} mailId - Mail ObjectId string.
+ * @param {string} labelId - Label ObjectId string.
+ * @param {string} username - Current user (for access).
+ * @returns {Promise<object>} Updated public-safe mail DTO.
+ * @throws {Error} 404 if mail missing, 403 if no access, validation/db errors as thrown.
  */
 async function removeLabelFromMail(mailId, labelId, username) {
   const mail = await Mail.findById(mailId);
@@ -712,20 +769,15 @@ async function removeLabelFromMail(mailId, labelId, username) {
   return await filterMailForOutput(mail.toObject ? mail.toObject() : mail);
 }
 
-
 /**
- * Bulk-tag mails containing any of the given URLs as Spam for this user.
- * DEMO adjustment: recipient matching uses both `${username}@bmail` and `${username}@bmail.com`
- * (and legacy bare username). Guard against missing spamLabelId.
- */
-/**
- * Add the user's Spam label to all of *their* mails that contain any of the given URLs.
- * IMPORTANT: Ignores drafts.
- * @param {ObjectId|string} userId   // owner of the Spam label (per-user)
- * @param {string} username          // viewer username (for access scoping)
- * @param {string[]} urls            // normalized URLs to match against
- * @param {ObjectId|string} spamLabelId
- * @returns {Promise<{matched:number, tagged:number}>}
+ * Add a user’s Spam label to all of their mails matching any URL in the list.
+ * Skips drafts; does nothing if list is empty or spamLabelId is missing.
+ *
+ * @param {string|import('mongoose').Types.ObjectId} userId - Owner of the Spam label.
+ * @param {string} username - Username for access scoping.
+ * @param {string[]} urls - URLs (any case) to match; will be normalized.
+ * @param {string|import('mongoose').Types.ObjectId} spamLabelId - Spam label id.
+ * @returns {Promise<{matched:number, tagged:number}>} Candidate count and added count.
  */
 async function tagMailsWithUrlsAsSpam(userId, username, urls, spamLabelId) {
   const list = Array.from(new Set((urls || []).map(normalizeUrl).filter(Boolean)));

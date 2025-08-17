@@ -1,19 +1,22 @@
 const { Schema, model, Types } = require('mongoose');
 
-/** System default label names */
+/** Names of system default labels every user has by default. */
 const DEFAULT_LABELS = ['inbox', 'sent', 'drafts', 'spam', 'trash', 'starred'];
 
 /**
- * @typedef LabelDoc
- * @property {Types.ObjectId} _id
- * @property {Types.ObjectId} userId - Owner of the label.
- * @property {string} name - Label name (unique per user).
- * @property {boolean} isDefault - Whether the label is a system/default label.
- * @property {boolean} isAttachable - Whether this label can be manually attached to mails.
- * @property {Date} createdAt
- * @property {Date} updatedAt
+ * LabelSchema describes a label that can be attached to mails.
+ *
+ * Fields:
+ * - userId {ObjectId} required, owner of the label
+ * - name {String} required, unique per user
+ * - isDefault {Boolean} true if system label (not user-created)
+ * - isAttachable {Boolean} if it can be manually added to mails
+ * - createdAt {Date} timestamp auto-set by mongoose
+ * - updatedAt {Date} timestamp auto-set by mongoose
+ *
+ * Return: Mongoose Label model, plus DEFAULT_LABELS list.
+ * Throws: Validation errors on missing fields or duplicate name for a user.
  */
-
 const LabelSchema = new Schema(
   {
     userId: { type: Types.ObjectId, ref: 'User', required: true, index: true },
@@ -24,7 +27,7 @@ const LabelSchema = new Schema(
   { timestamps: true }
 );
 
-// Defining unique label names per user
+// Enforce uniqueness of label names per user
 LabelSchema.index({ userId: 1, name: 1 }, { unique: true });
 
 module.exports = {

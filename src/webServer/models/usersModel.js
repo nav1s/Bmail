@@ -1,5 +1,9 @@
 const { Schema, model } = require('mongoose');
 
+/**
+ * Configuration metadata for user fields.
+ * Defines visibility, requiredness, and whether each field can be edited.
+ */
 const userFieldConfig = {
   username: { public: true, required: true, editable: false },
   firstName: { public: true, required: true, editable: true },
@@ -8,6 +12,19 @@ const userFieldConfig = {
   image: { public: true, required: false, editable: true }
 };
 
+/**
+ * UserSchema defines how a user document is stored in MongoDB.
+ *
+ * Fields:
+ * - username {String} required, unique index
+ * - firstName {String} required
+ * - lastName {String} required
+ * - password {String} required
+ * - image {String} optional (path to profile image)
+ *
+ * Return: Mongoose User model with timestamps and helpers.
+ * Throws: Standard mongoose validation errors if required fields are missing.
+ */
 const UserSchema = new Schema(
   {
     username: { type: String, required: true, index: true },
@@ -19,15 +36,15 @@ const UserSchema = new Schema(
   { timestamps: true }
 );
 
-// Attach config
+// Attach config for use in services/controllers
 UserSchema.statics.fieldConfig = userFieldConfig;
 
-// ✅ Virtual "id" that mirrors _id
+// Create a virtual `id` that mirrors the default `_id`
 UserSchema.virtual('id').get(function () {
   return this._id.toHexString();
 });
 
-// ✅ Ensure virtuals are included in both JSON & object outputs
+// Ensure virtual fields are included when converting to JSON/object
 UserSchema.set('toJSON', { virtuals: true });
 UserSchema.set('toObject', { virtuals: true });
 
