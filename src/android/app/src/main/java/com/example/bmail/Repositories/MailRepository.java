@@ -8,6 +8,7 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.room.Room;
 
+import com.example.bmail.Adapters.MailsAdapter;
 import com.example.bmail.Api.MailApi;
 import com.example.bmail.Entities.ClientMail;
 import com.example.bmail.Entities.ServerMail;
@@ -141,5 +142,9 @@ public class MailRepository {
      */
     public void reloadMails(String label) {
         mailApi.reload(label);
+    }
+
+    public void setMailsAdapter(MailsAdapter adapter) {
+        mailApi.setMailsAdapter(adapter);
     }
 }

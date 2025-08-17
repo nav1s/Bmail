@@ -1,5 +1,6 @@
 package com.example.bmail.Adapters;
 
+import android.graphics.Bitmap;
 import android.util.Log;
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -80,13 +81,6 @@ public class MailsAdapter extends RecyclerView.Adapter<MailsAdapter.mailViewHold
         holder.subject.setText(currentMail.getTitle());
         holder.body.setText(currentMail.getBody());
 
-        if (currentMail.getSenderImageBitmap() != null) {
-            Log.i("MailsAdapter", "Setting sender image for: " + currentMail.getFrom());
-            holder.avaterImageView.setImageBitmap(currentMail.getSenderImageBitmap());
-        } else {
-            holder.avaterImageView.setImageResource(R.drawable.ic_person);
-        }
-
         if (currentMail.getUpdatedAt() != null) {
             DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault());
             holder.timeTextView.setText(dateFormat.format(currentMail.getUpdatedAt()));
@@ -101,10 +95,32 @@ public class MailsAdapter extends RecyclerView.Adapter<MailsAdapter.mailViewHold
         return mailList.size();
     }
 
+    /**
+     * @brief Sets the list of mails and notifies the adapter of the change.
+     * @param mails The new list of mails to display.
+     */
     public void setMails(@NonNull List<ServerMail> mails) {
         notifyItemRangeRemoved(0, mailList == null ? 0 : mailList.size());
         this.mailList = mails;
         notifyItemRangeInserted(0, mailList.size());
+    }
+
+    /**
+     * @brief Updates the image of a mail item by its ID.
+     * @param mailId The ID of the mail to update.
+     * @param bitmap The new image to set for the mail.
+     */
+    public void updateMailImage(String mailId, Bitmap bitmap) {
+        if (mailList == null) return;
+
+        for (int i = 0; i < mailList.size(); i++) {
+            ServerMail mail = mailList.get(i);
+            if (mail.getId().equals(mailId)) {
+                mail.setSenderImageBitmap(bitmap);
+                notifyItemChanged(i);
+                break;
+            }
+        }
     }
 
 }

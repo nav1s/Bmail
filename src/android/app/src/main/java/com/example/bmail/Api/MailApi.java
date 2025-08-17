@@ -8,6 +8,7 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.lifecycle.MutableLiveData;
 
+import com.example.bmail.Adapters.MailsAdapter;
 import com.example.bmail.Entities.AttachLabelRequest;
 import com.example.bmail.Entities.ClientMail;
 import com.example.bmail.Entities.ServerMail;
@@ -27,7 +28,7 @@ import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 public class MailApi {
-
+    private MailsAdapter mailsAdapter;
     private final MailDao mailDao;
     private final MutableLiveData<List<ServerMail>> mailListData;
     WebServiceApi webServiceApi;
@@ -70,9 +71,9 @@ public class MailApi {
         Log.i(TAG, "Fetching sender images for mails with token: " + token);
         for (ServerMail mail : mails) {
             String senderImage = mail.getUserImage();
-            Log.i(TAG, "Processing mail with ID: " + mail.getId() + ", sender image URL: "
-                    + senderImage);
-            if (senderImage != null && senderImage.isEmpty()) {
+            if (senderImage != null && !senderImage.isEmpty()) {
+                Log.i(TAG, "Processing mail with ID: " + mail.getId() + ", sender image URL: "
+                        + senderImage);
                 ImageUtils.downloadImage(webServiceApi, token, mail.getUserImage(),
                         new ImageUtils.ImageDownloadCallback() {
                             @Override
@@ -80,6 +81,12 @@ public class MailApi {
                                 mail.setSenderImageBitmap(bitmap);
                                 Log.i(TAG, "Profile image loaded successfully for mail: "
                                         + mail.getId());
+                                if (mailsAdapter != null) {
+                                    Log.i(TAG, "Updating image for mail: " + mail.getId());
+                                    mailsAdapter.updateMailImage(mail.getId(), bitmap);
+                                } else {
+                                    Log.w(TAG, "MailsAdapter is not set, cannot update image");
+                                }
                             }
 
                             @Override
@@ -331,5 +338,13 @@ public class MailApi {
             }
         });
 
+    }
+
+    /**
+     * @brief Sets the MailsAdapter for this MailApi instance.
+     * @param mailsAdapter The MailsAdapter to be set.
+     */
+    public void setMailsAdapter(MailsAdapter mailsAdapter) {
+        this.mailsAdapter = mailsAdapter;
     }
 }

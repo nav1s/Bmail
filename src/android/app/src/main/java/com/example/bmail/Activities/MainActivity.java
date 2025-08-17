@@ -133,6 +133,7 @@ public class MainActivity extends AppCompatActivity {
      */
     private void setupViewModel() {
         viewModel = new MainActivityViewModel();
+        viewModel.setMailsAdapter(adapter);
 
         viewModel.getMails().observe(this, mails -> {
             if (mails != null) {

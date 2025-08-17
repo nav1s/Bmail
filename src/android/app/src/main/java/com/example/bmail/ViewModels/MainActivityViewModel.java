@@ -4,6 +4,7 @@ import android.graphics.Bitmap;
 
 import androidx.lifecycle.LiveData;
 
+import com.example.bmail.Adapters.MailsAdapter;
 import com.example.bmail.Entities.BmailApplication;
 import com.example.bmail.Entities.Label;
 import com.example.bmail.Entities.ServerMail;
@@ -71,4 +72,12 @@ public class MainActivityViewModel extends androidx.lifecycle.ViewModel {
         labelRepository.deleteLabel(labelId, callback);
     }
 
+
+    /**
+     * @brief Sets the MailsAdapter for the MailRepository.
+     * @param mailsAdapter The MailsAdapter to set.
+     */
+    public void setMailsAdapter(MailsAdapter mailsAdapter) {
+        mailRepository.setMailsAdapter(mailsAdapter);
+    }
 }
