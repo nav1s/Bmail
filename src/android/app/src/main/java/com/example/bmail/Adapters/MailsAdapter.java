@@ -78,12 +78,7 @@ public class MailsAdapter extends RecyclerView.Adapter<MailsAdapter.mailViewHold
         holder.sender.setText(currentMail.getFrom());
         holder.subject.setText(currentMail.getTitle());
         holder.body.setText(currentMail.getBody());
-        if (currentMail.getUserImageBitmap() != null) {
-            holder.avatarImageView.setImageBitmap(currentMail.getUserImageBitmap());
-        } else {
-            Log.w("MailsAdapter", "Sender image bitmap is null, using default avatar.");
-            holder.avatarImageView.setImageResource(R.drawable.ic_person);
-        }
+        holder.avatarImageView.setImageResource(R.drawable.ic_person);
 
         if (currentMail.getUpdatedAt() != null) {
             DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault());
