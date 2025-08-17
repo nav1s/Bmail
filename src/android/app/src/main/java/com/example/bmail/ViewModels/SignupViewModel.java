@@ -1,17 +1,11 @@
 package com.example.bmail.ViewModels;
 
-import android.util.Log;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.example.bmail.Api.SignupApi;
 
-import java.io.IOException;
-import java.io.InputStream;
-
 import okhttp3.MediaType;
-import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
 
 public class SignupViewModel {

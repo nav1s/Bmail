@@ -1,10 +1,6 @@
 package com.example.bmail.Activities;
 
-import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.net.Uri;
 import android.os.Bundle;
-import android.provider.MediaStore;
 import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
@@ -12,8 +8,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -22,6 +16,7 @@ import com.example.bmail.Api.SignupApi;
 import com.example.bmail.R;
 import com.example.bmail.Utils.PhotoSelectionHelper;
 import com.example.bmail.ViewModels.SignupViewModel;
+import com.google.android.material.textfield.TextInputLayout;
 
 public class SignupActivity extends AppCompatActivity implements SignupApi.callback {
     private PhotoSelectionHelper photoSelectionHelper;
@@ -95,8 +90,12 @@ public class SignupActivity extends AppCompatActivity implements SignupApi.callb
         firstNameET.setError(result.firstNameError);
         lastNameET.setError(result.lastNameError);
         usernameET.setError(result.usernameError);
-        passwordET.setError(result.passwordError);
-        confirmPasswordET.setError(result.confirmPasswordError);
+
+        TextInputLayout passwordInputLayout = findViewById(R.id.password_input_layout);
+        TextInputLayout confirmPasswordInputLayout = findViewById(R.id.confirm_password_input_layout);
+
+        passwordInputLayout.setError(result.passwordError);
+        confirmPasswordInputLayout.setError(result.confirmPasswordError);
 
         // check if there are any errors
         if (result.firstNameError != null || result.lastNameError != null ||
