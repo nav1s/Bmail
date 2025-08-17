@@ -96,7 +96,6 @@ public class SignupApi {
             @Override
             public void onResponse(@NonNull Call<Void> call, @NonNull Response<Void> response) {
                 if (response.isSuccessful()) {
-                    // Assuming signup also returns a token
                     signupCallback.onSuccess("Signup successful");
                 } else {
                     String errorMsg = "Signup failed: " + response.message();

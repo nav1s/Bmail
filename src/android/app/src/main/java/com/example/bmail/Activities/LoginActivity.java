@@ -14,6 +14,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.example.bmail.Api.SignupApi;
 import com.example.bmail.ViewModels.LoginViewModel;
 import com.example.bmail.R;
+import com.google.android.material.textfield.TextInputLayout;
 
 public class LoginActivity extends AppCompatActivity implements SignupApi.callback {
     private LoginViewModel loginViewModel;
@@ -62,11 +63,13 @@ public class LoginActivity extends AppCompatActivity implements SignupApi.callba
     private void handleLogin() {
         String username = String.valueOf(usernameET.getText()).trim();
         String password = String.valueOf(passwordEt.getText()).trim();
+        TextInputLayout passwordInputLayout = findViewById(R.id.password_input_layout);
 
         // Use ViewModel for validation
-        LoginViewModel.ValidationResult result = loginViewModel.validateCredentials(username, password);
+        LoginViewModel.ValidationResult result = loginViewModel.validateCredentials(username,
+                password);
         usernameET.setError(result.usernameError);
-        passwordEt.setError(result.passwordError);
+        passwordInputLayout.setError(result.passwordError);
 
         if (result.usernameError != null || result.passwordError != null) {
             Log.i("MainActivity", "Validation failed: " +

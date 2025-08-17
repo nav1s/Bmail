@@ -65,6 +65,7 @@ xmlns:app="http://schemas.android.com/apk/res-auto"
 
                 <!-- Password -->
                 <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/password_input_layout"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="24dp"
@@ -92,7 +93,7 @@ xmlns:app="http://schemas.android.com/apk/res-auto"
                     android:backgroundTint="#1976D2"
                     app:cornerRadius="8dp"/>
 
-                <!-- Signup Button (with different style) -->
+                <!-- Signup Button -->
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/signup"
                     android:layout_width="match_parent"

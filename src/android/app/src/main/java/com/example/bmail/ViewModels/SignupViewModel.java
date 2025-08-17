@@ -14,7 +14,6 @@ import okhttp3.MediaType;
 import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
 
-// todo check whether this class need to extend ViewModel or not
 public class SignupViewModel {
     private final SignupApi userApi;
 
