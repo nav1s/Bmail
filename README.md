@@ -5,7 +5,7 @@
 - Part 2: https://github.com/Binja12/Bmail/tree/part2
 - Part 3: https://github.com/Binja12/Bmail/tree/part3
 - Part 4: https://github.com/Binja12/Bmail/tree/part4
-- Part 5: will be completed past the deadline due to miluim service
+- Part 5:  https://github.com/Binja12/Bmail/tree/part5
 
 ## Features
 - **C++ Bloom Filter**: Efficiently manages blacklists to prevent spam.
