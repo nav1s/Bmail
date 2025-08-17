@@ -69,11 +69,11 @@ public class MailApi {
         String token = getToken();
         Log.i(TAG, "Fetching sender images for mails with token: " + token);
         for (ServerMail mail : mails) {
-            String senderImage = mail.getSenderImage();
+            String senderImage = mail.getUserImage();
             Log.i(TAG, "Processing mail with ID: " + mail.getId() + ", sender image URL: "
                     + senderImage);
             if (senderImage != null && senderImage.isEmpty()) {
-                ImageUtils.downloadImage(webServiceApi, token, mail.getSenderImage(),
+                ImageUtils.downloadImage(webServiceApi, token, mail.getUserImage(),
                         new ImageUtils.ImageDownloadCallback() {
                             @Override
                             public void onSuccess(Bitmap bitmap) {

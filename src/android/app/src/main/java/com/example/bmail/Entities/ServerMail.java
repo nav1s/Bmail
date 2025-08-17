@@ -25,7 +25,7 @@ public class ServerMail {
                 ", draft=" + draft +
                 ", labels=" + labels +
                 ", updatedAt=" + updatedAt +
-                ", senderImage='" + senderImage + '\'' +
+                ", userImage='" + userImage + '\'' +
                 '}';
     }
 
@@ -49,7 +49,7 @@ public class ServerMail {
     @Expose
     private Date updatedAt;
     @Expose
-    private String senderImage;
+    private String userImage;
     private Bitmap senderImageBitmap;
 
     public ServerMail() {
@@ -129,11 +129,11 @@ public class ServerMail {
         this.updatedAt = updatedAt;
     }
 
-    public String getSenderImage() {
-        return senderImage;
+    public String getUserImage() {
+        return userImage;
     }
-    public void setSenderImage(String senderImage) {
-        this.senderImage = senderImage;
+    public void setUserImage(String userImage) {
+        this.userImage = userImage;
     }
 
     public Bitmap getSenderImageBitmap() {

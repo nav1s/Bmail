@@ -79,7 +79,9 @@ public class MailsAdapter extends RecyclerView.Adapter<MailsAdapter.mailViewHold
         holder.sender.setText(currentMail.getFrom());
         holder.subject.setText(currentMail.getTitle());
         holder.body.setText(currentMail.getBody());
+
         if (currentMail.getSenderImageBitmap() != null) {
+            Log.i("MailsAdapter", "Setting sender image for: " + currentMail.getFrom());
             holder.avaterImageView.setImageBitmap(currentMail.getSenderImageBitmap());
         } else {
             holder.avaterImageView.setImageResource(R.drawable.ic_person);
