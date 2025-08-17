@@ -144,4 +144,8 @@ public class MailRepository {
         mailApi.reload(label);
     }
 
+    public void loadAllMails() {
+        Log.d("MailRepository", "Loading all mails");
+        mailApi.loadAllMails();
+    }
 }

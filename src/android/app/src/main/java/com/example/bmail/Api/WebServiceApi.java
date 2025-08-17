@@ -55,6 +55,8 @@ public interface WebServiceApi {
     @GET("/api/mails/byLabel/{label}")
 
     Call<List<ServerMail>> getMails(@Header("Authorization") String token, @Path ("label") String label);
+    @GET("/api/mails")
+    Call<List<ServerMail>> getAllMails(@Header("Authorization") String token);
 
     @POST("/api/mails")
     Call<Void> sendMail(@Header("Authorization") String token, @Body ClientMail mail);

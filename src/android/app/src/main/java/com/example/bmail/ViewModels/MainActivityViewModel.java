@@ -1,7 +1,9 @@
 package com.example.bmail.ViewModels;
 
 import android.graphics.Bitmap;
+import android.util.Log;
 
+import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
 
 import com.example.bmail.Adapters.MailsAdapter;
@@ -74,8 +76,15 @@ public class MainActivityViewModel extends androidx.lifecycle.ViewModel {
      * @brief Loads the mails for the given label.
      * @param label The label for which to load the mails.
      */
-    public void loadMails(String label) {
-        mailRepository.reloadMails(label);
+    public void loadMails(@NonNull String label) {
+        Log.d("MainActivityViewModel", "Loading mails for label: " + label);
+        if (label.equals("All mail")){
+            Log.d("MainActivityViewModel", "Loading all mails");
+            mailRepository.loadAllMails();
+        }
+        else {
+            mailRepository.reloadMails(label);
+        }
     }
 
     /**

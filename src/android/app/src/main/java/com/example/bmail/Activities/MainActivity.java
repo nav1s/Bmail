@@ -196,7 +196,6 @@ public class MainActivity extends AppCompatActivity {
 
             this.currentLabel = (String) item.getTitle();
             Log.i("MailActivity", "label selected: " + this.currentLabel);
-            // todo handle all mail
 
             viewModel.loadMails(this.currentLabel);
             return true;

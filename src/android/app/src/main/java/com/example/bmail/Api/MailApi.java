@@ -62,6 +62,53 @@ public class MailApi {
     }
 
     /**
+     * @brief Loads all mails from the server and updates the local database.
+     * This method fetches all mails from the server, clears the existing mails in the database,
+     * and inserts the new mails. It also updates the live data to notify observers of the changes.
+     */
+    public void loadAllMails(){
+        String token = getToken();
+        Log.i("MailApi", "Token: " + token);
+        // log the token being used
+        Log.i("MailApi", "Loading all mails with token: " + token);
+
+        Call<List<ServerMail>> call = webServiceApi.getAllMails("Bearer " + token);
+        call.enqueue(
+                new Callback<>() {
+
+                    @Override
+                    public void onResponse(@NonNull Call<List<ServerMail>> call,
+                                           @NonNull Response<List<ServerMail>> response) {
+                        new Thread(() -> {
+                            if (response.body() == null) {
+                                Log.e("MailApi", "Response body is null");
+                                mailListData.postValue(null);
+                                return;
+                            }
+                            Log.i("MailApi", "Fetched all mails successfully");
+                            List<ServerMail> mails = response.body();
+                            // Clear the existing mails in the database
+                            mailDao.clear();
+                            mailDao.insertList(mails);
+
+                            List<ServerMail> dbMails = mailDao.getAllMails();
+                            mailListData.postValue(dbMails);
+                            // log the number of mails fetched
+                            Log.i("MailApi", "Number of mails fetched: " + mails.size());
+                        }).start();
+
+                    }
+
+                    @Override
+                    public void onFailure(@NonNull Call<List<ServerMail>> call,
+                                          @NonNull Throwable t) {
+                        Log.e("MailApi", "Network error: " + t.getMessage());
+                        mailListData.setValue(null);
+                    }
+                }
+        );
+    }
+    /**
      * @brief Fetches mails for a specific label from the server and updates the local database.
      * @param label The label for which to fetch mails.
      */
