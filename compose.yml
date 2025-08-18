@@ -1,5 +1,37 @@
 ---
 services:
+  mongo:
+    image: mongo:8-noble
+    # mutes logs spam by mongo
+    command: ["mongod", "--quiet", "--logpath", "/dev/null", "--auth", "--bind_ip_all"]
+    container_name: mongo
+    hostname: mongo
+    ports:
+      - 27017:27017
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - bmail
+
+  mongo-express:
+    image: mongo-express:1-20-alpine3.19
+    container_name: mongo-express
+    hostname: mongo-express
+    restart: unless-stopped
+    ports:
+      - 8081:8081
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: root
+      ME_CONFIG_MONGODB_ADMINPASSWORD: example
+      ME_CONFIG_MONGODB_URL: mongodb://root:example@mongo:27017/
+      ME_CONFIG_BASICAUTH: false
+    networks:
+      - bmail
+
   web-server:
     image: node:24-bookworm
     container_name: web-server
@@ -7,6 +39,10 @@ services:
     ports:
       - "8080:8080"
     restart: "no"
+    env_file:
+      - ./src/webServer/.env.prod
+    environment:
+      - NODE_ENV=prod
     command: bash -c "
               cd /app/src/webServer && \
               npm install && \
@@ -16,8 +52,11 @@ services:
     depends_on:
       bloom-filter:
         condition: service_healthy
+      mongo:
+        condition: service_started
     networks:
       - bmail
+
 
   bloom-filter:
     build:
@@ -78,3 +117,5 @@ services:
 networks:
   bmail:
     name: bmail
+volumes:
+  mongo-data:

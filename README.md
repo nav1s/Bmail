@@ -40,7 +40,7 @@ git checkout part4
 
 ```bash
 docker compose down --remove-orphans
-docker compose up --detach --pull always --remove-orphans --build --wait bloom-filter web-server
+docker compose up --detach --pull always --remove-orphans --build --wait bloom-filter web-server mongo mongo-express
 ```
 
 Once the application is running, open your browser and go to [http://localhost:8080](http://localhost:8080).

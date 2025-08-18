@@ -1,533 +1,299 @@
-const { buildMail, filterMailForOutput, validateMailInput, findMailById, editMail, deleteMail, canUserAccessMail, getMailsForUser, searchMailsForUser, canUserUpdateMail, addLabelToMail, removeLabelFromMail, canUserAddLabelToMail, getMailsIdsByUrls } = require('../models/mails.js');
-const { badRequest, created, ok, noContent, forbidden } = require('../utils/httpResponses');
-const { httpError, createError } = require('../utils/error');
-const { defaultLabelNames, addMailToLabel, removeMailFromLabel, getLabelByName, canUserAddMailToLabel } = require('../models/labels.js');
-const net = require("net");
-const { findUserByUsername } = require('../models/users.js');
-const { addUrlsToBlacklist, removeUrlsFromBlacklist } = require('./blacklist.js');
+const { Types } = require('mongoose');
+const { created, ok, noContent, badRequest } = require('../utils/httpResponses');
+const { httpError } = require('../utils/error');
 
+const {
+  // service entrypoints
+  buildMail,
+  getMailsForUser,
+  findMailByIdForUser,
+  editMailForUser,
+  deleteMail,
+  searchMailsForUser,
+  addLabelToMail,
+  removeLabelFromMail,
+} = require('../services/mailServices');
+
+const {
+  getisDefaultLabelId,
+  getLabelIdByName,
+} = require('../services/labelServices');
+
+const isValidObjectId = (id) => Types.ObjectId.isValid(id);
 const mailLimit = 50;
+
 /**
- * Checks a list of URLs by sending them to a server for validation.
- * @param urls the list of URLs to check
- * @returns true if any URL is blacklisted, false otherwise
+ * List mails for the inbox view of the current user.
+ * Supports optional filtering by label and a limit.
+ *
+ * @param {import('express').Request} req - Uses `user.username`, `user.id`, and query `{ labelId?, limit? }`.
+ * @param {import('express').Response} res - Sends 200 with an array of mails.
+ * @returns {Promise<void>} Sends the HTTP response.
+ * @throws Sends 400 if labelId is invalid; 500 via httpError on service errors.
  */
-async function checkBlacklistedUrl(urls) {
-  return new Promise((resolve, reject) => {
-    let urlIndex = 0;
+async function listInbox(req, res) {
+  const username = req.user.username;
+  const userId = req.user.id;
+  const { labelId = null, limit = 50 } = req.query;
 
-    // Connect to the server at the specified port and address
-    const client = net.createConnection({ host: 'bloom-filter', port: 12345 }, () => {
-      console.log('Connected to server');
-      // log the urls being sent
-      console.log('Sending this url to the server ', urls[urlIndex]);
-      // send the first URL to the server
-      client.write(`GET ${urls[urlIndex]}\n`);
-      urlIndex++;
-    });
+  if (labelId && !isValidObjectId(labelId)) {
+    return badRequest(res, 'Label ID must be a valid ObjectId');
+  }
 
-    client.on('data', (data) => {
-      console.log('Received data from server:', data.toString());
+  try {
+    // System labels used for default inbox filtering
+    const spamId = await getisDefaultLabelId(userId, 'spam');
+    const trashId = await getisDefaultLabelId(userId, 'trash');
 
-      // split the response into lines and check the status
-      const status = data.toString().split('\n')
-      if (status[0] === '200 OK') {
+    const mails = await getMailsForUser(
+      username,
+      spamId,
+      trashId,
+      labelId || null,
+      Number(limit)
+    );
 
-        // Check if the URL is blacklisted
-        if (status[2] === 'true true') {
-          console.log(`URL ${urls[urlIndex - 1]} is blacklisted`);
-          client.destroy();
-          resolve(true);
-          return;
-        }
-      }
-
-      // send the next URL if available
-      if (urlIndex < urls.length) {
-        console.log('Sending this url to the server ', urls[urlIndex]);
-        client.write(`GET ${urls[urlIndex]}\n`);
-        urlIndex++;
-      } else {
-        console.log('All URLs processed, closing connection');
-        client.destroy();
-        resolve(false);
-      }
-    });
-
-    // handle error events
-    client.on('error', (error) => {
-      console.error('error connecting to server:', error);
-      reject(error);
-    });
-  });
+    return ok(res, mails);
+  } catch (err) {
+    return httpError(res, err);
+  }
 }
 
 /**
- * This function checks if a message contains any blacklisted URLs.
- * @param msg The message body or title to check for blacklisted URLs.
- * @returns true if any blacklisted URLs are found, false otherwise.
+ * List mails by a label id or by label name.
+ * Accepts either an ObjectId-like string or a label name.
+ *
+ * @param {import('express').Request} req - `params.label` (id or name), query `{ limit? }`.
+ * @param {import('express').Response} res - Sends 200 with matching mails.
+ * @returns {Promise<void>} Sends the HTTP response.
+ * @throws Sends 500 via httpError if label resolution or fetch fails.
  */
-async function areUrlsBlacklisted(urls) {
-  let isInvalid = false;
-  if (urls !== null)
-    if (urls.length >= 1) {
-      // Check if any of the URLs are blacklisted
-      try {
-        isInvalid = await checkBlacklistedUrl(urls);
-      } catch (error) {
-        console.error('Error checking blacklisted URLs:', error);
-      }
-    }
+async function listMailsByLabel(req, res) {
+  
+  const username = req.user.username;
+  const userId = req.user.id;
+  const { label } = req.params;
+  const { limit = 50 } = req.query;
+  console.log("in listMailsByLabel label:" + label)
+  try {
+    const spamId = await getisDefaultLabelId(userId, 'spam');
+    const trashId = await getisDefaultLabelId(userId, 'trash');
+    console.log("spam label id: " + spamId + " trash: " + trashId)
+    // Accept either a label id or a name
+    const labelId = isValidObjectId(label)
+      ? label
+      : await getLabelIdByName(userId, label);
+    console.log("3. in listMailsByLabel label ID:" + labelId)  
 
-  return isInvalid;
+    const mails = await getMailsForUser(
+      username,
+      spamId,
+      trashId,
+      labelId,
+      Number(limit)
+    );
+
+    return ok(res, mails);
+  } catch (err) {
+    return httpError(res, err);
+  }
 }
 
 /**
- * POST /api/mails
- * Creates a new mail and stores it in memory.
- * Requires user to be logged in (loginToken).
+ * Create a new mail or a draft for the current user.
+ * Non-drafts require title/body/to; drafts may include any of them.
+ *
+ * @param {import('express').Request} req - Body `{ title?, body?, to?, draft? }`.
+ * @param {import('express').Response} res - Sends 201 with the created mail.
+ * @returns {Promise<void>} Sends the HTTP response.
+ * @throws Sends 400 for missing required fields; 500 via httpError on service errors.
  */
 async function createMail(req, res) {
-  // Add sender ("from") to the mail
-  const mailInput = {
-    ...req.body,
-    from: req.user.username,
-  };
+  const userId = req.user.id;
+  const username = req.user.username;
+  const { title, body, to, draft } = req.body || {};
+  const isDraft = !!draft;
 
-  // Validate recipients and mail structure
+  if (!isDraft) {
+    if (!title || !body || !Array.isArray(to)) {
+      return badRequest(res, 'Missing required fields: title, body, to[]');
+    }
+  } else {
+    const hasTitle = typeof title === 'string' && title.trim() !== '';
+    const hasBody  = typeof body  === 'string' && body.trim()  !== '';
+    const hasTo    = Array.isArray(to) && to.length > 0;
+    if (!(hasTitle || hasBody || hasTo)) {
+      return badRequest(res, 'Draft must include at least one of: title, body, or to[]');
+    }
+  }
+
   try {
-    validateMailInput(mailInput);
-    mailInput.to = validateRecipients(mailInput.to);
+    const spamId   = await getisDefaultLabelId(userId, 'spam');
+    const sentId   = await getisDefaultLabelId(userId, 'sent');
+    const draftsId = await getisDefaultLabelId(userId, 'drafts');
+
+    const newMail = await buildMail(
+      { from: username, to, title, body, draft: isDraft },
+      { userId, system: { spamId, sentId, draftsId } }
+    );
+
+    return created(res, newMail);
   } catch (err) {
-    console.error('Error validating mail input:', err);
     return httpError(res, err);
   }
-
-  const newMail = buildMail(mailInput);
-
-  // check if the mail contains blacklisted URLs
-  const urls = newMail.urls
-  const isBlacklisted = await areUrlsBlacklisted(urls);
-
-  // move the mail to spam if it contains blacklisted URLs
-  if (isBlacklisted) {
-    try {
-      console.warn(`Mail ${newMail.id} contains blacklisted URLs, moving to spam`);
-      const spamLabelId = getLabelByName(req.user.id, defaultLabelNames.spam);
-      addLabel(newMail.id, spamLabelId, req.user);
-    }
-    catch (err) {
-      console.error('Error getting spam label:', err);
-      return httpError(res, err);
-    }
-  }
-
-  // Build and store the mail
-  try {
-    console.log('Mail content:', newMail);
-    // check if the mail is draft
-    if (newMail.draft === true) {
-      // get the draft label ID
-      const draftLabelId = getLabelByName(req.user.id, defaultLabelNames.drafts);
-      addLabel(newMail.id, draftLabelId, req.user);
-    } else {
-      addLabelsForNewMail(newMail, req.user);
-    }
-
-  } catch (err) {
-    console.error('Error adding mail to inbox label:', err);
-    return httpError(res, err);
-  }
-  return created(res, filterMailForOutput(newMail));
 }
 
-/**
- * @brief Adds the sent label to the mail and adds the mail to the inbox label for the recipients.
- * @param {number} mailId the ID of the mail to add labels to
- * @param {object} user the user object of the sender
- * @throws {Error} if the mail cannot be found or if the user is not registered
- */
-function addLabelsForNewMail(mail, user) {
-  const uid = user.id;
-  const mailId = mail.id;
-
-  // add sent label to the mail
-  const sentLabelId = getLabelByName(uid, defaultLabelNames.sent);
-  addLabel(mailId, sentLabelId, user);
-
-  // add the mail to the inbox label for the recipients
-  addInboxLabelToRecipients(mail);
-}
 
 /**
- * @brief Adds the inbox label to all recipients of a mail.
- * @param {*} mail the mail object to add the inbox label to
- */
-function addInboxLabelToRecipients(mail) {
-  for (const recipientUsername of mail.to) {
-    // check if the recipient is registered
-    try {
-      recipient = findUserByUsername(recipientUsername);
-    } catch (err) {
-      console.log(`Recipient ${recipientUsername} not found, skipping...`);
-      continue;
-    }
-
-    // print the recipient for debugging
-    console.log(`Adding mail ${mail.id} to inbox of recipient ${recipient.username}`);
-    // get the inbox label ID for the recipient
-    const recipientInboxLabelId = getLabelByName(recipient.id, defaultLabelNames.inbox);
-
-    // add the mail to the recipient's inbox
-    addLabel(mail.id, recipientInboxLabelId, recipient);
-  }
-}
-
-/**
- * GET /api/mails
- * Returns the last mailLimit mails sent to the logged-in user.
- * Requires login.
+ * Fetch a single mail by id if the user has access.
+ * Useful for opening a message view.
  *
- * @param {import('express').Request} req
- * @param {import('express').Response} res
+ * @param {import('express').Request} req - `params.id` must be a valid ObjectId.
+ * @param {import('express').Response} res - Sends 200 with the mail object.
+ * @returns {Promise<void>} Sends the HTTP response.
+ * @throws Sends 400 for invalid id; 500 via httpError on service errors.
  */
-function listInbox(req, res) {
-  const username = req.user.username;
-
-  const spamLabelId = getLabelByName(req.user.id, defaultLabelNames.spam);
-  const trashLabelId = getLabelByName(req.user.id, defaultLabelNames.trash);
-
-  const inbox = getMailsForUser(username, spamLabelId, trashLabelId)
-    .slice(-mailLimit).reverse();
-  return res.json(inbox.map(filterMailForOutput));
-}
-
-
-/**
- * GET /api/mails/:id
- * Returns the public-facing mail details for a specific mail ID.
- * Requires login.
- *
- * @param {import('express').Request} req
- * @param {import('express').Response} res
- */
-function getMailById(req, res) {
-  const id = Number(req.params.id);
-  if (!Number.isInteger(id)) {
-    return badRequest(res, 'Mail ID must be a valid integer');
-  }
-  const username = req.user.username;
+async function getMailById(req, res) {
+  const id = req.params.id;
+  if (!isValidObjectId(id)) return badRequest(res, 'Mail ID must be a valid ObjectId');
 
   try {
-    const mail = findMailById(id);
-    if (!canUserAccessMail(mail, username)) {
-      return forbidden(res, 'You are not allowed to view this mail');
-    }
-
-    return ok(res, filterMailForOutput(mail));
+    const mail = await findMailByIdForUser(id, req.user.username);
+    return ok(res, mail);
   } catch (err) {
-    console.error(`Error retrieving mail ${id} for user ${username}:`, err);
     return httpError(res, err);
   }
 }
 
 /**
- * PATCH /api/mails/:id
- * Edits the title/body of an existing mail with a given ID.
- * Requires login.
+ * Update a draft mail’s content for the owner.
+ * Body may include title/body changes.
  *
- * @param {import('express').Request} req
- * @param {import('express').Response} res
+ * @param {import('express').Request} req - `params.id` and a partial body.
+ * @param {import('express').Response} res - Sends 200 with the updated mail.
+ * @returns {Promise<void>} Sends the HTTP response.
+ * @throws Sends 400 for invalid id; 500 via httpError on service errors.
  */
-function updateMailById(req, res) {
-  const id = Number(req.params.id);
-  if (!Number.isInteger(id)) {
-    return badRequest(res, 'Mail ID must be a valid integer');
-  }
-  const username = req.user.username;
+async function updateMailById(req, res) {
+  const id = req.params.id;
+  if (!isValidObjectId(id)) return badRequest(res, 'Mail ID must be a valid ObjectId');
 
-  // log the body of the request
-  console.log(`User ${username} is trying to update mail ${id} with body:`, req.body);
   try {
-    let mail = findMailById(id);
-    canUserUpdateMail(mail, username);
+    const updated = await editMailForUser(id, req.user.username, req.body || {});
+    return ok(res, updated);
+  } catch (err) {
+    return httpError(res, err);
+  }
+}
 
-    // check if we are sending a draft
-    if (mail.draft === true) {
-      console.log(`Mail ${id} is a draft, updating it...`);
-      if (req.body.draft === false) {
-        // detach the draft label from the mail
-        const draftLabelId = getLabelByName(req.user.id, defaultLabelNames.drafts);
-        removeLabel(mail.id, draftLabelId, req.user);
+/**
+ * Delete a mail for the current user (soft delete).
+ * It may be hard-deleted when no one else retains access.
+ *
+ * @param {import('express').Request} req - `params.id` must be a valid ObjectId.
+ * @param {import('express').Response} res - Sends 204 on success.
+ * @returns {Promise<void>} Sends the HTTP response.
+ * @throws Sends 400 for invalid id; 500 via httpError on service errors.
+ */
+async function deleteMailById(req, res) {
+  const id = req.params.id;
+  if (!isValidObjectId(id)) return badRequest(res, 'Mail ID must be a valid ObjectId');
 
-        // add the sent label to the mail and add the mail to the inbox label for the recipients
-        addLabelsForNewMail(mail, req.user);
-      }
-    }
-
-    editMail(mail, req.body);
-
+  try {
+    await deleteMail(id, req.user.username);
     return noContent(res);
   } catch (err) {
-    console.error(`Error updating mail ${id} for user ${username}:`, err);
     return httpError(res, err);
   }
 }
 
 /**
- * DELETE /api/mails/:id
- * Deletes a mail by its ID if it exists.
- * Only the sender or one of the recipients may delete.
- * Requires login.
+ * Full-text search across the user’s mails.
+ * Looks in title/body; case-insensitive.
  *
- * @param {import('express').Request} req
- * @param {import('express').Response} res
+ * @param {import('express').Request} req - `params.query` or `query.q`, plus optional `query.limit`.
+ * @param {import('express').Response} res - Sends 200 with array of results.
+ * @returns {Promise<void>} Sends the HTTP response.
+ * @throws Sends 400 for empty query; 500 via httpError on service errors.
  */
-function deleteMailById(req, res) {
-  const id = Number(req.params.id);
+async function searchMails(req, res) {
   const username = req.user.username;
+  const query = req.params.query ?? req.query.q;
+  const limit = Number(req.query.limit ?? mailLimit) || mailLimit;
+  console.log(username + " " + query + " " +limit)
 
-  try {
-    const mail = findMailById(id);
-    if (!canUserAccessMail(mail, username)) {
-      console.warn(`User ${username} tried to delete mail ${id} they don't have access to`);
-      return forbidden(res, 'You are not allowed to delete this mail');
-    }
-
-    console.info(`User ${username} deleted mail ${id}`);
-    deleteMail(req.user, mail.id);
-    return noContent(res);
-  } catch (err) {
-    console.error(`Error deleting mail ${id} for user ${username}:`, err);
-    return httpError(res, err);
-  }
-}
-
-
-/**
- * GET /api/mails/search/:query
- * Returns all mails sent to the user where title or body includes the query (case-insensitive).
- *
- * @param {import('express').Request} req - Express request, expects :query param and req.user
- * @param {import('express').Response} res - Express response
- */
-function searchMails(req, res) {
-  const username = req.user.username;
-  const query = req.params.query;
-
-  if (!query || typeof query !== 'string') {
+  if (!query || typeof query !== 'string' || !query.trim()) {
     return badRequest(res, 'Search query must be a non-empty string');
   }
 
   try {
-    const results = searchMailsForUser(username, query, mailLimit);
-    // Sends the public info of each mail found
-    return res.json(results.map(filterMailForOutput));
+    const results = await searchMailsForUser(username, query, limit);
+    return res.json(results);
   } catch (err) {
     return httpError(res, err);
   }
 }
 
 
+// POST /api/mails/:mailId/labels
 /**
- * Validates and normalizes the "to" field for mail recipients.
- * Accepts a string or an array of strings.
+ * Attach a label to a specific mail.
+ * Requires both mailId and labelId to be valid ObjectIds.
  *
- * @param {any} toField - The raw "to" field from the request body.
- * @returns {string[]} - Normalized array of non-empty recipient usernames.
- * @throws {Error} - If validation fails.
- */
-function validateRecipients(toField) {
-  // Checks for an array
-  if (!Array.isArray(toField)) {
-    throw createError('"to" must be an array', { status: 400 });
-  }
-
-  // Checks array doesn't contain empty strings
-  const allValid = toField.every(u => typeof u === 'string' && u !== '');
-  if (!allValid) {
-    throw createError('"to" must not contain empty strings', { status: 400 });
-  }
-
-  return toField
-}
-
-/**
- * @brief This function processes urls from spam mail and adds them to the blacklist.
- * @param {*} mailId the mail ID to handle spam for
- */
-async function handleSpamMail(mailId) {
-  const mail = findMailById(mailId);
-
-  // add the urls to the blacklist
-  const urls = mail.urls || [];
-  // if there are no urls, skip
-  if (!urls || urls.length === 0) {
-    console.log(`Mail ${mailId} has no URLs, skipping spam handling...`);
-    return;
-  }
-
-  // add the urls to the blacklist
-  await addUrlsToBlacklist(urls);
-}
-
-
-/**
- * POST /api/mails/:mailId/labels
- * attaches a label to a mail.
+ * @param {import('express').Request} req - `params.mailId`, body `{ labelId }`.
+ * @param {import('express').Response} res - Sends 200 with updated mail.
+ * @returns {Promise<void>} Sends the HTTP response.
+ * @throws Sends 400 for invalid ids; 500 via httpError on service errors.
  */
 async function attachLabelToMail(req, res) {
-  const mailId = Number(req.params.mailId);
-  const labelId = Number(req.body.labelId);
+  const { mailId } = req.params;
+  const { labelId } = req.body || {};
 
-  console.log(`User ${req.user.username} is trying to attach label ${labelId} to mail ${mailId}`);
-
-  if (!Number.isInteger(mailId) || !Number.isInteger(labelId)) {
-    return badRequest(res, 'Mail ID and Label ID must be valid integers');
+  if (!isValidObjectId(mailId) || !isValidObjectId(labelId)) {
+    return badRequest(res, 'IDs must be valid ObjectIds');
   }
-
-  const uid = req.user.id;
-  const username = req.user.username;
 
   try {
-
-    if (canUserAddLabelToMail(mailId, labelId) && canUserAddMailToLabel(uid, labelId, mailId)) {
-      addLabel(mailId, labelId, req.user);
-      // Check if the label is a spam label
-      if (labelId === getLabelByName(uid, defaultLabelNames.spam)) {
-        handleSpamMail(mailId)
-      }
-    }
-
-    return noContent(res);
-
+    const updated = await addLabelToMail(mailId, labelId, req.user.username, req.user.id);
+    return ok(res, updated);
   } catch (err) {
-    console.error(`Error attaching label ${labelId} to mail ${mailId} for user ${username}:`, err);
     return httpError(res, err);
   }
-};
+}
+
 
 /**
- * DELETE /api/mails/:mailId/labels/:labelId
- * detaches a label from a mail.
+ * Remove a label from a mail.
+ * Both ids must be valid ObjectIds.
+ *
+ * @param {import('express').Request} req - `params.mailId` and `params.labelId`.
+ * @param {import('express').Response} res - Sends 200 with updated mail.
+ * @returns {Promise<void>} Sends the HTTP response.
+ * @throws Sends 400 for invalid ids; 500 via httpError on service errors.
  */
 async function detachLabelFromMail(req, res) {
-  const mailId = Number(req.params.mailId);
-  const labelId = Number(req.params.labelId);
+  const { mailId, labelId } = req.params;
 
-  console.log(`User ${req.user.username} is trying to detach label ${labelId} from mail ${mailId}`);
-
-  if (!Number.isInteger(mailId) || !Number.isInteger(labelId)) {
-    console.warn(`Invalid mailId or labelId: ${mailId}, ${labelId}`);
-    return badRequest(res, 'Mail ID and Label ID must be valid integers');
+  if (!isValidObjectId(mailId) || !isValidObjectId(labelId)) {
+    return badRequest(res, 'IDs must be valid ObjectIds');
   }
 
-  const uid = req.user.id;
-  const username = req.user.username;
-
   try {
-    removeLabel(mailId, labelId, req.user);
-    if (labelId === getLabelByName(uid, defaultLabelNames.spam)) {
-      // get the mail 
-      const mail = findMailById(mailId);
-      // get the urls from the mail
-      const urls = mail.urls || [];
-
-      if (!urls || urls.length === 0) {
-        console.log(`Mail ${mailId} has no URLs, skipping spam handling...`);
-        return noContent(res);
-      }
-      // log the urls being removed from the blacklist
-      console.log(`Removing URLs from blacklist for mail ${mailId}:`, urls);
-
-      // remove the urls from the blacklist
-      await removeUrlsFromBlacklist(urls);
-    }
-    return noContent(res);
-
+    const updated = await removeLabelFromMail(mailId, labelId, req.user.username);
+    return ok(res, updated);
   } catch (err) {
-    console.error(`Error detaching label ${labelId} from mail ${mailId} for user ${username}:`, err);
     return httpError(res, err);
   }
 }
-
-/**
- * GET /api/mails/:label
- * Returns the last 50 mails sent to the user filtered by label.
- * Requires login.
- */
-function listMailsByLabel(req, res) {
-  const labelName = req.params.label;
-  const username = req.user.username;
-
-  try {
-    const labelId = getLabelByName(req.user.id, labelName);
-    let spamLabelId = getLabelByName(req.user.id, defaultLabelNames.spam);
-    let trashLabelId = getLabelByName(req.user.id, defaultLabelNames.trash);
-
-    if (labelName.toLowerCase() === "all") {
-    const mails = getMailsForUser(username, spamLabelId, trashLabelId)
-      .slice(-mailLimit).reverse();
-      return res.json(mails.map(filterMailForOutput));
-    }
-
-    if (labelName === defaultLabelNames.spam) {
-      spamLabelId = -1;
-    }
-
-    if (labelName === defaultLabelNames.trash) {
-      trashLabelId = -1;
-    }
-
-    const mails = getMailsForUser(username, spamLabelId, trashLabelId, labelId)
-      .slice(-mailLimit).reverse();
-    return res.json(mails.map(filterMailForOutput));
-  } catch (err) {
-    console.error(`Error retrieving mails for label ${labelName} for user ${username}:`, err);
-    return httpError(res, err);
-  }
-}
-
-/**
- * @brief Removes a label from a mail and updates the database.
- * @param {number} mailId - The ID of the mail to remove the label from.
- * @param {number} labelId - The ID of the label to remove.
- * @param {object} user - The user object of the user performing the action.
- * @throws {Error} if the mail or label cannot be found or if the user is not registered.
- */
-function removeLabel(mailId, labelId, user) {
-  const uid = user.id;
-  const username = user.username;
-
-  removeLabelFromMail(mailId, labelId, username);
-  removeMailFromLabel(mailId, labelId, uid);
-}
-
-/**
- * @brief Adds a label to a mail and updates the database.
- * @param {number} mailId - The ID of the mail to add the label to.
- * @param {number} labelId - The ID of the label to add.
- * @param {object} user - The user object of the user performing the action.
- * @throws {Error} if the mail or label cannot be found or if the user is not registered.
- */
-function addLabel(mailId, labelId, user) {
-  const uid = user.id;
-  const username = user.username;
-
-  addLabelToMail(mailId, labelId, username);
-  addMailToLabel(mailId, labelId, uid);
-}
-
-
 
 module.exports = {
-  createMail,
   listInbox,
+  listMailsByLabel,
+  createMail,
   getMailById,
   updateMailById,
   deleteMailById,
   searchMails,
   attachLabelToMail,
   detachLabelFromMail,
-  listMailsByLabel
 };

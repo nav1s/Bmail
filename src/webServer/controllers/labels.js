@@ -1,57 +1,61 @@
-const { getAllLabelsForUser, addLabelForUser, getLabelByUserAndId, deleteLabelForUser, updateLabelForUser } = require('../models/labels');
+// controllers/labels.js
+const { Types } = require('mongoose');
 const { created, badRequest, ok, noContent } = require('../utils/httpResponses');
 const { httpError } = require('../utils/error');
 
+const {
+  getLabelsForUser,
+  addLabelForUser,
+  getLabelForUserById,
+  deleteLabelForUser,
+  updateLabelForUser,
+} = require('../services/labelServices');
+
+function isValidObjectId(id) {
+  return Types.ObjectId.isValid(id);
+}
 
 /**
- * GET /api/labels
- * Returns all labels for the currently logged-in user.
+ * List all labels that belong to the current user.
+ * Useful for populating label selectors in the UI.
  *
- * @param {import('express').Request} req - Express request object. Assumes req.user is set.
- * @param {import('express').Response} res - Express response object.
+ * @param {import('express').Request} req - Requires `req.user.id`.
+ * @param {import('express').Response} res - Sends 200 with labels array.
+ * @returns {Promise<void>} Sends the HTTP response.
+ * @throws Sends 500 via httpError if the service call fails.
  */
-function listLabels(req, res) {
+async function listLabels(req, res) {
   const userId = req.user.id;
-
   try {
-    const userLabelList = getAllLabelsForUser(userId);
-    return ok(res, userLabelList);
+    const labels = await getLabelsForUser(userId);
+    return ok(res, labels);
   } catch (err) {
     return httpError(res, err);
   }
 }
 
 /**
- * POST /api/labels
- * Creates a new label for the logged-in user.
+ * Create a new custom label for the current user.
+ * Body must contain exactly one field: "name".
  *
- * @param {import('express').Request} req - Express request object, expects `req.user.id` and JSON body.
- * @param {import('express').Response} res - Express response object.
- * @returns {Object} HTTP Response:
- *   - 201 Created with the new label if successful.
- *   - 400 Bad Request if input is invalid or label already exists.
+ * @param {import('express').Request} req - Body `{ name: string }`.
+ * @param {import('express').Response} res - Sends 201 with created label.
+ * @returns {Promise<void>} Sends the HTTP response.
+ * @throws Sends 400 for invalid body; 500 via httpError on service errors.
  */
-function createLabel(req, res) {
+async function createLabel(req, res) {
   const userId = req.user.id;
 
-  if ('body' in req === false || req.body === undefined) {
+  if (!req.body || typeof req.body !== 'object') {
     return badRequest(res, 'Request body is required');
   }
-
-  const keys = Object.keys(req.body);
-
-  // Validating that we get exactly one label and extracting it.
-  if (keys.length !== 1) {
-    return badRequest(res, 'Request body must contain exactly one field');
+  if (Object.keys(req.body).length !== 1 || typeof req.body.name !== 'string') {
+    return badRequest(res, 'Body must contain exactly one field: "name"');
   }
-  const name = req.body.name;
-  if (!name || typeof name !== 'string') {
-    return badRequest(res, 'Label name must be a non-empty string');
-  }
+  const name = req.body.name.trim();
 
-  // Adding label to user
   try {
-    const label = addLabelForUser(userId, name);
+    const label = await addLabelForUser(userId, name);
     return created(res, label);
   } catch (err) {
     return httpError(res, err);
@@ -59,93 +63,88 @@ function createLabel(req, res) {
 }
 
 /**
- * GET /api/labels/:id
- * Returns a specific label by ID for the logged-in user.
+ * Get a single label by id for the current user.
+ * Accepts a string id (ObjectId or other supported form).
  *
- * @param {import('express').Request} req - Express request, expects :id param and req.user
- * @param {import('express').Response} res - Express response
+ * @param {import('express').Request} req - `params.id` is the label id.
+ * @param {import('express').Response} res - Sends 200 with the label object.
+ * @returns {Promise<void>} Sends the HTTP response.
+ * @throws Sends 400 for missing/empty id; 500 via httpError on failures.
  */
-function getLabelById(req, res) {
+async function getLabelById(req, res) {
   const userId = req.user.id;
-  // Checking we got a Label id
-  const rawId = req.params.id;
-  if (rawId === undefined) {
+  const id = req.params.id;
+
+  if (typeof id !== 'string' || id.trim() === '') {
     return badRequest(res, 'Label ID is required');
   }
 
-  // Checking its a number
-  const labelId = Number(rawId);
-  if (!Number.isInteger(labelId)) {
-    return badRequest(res, 'Label ID must be a valid integer');
-  }
-
-  // Getting the label
   try {
-    const label = getLabelByUserAndId(userId, labelId);
+    const label = await getLabelForUserById(userId, id);
     return ok(res, label);
   } catch (err) {
     return httpError(res, err);
   }
 }
 
+
 /**
- * PATCH /api/labels/:id
- * Updates the name of a label (if it belongs to the current user).
- * Enforces uniqueness of label names per user.
+ * Update a label’s name for the current user.
+ * Only the "name" field is allowed.
  *
- * @param {import('express').Request} req - Express request object
- * @param {import('express').Response} res - Express response object
+ * @param {import('express').Request} req - `params.id` and body `{ name: string }`.
+ * @param {import('express').Response} res - Sends 200 with the updated label.
+ * @returns {Promise<void>} Sends the HTTP response.
+ * @throws Sends 400 for invalid input; 500 via httpError on service errors.
  */
-function updateLabelById(req, res) {
-  if ('body' in req === false || req.body === undefined) {
+async function updateLabelById(req, res) {
+  const userId = req.user.id;
+  const labelId = req.params.id;
+
+  if (!labelId) {
+    return badRequest(res, 'Label ID is required');
+  }
+
+  if (!req.body || typeof req.body !== 'object') {
     return badRequest(res, 'Request body is required');
   }
-
-  const userId = req.user.id;
-
-  // Validate fields
-  const rawId = req.params?.id;
-  if (!rawId) return badRequest(res, 'Label ID parameter is missing');
-  const labelId = Number(rawId);
-  if (!Number.isInteger(labelId)) {
-    return badRequest(res, 'Label ID must be a valid integer');
+  if (Object.keys(req.body).length !== 1 || typeof req.body.name !== 'string') {
+    return badRequest(res, 'Body must contain exactly one field: "name"');
   }
-  const newName = req.body.name;
-  if (newName === undefined) {
-    return badRequest(res, 'Missing "name" field in request body');
+  const name = req.body.name.trim();
+  if (name === '') {
+    return badRequest(res, 'Label name must be a non-empty string');
   }
-
 
   try {
-    const updatedLabel = updateLabelForUser(userId, labelId, newName);
-    return ok(res, updatedLabel);
+    const updated = await updateLabelForUser(userId, labelId, name);
+    return ok(res, updated);
   } catch (err) {
-    console.error('Error updating label:', err);
     return httpError(res, err);
   }
 }
 
-/**
- * DELETE /api/labels/:id
- * Deletes a label owned by the logged-in user.
- *
- * @param {import('express').Request} req - Express request with :id param
- * @param {import('express').Response} res - Express response
- */
-function deleteLabelById(req, res) {
-  const userId = req.user.id;
 
-  // Validates fields
-  const rawId = req.params?.id;
-  if (!rawId) return badRequest(res, 'Label ID parameter is missing');
-  const labelId = Number(rawId);
-  if (!Number.isInteger(labelId)) {
-    return badRequest(res, 'Label ID must be a valid integer');
+/**
+ * Delete a label owned by the current user.
+ * If successful, the response has no body.
+ *
+ * @param {import('express').Request} req - `params.id` is the label id.
+ * @param {import('express').Response} res - Sends 204 on success.
+ * @returns {Promise<void>} Sends the HTTP response.
+ * @throws Sends 400 for invalid id; 500 via httpError on service errors.
+ */
+async function deleteLabelById(req, res) {
+  const userId = req.user.id;
+  const labelId = req.params.id;
+  
+
+  if (typeof labelId !== 'string' || labelId.trim() === '') {
+    return badRequest(res, 'Label ID is required');
   }
 
-  // Deleting label
   try {
-    deleteLabelForUser(userId, labelId);
+    await deleteLabelForUser(userId, labelId); // service validates ObjectId & ownership
     return noContent(res);
   } catch (err) {
     return httpError(res, err);

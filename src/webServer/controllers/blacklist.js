@@ -2,9 +2,12 @@ const { serverError, badRequest } = require("../utils/httpResponses");
 const net = require("net");
 
 /**
- * @brief This function adds a list of URLs to the blacklist.
- * @param {*} urls the urls to be added to the blacklist
- * @returns promise that resolves to true if the URLs were successfully added, false otherwise
+ * Add multiple URLs to the blacklist service over a TCP socket.
+ * Sends one `POST <url>` per item and resolves when all are processed.
+ *
+ * @param {string[]} urls - List of URL strings to add.
+ * @returns {Promise<boolean>} Resolves true when all URLs were added (201 for each).
+ * @throws {Error} If input is missing/invalid, socket errors occur, or server replies unexpectedly.
  */
 exports.addUrlsToBlacklist = async (urls) => {
     return new Promise((resolve, reject) => {
@@ -65,9 +68,13 @@ exports.addUrlsToBlacklist = async (urls) => {
 }
 
 /**
- * This function handles the addition of a URL to the blacklist.
- * @param req the request object containing the URL to be blacklisted
- * @param res the response object used to send the response back to the client
+ * Express handler to add a single URL to the blacklist.
+ * Expects `{ url: string }` in the request body.
+ *
+ * @param {import('express').Request} req - Body must contain `url`.
+ * @param {import('express').Response} res - JSON 201 on success.
+ * @returns {Promise<void>} Sends the HTTP response.
+ * @throws Sends 400 for bad input; 500 on internal/server errors.
  */
 exports.addToBlacklist = async (req, res) => {
     console.log('Received request to add URL to blacklist:', req.body);
@@ -86,9 +93,12 @@ exports.addToBlacklist = async (req, res) => {
 }
 
 /**
- * @brief This function removes a list of URLs to the blacklist.
- * @param {*} urls the urls to be removed to the blacklist
- * @returns promise that resolves to true if the URLs were successfully removed, false otherwise
+ * Remove multiple URLs from the blacklist service.
+ * Sends one `DELETE <url>` per item; returns false if any were not found.
+ *
+ * @param {string[]} urls - List of URL strings to remove.
+ * @returns {Promise<boolean>} True if all deletes returned 204, false if any 404 occurred.
+ * @throws {Error} If input is missing/invalid, socket errors occur, or a reply is not recognized.
  */
 exports.removeUrlsFromBlacklist = async (urls) => {
     return new Promise((resolve, reject) => {
@@ -134,12 +144,13 @@ exports.removeUrlsFromBlacklist = async (urls) => {
                 return reject(new Error('unexpected response from server'));
             }
 
+            // check if all URLs have been processed
             if (urlIndex >= urls.length) {
                 client.destroy();
                 return resolve(success);
             }
 
-            // if there are more URLs to add, send the next one
+            // write the next URL to the server
             client.write(`DELETE ${urls[urlIndex]}\n`);
             urlIndex++;
         });
@@ -153,12 +164,15 @@ exports.removeUrlsFromBlacklist = async (urls) => {
 }
 
 /**
- * This function handles the removal of a URL from the blacklist.
- * @param req the request object containing the URL to be removed
- * @param res the response object used to send the response back to the client
+ * Express handler to remove a single URL identified in the route.
+ * Responds with 204 on success or 404 if the URL wasn’t present.
+ *
+ * @param {import('express').Request} req - Must include `params.id` (the URL).
+ * @param {import('express').Response} res - Sends 204/404 JSON responses.
+ * @returns {Promise<void>} Sends the HTTP response.
+ * @throws Sends 400 for missing id; 500 for unexpected server errors.
  */
 exports.removeFromBlacklist = async (req, res) => {
-    // check if the request has the required parameters
     if (!req.params || !req.params.id) {
         return badRequest(res, 'Missing fields: id');
     }
