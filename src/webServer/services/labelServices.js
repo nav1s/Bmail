@@ -366,18 +366,12 @@ async function attachLabelToMail(mailId, labelId, username, userId) {
   }
 
   const spamLabelId = await getisDefaultLabelId(userId, 'spam');
-  if (spamLabelId) {
-  const norms = (mail.urls || [])
-    .map(u => u?.trim().toLowerCase().replace(/\/$/, ''))
-    .filter(Boolean);
-
-  if (norms.length) {
-    await addUrlsToBlacklist(norms); // keep
-    // tag for all users
-    await tagMailsWithUrlsAsSpamForAllUsers(username, norms);
-  }
-  // refresh globally
-  await updateMailsSpamLabelForAllUsers(username);
+  if (String(spamLabelId) === String(labelId)) {
+    const norms = (mail.urls || []).map(u => u?.trim().toLowerCase().replace(/\/$/, '')).filter(Boolean);
+    if (norms.length) {
+      await addUrlsToBlacklist(norms);
+      await tagMailsWithUrlsAsSpam(userId, username, norms, spamLabelId);
+    }
   }
 
   // return safe DTO inline
@@ -414,29 +408,10 @@ async function detachLabelFromMail(mailId, labelId, username) {
     throw createError('User does not have access to this mail', { status: 403 });
   }
 
-  // Is the label being removed a Spam label?
-  const labelDoc = await Label.findById(labelId, { _id: 1, name: 1 }).lean();
-  const isSpam = !!labelDoc && /^spam$/i.test(labelDoc.name || '');
-
-  if (isSpam) {
-    // Fetch ALL users' Spam labels and remove them from this mail
-    const allSpam = await Label.find(
-      { name: { $regex: '^spam$', $options: 'i' } },
-      { _id: 1 }
-    ).lean();
-
-    const spamIds = new Set(allSpam.map(l => String(l._id)));
-
-    mail.labels = (mail.labels || []).filter(id => !spamIds.has(String(id)));
-  } else {
-    // Non-spam: remove only the requested label (original behavior)
-    const lId = String(labelId);
-    mail.labels = (mail.labels || []).filter(id => String(id) !== lId);
-  }
-
+  const lId = String(labelId);
+  mail.labels = (mail.labels || []).filter((id) => String(id) !== lId);
   await mail.save();
 
-  // Build public output shape (unchanged)
   const out = {};
   const paths = Mail.schema.paths;
   Object.keys(paths).forEach((path) => {
