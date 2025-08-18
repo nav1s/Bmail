@@ -1,76 +1,26 @@
 # Bmail
 
-> **Previous parts of this project:**
-> - Part 1: https://github.com/Binja12/Bmail/tree/part1
-> - Part 2: https://github.com/Binja12/Bmail/tree/part2
-> - Part 3: https://github.com/Binja12/Bmail/tree/part3
-> - Part 4: https://github.com/Binja12/Bmail/tree/part4
-> - Part 5: will be completed past the deadline due to miluim service
+## Previous parts of this project
+- Part 1: https://github.com/Binja12/Bmail/tree/part1
+- Part 2: https://github.com/Binja12/Bmail/tree/part2
+- Part 3: https://github.com/Binja12/Bmail/tree/part3
+- Part 4: https://github.com/Binja12/Bmail/tree/part4
+- Part 5:  https://github.com/Binja12/Bmail/tree/part5
 
-Bmail is a mail server application featuring a C++-based Bloom filter for blacklist management and a Node.js web server providing a RESTful API for mail operations.
+## Features
+- **C++ Bloom Filter**: Efficiently manages blacklists to prevent spam.
+- **Node.js REST API**: Provides endpoints for mail operations, user management, and more
+- **Android Client**: A mobile application for accessing and managing emails.
+- **Web Client**: A web-based interface for email management.
+- **MongoDB**: Used for data storage, ensuring scalability and flexibility.
+- **Docker Support**: Simplifies deployment and testing with containerization.
 
-The project also includes a Python client for interacting with the Bloom filter and utilizes Docker for streamlined deployment and testing.
+## Documentation
+Documentation can be found on [wiki](wiki/README.md).
 
-## Screenshots
-![login page](assets/part4-screenshots/login-page.png)
+## Task Management
+For task management and issue tracking, we use
+[Jira](https://live-team-binja.atlassian.net/jira/software/projects/BMAIL/boards/34/timeline)
 
-![register page](assets/part4-screenshots/registration-page.png)
-
-![obiwan sent message](assets/part4-screenshots/obiwan-sent.png)
-
-![grievous received message](assets/part4-screenshots/griveous-recievefd.png)
-
-## Getting Started
-
-### Cloning the Repository
-
-```bash
-# Using HTTPS
-git clone https://github.com/binja12/bmail.git
-cd bmail
-git checkout part4
-
-# OR using SSH
-git clone git@github.com:binja12/bmail.git
-cd bmail
-git checkout part4
-```
-
-### Running the Application
-
-```bash
-docker compose down --remove-orphans
-docker compose up --detach --pull always --remove-orphans --build --wait bloom-filter web-server mongo mongo-express
-```
-
-Once the application is running, open your browser and go to [http://localhost:8080](http://localhost:8080).
-
-> **When you are done using the application, shut down the containers with:**
-```bash
-docker compose down --remove-orphans
-```
-
-> **if you want to start with a fresh Bloom filter, delete the data file with the following command:**
-```bash
-rm data/bloomFilter.txt
-```
-
-### How SOLID Principles Helped Us Handle Changes Smoothly
-
-How SOLID Principles Helped Us Handle Changes Smoothly
-
-When we built the project in Exercise 1, we made sure to follow SOLID principles so that we could easily adapt later without touching core parts of the code. That really paid off in this assignment:
-
-- **Command Name Changes**  
-Command name changes (like turning POST into 1) didn’t cause any issues — we just updated the parser’s mapping. The rest of the system kept working exactly the same.
-
-- **Adding New Commands**
-Adding new commands like DELETE was super simple. Since each command is its own class, all we had to do was create a new one and plug it into the parser. No need to change existing logic.
-
-- **Changes in Output Format** 
-Changes in output format did require a small change: we updated the return values of the command classes to support the new output. Still, thanks to our modular structure, this was easy to manage and didn’t affect the overall system flow.
-
-- **Swapping Console I/O with TCP**  
-Moving from console to TCP I/O was surprisingly smooth. Because we used abstract Reader and Writer objects from the start, we only had to switch the implementations. The rest of the code didn’t even notice the difference.
-
-Overall, because our system was built to be extendable from day one, we were able to make all these changes without doing any big rewrites nor major implementation changes.
+## License
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details

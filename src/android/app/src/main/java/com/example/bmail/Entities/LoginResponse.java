@@ -1,0 +1,29 @@
+package com.example.bmail.Entities;
+
+import com.google.gson.annotations.Expose;
+
+public class LoginResponse {
+    @Expose
+    private String token;
+    @Expose
+    private String id;
+    public LoginResponse() {
+    }
+
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+}
+

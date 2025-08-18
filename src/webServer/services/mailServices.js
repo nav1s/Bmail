@@ -7,8 +7,8 @@ const { anyUrlBlacklisted, addUrlsToBlacklist, isUrlBlacklisted, removeUrlsFromB
 const { findUserByUsername } = require('./userService');
 
 
-/** Minimal "looks like an address": requires exactly one @ and no spaces (demo). */
-const EMAIL_RE = /^[^\s@]+@[^\s@]+$/;
+/** requires local@domain.tld */
+const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 
 /**
  * Convert an internal address to a username.
@@ -165,6 +165,7 @@ try {
     const username = mail.from
     const sender = await User.findOne({ username }).lean();
     // always include the key (mirror user service behavior)
+    output.from = `${mail.from}@bmail.com`;
     output.userImage = sender?.image ?? null;
   } else {
     output.userImage = null;
@@ -221,8 +222,19 @@ async function buildMail(mailData, { userId, system }) {
   }
   const isDraft = !!mailData.draft;
 
-  // tokenize recipients (keep your existing logic)
+    // tokenize recipients
   const toTokens = tokenizeAddresses(mailData.to);
+
+  // enforce that every address matches EMAIL_RE
+  const invalid = toTokens.filter((addr) => !EMAIL_RE.test(addr));
+  if (invalid.length) {
+    throw createError(`Invalid recipient mail address: ${invalid.join(', ')}`, {
+      type: 'VALIDATION',
+      status: 400
+    });
+  }
+
+
 
   // extract & normalize URLs (always store, even for drafts)
   const rawUrls = extractUrls([mailData.title, mailData.body].filter(Boolean).join(' '));
@@ -461,19 +473,26 @@ async function editMailForUser(mailId, username, updates) {
   if (typeof updates.body  !== 'undefined') mail.body  = updates.body;
 
   if (typeof updates.to !== 'undefined') {
-    if (Array.isArray(updates.to)) {
-      const tokens = tokenizeAddresses(updates.to);
-      if (tokens.length > 0) {
-        const invalid = tokens.filter((t) => !EMAIL_RE.test(t));
-        if (invalid.length) {
-          throw createError(`Invalid recipient mail address: ${invalid.join(', ')}`, { status: 400 });
-        }
-      }
-      mail.to = tokens; // may be [] for drafts
-    } else {
-      mail.to = undefined; // allowed for drafts
+  if (typeof updates.to !== 'undefined') {
+  if (Array.isArray(updates.to)) {
+    const tokens = tokenizeAddresses(updates.to);
+
+    // enforce that every address matches EMAIL_RE
+    const invalid = tokens.filter((addr) => !EMAIL_RE.test(addr));
+    if (invalid.length) {
+      throw createError(`Invalid recipient mail address: ${invalid.join(', ')}`, {
+        type: 'VALIDATION',
+        status: 400
+      });
     }
+
+    mail.to = tokens; // safe array
+  } else {
+    mail.to = undefined; // allowed for drafts
   }
+  }}
+
+
 
   // recompute URLs if title/body changed (always store URLs)
   if (typeof updates.title !== 'undefined' || typeof updates.body !== 'undefined') {

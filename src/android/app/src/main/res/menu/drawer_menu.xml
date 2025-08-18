@@ -1,0 +1,61 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <group
+        android:id="@+id/group_main"
+        android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_inbox"
+            android:checked="true"
+            android:icon="@android:drawable/ic_dialog_email"
+            android:orderInCategory="1"
+            android:title="@string/inbox" />
+
+        <item
+            android:id="@+id/nav_starred"
+            android:icon="@android:drawable/btn_star_big_on"
+            android:orderInCategory="2"
+            android:title="@string/starred" />
+
+        <item
+            android:id="@+id/nav_sent"
+            android:icon="@android:drawable/ic_menu_send"
+            android:orderInCategory="3"
+            android:title="@string/sent" />
+
+        <item
+            android:id="@+id/nav_drafts"
+            android:icon="@android:drawable/ic_menu_edit"
+            android:orderInCategory="4"
+            android:title="@string/drafts" />
+
+        <item
+            android:id="@+id/nav_spam"
+            android:icon="@drawable/ic_warning_on"
+            android:orderInCategory="5"
+            android:title="@string/spam" />
+
+        <item
+            android:id="@+id/nav_trash"
+            android:icon="@android:drawable/ic_menu_delete"
+            android:orderInCategory="6"
+            android:title="@string/trash" />
+
+        <item
+            android:id="@+id/nav_all_mail"
+            android:icon="@drawable/ic_folder"
+            android:orderInCategory="7"
+            android:title="@string/all_mail" />
+
+    </group>
+    <group android:id="@+id/nav_custom_labels">
+        <item
+            android:id="@+id/nav_labels"
+            android:orderInCategory="8"
+            android:title="@string/labels"
+            android:enabled="false"
+            app:actionLayout="@layout/label_plus_button" />
+
+    </group>
+
+</menu>
