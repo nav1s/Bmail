@@ -5,12 +5,10 @@
 # Using HTTPS
 git clone https://github.com/binja12/bmail.git
 cd bmail
-git checkout main
 
 # OR using SSH
 git clone git@github.com:binja12/bmail.git
 cd bmail
-git checkout main
 ```
 
 ## Running the web server and client
