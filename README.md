@@ -16,7 +16,7 @@
 - **Docker Support**: Simplifies deployment and testing with containerization.
 
 ## Documentation
-Documentation can be found on [wiki](wiki/README.md).
+Documentation can be found on [wiki](https://github.com/nav1s/Bmail/wiki).
 
 ## Task Management
 For task management and issue tracking, we use
