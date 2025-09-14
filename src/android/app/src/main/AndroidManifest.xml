@@ -56,7 +56,9 @@
             </intent-filter>
         </activity>
         <activity android:name=".Activities.SignupActivity"
-            android:parentActivityName=".Activities.LoginActivity" />
+            android:parentActivityName=".Activities.LoginActivity"
+            android:windowSoftInputMode="adjustResize"
+            />
         <activity android:name=".Activities.MainActivity"
             android:parentActivityName=".Activities.LoginActivity" />
         <activity android:name=".Activities.ComposeActivity"
