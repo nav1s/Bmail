@@ -1,12 +1,5 @@
 # Bmail
 
-## Previous parts of this project
-- Part 1: https://github.com/Binja12/Bmail/tree/part1
-- Part 2: https://github.com/Binja12/Bmail/tree/part2
-- Part 3: https://github.com/Binja12/Bmail/tree/part3
-- Part 4: https://github.com/Binja12/Bmail/tree/part4
-- Part 5:  https://github.com/Binja12/Bmail/tree/part5
-
 ## Features
 - **C++ Bloom Filter**: Efficiently manages blacklists to prevent spam.
 - **Node.js REST API**: Provides endpoints for mail operations, user management, and more
