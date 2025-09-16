@@ -7,5 +7,3 @@ data
 uploads
 mongo-data
 .idea
-*.env*
-
