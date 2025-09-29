@@ -16,6 +16,17 @@ cd bmail
 - Docker
 - Docker Compose
 
+### Creating an env file
+
+```bash
+# Create a new .env.prod file from the template
+cp src/webServer/env.example src/webServer/.env.prod
+# Generate a secure JWT secret token
+node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
+# Append the JWT token for the env file
+echo "JWT_SECRET=your_generated_token_here" >> src/webServer/.env.prod
+```
+
 ### Steps to run the web server
 After cloning the repository, navigate to the `bmail` directory and run the following commands:
 ```bash
