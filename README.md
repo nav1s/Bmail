@@ -9,7 +9,7 @@
 - **Docker Support**: Simplifies deployment and testing with containerization.
 
 ## Documentation
-Documentation can be found on [wiki](wiki/README.md).
+Documentation can be found on the [wiki](wiki/README.md).
 
 ## Task Management
 For task management and issue tracking, we use
