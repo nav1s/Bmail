@@ -25,7 +25,7 @@ _Description: The compose mail page allows users to create and send a new email.
 ---
 
 ## Main Screen
-_Description: The main page displays the user's inbox with a list of emails and _
+_Description: The main page displays the user's inbox with a list of emails and navigation options_
 ![main page](assets/android-screenshots/main.jpg)
 
 ## Main Screen navigation drawer
