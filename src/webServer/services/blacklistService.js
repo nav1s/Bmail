@@ -1,5 +1,5 @@
 const net = require("net");
-const config = require("./utils/config");
+const config = require("../utils/config");
 
 const BLOOM_FILTER_HOST = config.BLOOM_FILTER_HOST;
 const BLOOM_FILTER_PORT = config.BLOOM_FILTER_PORT;
