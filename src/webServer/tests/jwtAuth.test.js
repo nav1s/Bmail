@@ -7,6 +7,13 @@ const config = require("../utils/config");
 
 const JWT_SECRET = config.JWT_SECRET;
 
+before(async () => {
+  await mongoose.connect(config.MONGODB_URI);
+  await User.deleteMany({});
+  await Mail.deleteMany({});
+  await Label.deleteMany({});
+});
+
 // 1. Missing token
 test("JWT 1. Missing Authorization header returns 401", async () => {
   // No token provided
@@ -79,14 +86,12 @@ test("JWT 6. User cannot modify another user", async () => {
     lastName: "b",
     password: "Securepass1234!",
   });
-  await api
-    .post("/api/users")
-    .send({
-      username: "u2",
-      firstName: "c",
-      lastName: "d",
-      password: "Securepass1234!",
-    });
+  await api.post("/api/users").send({
+    username: "u2",
+    firstName: "c",
+    lastName: "d",
+    password: "Securepass1234!",
+  });
 
   // Login as the first user
   const resLogin = await api
@@ -100,4 +105,8 @@ test("JWT 6. User cannot modify another user", async () => {
     .set("Authorization", "bearer " + token)
     .send({ username: "u2" })
     .expect(400);
+});
+
+after(async () => {
+  await mongoose.connection.close();
 });
