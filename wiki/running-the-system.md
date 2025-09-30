@@ -20,11 +20,11 @@ cd bmail
 
 ```bash
 # Create a new .env.prod file from the template
-cp src/webServer/env.example src/webServer/.env.prod
+cp src/webServer/env.example src/webServer/.env
 # Generate a secure JWT secret token
 node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
 # Append the JWT token for the env file
-echo "JWT_SECRET=your_generated_token_here" >> src/webServer/.env.prod
+echo "JWT_SECRET=your_generated_token_here" >> src/webServer/.env
 ```
 
 ### Steps to run the web server
