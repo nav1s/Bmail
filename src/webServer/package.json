@@ -12,6 +12,7 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
+    "cross-env": "^10.1.0",
     "custom-env": "^2.0.6",
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
