@@ -1,7 +1,7 @@
-const net = require('net');
+const net = require("net");
 
-const BLOOM_HOST = process.env.BLOOM_HOST || 'bloom-filter';
-const BLOOM_PORT = Number(process.env.BLOOM_PORT || 12345);
+const BLOOM_FILTER_HOST = process.env.BLOOM_FILTER_HOST || "bloom-filter";
+const BLOOM_FILTER_PORT = Number(process.env.BLOOM_FILTER_PORT || 12345);
 
 /**
  * Send a single-line command to the bloom server and read its reply.
@@ -17,8 +17,11 @@ function sendBloomCommand(cmd, payload) {
   console.log("line to write:", line.trim());
 
   return new Promise((resolve, reject) => {
-    const socket = net.createConnection({ host: BLOOM_HOST, port: BLOOM_PORT });
-    let buf = '';
+    const socket = net.createConnection({
+      host: BLOOM_FILTER_HOST,
+      port: BLOOM_FILTER_PORT,
+    });
+    let buf = "";
     let resolved = false;
     let idleTimer = null;
 
@@ -33,16 +36,16 @@ function sendBloomCommand(cmd, payload) {
       resolve(out);
     };
 
-    socket.setEncoding('utf8');
+    socket.setEncoding("utf8");
     socket.setNoDelay(true);
     socket.setTimeout(5000);
 
-    socket.on('connect', () => {
-      console.log("connecting to server", BLOOM_HOST, BLOOM_PORT);
+    socket.on("connect", () => {
+      console.log("connecting to server", BLOOM_FILTER_HOST, BLOOM_FILTER_PORT);
       socket.write(line);
     });
 
-    socket.on('data', (chunk) => {
+    socket.on("data", (chunk) => {
       const s = chunk.toString();
       console.log("bloom<= chunk:", JSON.stringify(s));
       buf += s;
@@ -58,18 +61,18 @@ function sendBloomCommand(cmd, payload) {
         idleTimer = setTimeout(finish, 5);
       }
       // if server uses "200 OK\n\n<body>", wait for blank line, then finish soon
-      if (buf.includes('\n\n')) {
+      if (buf.includes("\n\n")) {
         clearTimeout(idleTimer);
         idleTimer = setTimeout(finish, 5);
       }
     });
 
-    socket.on('end', finish);
-    socket.on('timeout', () => {
+    socket.on("end", finish);
+    socket.on("timeout", () => {
       socket.destroy();
-      reject(new Error('bloom socket timeout'));
+      reject(new Error("bloom socket timeout"));
     });
-    socket.on('error', (err) => {
+    socket.on("error", (err) => {
       if (!resolved) reject(err);
     });
   });
@@ -84,7 +87,7 @@ function sendBloomCommand(cmd, payload) {
  */
 function normalizeUrls(urls) {
   return (urls || [])
-    .map(u => (typeof u === 'string' ? u.trim() : ''))
+    .map((u) => (typeof u === "string" ? u.trim() : ""))
     .filter(Boolean);
 }
 
@@ -97,8 +100,8 @@ function normalizeUrls(urls) {
  * @throws {Error} If the bloom command fails.
  */
 async function isUrlBlacklisted(url) {
-  console.log("checking if url: " + url + "is blacklisted")
-  const resp = await sendBloomCommand('GET', url);
+  console.log("checking if url: " + url + "is blacklisted");
+  const resp = await sendBloomCommand("GET", url);
   // Accept either a raw boolean/1|0 or the "200 OK … true|false" style
   if (/^\s*1\s*$/m.test(resp)) return true;
   if (/^\s*0\s*$/m.test(resp)) return false;
@@ -137,9 +140,13 @@ async function anyUrlBlacklisted(urls) {
 async function addUrlsToBlacklist(urls) {
   let count = 0;
   for (const u of urls) {
-    console.log("sending request: " + 'POST', u)
-    const resp = await sendBloomCommand('POST', u);
-    if (/\b201 Created\b/.test(resp) || /^\s*OK\s*$/i.test(resp) || /^\s*1\s*$/m.test(resp)) {
+    console.log("sending request: " + "POST", u);
+    const resp = await sendBloomCommand("POST", u);
+    if (
+      /\b201 Created\b/.test(resp) ||
+      /^\s*OK\s*$/i.test(resp) ||
+      /^\s*1\s*$/m.test(resp)
+    ) {
       count += 1;
     }
   }
@@ -157,8 +164,12 @@ async function addUrlsToBlacklist(urls) {
 async function removeUrlsFromBlacklist(urls) {
   let count = 0;
   for (const u of urls) {
-    const resp = await sendBloomCommand('DELETE', u);
-    if (/\b204 No Content\b/.test(resp) || /^\s*OK\s*$/i.test(resp) || /^\s*1\s*$/m.test(resp)) {
+    const resp = await sendBloomCommand("DELETE", u);
+    if (
+      /\b204 No Content\b/.test(resp) ||
+      /^\s*OK\s*$/i.test(resp) ||
+      /^\s*1\s*$/m.test(resp)
+    ) {
       count += 1;
     }
   }
@@ -175,7 +186,7 @@ async function removeUrlsFromBlacklist(urls) {
  */
 async function checkUrl(url) {
   const u = normalizeUrl(url);
-  if (!u) throw createError('Invalid URL', { status: 400 });
+  if (!u) throw createError("Invalid URL", { status: 400 });
   return await isUrlBlacklisted(u);
 }
 
@@ -189,7 +200,7 @@ async function checkUrl(url) {
  */
 async function addUrl(url) {
   const u = normalizeUrl(url);
-  if (!u) throw createError('Invalid URL', { status: 400 });
+  if (!u) throw createError("Invalid URL", { status: 400 });
   await addUrlsToBlacklist([u]);
   return true;
 }
@@ -204,7 +215,7 @@ async function addUrl(url) {
  */
 async function removeUrl(url) {
   const u = normalizeUrl(url);
-  if (!u) throw createError('Invalid URL', { status: 400 });
+  if (!u) throw createError("Invalid URL", { status: 400 });
   await removeUrlsFromBlacklist([u]);
   return true;
 }
