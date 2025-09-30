@@ -1,8 +1,7 @@
-const users = require('../services/userService.js');
-const { httpError } = require('../utils/error');
-const jwt = require("jsonwebtoken")
-require('custom-env').env();
-
+const users = require("../services/userService.js");
+const { httpError } = require("../utils/error");
+const jwt = require("jsonwebtoken");
+const config = require("../utils/config");
 
 /**
  * Issue a JWT for a user after verifying username/password.
@@ -14,11 +13,11 @@ require('custom-env').env();
  * @throws Sends 500 if JWT_SECRET is missing; propagates auth/service errors via httpError.
  */
 async function login(req, res) {
-  const key = process.env.JWT_SECRET 
+  const key = config.JWT_SECRET;
 
   if (!key) {
-    console.error('JWT_SECRET is not set in environment variables');
-    return res.status(500).json({ error: 'Internal server error' });
+    console.error("JWT_SECRET is not set in environment variables");
+    return res.status(500).json({ error: "Internal server error" });
   }
 
   try {
@@ -26,14 +25,12 @@ async function login(req, res) {
     const { username, password } = req.body;
     const user = await users.login(username, password);
 
-    const data = { username: user.username }
+    const data = { username: user.username };
     console.log(user.username);
-    const token = jwt.sign(data, key)
+    const token = jwt.sign(data, key);
     res.status(201).json({ token, id: user._id });
-
-
   } catch (err) {
-    console.error('Error during login:', err);
+    console.error("Error during login:", err);
     // Error if there was a problem connecting
     return httpError(res, err);
   }

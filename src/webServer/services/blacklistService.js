@@ -1,7 +1,8 @@
 const net = require("net");
+const config = require("./utils/config");
 
-const BLOOM_FILTER_HOST = process.env.BLOOM_FILTER_HOST || "bloom-filter";
-const BLOOM_FILTER_PORT = Number(process.env.BLOOM_FILTER_PORT || 12345);
+const BLOOM_FILTER_HOST = config.BLOOM_FILTER_HOST;
+const BLOOM_FILTER_PORT = config.BLOOM_FILTER_PORT;
 
 /**
  * Send a single-line command to the bloom server and read its reply.
