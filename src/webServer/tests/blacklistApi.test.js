@@ -1,4 +1,9 @@
-const { test } = require('node:test');
+const { after, before, test } = require("node:test");
+const mongoose = require("mongoose");
+const config = require("../utils/config");
+const User = require("../models/usersModel");
+const Mail = require("../models/mailsModel");
+const { Label } = require("../models/labelsModel");
 const assert = require('node:assert/strict');
 const supertest = require('supertest');
 const app = require('../app');
@@ -9,9 +14,16 @@ const api = supertest(app);
 let token = ''
 let spamLabelId = 0;
 
+before(async () => {
+  await mongoose.connect(config.MONGODB_URI);
+  await User.deleteMany({});
+  await Mail.deleteMany({});
+  await Label.deleteMany({});
+});
+
 // Create test user and return the created user data (including id)
 async function createTestUserAndReturn() {
-  await api
+  let response = await api
     .post('/api/users')
     .send({
       firstName: "Alice",
@@ -20,18 +32,17 @@ async function createTestUserAndReturn() {
       password: "Securepass123!"
     })
     .set('Content-Type', 'application/json')
-    .expect(201)
-    .expect('location', /\/api\/users\/1/)
-  const response = await api
-    .get('/api/users/1')
+    .expect(201);
+
+  const location = response.header.location;
+  response = await api
+    .get(location)
     .expect(200)
     .expect('Content-Type', /application\/json/);
-  assert.deepStrictEqual(response.body, {
-    id: 1,
-    firstName: "Alice",
-    lastName: "Test",
-    username: "alice123"
-  });
+
+  assert.deepStrictEqual(response.body.firstName, "Alice");
+  assert.deepStrictEqual(response.body.lastName, "Test");
+  assert.deepStrictEqual(response.body.username, "alice123");
 
   // Get the token for the user
   const loginResponse = await api
@@ -41,6 +52,7 @@ async function createTestUserAndReturn() {
 
   token = loginResponse.body.token;
 }
+
 
 // ✅ 1.1 Valid POST blacklist
 test('1.1 Valid POST blacklist', async () => {
@@ -89,14 +101,14 @@ test('1.4 POST mail with blacklisted URL in body - should be moved to spam', asy
     .set('Authorization', 'bearer ' + token)
     .set('Content-Type', 'application/json')
     .send({
-      to: ['alice123'],
+      to: ['alice123@bmail.com'],
       title: 'Try this site',
       body: 'Check this link: http://bad.com'
     });
 
   assert.strictEqual(response.status, 201);
-  assert.strictEqual(response.body.from, 'alice123');
-  assert.deepStrictEqual(response.body.to, ['alice123']);
+  assert.strictEqual(response.body.from, 'alice123@bmail.com');
+  assert.deepStrictEqual(response.body.to, ['alice123@bmail.com']);
   assert.strictEqual(response.body.title, 'Try this site');
   assert.strictEqual(response.body.body, 'Check this link: http://bad.com');
 
@@ -124,14 +136,14 @@ test('1.5 POST mail with one blacklisted URL and one url that hasn\'t been black
     .set('Authorization', 'bearer ' + token)
     .set('Content-Type', 'application/json')
     .send({
-      to: ["alice123"],
+      to: ["alice123@bmail.com"],
       title: "Try this site",
       body: "Check this link: http://bmail.com and http://bad.com"
     });
 
   assert.strictEqual(response.status, 201);
-  assert.strictEqual(response.body.from, 'alice123');
-  assert.deepStrictEqual(response.body.to, ['alice123']);
+  assert.strictEqual(response.body.from, 'alice123@bmail.com');
+  assert.deepStrictEqual(response.body.to, ['alice123@bmail.com']);
   assert.strictEqual(response.body.title, 'Try this site');
   assert.strictEqual(response.body.body, 'Check this link: http://bmail.com and http://bad.com');
   assert.ok(response.body.id);
@@ -146,14 +158,14 @@ test('1.6 invalid POST mail with blacklisted URL in title - should be moved to s
     .post('/api/mails')
     .set('Authorization', 'bearer ' + token)
     .send({
-      to: ["alice123"],
+      to: ["alice123@bmail.com"],
       title: 'try this site http://bad.com',
       body: 'Check this link:'
     });
 
   assert.strictEqual(response.status, 201);
-  assert.strictEqual(response.body.from, 'alice123');
-  assert.deepStrictEqual(response.body.to, ['alice123']);
+  assert.strictEqual(response.body.from, 'alice123@bmail.com');
+  assert.deepStrictEqual(response.body.to, ['alice123@bmail.com']);
   assert.strictEqual(response.body.title, 'try this site http://bad.com');
   assert.strictEqual(response.body.body, 'Check this link:');
   assert.ok(response.body.id);
@@ -181,16 +193,19 @@ test('1.8 Valid POST mail - after DELETE of blacklisted URL', async () => {
     .set('Authorization', 'bearer ' + token)
     .set('Content-Type', 'application/json')
     .send({
-      to: ['alice123'],
+      to: ['alice123@bmail.com'],
       title: 'Try this site',
       body: 'Check this link: http://bad.com'
     });
 
   assert.strictEqual(response.status, 201);
-  assert.strictEqual(response.body.from, 'alice123');
-  assert.deepStrictEqual(response.body.to, ['alice123']);
+  assert.strictEqual(response.body.from, 'alice123@bmail.com');
+  assert.deepStrictEqual(response.body.to, ['alice123@bmail.com']);
   assert.strictEqual(response.body.title, 'Try this site');
   assert.strictEqual(response.body.body, 'Check this link: http://bad.com');
   assert.ok(response.body.id);
 });
 
+after(async () => {
+  await mongoose.connection.close();
+});
