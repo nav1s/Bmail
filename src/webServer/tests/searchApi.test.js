@@ -1,4 +1,9 @@
-const { test } = require('node:test');
+const { after, before, test } = require("node:test");
+const mongoose = require("mongoose");
+const config = require("../utils/config");
+const User = require("../models/usersModel");
+const Mail = require("../models/mailsModel");
+const { Label } = require("../models/labelsModel");
 const assert = require('node:assert/strict');
 const supertest = require('supertest');
 const app = require('../app');
@@ -7,11 +12,18 @@ const request = require('supertest');
 // Create the test client
 const api = supertest(app);
 
-let token = ''
+let token
+
+before(async () => {
+  await mongoose.connect(config.MONGODB_URI);
+  await User.deleteMany({});
+  await Mail.deleteMany({});
+  await Label.deleteMany({});
+});
 
 // Utility function to create the test user before running search tests
 async function createTestUserAndReturn() {
-  await api
+  let response = await api
     .post('/api/users')
     .send({
       firstName: "Alice",
@@ -21,18 +33,16 @@ async function createTestUserAndReturn() {
     })
     .set('Content-Type', 'application/json')
     .expect(201);
-  
-  const response = await api
-    .get('/api/users/1')
+
+  const location = response.header.location;
+  response = await api
+    .get(location)
     .expect(200)
     .expect('Content-Type', /application\/json/);
-  
-  assert.deepStrictEqual(response.body, {
-    id: 1,
-    firstName: "Alice",
-    lastName: "Test",
-    username: "alice123"
-  });
+
+  assert.deepStrictEqual(response.body.firstName, "Alice");
+  assert.deepStrictEqual(response.body.lastName, "Test");
+  assert.deepStrictEqual(response.body.username, "alice123");
 
   // Get the token for the user
   const loginResponse = await api
@@ -46,11 +56,11 @@ async function createTestUserAndReturn() {
 // Create initial mails for query tests
 async function createInitialMails() {
   const mails = [
-    { to: ["alice123"], title: "Hello again", body: "This should work" },
-    { to: ["alice123"], title: "Hello Wirtz", body: "Sign for Liverpool" },
-    { to: ["alice123"], title: "query Match Test", body: "This is a unique phrase xyz123" },
-    { to: ["alice123"], title: "Foo bar news", body: "query scores again" },
-    { to: ["alice123"], title: "Test query subject", body: "Body with some content" }
+    { to: ["alice123@bmail.com"], title: "Hello again", body: "This should work" },
+    { to: ["alice123@bmail.com"], title: "Hello Wirtz", body: "Sign for Liverpool" },
+    { to: ["alice123@bmail.com"], title: "query Match Test", body: "This is a unique phrase xyz123" },
+    { to: ["alice123@bmail.com"], title: "Foo bar news", body: "query scores again" },
+    { to: ["alice123@bmail.com"], title: "Test query subject", body: "Body with some content" }
   ];
 
   for (const mail of mails) {
@@ -90,4 +100,6 @@ test('returns all mails matching "query" in title or body', async () => {
   assert.ok(mails.length > 0, 'No mails returned');
 });
 
-
+after(async () => {
+  await mongoose.connection.close();
+});
