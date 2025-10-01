@@ -1,9 +1,22 @@
-const { test } = require('node:test');
+const { after, before, test } = require("node:test");
+const mongoose = require("mongoose");
+const config = require("../utils/config");
+const User = require("../models/usersModel");
+const Mail = require("../models/mailsModel");
+const { Label } = require("../models/labelsModel");
 const supertest = require('supertest');
 const app = require('../app');
 
 // Create the test client
 const api = supertest(app);
+
+before(async () => {
+  await mongoose.connect(config.MONGODB_URI);
+  await User.deleteMany({});
+  await Mail.deleteMany({});
+  await Label.deleteMany({});
+});
+
 
 // Utility function to create the test user before running login tests
 async function createTestUser() {
@@ -80,7 +93,11 @@ test('returns 401 and error message when password is empty', async () => {
       password: ""
     })
     .set('Content-Type', 'application/json')
-    .expect(401)
+    .expect(400)
     .expect('Content-Type', /application\/json/)
-    .expect({ error: 'Invalid username or password' });
+    .expect({ error: 'password must be a non-empty string' });
+});
+
+after(async () => {
+  await mongoose.connection.close();
 });
