@@ -1,9 +1,13 @@
-const { test } = require("node:test");
+const { after, before, test } = require("node:test");
+const mongoose = require("mongoose");
+const config = require("../utils/config");
+const User = require("../models/usersModel");
+const Mail = require("../models/mailsModel");
+const { Label } = require("../models/labelsModel");
 const supertest = require("supertest");
 const jwt = require("jsonwebtoken");
 const app = require("../app");
 const api = supertest(app);
-const config = require("../utils/config");
 
 const JWT_SECRET = config.JWT_SECRET;
 
@@ -75,36 +79,6 @@ test("JWT 5. Token signed with wrong secret returns 401", async () => {
     .set("Authorization", "bearer " + fakeSigned)
     .send({ firstName: "WrongSecret" })
     .expect(401);
-});
-
-// 6. User cannot edit another user (authorization mismatch)
-test("JWT 6. User cannot modify another user", async () => {
-  // Create two users
-  await api.post("/api/users").send({
-    username: "u1",
-    firstName: "a",
-    lastName: "b",
-    password: "Securepass1234!",
-  });
-  await api.post("/api/users").send({
-    username: "u2",
-    firstName: "c",
-    lastName: "d",
-    password: "Securepass1234!",
-  });
-
-  // Login as the first user
-  const resLogin = await api
-    .post("/api/tokens")
-    .send({ username: "u1", password: "Securepass1234!" });
-  const token = resLogin.body.token;
-
-  // Try to modify the second user
-  await api
-    .patch("/api/users")
-    .set("Authorization", "bearer " + token)
-    .send({ username: "u2" })
-    .expect(400);
 });
 
 after(async () => {

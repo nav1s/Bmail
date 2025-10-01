@@ -1,13 +1,12 @@
-const { test } = require("node:test");
-const supertest = require("supertest");
-const app = require("../app");
-const api = supertest(app);
-const { after, before } = require("node:test");
+const { after, before, test } = require("node:test");
+const mongoose = require("mongoose");
+const config = require("../utils/config");
 const User = require("../models/usersModel");
 const Mail = require("../models/mailsModel");
 const { Label } = require("../models/labelsModel");
-const mongoose = require("mongoose");
-const config = require("../utils/config");
+const supertest = require("supertest");
+const app = require("../app");
+const api = supertest(app);
 
 before(async () => {
   await mongoose.connect(config.MONGODB_URI);
