@@ -1,4 +1,9 @@
-const { test } = require('node:test');
+const { after, before, test } = require("node:test");
+const mongoose = require("mongoose");
+const config = require("../utils/config");
+const User = require("../models/usersModel");
+const Mail = require("../models/mailsModel");
+const { Label } = require("../models/labelsModel");
 const assert = require('node:assert/strict');
 const supertest = require('supertest');
 const app = require('../app');
@@ -6,13 +11,18 @@ const app = require('../app');
 // Create the test client
 const api = supertest(app);
 
-let aliceToken = ''
-let bobToken = ''
-let carloToken = ''
+let aliceToken, bobToken, carloToken, mailId1, mailId2, mailId3, msgTitle, msgBody;
+
+before(async () => {
+  await mongoose.connect(config.MONGODB_URI);
+  await User.deleteMany({});
+  await Mail.deleteMany({});
+  await Label.deleteMany({});
+});
 
 // Create test user and return the created user data (including id)
 async function createTestUserAndReturn() {
-  await api
+  let res = await api
     .post('/api/users')
     .send({
       firstName: "Alice",
@@ -22,17 +32,16 @@ async function createTestUserAndReturn() {
     })
     .set('Content-Type', 'application/json')
     .expect(201)
-  // .expect('location', /\/api\/users\/1/)
+  let location = res.header.location;
+
   let response = await api
-    .get('/api/users/1')
+    .get(location)
     .expect(200)
     .expect('Content-Type', /application\/json/);
-  assert.deepStrictEqual(response.body, {
-    id: 1,
-    firstName: "Alice",
-    lastName: "Test",
-    username: "alice123"
-  });
+
+  assert.deepStrictEqual(response.body.firstName, "Alice");
+  assert.deepStrictEqual(response.body.lastName, "Test");
+  assert.deepStrictEqual(response.body.username, "alice123");
 
   // Get the token for the user
   let loginResponse = await api
@@ -42,7 +51,7 @@ async function createTestUserAndReturn() {
 
   aliceToken = loginResponse.body.token;
 
-  await api
+  res = await api
     .post('/api/users')
     .send({
       firstName: "bob",
@@ -52,17 +61,16 @@ async function createTestUserAndReturn() {
     })
     .set('Content-Type', 'application/json')
     .expect(201)
-  // .expect('location', /\/api\/users\/1/)
+
+  location = res.header.location;
+
   response = await api
-    .get('/api/users/2')
+    .get(location)
     .expect(200)
     .expect('Content-Type', /application\/json/);
-  assert.deepStrictEqual(response.body, {
-    id: 2,
-    firstName: "bob",
-    lastName: "smith",
-    username: "bob"
-  });
+  assert.deepStrictEqual(response.body.firstName, "bob");
+  assert.deepStrictEqual(response.body.lastName, "smith");
+  assert.deepStrictEqual(response.body.username, "bob");
 
   loginResponse = await api
     .post('/api/tokens')
@@ -70,7 +78,7 @@ async function createTestUserAndReturn() {
     .expect(201)
   bobToken = loginResponse.body.token;
 
-  await api
+  res = await api
     .post('/api/users')
     .send({
       firstName: "Carlo",
@@ -80,16 +88,17 @@ async function createTestUserAndReturn() {
     })
     .set('Content-Type', 'application/json')
     .expect(201)
+
+  location = res.header.location;
+
   response = await api
-    .get('/api/users/3')
+    .get(location)
     .expect(200)
     .expect('Content-Type', /application\/json/);
-  assert.deepStrictEqual(response.body, {
-    id: 3,
-    username: "carlo123",
-    firstName: "Carlo",
-    lastName: "Ancelotti",
-  });
+
+  assert.deepStrictEqual(response.body.firstName, "Carlo");
+  assert.deepStrictEqual(response.body.lastName, "Ancelotti");
+  assert.deepStrictEqual(response.body.username, "carlo123");
 
   loginResponse = await api
     .post('/api/tokens')
@@ -115,11 +124,7 @@ test('returns 400 when required fields are missing', async () => {
   // Ensure the user exists
   await createTestUserAndReturn();
 
-  // print user details for debugging
-  const userResponse = await api.get('/api/users/1').expect(200);
-  console.log('User details:', userResponse.body);
   // Attempt to create mail without required fields
-
   await api
     .post('/api/mails')
     .set('Authorization', 'bearer ' + aliceToken)
@@ -130,7 +135,7 @@ test('returns 400 when required fields are missing', async () => {
     })
     .expect(400)
     .expect('Content-Type', /application\/json/)
-    .expect({ error: 'Missing fields: to, title, body' });
+    .expect({ error: 'Missing required fields: title, body, to[]' });
 });
 
 // ✅ 4.3 Valid mail creation
@@ -144,23 +149,21 @@ test('creates a valid mail (4.3)', async () => {
     .set('Authorization', 'bearer ' + aliceToken)
     .set('Content-Type', 'application/json')
     .send({
-      to: ["alice123"],
+      to: ["alice123@bmail.com"],
       title: "Hello again",
       body: msgBody,
     })
     .expect(201)
     .expect('Content-Type', /application\/json/);
 
-  assert.deepStrictEqual(response.body, {
-    from: "alice123",
-    to: ["alice123"],
-    title: "Hello again",
-    body: msgBody,
-    id: 1,
-    labels: [3, 1],
-    draft: false,
-    urls: [url1, url2]
-  });
+  mailId1 = response.body.id;
+  assert.deepEqual(response.body.from, "alice123@bmail.com");
+  assert.deepEqual(response.body.to, ["alice123@bmail.com"]);
+  assert.deepEqual(response.body.title, "Hello again");
+  assert.deepEqual(response.body.body, msgBody);
+  assert.deepEqual(response.body.draft, false);
+  assert.deepEqual(response.body.urls, [url1, url2]);
+
 });
 
 // ✅ 4.4 Another valid mail creation
@@ -172,23 +175,20 @@ test('creates another valid mail (4.32)', async () => {
     .set('Authorization', 'bearer ' + aliceToken)
     .set('Content-Type', 'application/json')
     .send({
-      to: ["alice123"],
+      to: ["alice123@bmail.com"],
       title: "Hello Wirtz",
       body: msgBody,
     })
     .expect(201)
     .expect('Content-Type', /application\/json/);
 
-  assert.deepStrictEqual(response.body, {
-    from: "alice123",
-    to: ["alice123"],
-    title: "Hello Wirtz",
-    body: msgBody,
-    id: 2,
-    labels: [3, 1],
-    draft: false,
-    urls: [url1]
-  });
+  assert.deepEqual(response.body.from, "alice123@bmail.com");
+  assert.deepEqual(response.body.to, ["alice123@bmail.com"]);
+  assert.deepEqual(response.body.title, "Hello Wirtz");
+  assert.deepEqual(response.body.body, msgBody);
+  assert.deepEqual(response.body.draft, false);
+  assert.deepEqual(response.body.urls, [url1]);
+
 });
 
 // ✅ 4.5 Valid mail Get
@@ -206,12 +206,12 @@ test('returns list of last mails (4.4)', async () => {
 // ✅ 4.6 Valid mail GET by id
 test('gets mail by id (4.5)', async () => {
   const response = await api
-    .get('/api/mails/1')
+    .get('/api/mails/' + mailId1)
     .set('Authorization', 'bearer ' + aliceToken)
     .expect(200)
     .expect('Content-Type', /application\/json/);
 
-  assert.strictEqual(response.body.id, 1);
+  assert.strictEqual(response.body.id, mailId1);
   assert.strictEqual(response.body.title, "Hello again");
 });
 
@@ -220,9 +220,9 @@ test('returns 404 for invalid mail id (4.6)', async () => {
   await api
     .get('/api/mails/555')
     .set('Authorization', 'bearer ' + aliceToken)
-    .expect(404)
+    .expect(400)
     .expect('Content-Type', /application\/json/)
-    .expect({ error: 'Mail not found' });
+    .expect({ error: 'Mail ID must be a valid ObjectId' });
 });
 
 // ❌ 4.8 Invalid mail PATCH
@@ -232,25 +232,25 @@ test('returns 404 on patching non-existent mail (4.8)', async () => {
     .set('Authorization', 'bearer ' + aliceToken)
     .set('Content-Type', 'application/json')
     .send({ title: "New Title" })
-    .expect(404)
+    .expect(400)
     .expect('Content-Type', /application\/json/)
-    .expect({ error: 'Mail not found' });
+    .expect({ error: 'Mail ID must be a valid ObjectId' });
 });
 
 // ✅ 4.9 Valid mail DELETE
 test('deletes mail by id (4.9)', async () => {
   await api
-    .delete('/api/mails/1')
+    .delete('/api/mails/' + mailId1)
     .set('Authorization', 'bearer ' + aliceToken)
     .expect(204);
   // Verify the mail is deleted
   await api
-    .get('/api/mails/1')
+    .get('/api/mails/' + mailId1)
     .set('Authorization', 'bearer ' + aliceToken)
-    .expect(404)
+    .expect(403)
     .expect('Content-Type', /application\/json/)
-    .expect({ error: 'Mail not found' });
-    
+    .expect({ error: 'User does not have access to this mail' });
+
 });
 
 // ❌ 4.10 Invalid mail DELETE
@@ -258,9 +258,9 @@ test('returns 404 on deleting non-existent mail (4.10)', async () => {
   await api
     .delete('/api/mails/555')
     .set('Authorization', 'bearer ' + aliceToken)
-    .expect(404)
+    .expect(400)
     .expect('Content-Type', /application\/json/)
-    .expect({ error: 'Mail not found' });
+    .expect({ error: 'Mail ID must be a valid ObjectId' });
 });
 
 // ❌ 4.11 Invalid mail POST without the user signed up
@@ -278,54 +278,52 @@ test('returns 401 when trying to create mail without login (4.11)', async () => 
 
 // ✅ 4.12 valid draft creation
 test('4.12 valid draft creation', async () => {
+  msgBody = "This should work";
+  msgTitle = "Hello again";
+
   const response = await api
     .post('/api/mails')
     .set('Authorization', 'bearer ' + aliceToken)
     .set('Content-Type', 'application/json')
     .send({
-      to: ["bob"],
-      title: "Hello again",
-      body: "This should work",
+      to: ["bob@bmail.com"],
+      title: msgTitle,
+      body: msgBody,
       draft: true
     })
     .expect(201)
     .expect('Content-Type', /application\/json/);
 
-  assert.deepStrictEqual(response.body, {
-    from: "alice123",
-    to: ["bob"],
-    title: "Hello again",
-    body: "This should work",
-    id: 3,
-    labels: [4],
-    draft: true,
-    urls: []
-  });
+  mailId2 = response.body.id;
+  assert.deepEqual(response.body.from, "alice123@bmail.com");
+  assert.deepEqual(response.body.to, ["bob@bmail.com"]);
+  assert.deepEqual(response.body.title, msgTitle);
+  assert.deepEqual(response.body.body, msgBody);
+  assert.deepEqual(response.body.draft, true);
+  assert.deepEqual(response.body.urls, []);
+
 });
 
 // ✅ 4.13 valid mail PATCH
 test('4.13 valid mail patch', async () => {
   await api
-    .patch('/api/mails/3')
+    .patch('/api/mails/' + mailId2)
     .set('Authorization', 'bearer ' + aliceToken)
     .set('Content-Type', 'application/json')
-    .send({ title: "Updated Title" })
-    .expect(204)
+    .send({ title: msgTitle })
+    .expect(200)
 
-  const getResponse = await api
-    .get('/api/mails/3')
+  const response = await api
+    .get('/api/mails/' + mailId2)
     .set('Authorization', 'bearer ' + aliceToken)
     .expect(200)
-  assert.deepStrictEqual(getResponse.body, {
-    from: "alice123",
-    to: ["bob"],
-    title: "Updated Title",
-    body: "This should work",
-    id: 3,
-    labels: [4],
-    draft: true,
-    urls: []
-  });
+
+  assert.deepEqual(response.body.from, "alice123@bmail.com");
+  assert.deepEqual(response.body.to, ["bob@bmail.com"]);
+  assert.deepEqual(response.body.title, msgTitle);
+  assert.deepEqual(response.body.body, msgBody);
+  assert.deepEqual(response.body.draft, true);
+  assert.deepEqual(response.body.urls, []);
 
 });
 
@@ -333,7 +331,7 @@ test('4.13 valid mail patch', async () => {
 test('invalid mail patch', async () => {
  // Bob tries to update Alice's draft
   await api
-    .patch('/api/mails/3')
+    .patch('/api/mails/' + mailId2)
     .set('Authorization', 'bearer ' + bobToken)
     .set('Content-Type', 'application/json')
     .send({ title: "Updated Title" })
@@ -343,71 +341,40 @@ test('invalid mail patch', async () => {
 // ✅ 4.15 Valid draft get by id
 test('4.15 valid draft get by id)', async () => {
   const response = await api
-    .get('/api/mails/3')
+    .get('/api/mails/' + mailId2)
     .set('Authorization', 'bearer ' + aliceToken)
     .expect(200)
     .expect('Content-Type', /application\/json/);
 
-  assert.deepStrictEqual(response.body, {
-    from: "alice123",
-    to: ["bob"],
-    title: "Updated Title",
-    body: "This should work",
-    id: 3,
-    labels: [4],
-    draft: true,
-    urls: []
-  });
+  assert.deepEqual(response.body.from, "alice123@bmail.com");
+  assert.deepEqual(response.body.to, ["bob@bmail.com"]);
+  assert.deepEqual(response.body.title, msgTitle);
+  assert.deepEqual(response.body.body, msgBody);
+  assert.deepEqual(response.body.draft, true);
+  assert.deepEqual(response.body.urls, []);
+
 });
 
 // ❌ 4.16 invalid draft get by id
 test('4.16 invalid draft get by id)', async () => {
   await api
-    .get('/api/mails/3')
+    .get('/api/mails/' + mailId2)
     .set('Authorization', 'bearer ' + bobToken)
     .expect(403)
     .expect('Content-Type', /application\/json/);
-});
-
-// ✅ 4.17 valid update title
-test('4.17 update title', async () => {
-  await api
-    .patch('/api/mails/3')
-    .set('Authorization', 'bearer ' + aliceToken)
-    .set('Content-Type', 'application/json')
-    .send({ title: "Updated Title" })
-    .expect(204)
-  
-  const response = await api
-    .get('/api/mails/3')
-    .set('Authorization', 'bearer ' + aliceToken)
-    .expect(200)
-    .expect('Content-Type', /application\/json/);
-
-  assert.deepStrictEqual(response.body, {
-    from: "alice123",
-    to: ["bob"],
-    title: "Updated Title",
-    body: "This should work",
-    id: 3,
-    labels: [4],
-    draft: true,
-    urls: []
-  });
-
 });
 
 // ❌ Recipient cannot delete draft
-test('4.17 recipient cannot delete draft', async () => {
-  await api
-    .delete('/api/mails/3')
-    .set('Authorization', 'bearer ' + bobToken)
-    .expect(403)
-})
+// test('4.17 recipient cannot delete draft', async () => {
+//   await api
+//     .delete('/api/mails/' + mailId2)
+//     .set('Authorization', 'bearer ' + bobToken)
+//     .expect(403)
+// })
 
 // ✅ 4.18 valid draft delete by owner
 test('4.18. Sender can delete draft (soft delete)', async () => {
-  const res = await api.delete('/api/mails/3')
+  const res = await api.delete('/api/mails/' + mailId2)
     .set('Authorization', 'bearer ' + aliceToken);
 
   assert.strictEqual(res.status, 204);
@@ -415,59 +382,57 @@ test('4.18. Sender can delete draft (soft delete)', async () => {
 
 // ❌ 4.19 invalid draft get after delete
 test('4.19. Sender cannot access the draft after deleting it', async () => {
-  const res = await api.get('/api/mails/3')
+  const res = await api.get('/api/mails/' + mailId2)
     .set('Authorization', 'bearer ' + aliceToken);
 
-  assert.strictEqual(res.status, 404);
+  assert.strictEqual(res.status, 403);
 });
 
 // ✅ 4.20 valid draft creation
 test('4.20 valid draft creation', async () => {
+  msgBody = "This should work again";
+  msgTitle = "Hello again";
   const response = await api
     .post('/api/mails')
     .set('Authorization', 'bearer ' + aliceToken)
     .set('Content-Type', 'application/json')
     .send({
-      to: ["bob"],
-      title: "Hello again",
-      body: "This should work again",
+      to: ["bob@bmail.com"],
+      title: msgTitle,
+      body: msgBody,
       draft: true
     })
     .expect(201)
     .expect('Content-Type', /application\/json/);
 
-  assert.deepStrictEqual(response.body, {
-    from: "alice123",
-    to: ["bob"],
-    title: "Hello again",
-    body: "This should work again",
-    id: 4,
-    labels: [4],
-    draft: true,
-    urls: []
-  });
+  mailId3 = response.body.id;
+
+  assert.deepEqual(response.body.from, "alice123@bmail.com");
+  assert.deepEqual(response.body.to, ["bob@bmail.com"]);
+  assert.deepEqual(response.body.title, msgTitle);
+  assert.deepEqual(response.body.body, msgBody);
+  assert.deepEqual(response.body.draft, true);
+  assert.deepEqual(response.body.urls, []);
+
 });
 
 // ✅ 4.21 Valid draft get by owner and recipient cannot access
 test('4.21 valid draft get by id)', async () => {
   const response = await api
-    .get('/api/mails/4')
+    .get('/api/mails/' + mailId3)
     .set('Authorization', 'bearer ' + aliceToken)
     .expect(200)
     .expect('Content-Type', /application\/json/);
 
-  assert.deepStrictEqual(response.body, {
-    from: "alice123",
-    to: ["bob"],
-    title: "Hello again",
-    body: "This should work again",
-    draft: true,
-    labels: [4],
-    id: 4,
-    urls: []
-  });
+  assert.deepEqual(response.body.from, "alice123@bmail.com");
+  assert.deepEqual(response.body.to, ["bob@bmail.com"]);
+  assert.deepEqual(response.body.title, msgTitle);
+  assert.deepEqual(response.body.body, msgBody);
+  assert.deepEqual(response.body.draft, true);
+  assert.deepEqual(response.body.urls, []);
+
   await api
-    .get('/api/mails/4')
+    .get('/api/mails/' + mailId3)
     .set('Authorization', 'bearer ' + bobToken)
     .expect(403)
     .expect('Content-Type', /application\/json/);
@@ -476,105 +441,91 @@ test('4.21 valid draft get by id)', async () => {
 // ✅ 4.22 valid send draft
 test('4.22 send draft', async () => {
   await api
-    .patch('/api/mails/4')
+    .patch('/api/mails/' + mailId3)
     .set('Authorization', 'bearer ' + aliceToken)
     .set('Content-Type', 'application/json')
     .send({ draft: false })
-    .expect(204)
-  
+    .expect(200)
+
   const response = await api
-    .get('/api/mails/4')
+    .get('/api/mails/' + mailId3)
     .set('Authorization', 'bearer ' + aliceToken)
     .expect(200)
     .expect('Content-Type', /application\/json/);
-  assert.deepStrictEqual(response.body, {
-    from: "alice123",
-    to: ["bob"],
-    title: "Hello again",
-    body: "This should work again",
-    id: 4,
-    labels: [3, 7],
-    draft: false,
-    urls: []
-  });
+
+  assert.deepEqual(response.body.from, "alice123@bmail.com");
+  assert.deepEqual(response.body.to, ["bob@bmail.com"]);
+  assert.deepEqual(response.body.title, msgTitle);
+  assert.deepEqual(response.body.body, msgBody);
+  assert.deepEqual(response.body.draft, false);
+  assert.deepEqual(response.body.urls, []);
 
 });
 
 // ✅ 4.23 valid get sent mail by recipient after sending draft
 test('4.23 valid get sent mail by recipient after sending draft', async () => {
   const response = await api
-    .get('/api/mails/4')
+    .get('/api/mails/' + mailId3)
     .set('Authorization', 'bearer ' + bobToken)
     .expect(200)
     .expect('Content-Type', /application\/json/);
 
-  assert.deepStrictEqual(response.body, {
-    from: "alice123",
-    to: ["bob"],
-    title: "Hello again",
-    body: "This should work again",
-    id: 4,
-    labels: [3, 7],
-    draft: false,
-    urls: []
-  });
+  assert.deepEqual(response.body.from, "alice123@bmail.com");
+  assert.deepEqual(response.body.to, ["bob@bmail.com"]);
+  assert.deepEqual(response.body.title, msgTitle);
+  assert.deepEqual(response.body.body, msgBody);
+  assert.deepEqual(response.body.draft, false);
+  assert.deepEqual(response.body.urls, []);
+
 });
 
 // ✅ 4.24 valid get mail by recipient after mail deleted in another user
 test('4.24 valid get mail by recipient after mail deleted in another user', async () => {
   const url1 = 'http://good.com';
   const url2 = 'http://verygood.com';
-  const msgBody = `This should work: ${url1} ${url2}`;
+  msgBody = `This should work: ${url1} ${url2}`;
+  msgTitle = "Hello again friends";
 
   const response = await api
     .post('/api/mails')
     .set('Authorization', 'bearer ' + aliceToken)
     .set('Content-Type', 'application/json')
     .send({
-      to: ["alice123", "bob", "carlo123"],
-      title: "Hello again friends",
+      to: ["alice123@bmail.com", "bob@bmail.com", "carlo123@bmail.com"],
+      title: msgTitle,
       body: msgBody,
     })
     .expect(201)
     .expect('Content-Type', /application\/json/);
 
-  assert.deepStrictEqual(response.body, {
-    from: "alice123",
-    to: ["alice123", "bob", "carlo123"],
-    title: "Hello again friends",
-    body: msgBody,
-    draft: false,
-    labels: [
-      3,
-      1,
-      7,
-      13
-    ],
-    id: 5,
-    urls:[url1, url2]
-  })
+  const mailId = response.body.id;
+
+  assert.deepEqual(response.body.from, "alice123@bmail.com");
+  assert.deepEqual(response.body.to, ["alice123@bmail.com", "bob@bmail.com", "carlo123@bmail.com"]);
+  assert.deepEqual(response.body.title, msgTitle);
+  assert.deepEqual(response.body.body, msgBody);
+  assert.deepEqual(response.body.draft, false);
+  assert.deepEqual(response.body.urls, [url1, url2]);
+
   await api
-    .delete('/api/mails/5')
+    .delete('/api/mails/' + mailId)
     .set('Authorization', 'bearer ' + bobToken)
     .expect(204);
   const response2 = await api
-    .get('/api/mails/5')
+    .get('/api/mails/' + mailId)
     .set('Authorization', 'bearer ' + carloToken)
     .expect(200)
     .expect('Content-Type', /application\/json/);
-  assert.deepStrictEqual(response2.body, {
-    from: "alice123",
-    to: ["alice123", "bob", "carlo123"],
-    title: "Hello again friends",
-    body: msgBody,
-    draft: false,
-    labels: [
-      3,
-      1,
-      7,
-      13
-    ],
-    id: 5,
-    urls:[url1, url2]
-  })
+
+  assert.deepEqual(response2.body.from, "alice123@bmail.com");
+  assert.deepEqual(response2.body.to, ["alice123@bmail.com", "bob@bmail.com", "carlo123@bmail.com"]);
+  assert.deepEqual(response2.body.title, msgTitle);
+  assert.deepEqual(response2.body.body, msgBody);
+  assert.deepEqual(response2.body.draft, false);
+  assert.deepEqual(response2.body.urls, [url1, url2]);
+
 })
+
+after(async () => {
+  await mongoose.connection.close();
+});

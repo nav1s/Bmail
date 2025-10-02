@@ -98,16 +98,14 @@ test('1. Add label to mail (valid)', async () => {
     .expect(200); // No content
 });
 
-/**
-// 2. Add label to mail (nonexistent label)
-test('2. Add label to mail (nonexistent label)', async () => {
-  const res = await api.post(`/api/mails/${mailId}/labels`)
-    .set('Authorization', 'bearer ' + senderToken)
-    .send({ labelId: 9999 })
-    .expect(404);
-  assert.strictEqual(res.body.error, 'Label not found');
-});
- */
+// // 2. Add label to mail (nonexistent label)
+// test('2. Add label to mail (nonexistent label)', async () => {
+//   const res = await api.post(`/api/mails/${mailId}/labels`)
+//     .set('Authorization', 'bearer ' + senderToken)
+//     .send({ labelId: 9999 })
+//     .expect(404);
+//   assert.strictEqual(res.body.error, 'Label not found');
+// });
 
 // 2.1 attempt to add non-attachable label to mail
 test('2.1 Attempt to add non-attachable label to mail', async () => {
