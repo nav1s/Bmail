@@ -1,4 +1,4 @@
-const { after, before } = require("node:test");
+const { after, before, test } = require("node:test");
 const mongoose = require("mongoose");
 const config = require("../utils/config");
 const User = require("../models/usersModel");
@@ -10,7 +10,16 @@ const assert = require("node:assert/strict");
 
 const api = supertest(app);
 
-async function createUsers() {
+before (async () => {
+  console.log("Setting up test database...");
+  await mongoose.connect(config.MONGODB_URI);
+  await User.deleteMany({});
+  await Mail.deleteMany({});
+  await Label.deleteMany({});
+  console.log("Test database setup complete.");
+});
+
+test("Set up users", async () => {
   let res = await api
     .post('/api/users')
     .send({
@@ -95,12 +104,9 @@ async function createUsers() {
     .expect(201)
   carloToken = loginResponse.body.token;
   console.log("tokens:", { aliceToken, bobToken, carloToken });
-}
 
-(async () => {
-  await mongoose.connect(config.MONGODB_URI);
-  await User.deleteMany({});
-  await Mail.deleteMany({});
-  await Label.deleteMany({});
-  await createUsers();
+});
+
+after(async () => {
+  await mongoose.connection.close();
 });

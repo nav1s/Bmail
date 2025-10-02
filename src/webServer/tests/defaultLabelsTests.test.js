@@ -1,9 +1,6 @@
 const { after, before, test, describe } = require("node:test");
 const mongoose = require("mongoose");
 const config = require("../utils/config");
-const User = require("../models/usersModel");
-const Mail = require("../models/mailsModel");
-const { Label } = require("../models/labelsModel");
 const assert = require('node:assert/strict');
 const supertest = require('supertest');
 const app = require('../app');
@@ -21,9 +18,6 @@ const securePass = 'aA12345!';
 describe('tests for the default labels', () => {
   before(async () => {
     await mongoose.connect(config.MONGODB_URI);
-    await User.deleteMany({});
-    await Mail.deleteMany({});
-    await Label.deleteMany({});
   });
 
   // 0. Setup
