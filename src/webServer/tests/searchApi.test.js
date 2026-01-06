@@ -13,7 +13,9 @@ let token
 
 describe('tests for the search API', () => {
   before(async () => {
-    await mongoose.connect(config.MONGODB_URI);
+    if (mongoose.connection.readyState === 0){
+      await mongoose.connect(config.MONGODB_URI);
+    }
   });
 
   // Utility function to create the test user before running search tests
@@ -75,7 +77,9 @@ describe('tests for the search API', () => {
   });
 
   after(async () => {
-    await mongoose.connection.close();
+    if (mongoose.connection.readyState !== 0) {
+      await mongoose.connection.close();
+    }
   });
 
 });
