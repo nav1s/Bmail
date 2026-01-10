@@ -24,6 +24,7 @@ swipeRefreshLayout = { group = "androidx.swiperefreshlayout", name = "swiperefre
 navigation-runtime-android = { group = "androidx.navigation", name = "navigation-runtime-android", version.ref = "navigationRuntimeAndroid" }
 room-runtime-android = { group = "androidx.room", name = "room-runtime-android", version.ref = "roomRuntimeAndroid" }
 androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "roomCompiler" }
+socket-io = { group = "io.socket", name = "socket.io-client", version = "2.1.2" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

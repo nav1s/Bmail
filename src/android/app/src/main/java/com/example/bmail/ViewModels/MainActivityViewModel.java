@@ -6,6 +6,7 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
 
+import com.example.bmail.Api.SocketManager;
 import com.example.bmail.Entities.BmailApplication;
 import com.example.bmail.Entities.Label;
 import com.example.bmail.Entities.ServerMail;
@@ -21,13 +22,47 @@ public class MainActivityViewModel extends androidx.lifecycle.ViewModel {
     private final LabelRepository labelRepository;
     private final UserRepository userRepository;
     private final LiveData<List<ServerMail>> mails;
+    private String currentLabel = "";
+
 
     public MainActivityViewModel(){
         this.mailRepository = BmailApplication.getInstance().getMailRepository();
         mails = mailRepository.getMails();
         this.labelRepository = BmailApplication.getInstance().getLabelRepository();
         this.userRepository = BmailApplication.getInstance().getUserRepository();
+        connectToSocket();
+        listenForNewMails();
     }
+
+    @Override
+    protected void onCleared() {
+        super.onCleared();
+        disconnectFromSocket();
+    }
+
+    public void connectToSocket() {
+        SocketManager.connect();
+        userRepository.getUserData().observeForever(user -> {
+            if (user != null) {
+                Log.d("MainActivityViewModel", "Registering user: " + user.getUsername());
+                SocketManager.registerUser(user.getUsername() + "@bmail.com");
+            }
+        });
+    }
+
+    public void disconnectFromSocket() {
+        SocketManager.disconnect();
+    }
+
+    private void listenForNewMails() {
+        SocketManager.getNewMailId().observeForever(mailId -> {
+            if (mailId != null) {
+                Log.d("MainActivityViewModel", "New mail received: " + mailId);
+                loadMails();
+            }
+        });
+    }
+
 
     public LiveData<List<ServerMail>> getMails() {
         return mails;
@@ -73,16 +108,15 @@ public class MainActivityViewModel extends androidx.lifecycle.ViewModel {
 
     /**
      * @brief Loads the mails for the given label.
-     * @param label The label for which to load the mails.
      */
-    public void loadMails(@NonNull String label) {
-        Log.d("MainActivityViewModel", "Loading mails for label: " + label);
-        if (label.equals("All mail")){
+    public void loadMails(){
+        Log.d("MainActivityViewModel", "Loading mails for label: " + this.currentLabel);
+        if (this.currentLabel.equals("All mail")){
             Log.d("MainActivityViewModel", "Loading all mails");
             mailRepository.loadAllMails();
         }
         else {
-            mailRepository.reloadMails(label);
+            mailRepository.reloadMails(this.currentLabel);
         }
     }
 
@@ -119,4 +153,11 @@ public class MainActivityViewModel extends androidx.lifecycle.ViewModel {
         labelRepository.deleteLabel(labelId, callback);
     }
 
+    public String getCurrentLabel() {
+        return currentLabel;
+    }
+
+    public void setCurrentLabel(String currentLabel) {
+        this.currentLabel = currentLabel;
+    }
 }

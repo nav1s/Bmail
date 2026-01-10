@@ -32,6 +32,7 @@ android {
 }
 
 dependencies {
+    implementation(libs.socket.io)
     implementation(libs.appcompat)
     implementation(libs.material)
     implementation(libs.retrofit)

@@ -49,8 +49,6 @@ public class MainActivity extends AppCompatActivity {
     private EditText searchBar;
     private TextView logout;
 
-    // Current label for the mail view
-    private String currentLabel = LABEL_INBOX;
     private int labelCounter = 9;
 
     @Override
@@ -67,7 +65,7 @@ public class MainActivity extends AppCompatActivity {
         super.onResume();
         viewModel.loadUserDetails();
         viewModel.loadLabels();
-        viewModel.loadMails(currentLabel);
+        viewModel.loadMails();
     }
 
     /**
@@ -133,6 +131,7 @@ public class MainActivity extends AppCompatActivity {
      */
     private void setupViewModel() {
         viewModel = new MainActivityViewModel();
+        viewModel.setCurrentLabel(LABEL_INBOX);
 
         viewModel.getMails().observe(this, mails -> {
             if (mails != null) {
@@ -168,14 +167,14 @@ public class MainActivity extends AppCompatActivity {
     private void setupClickListeners() {
         fabCompose.setOnClickListener(v -> {
             Intent intent = new Intent(this, ComposeActivity.class);
-            intent.putExtra("currentLabel", currentLabel);
+            intent.putExtra("currentLabel", viewModel.getCurrentLabel());
             startActivity(intent);
         });
 
         refreshLayout.setOnRefreshListener(() -> {
             viewModel.loadUserDetails();
             viewModel.loadLabels();
-            viewModel.loadMails(currentLabel);
+            viewModel.loadMails();
             refreshLayout.setRefreshing(true);
         });
 
@@ -197,10 +196,11 @@ public class MainActivity extends AppCompatActivity {
         navigationView.setNavigationItemSelectedListener(item -> {
             drawer.closeDrawers();
 
-            this.currentLabel = (String) item.getTitle();
-            Log.i("MailActivity", "label selected: " + this.currentLabel);
+            String currentLabel = (String) item.getTitle();
+            Log.i("MailActivity", "label selected: " + currentLabel);
 
-            viewModel.loadMails(this.currentLabel);
+            viewModel.setCurrentLabel(currentLabel);
+            viewModel.loadMails();
             return true;
         });
     }
@@ -219,7 +219,7 @@ public class MainActivity extends AppCompatActivity {
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 String searchText = s.toString().trim();
                 if (searchText.isEmpty()) {
-                    viewModel.loadMails(currentLabel);
+                    viewModel.loadMails();
                 } else {
                     Log.i("MailActivity", "Searching for mails with text: " + searchText);
                     viewModel.searchMail(searchText);

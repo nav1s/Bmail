@@ -2,6 +2,7 @@ package com.example.bmail.Entities;
 
 import android.app.Application;
 
+import com.example.bmail.Api.SocketManager;
 import com.example.bmail.Repositories.LabelRepository;
 import com.example.bmail.Repositories.MailRepository;
 import com.example.bmail.Repositories.UserRepository;
@@ -19,6 +20,7 @@ public class BmailApplication extends Application {
         mailRepository = new MailRepository(this);
         labelRepository = new LabelRepository(this);
         userRepository = new UserRepository(this);
+        SocketManager.init(this);
     }
 
     public static BmailApplication getInstance() {
