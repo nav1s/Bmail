@@ -69,7 +69,7 @@ async function listInbox(req, res) {
  * @throws Sends 500 via httpError if label resolution or fetch fails.
  */
 async function listMailsByLabel(req, res) {
-  
+
   const username = req.user.username;
   const userId = req.user.id;
   const { label } = req.params;
@@ -83,7 +83,7 @@ async function listMailsByLabel(req, res) {
     const labelId = isValidObjectId(label)
       ? label
       : await getLabelIdByName(userId, label);
-    console.log("3. in listMailsByLabel label ID:" + labelId)  
+    console.log("3. in listMailsByLabel label ID:" + labelId)
 
     const mails = await getMailsForUser(
       username,
@@ -136,6 +136,15 @@ async function createMail(req, res) {
       { from: username, to, title, body, draft: isDraft },
       { userId, system: { spamId, sentId, draftsId } }
     );
+    if (!isDraft && newMail) {
+      const io = req.app.get('io');
+
+      to.forEach(recipient => {
+        io.to(recipient).emit('newMail', {
+          mailId: newMail.id
+        });
+      });
+    }
 
     return created(res, newMail);
   } catch (err) {

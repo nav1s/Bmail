@@ -218,11 +218,11 @@ async function buildMail(mailData, { userId, system }) {
   // validation (keep your existing asserts)
   assertNonEmptyString('from', mailData.from);
   if (/@/.test(mailData.from)) {
-    throw createError('Sender username must not contain "@" (demo rule)', { status: 400 });
+    throw createError('Sender username must not contain "@"', { status: 400 });
   }
-  const isDraft = !!mailData.draft;
+  const isDraft = mailData.draft;
 
-    // tokenize recipients
+  // tokenize recipients
   const toTokens = tokenizeAddresses(mailData.to);
 
   // enforce that every address matches EMAIL_RE
@@ -681,7 +681,7 @@ function escapeRegex(s = '') {
 async function searchMailsForUser(username, query, limit = 50) {
   const q = query.trim();
   const rx = new RegExp(escapeRegex(q), 'i');
-  
+
 
   // We over-fetch a bit, then apply canUserAccessMail() exactly like before.
   const raw = await Mail.find(
