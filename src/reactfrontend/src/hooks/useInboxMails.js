@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api";
 import { getLabels } from "../services/labelService";
+import { useSocket } from "../contexts/SocketContext";
 
 export default function useInboxMails(label, query) {
   const [mails, setMails] = useState([]);
@@ -9,6 +10,7 @@ export default function useInboxMails(label, query) {
   const [mailSentVisible, setMailSentVisible] = useState(false);
   const [openedMail, setOpenedMail] = useState(null);
   const [labelMap, setLabelMap] = useState({});
+  const socket = useSocket();
 
   const navigate = useNavigate();
 
@@ -33,6 +35,19 @@ export default function useInboxMails(label, query) {
       }
     }
   };
+
+  useEffect(() => {
+    if (socket) {
+      socket.on("newMail", (mail) => {
+        console.log("new_mail event received, reloading mails");
+        loadMails();
+      });
+
+      return () => {
+        socket.off("newMail");
+      };
+    }
+  }, [socket]);
 
   useEffect(() => {
   const fetchLabels = async () => {

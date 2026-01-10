@@ -5,6 +5,7 @@ import InboxPage from "./pages/inboxPage";
 import ProtectedRoute from "./components/routes/protectedRoute";
 import { getToken } from "./utils/tokenUtils";
 import { UserProvider } from "./contexts/UserContext";
+import { SocketProvider } from "./contexts/SocketContext";
 
 /**
  * App
@@ -17,22 +18,24 @@ function App() {
 
   return (
     <UserProvider>
-      <Router>
-        <Routes>
-          {/* Public Routes */}
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
+      <SocketProvider>
+        <Router>
+          <Routes>
+            {/* Public Routes */}
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
 
-          {/* Protected Routes */}
-          <Route element={<ProtectedRoute />}>
-            <Route path="/mails" element={<Navigate to="/mails/inbox" replace />} />
-            <Route path="/mails/:label" element={<InboxPage />} />
-          </Route>
+            {/* Protected Routes */}
+            <Route element={<ProtectedRoute />}>
+              <Route path="/mails" element={<Navigate to="/mails/inbox" replace />} />
+              <Route path="/mails/:label" element={<InboxPage />} />
+            </Route>
 
-          {/* Default Route */}
-          <Route path="/" element={<Navigate to={isAuthenticated ? "/mails/inbox" : "/login"} />} />
-        </Routes>
-      </Router>
+            {/* Default Route */}
+            <Route path="/" element={<Navigate to={isAuthenticated ? "/mails/inbox" : "/login"} />} />
+          </Routes>
+        </Router>
+      </SocketProvider>
     </UserProvider>
   );
 }
